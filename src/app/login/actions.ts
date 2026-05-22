@@ -9,24 +9,17 @@ export async function loginAction(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) {
+  if (error || !data.user) {
     redirect('/login?error=identifiants-incorrects')
   }
 
-  // Récupérer le rôle pour rediriger au bon endroit
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?error=connexion-echouee')
+  // Rôle stocké dans app_metadata — disponible immédiatement sans query DB
+  const role = data.user.app_metadata?.role as string | undefined
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role === 'admin') redirect('/admin')
-  if (profile?.role === 'chauffeur') redirect('/chauffeur')
+  if (role === 'admin') redirect('/admin')
+  if (role === 'chauffeur') redirect('/chauffeur')
   redirect('/client')
 }
 

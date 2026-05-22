@@ -27,29 +27,28 @@ export async function proxy(request: NextRequest) {
   const protectedPrefixes = ['/admin', '/chauffeur', '/client']
   const isProtected = protectedPrefixes.some(p => path.startsWith(p))
 
+  // Non connecté → login
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Pour tout utilisateur connecté sur une route protégée ou /login → vérifier le rôle
-  if (user && (path === '/login' || isProtected)) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  // Connecté → rediriger vers la bonne section selon le rôle (app_metadata, pas de query DB)
+  if (user) {
+    const role = user.app_metadata?.role as string | undefined
 
-    const role = (profile as any)?.role
-
-    // Rediriger vers la bonne section si l'utilisateur est sur la mauvaise
-    if (role === 'admin' && !path.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/admin', request.url))
-    }
-    if (role === 'chauffeur' && !path.startsWith('/chauffeur')) {
-      return NextResponse.redirect(new URL('/chauffeur', request.url))
-    }
-    if (role === 'client' && !path.startsWith('/client')) {
+    if (path === '/login') {
+      if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
+      if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
       return NextResponse.redirect(new URL('/client', request.url))
+    }
+
+    if (isProtected) {
+      if (role === 'admin' && !path.startsWith('/admin'))
+        return NextResponse.redirect(new URL('/admin', request.url))
+      if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
+        return NextResponse.redirect(new URL('/chauffeur', request.url))
+      if (role === 'client' && !path.startsWith('/client'))
+        return NextResponse.redirect(new URL('/client', request.url))
     }
   }
 
