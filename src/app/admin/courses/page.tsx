@@ -16,6 +16,7 @@ export default async function CoursesPage() {
 
   return (
     <>
+      <style>{`.course-row:hover { background: rgba(201,168,76,.03); }`}</style>
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
         background: 'rgba(7,7,26,.9)', backdropFilter: 'blur(12px)',
@@ -79,6 +80,7 @@ export default async function CoursesPage() {
                 <a
                   key={course.id}
                   href={`/admin/courses/${course.id}`}
+                  className="course-row"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 140px 130px 160px 100px',
@@ -86,11 +88,7 @@ export default async function CoursesPage() {
                     borderBottom: '1px solid rgba(201,168,76,.04)',
                     alignItems: 'center',
                     textDecoration: 'none',
-                    cursor: 'pointer',
-                    transition: 'background 0.12s',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,.03)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
