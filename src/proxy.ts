@@ -31,7 +31,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (path === '/login' && user) {
+  // Pour tout utilisateur connecté sur une route protégée ou /login → vérifier le rôle
+  if (user && (path === '/login' || isProtected)) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -39,9 +40,17 @@ export async function proxy(request: NextRequest) {
       .single()
 
     const role = (profile as any)?.role
-    if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
-    if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
-    return NextResponse.redirect(new URL('/client', request.url))
+
+    // Rediriger vers la bonne section si l'utilisateur est sur la mauvaise
+    if (role === 'admin' && !path.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+    if (role === 'chauffeur' && !path.startsWith('/chauffeur')) {
+      return NextResponse.redirect(new URL('/chauffeur', request.url))
+    }
+    if (role === 'client' && !path.startsWith('/client')) {
+      return NextResponse.redirect(new URL('/client', request.url))
+    }
   }
 
   return supabaseResponse
