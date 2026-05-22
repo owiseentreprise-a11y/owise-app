@@ -16,7 +16,7 @@ export default async function CoursesPage() {
 
   return (
     <>
-      <style>{`.course-row:hover { background: rgba(201,168,76,.03); }`}</style>
+      <style>{`.course-row { position: relative; } .course-row:hover { background: rgba(201,168,76,.03); } .course-row-link { position: absolute; inset: 0; z-index: 0; } .course-row > * { position: relative; z-index: 1; }`}</style>
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
         background: 'rgba(7,7,26,.9)', backdropFilter: 'blur(12px)',
@@ -77,9 +77,8 @@ export default async function CoursesPage() {
               const date = new Date(course.date_prevue)
 
               return (
-                <a
+                <div
                   key={course.id}
-                  href={`/admin/courses/${course.id}`}
                   className="course-row"
                   style={{
                     display: 'grid',
@@ -87,9 +86,9 @@ export default async function CoursesPage() {
                     padding: '13px 20px',
                     borderBottom: '1px solid rgba(201,168,76,.04)',
                     alignItems: 'center',
-                    textDecoration: 'none',
                   }}
                 >
+                  <a href={`/admin/courses/${course.id}`} className="course-row-link" aria-label="Voir la course" />
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
                       {course.adresse_depart.split(',')[0]}
@@ -112,7 +111,7 @@ export default async function CoursesPage() {
                   }}>
                     {course.prix_final ?? course.prix_estime ? `${(course.prix_final ?? course.prix_estime)!.toFixed(0)} €` : '—'}
                   </div>
-                </a>
+                </div>
               )
             })
           )}
