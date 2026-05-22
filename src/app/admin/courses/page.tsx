@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { STATUT_COURSE_LABEL } from '@/lib/types'
 import type { Course } from '@/lib/types'
 import UpdateStatutButton from './UpdateStatutButton'
 
@@ -77,15 +76,21 @@ export default async function CoursesPage() {
               const date = new Date(course.date_prevue)
 
               return (
-                <div
+                <a
                   key={course.id}
+                  href={`/admin/courses/${course.id}`}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 140px 130px 160px 100px',
                     padding: '13px 20px',
                     borderBottom: '1px solid rgba(201,168,76,.04)',
                     alignItems: 'center',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.12s',
                   }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,.03)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
@@ -101,7 +106,9 @@ export default async function CoursesPage() {
                   }}>
                     {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} · {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  <UpdateStatutButton courseId={course.id} statut={course.statut} />
+                  <div onClick={e => e.preventDefault()}>
+                    <UpdateStatutButton courseId={course.id} statut={course.statut} />
+                  </div>
                   <div style={{
                     textAlign: 'right',
                     fontFamily: 'var(--font-jetbrains), monospace',
@@ -109,7 +116,7 @@ export default async function CoursesPage() {
                   }}>
                     {course.prix_final ?? course.prix_estime ? `${(course.prix_final ?? course.prix_estime)!.toFixed(0)} €` : '—'}
                   </div>
-                </div>
+                </a>
               )
             })
           )}
