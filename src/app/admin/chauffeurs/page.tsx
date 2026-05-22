@@ -95,6 +95,7 @@ export default async function ChauffeursPage() {
               <div
                 key={c.id}
                 style={{
+                  position: 'relative',
                   display: 'grid',
                   gridTemplateColumns: '1fr 160px 180px 80px 80px 120px',
                   padding: '13px 20px',
@@ -102,8 +103,9 @@ export default async function ChauffeursPage() {
                   alignItems: 'center',
                 }}
               >
+                <a href={`/admin/chauffeurs/${c.id}`} aria-label="Voir le chauffeur" style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
                 {/* Identity */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
                     width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
                     background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.06))',
@@ -119,7 +121,7 @@ export default async function ChauffeursPage() {
                 </div>
 
                 {/* Véhicule */}
-                <div>
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <div style={{ fontSize: 12, color: 'var(--t1)' }}>
                     {c.vehicule_marque ?? '—'} {c.vehicule_modele ?? ''}
                   </div>
@@ -129,7 +131,7 @@ export default async function ChauffeursPage() {
                 </div>
 
                 {/* Contrat + immat */}
-                <div>
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <div style={{ fontSize: 11, color: 'var(--t2)', textTransform: 'capitalize' }}>
                     {c.type_contrat === 'salarie' ? 'Salarié' : 'Sous-traitant'}
                   </div>
@@ -144,6 +146,7 @@ export default async function ChauffeursPage() {
 
                 {/* Nb courses */}
                 <div style={{
+                  position: 'relative', zIndex: 2,
                   textAlign: 'center',
                   fontFamily: 'var(--font-jetbrains), monospace',
                   fontSize: 15, color: 'var(--t1)',
@@ -153,6 +156,7 @@ export default async function ChauffeursPage() {
 
                 {/* Note */}
                 <div style={{
+                  position: 'relative', zIndex: 2,
                   textAlign: 'center',
                   fontFamily: 'var(--font-jetbrains), monospace',
                   fontSize: 15,
@@ -162,7 +166,7 @@ export default async function ChauffeursPage() {
                 </div>
 
                 {/* Statut */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'flex-end' }}>
                   <span style={{
                     fontSize: 10, padding: '4px 10px',
                     borderRadius: 20, fontWeight: 500,
