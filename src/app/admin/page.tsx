@@ -21,7 +21,6 @@ export default async function AdminDashboard() {
 
   const courses: Course[] = coursesRes.data ?? []
   const chauffeurs: Chauffeur[] = chauffeursRes.data ?? []
-  const dbError = coursesRes.error?.message ?? chauffeursRes.error?.message ?? null
 
   // KPIs
   const today = new Date().toISOString().split('T')[0]
@@ -37,11 +36,6 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      {dbError && (
-        <div style={{ background: 'rgba(217,80,80,.15)', border: '1px solid var(--red)', borderRadius: 8, padding: '10px 16px', margin: '16px 32px', fontSize: 12, color: 'var(--red)', fontFamily: 'monospace' }}>
-          DB error: {dbError}
-        </div>
-      )}
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
