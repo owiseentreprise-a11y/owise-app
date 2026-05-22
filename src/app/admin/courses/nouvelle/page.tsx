@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
 import { creerCourseAction } from './actions'
+import ClientCollaborateurSelect from './ClientCollaborateurSelect'
 
 export default async function NouvelleCourse({
   searchParams,
@@ -10,14 +11,18 @@ export default async function NouvelleCourse({
   const { error: formError } = await searchParams
   const supabase = await createClient()
 
-  const [clientsRes, chauffeursRes] = await Promise.all([
+  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes] = await Promise.all([
     supabase.from('clients').select('id, entreprise_nom, type_compte, profiles(prenom, nom)'),
     supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom)')
       .in('statut', ['disponible', 'hors_ligne']),
+    supabase.from('collaborateurs').select('id, client_id, poste, profiles(prenom, nom)'),
+    supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
   ])
 
   const clients = clientsRes.data ?? []
   const chauffeurs = chauffeursRes.data ?? []
+  const collabs = collabsRes.data ?? []
+  const sousTraitants = sousTraitantsRes.data ?? []
 
   // Default datetime = now + 1h, rounded to 15min
   const now = new Date()
@@ -121,38 +126,37 @@ export default async function NouvelleCourse({
               </select>
             </div>
 
-            {/* Client */}
-            <div>
-              <label style={labelStyle}>Client</label>
-              <select name="client_id" style={selectStyle}>
-                <option value="">— Non assigné —</option>
-                {clients.map((c: any) => {
-                  const p = c.profiles
-                  const nom = c.type_compte === 'entreprise'
-                    ? c.entreprise_nom
-                    : `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim()
-                  return <option key={c.id} value={c.id}>{nom}</option>
-                })}
-              </select>
-            </div>
+            {/* Client + Collaborateur */}
+            <ClientCollaborateurSelect clients={clients as any} collabs={collabs as any} />
 
-            {/* Chauffeur */}
-            <div>
-              <label style={labelStyle}>Chauffeur</label>
-              <select name="chauffeur_id" style={selectStyle}>
-                <option value="">— Non assigné —</option>
-                {chauffeurs.map((c: any) => {
-                  const p = c.profiles
-                  const nom = `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim()
-                  const vehicule = `${c.vehicule_marque ?? ''} ${c.vehicule_modele ?? ''}`.trim()
-                  const dispo = c.statut === 'disponible' ? ' ✓' : ''
-                  return (
-                    <option key={c.id} value={c.id}>
-                      {nom}{vehicule ? ` — ${vehicule}` : ''}{dispo}
-                    </option>
-                  )
-                })}
-              </select>
+            {/* Chauffeur / Sous-traitant */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={labelStyle}>Chauffeur</label>
+                <select name="chauffeur_id" style={selectStyle}>
+                  <option value="">— Non assigné —</option>
+                  {chauffeurs.map((c: any) => {
+                    const p = c.profiles
+                    const nom = `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim()
+                    const vehicule = `${c.vehicule_marque ?? ''} ${c.vehicule_modele ?? ''}`.trim()
+                    const dispo = c.statut === 'disponible' ? ' ✓' : ''
+                    return (
+                      <option key={c.id} value={c.id}>
+                        {nom}{vehicule ? ` — ${vehicule}` : ''}{dispo}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Sous-traitant</label>
+                <select name="sous_traitant_id" style={selectStyle}>
+                  <option value="">— Aucun —</option>
+                  {sousTraitants.map((st: any) => (
+                    <option key={st.id} value={st.id}>{st.nom}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Prix estimé */}

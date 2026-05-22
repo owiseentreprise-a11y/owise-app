@@ -41,10 +41,26 @@ export interface ClientRow {
   created_at: string
 }
 
+export interface SousTraitantRow {
+  id: string
+  nom: string
+  contact_nom: string | null
+  telephone: string | null
+  email: string | null
+  adresse: string | null
+  siret: string | null
+  notes: string | null
+  actif: boolean
+  created_at: string
+}
+
+export type SousTraitant = SousTraitantRow
+
 export interface CourseRow {
   id: string
   client_id: string | null
   chauffeur_id: string | null
+  sous_traitant_id: string | null
   statut: StatutCourse
   adresse_depart: string
   adresse_arrivee: string

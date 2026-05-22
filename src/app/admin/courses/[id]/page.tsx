@@ -38,7 +38,7 @@ export default async function CourseDetailPage({
   const [courseRes, chauffeursRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*))')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(poste, profiles(prenom, nom, telephone)), sous_traitants(*)')
       .eq('id', id)
       .single(),
     supabase
@@ -56,12 +56,22 @@ export default async function CourseDetailPage({
 
   const clientData = (course as any).clients
   const chauffeurData = (course as any).chauffeurs
+  const collabData = (course as any).collaborateurs
+  const sousTraitantData = (course as any).sous_traitants
 
-  const clientNom = clientData?.profiles
-    ? `${clientData.profiles.prenom} ${clientData.profiles.nom}`.trim()
-    : clientData?.entreprise_nom ?? null
+  const clientNom = clientData?.type_compte === 'entreprise'
+    ? (clientData.entreprise_nom ?? null)
+    : clientData?.profiles
+      ? `${clientData.profiles.prenom} ${clientData.profiles.nom}`.trim()
+      : null
   const clientTel: string | null = clientData?.profiles?.telephone ?? null
   const clientType: string = clientData?.type_compte ?? 'particulier'
+
+  const collabNom = collabData?.profiles
+    ? `${collabData.profiles.prenom} ${collabData.profiles.nom}`.trim()
+    : null
+  const collabPoste: string | null = collabData?.poste ?? null
+  const collabTel: string | null = collabData?.profiles?.telephone ?? null
 
   const chauffeurNom = chauffeurData?.profiles
     ? `${chauffeurData.profiles.prenom} ${chauffeurData.profiles.nom}`.trim()
@@ -215,54 +225,154 @@ export default async function CourseDetailPage({
               Client
             </div>
             {clientNom ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    background: 'var(--elevated)', border: '1px solid var(--t3)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-cormorant), serif',
-                    fontSize: 16, color: 'var(--t1)',
-                  }}>
-                    {clientNom.charAt(0).toUpperCase()}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Entité de facturation */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      background: 'var(--elevated)', border: '1px solid var(--t3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: 'var(--font-cormorant), serif',
+                      fontSize: 16, color: 'var(--t1)',
+                    }}>
+                      {clientNom.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+                        {clientNom}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--t2)' }}>
+                        {clientType === 'entreprise' ? 'Compte entreprise' : 'Client particulier'}
+                      </div>
+                      {clientTel && (
+                        <a href={`tel:${clientTel}`} style={{
+                          fontSize: 11, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 2,
+                        }}>
+                          {clientTel}
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
-                      {clientNom}
+                  {clientTel && (
+                    <a href={`tel:${clientTel}`} style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '8px 14px', borderRadius: 8,
+                      background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
+                      color: 'var(--gold)', fontSize: 12, fontWeight: 500,
+                      textDecoration: 'none',
+                    }}>
+                      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                      </svg>
+                      Appeler
+                    </a>
+                  )}
+                </div>
+
+                {/* Collaborateur voyageur */}
+                {collabNom && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 8,
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--t3)', marginBottom: 3 }}>Voyageur</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{collabNom}</div>
+                      {collabPoste && (
+                        <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{collabPoste}</div>
+                      )}
+                      {collabTel && (
+                        <a href={`tel:${collabTel}`} style={{
+                          fontSize: 11, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 2,
+                        }}>
+                          {collabTel}
+                        </a>
+                      )}
                     </div>
-                    <div style={{ fontSize: 10, color: 'var(--t2)' }}>
-                      {clientType === 'entreprise' && clientData?.entreprise_nom
-                        ? `${clientData.entreprise_nom} · Compte entreprise`
-                        : 'Client particulier'}
-                    </div>
-                    {clientTel && (
-                      <a href={`tel:${clientTel}`} style={{
-                        fontSize: 11, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 2,
+                    {collabTel && (
+                      <a href={`tel:${collabTel}`} style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '8px 14px', borderRadius: 8,
+                        background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
+                        color: 'var(--gold)', fontSize: 12, fontWeight: 500,
+                        textDecoration: 'none',
                       }}>
-                        {clientTel}
+                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        Appeler
                       </a>
                     )}
                   </div>
-                </div>
-                {clientTel && (
-                  <a href={`tel:${clientTel}`} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 14px', borderRadius: 8,
-                    background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
-                    color: 'var(--gold)', fontSize: 12, fontWeight: 500,
-                    textDecoration: 'none',
-                  }}>
-                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                    </svg>
-                    Appeler
-                  </a>
                 )}
               </div>
             ) : (
               <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucun client assigné</div>
             )}
           </div>
+
+          {/* Sous-traitant */}
+          {sousTraitantData && (
+            <div style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 12, padding: '20px',
+            }}>
+              <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 14 }}>
+                Sous-traitant
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10,
+                    background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 16, color: 'var(--gold)',
+                    fontFamily: 'var(--font-cormorant), serif',
+                  }}>
+                    {sousTraitantData.nom.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+                      {sousTraitantData.nom}
+                    </div>
+                    {sousTraitantData.contact_nom && (
+                      <div style={{ fontSize: 11, color: 'var(--t2)' }}>{sousTraitantData.contact_nom}</div>
+                    )}
+                    {sousTraitantData.telephone && (
+                      <a href={`tel:${sousTraitantData.telephone}`} style={{ fontSize: 11, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 2 }}>
+                        {sousTraitantData.telephone}
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {sousTraitantData.telephone && (
+                    <a href={`tel:${sousTraitantData.telephone}`} style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '8px 14px', borderRadius: 8,
+                      background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
+                      color: 'var(--gold)', fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                    }}>
+                      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                      </svg>
+                      Appeler
+                    </a>
+                  )}
+                  <a href={`/admin/sous-traitants/${sousTraitantData.id}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '8px 14px', borderRadius: 8,
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    color: 'var(--t2)', fontSize: 12, textDecoration: 'none',
+                  }}>
+                    Fiche →
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Timing */}
           <div style={{

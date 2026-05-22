@@ -3,7 +3,7 @@ import { loginAction } from './actions'
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; success?: string }>
 }) {
   return (
     <div style={{
@@ -74,8 +74,8 @@ export default function LoginPage({
           </div>
         </div>
 
-        {/* Erreur */}
-        <ErrorBanner searchParams={searchParams} />
+        {/* Bannières */}
+        <StatusBanner searchParams={searchParams} />
 
         {/* Formulaire */}
         <form action={loginAction} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -144,6 +144,14 @@ export default function LoginPage({
           </button>
         </form>
 
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <a href="/login/reset-password" style={{
+            fontSize: 12, color: 'var(--t3)', textDecoration: 'none',
+          }}>
+            Mot de passe oublié ?
+          </a>
+        </div>
+
         {/* Footer */}
         <div style={{
           marginTop: 24,
@@ -166,13 +174,25 @@ export default function LoginPage({
   )
 }
 
-// Composant async pour lire les searchParams
-async function ErrorBanner({
+async function StatusBanner({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; success?: string }>
 }) {
   const params = await searchParams
+
+  if (params.success === 'mot-de-passe-mis-a-jour') {
+    return (
+      <div style={{
+        background: 'rgba(60,196,124,.1)', border: '1px solid rgba(60,196,124,.25)',
+        borderRadius: 9, padding: '11px 14px', marginBottom: 16,
+        fontSize: 13, color: 'var(--grn)',
+      }}>
+        ✓ Mot de passe mis à jour. Connectez-vous.
+      </div>
+    )
+  }
+
   if (!params.error) return null
 
   const messages: Record<string, string> = {
@@ -182,13 +202,9 @@ async function ErrorBanner({
 
   return (
     <div style={{
-      background: 'rgba(217,80,80,.1)',
-      border: '1px solid rgba(217,80,80,.25)',
-      borderRadius: 9,
-      padding: '11px 14px',
-      marginBottom: 16,
-      fontSize: 13,
-      color: '#e88080',
+      background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.25)',
+      borderRadius: 9, padding: '11px 14px', marginBottom: 16,
+      fontSize: 13, color: '#e88080',
     }}>
       {messages[params.error] ?? 'Une erreur est survenue.'}
     </div>

@@ -49,3 +49,46 @@ body::after {
 ::-webkit-scrollbar-track { background: var(--base); }
 ::-webkit-scrollbar-thumb { background: var(--t3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--t2); }
+
+/* ── Impression PDF ─────────────────────────────────────── */
+@media print {
+  :root {
+    --base: #ffffff;
+    --surface: #ffffff;
+    --elevated: #f5f5f5;
+    --floating: #eeeeee;
+    --gold: #9a7a2a;
+    --t1: #111111;
+    --t2: #444444;
+    --t3: #888888;
+    --gb: #dddddd;
+    --grn: #1a7a40;
+    --amb: #b07000;
+    --red: #b03030;
+    --blu: #2060a0;
+  }
+
+  body::after { display: none; }          /* grain */
+  body { background: #fff !important; }
+
+  /* Masquer les éléments non imprimables */
+  .no-print,
+  nav, aside,
+  [data-noprint] { display: none !important; }
+
+  /* Forcer fond blanc sur les cartes */
+  [style*="background: var(--surface)"],
+  [style*="background:var(--surface)"] {
+    background: #fff !important;
+    border-color: #ddd !important;
+    box-shadow: none !important;
+  }
+
+  /* Éviter les coupures de page dans les blocs */
+  .facture-block { break-inside: avoid; }
+
+  @page {
+    margin: 16mm 14mm;
+    size: A4;
+  }
+}

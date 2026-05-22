@@ -19,10 +19,10 @@ export default async function AdminDashboard() {
   const weekStart  = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + 1); weekStart.setHours(0,0,0,0)
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [coursesRes, chauffeursRes, weekRes, monthRes] = await Promise.all([
+  const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, docsAlertRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*))')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(profiles(prenom, nom))')
       .order('date_prevue', { ascending: false })
       .limit(60),
     supabase
@@ -37,18 +37,33 @@ export default async function AdminDashboard() {
       .from('courses')
       .select('prix_final, prix_estime, statut')
       .gte('date_prevue', monthStart.toISOString()),
+    supabase
+      .from('factures')
+      .select('id, numero, montant_ttc, date_echeance, clients(entreprise_nom, type_compte, profiles(prenom, nom))')
+      .in('statut', ['en_attente', 'retard'])
+      .lt('date_echeance', now.toISOString())
+      .order('date_echeance'),
+    // Documents chauffeurs expirés ou expirant dans 30 jours
+    supabase
+      .from('documents_chauffeur')
+      .select('id, type, date_expiration, statut, chauffeur_id, chauffeurs(profiles(prenom, nom))')
+      .in('statut', ['expire', 'bientot_expire'])
+      .order('date_expiration', { ascending: true }),
   ])
 
   const courses: Course[] = coursesRes.data ?? []
+  const docsAlert = (docsAlertRes.data ?? []) as any[]
   const chauffeurs        = chauffeursRes.data ?? []
-  const weekCourses = weekRes.data ?? []
+  const weekCourses  = weekRes.data ?? []
   const monthCourses = monthRes.data ?? []
+  const facturesRetard = facturesRetardRes.data ?? []
 
   // KPIs jour
   const coursesAujourdHui = courses.filter(c => c.date_prevue.startsWith(today))
   const coursesActives    = courses.filter(c => ['en_route', 'prise_en_charge', 'acceptee'].includes(c.statut))
-  const coursesEnAttente  = courses.filter(c => c.statut === 'en_attente')
-  const nonAssignees      = coursesEnAttente.filter(c => !c.chauffeur_id)
+  const coursesEnAttente      = courses.filter(c => c.statut === 'en_attente')
+  const demandesCollaborateur = coursesEnAttente.filter(c => !!(c as any).collaborateur_id && !c.chauffeur_id)
+  const nonAssignees          = coursesEnAttente.filter(c => !c.chauffeur_id)
   const caJour = coursesAujourdHui
     .filter(c => c.statut === 'terminee')
     .reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
@@ -132,8 +147,68 @@ export default async function AdminDashboard() {
           ))}
         </div>
 
-        {/* Alert dispatch */}
-        {nonAssignees.length > 0 && (
+        {/* Demandes collaborateur */}
+        {demandesCollaborateur.length > 0 && (
+          <div style={{
+            background: 'rgba(77,142,212,.06)', border: '1px solid rgba(77,142,212,.2)',
+            borderRadius: 12, padding: '14px 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blu)', display: 'inline-block' }} />
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--blu)' }}>
+                  {demandesCollaborateur.length} demande{demandesCollaborateur.length > 1 ? 's' : ''} collaborateur à dispatcher
+                </span>
+              </div>
+              <a href="/admin/courses" style={{
+                padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)',
+                color: 'var(--blu)', textDecoration: 'none',
+              }}>
+                Voir tout →
+              </a>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {demandesCollaborateur.slice(0, 4).map((c: any) => {
+                const collab = c.collaborateurs
+                const client = c.clients
+                const collabNom = collab?.profiles ? `${collab.profiles.prenom} ${collab.profiles.nom}` : '—'
+                const entreprise = client?.entreprise_nom ?? '—'
+                const date = new Date(c.date_prevue)
+                return (
+                  <a key={c.id} href={`/admin/courses/${c.id}`} style={{
+                    display: 'grid', gridTemplateColumns: '1fr 160px 120px',
+                    background: 'var(--elevated)', borderRadius: 8, padding: '10px 14px',
+                    textDecoration: 'none', alignItems: 'center', gap: 12,
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>
+                        {c.adresse_depart.split(',')[0]}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>
+                        → {c.adresse_arrivee.split(',')[0]}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, color: 'var(--t1)' }}>{collabNom}</div>
+                      <div style={{ fontSize: 10, color: 'var(--gold)' }}>{entreprise}</div>
+                    </div>
+                    <div style={{
+                      fontFamily: 'var(--font-jetbrains), monospace',
+                      fontSize: 10, color: 'var(--t3)', textAlign: 'right',
+                    }}>
+                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Alert dispatch courses sans chauffeur (hors demandes collab) */}
+        {nonAssignees.filter((c: any) => !c.collaborateur_id).length > 0 && (
           <div style={{
             background: 'rgba(232,160,48,.06)', border: '1px solid rgba(232,160,48,.2)',
             borderRadius: 12, padding: '14px 20px',
@@ -143,10 +218,10 @@ export default async function AdminDashboard() {
               <span style={{ fontSize: 16 }}>⚠</span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--amb)' }}>
-                  {nonAssignees.length} course{nonAssignees.length > 1 ? 's' : ''} en attente sans chauffeur
+                  {nonAssignees.filter((c: any) => !c.collaborateur_id).length} course{nonAssignees.filter((c: any) => !c.collaborateur_id).length > 1 ? 's' : ''} en attente sans chauffeur
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 2 }}>
-                  {nonAssignees.map(c => c.adresse_depart.split(',')[0]).join(' · ')}
+                  {nonAssignees.filter((c: any) => !c.collaborateur_id).map(c => c.adresse_depart.split(',')[0]).join(' · ')}
                 </div>
               </div>
             </div>
@@ -157,6 +232,132 @@ export default async function AdminDashboard() {
             }}>
               Dispatcher →
             </a>
+          </div>
+        )}
+
+        {/* Factures en retard */}
+        {facturesRetard.length > 0 && (
+          <div style={{
+            background: 'rgba(217,80,80,.06)', border: '1px solid rgba(217,80,80,.2)',
+            borderRadius: 12, padding: '14px 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--red)' }}>
+                  {facturesRetard.length} facture{facturesRetard.length > 1 ? 's' : ''} en retard de paiement
+                </span>
+              </div>
+              <a href="/admin/facturation" style={{
+                padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                background: 'rgba(217,80,80,.12)', border: '1px solid rgba(217,80,80,.3)',
+                color: 'var(--red)', textDecoration: 'none',
+              }}>
+                Voir tout →
+              </a>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {facturesRetard.slice(0, 3).map((f: any) => {
+                const client = f.clients
+                const clientNom = client?.type_compte === 'entreprise'
+                  ? (client.entreprise_nom ?? '—')
+                  : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : '—'
+                const echeance = new Date(f.date_echeance)
+                const joursRetard = Math.floor((now.getTime() - echeance.getTime()) / 86400000)
+                return (
+                  <a key={f.id} href={`/admin/facturation/${f.id}`} style={{
+                    display: 'grid', gridTemplateColumns: '120px 1fr 100px 80px',
+                    background: 'var(--elevated)', borderRadius: 8, padding: '10px 14px',
+                    textDecoration: 'none', alignItems: 'center', gap: 12,
+                  }}>
+                    <div style={{
+                      fontFamily: 'var(--font-jetbrains), monospace',
+                      fontSize: 11, fontWeight: 600, color: 'var(--gold)',
+                    }}>
+                      {f.numero}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--t1)' }}>{clientNom}</div>
+                    <div style={{
+                      fontFamily: 'var(--font-jetbrains), monospace',
+                      fontSize: 13, color: 'var(--t1)', textAlign: 'right',
+                    }}>
+                      {f.montant_ttc.toFixed(0)} €
+                    </div>
+                    <div style={{
+                      fontSize: 10, color: 'var(--red)', textAlign: 'right', fontWeight: 500,
+                    }}>
+                      +{joursRetard}j
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Documents chauffeurs en alerte */}
+        {docsAlert.length > 0 && (
+          <div style={{
+            background: 'rgba(232,160,48,.05)', border: '1px solid rgba(232,160,48,.18)',
+            borderRadius: 12, padding: '14px 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amb)', display: 'inline-block' }} />
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--amb)' }}>
+                  {docsAlert.length} document{docsAlert.length > 1 ? 's' : ''} expiré{docsAlert.length > 1 ? 's' : ''} ou bientôt
+                </span>
+              </div>
+              <a href="/admin/chauffeurs" style={{
+                padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                background: 'rgba(232,160,48,.12)', border: '1px solid rgba(232,160,48,.25)',
+                color: 'var(--amb)', textDecoration: 'none',
+              }}>
+                Chauffeurs →
+              </a>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {docsAlert.slice(0, 5).map((d: any) => {
+                const chauffeur = d.chauffeurs
+                const nom = chauffeur?.profiles
+                  ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
+                  : '—'
+                const isExpire = d.statut === 'expire'
+                const expDate = new Date(d.date_expiration)
+                const DOC_LABELS: Record<string, string> = {
+                  carte_vtc: 'Carte VTC', assurance_rc: 'Assurance RC',
+                  visite_medicale: 'Visite médicale', permis: 'Permis',
+                }
+                return (
+                  <a key={d.id} href={`/admin/chauffeurs/${d.chauffeur_id}`} style={{
+                    display: 'grid', gridTemplateColumns: '1fr 140px 100px',
+                    background: 'var(--elevated)', borderRadius: 8, padding: '9px 14px',
+                    textDecoration: 'none', alignItems: 'center', gap: 12,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 600,
+                        color: isExpire ? 'var(--red)' : 'var(--amb)',
+                        background: isExpire ? 'rgba(217,80,80,.12)' : 'rgba(232,160,48,.12)',
+                        border: `1px solid ${isExpire ? 'rgba(217,80,80,.25)' : 'rgba(232,160,48,.25)'}`,
+                      }}>
+                        {isExpire ? 'Expiré' : 'Bientôt'}
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{nom}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+                      {DOC_LABELS[d.type] ?? d.type}
+                    </div>
+                    <div style={{
+                      fontSize: 11, color: isExpire ? 'var(--red)' : 'var(--amb)',
+                      fontFamily: 'var(--font-jetbrains), monospace', textAlign: 'right',
+                    }}>
+                      {expDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
           </div>
         )}
 

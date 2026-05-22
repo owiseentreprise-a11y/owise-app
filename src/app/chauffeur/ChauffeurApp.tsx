@@ -22,20 +22,38 @@ export default function ChauffeurApp({
   userId,
   profile,
   courses,
+  coursesAVenir,
 }: {
   userId: string
   profile: any
   courses: any[]
+  coursesAVenir: any[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [dispo, setDispo] = useState<StatutChauffeur>(profile?.chauffeurs?.statut ?? 'hors_ligne')
 
-  // Auto-refresh toutes les 20 secondes
+  // Realtime : refresh immédiat à chaque changement de course assignée
   useEffect(() => {
-    const interval = setInterval(() => router.refresh(), 20_000)
-    return () => clearInterval(interval)
-  }, [router])
+    const supabase = createClient()
+    const channel = supabase
+      .channel('chauffeur-courses-rt')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'courses',
+        filter: `chauffeur_id=eq.${userId}`,
+      }, () => router.refresh())
+      .subscribe()
+
+    // Fallback polling 60s si la WebSocket tombe
+    const fallback = setInterval(() => router.refresh(), 60_000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(fallback)
+    }
+  }, [userId, router])
 
   // Séparer course entrante (en_attente) des courses actives
   const pendingCourse = courses.find(c => c.statut === 'en_attente') ?? null
@@ -51,6 +69,17 @@ export default function ChauffeurApp({
     setDispo(next)
     const supabase = createClient()
     await supabase.from('chauffeurs').update({ statut: next }).eq('id', userId)
+  }
+
+  async function deconnecter() {
+    const supabase = createClient()
+    await supabase.from('chauffeurs').update({ statut: 'hors_ligne' }).eq('id', userId)
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  function mapsUrl(adresse: string) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adresse)}`
   }
 
   async function accepterCourse(courseId: string) {
@@ -130,7 +159,24 @@ export default function ChauffeurApp({
               </div>
             </div>
           </div>
-          {/* Toggle dispo */}
+          {/* Déconnexion + Toggle dispo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={deconnecter}
+            title="Se déconnecter"
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'var(--elevated)',
+              border: '1px solid var(--t3)',
+              color: 'var(--t2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </button>
           <button
             onClick={toggleDispo}
             disabled={dispo === 'en_course'}
@@ -153,6 +199,7 @@ export default function ChauffeurApp({
           >
             {dispo === 'disponible' ? '● Disponible' : dispo === 'en_course' ? '⚡ En course' : '○ Hors ligne'}
           </button>
+          </div>
         </div>
       </div>
 
@@ -199,11 +246,11 @@ export default function ChauffeurApp({
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--grn)', marginTop: 4, flexShrink: 0 }} />
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{pendingCourse.adresse_depart}</div>
+                  <a href={mapsUrl(pendingCourse.adresse_depart)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', textDecoration: 'none' }}>{pendingCourse.adresse_depart}</a>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, border: '2px solid var(--red)', marginTop: 4, flexShrink: 0 }} />
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{pendingCourse.adresse_arrivee}</div>
+                  <a href={mapsUrl(pendingCourse.adresse_arrivee)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', textDecoration: 'none' }}>{pendingCourse.adresse_arrivee}</a>
                 </div>
               </div>
 
@@ -318,11 +365,11 @@ export default function ChauffeurApp({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--grn)', marginTop: 4, flexShrink: 0 }} />
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{activeCourse.adresse_depart}</div>
+                    <a href={mapsUrl(activeCourse.adresse_depart)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', textDecoration: 'none' }}>{activeCourse.adresse_depart}</a>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     <div style={{ width: 8, height: 8, borderRadius: 2, border: '2px solid var(--red)', marginTop: 4, flexShrink: 0 }} />
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{activeCourse.adresse_arrivee}</div>
+                    <a href={mapsUrl(activeCourse.adresse_arrivee)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', textDecoration: 'none' }}>{activeCourse.adresse_arrivee}</a>
                   </div>
                 </div>
               </div>
@@ -406,7 +453,7 @@ export default function ChauffeurApp({
         ) : null}
 
         {/* ── Stats ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
           <div style={{
             background: 'var(--surface)', border: '1px solid var(--gb)',
             borderRadius: 12, padding: '14px 16px',
@@ -430,6 +477,69 @@ export default function ChauffeurApp({
             </div>
           </div>
         </div>
+
+        {/* ── Prochaines courses ── */}
+        {coursesAVenir.length > 0 && (
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--gb)',
+            borderRadius: 16, overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '12px 16px',
+              borderBottom: '1px solid rgba(201,168,76,.07)',
+              fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase',
+              color: 'var(--t2)', fontWeight: 500,
+            }}>
+              Prochaines courses ({coursesAVenir.length})
+            </div>
+            {coursesAVenir.map((c: any) => {
+              const client = c.clients
+              const collab = c.collaborateurs
+              const clientNom = client?.type_compte === 'entreprise'
+                ? (client.entreprise_nom ?? '—')
+                : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : '—'
+              const collabNom = collab?.profiles
+                ? `${collab.profiles.prenom} ${collab.profiles.nom}`
+                : null
+              const date = new Date(c.date_prevue)
+              const isToday = date.toDateString() === new Date().toDateString()
+              return (
+                <div key={c.id} style={{
+                  padding: '12px 16px',
+                  borderBottom: '1px solid rgba(201,168,76,.04)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                    <div style={{
+                      fontFamily: 'var(--font-jetbrains), monospace',
+                      fontSize: 14, fontWeight: 600,
+                      color: isToday ? 'var(--gold)' : 'var(--t1)',
+                    }}>
+                      {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      {isToday ? "Aujourd'hui" : date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                    </div>
+                  </div>
+                  <a href={mapsUrl(c.adresse_depart)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', textDecoration: 'none', marginBottom: 2, display: 'block' }}>
+                    {c.adresse_depart.split(',')[0]}
+                  </a>
+                  <a href={mapsUrl(c.adresse_arrivee)} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: 'var(--t2)', textDecoration: 'none', marginBottom: collabNom ? 4 : 0, display: 'block' }}>
+                    → {c.adresse_arrivee.split(',')[0]}
+                  </a>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                    <span style={{ fontSize: 10, color: 'var(--t2)' }}>{clientNom}</span>
+                    {collabNom && (
+                      <span style={{ fontSize: 10, color: 'var(--t3)' }}>↳ {collabNom}</span>
+                    )}
+                    <span style={{ fontSize: 10, color: 'var(--t3)', marginLeft: 'auto' }}>
+                      {c.nb_passagers} pass.
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
