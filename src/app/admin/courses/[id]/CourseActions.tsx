@@ -1,0 +1,389 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes } from './actions'
+import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
+
+const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
+  en_attente:      ['acceptee', 'annulee'],
+  acceptee:        ['en_route', 'en_attente', 'annulee'],
+  en_route:        ['prise_en_charge', 'annulee'],
+  prise_en_charge: ['terminee', 'annulee'],
+  terminee:        [],
+  annulee:         [],
+}
+
+const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: string }> = {
+  en_attente:      { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)' },
+  acceptee:        { color: 'var(--blu)', bg: 'rgba(74,142,208,.12)', border: 'rgba(74,142,208,.25)' },
+  en_route:        { color: 'var(--blu)', bg: 'rgba(74,142,208,.12)', border: 'rgba(74,142,208,.25)' },
+  prise_en_charge: { color: 'var(--grn)', bg: 'rgba(60,196,124,.12)', border: 'rgba(60,196,124,.25)' },
+  terminee:        { color: 'var(--t2)',  bg: 'var(--elevated)',     border: 'var(--t3)' },
+  annulee:         { color: 'var(--red)', bg: 'rgba(217,80,80,.12)', border: 'rgba(217,80,80,.25)' },
+}
+
+const STATUT_ORDER: StatutCourse[] = ['en_attente', 'acceptee', 'en_route', 'prise_en_charge', 'terminee']
+
+export default function CourseActions({
+  course,
+  chauffeurs,
+}: {
+  course: {
+    id: string
+    statut: StatutCourse
+    chauffeur_id: string | null
+    prix_estime: number | null
+    prix_final: number | null
+    notes: string | null
+    type_vehicule: TypeVehicule
+    nb_passagers: number
+    date_prevue: string
+    date_debut: string | null
+    date_fin: string | null
+    created_at: string
+    adresse_depart: string
+    adresse_arrivee: string
+    client: { nom: string; prenom: string; telephone: string | null; entreprise: string | null } | null
+    chauffeur: { nom: string; prenom: string; telephone: string | null; vehicule: string } | null
+  }
+  chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string }>
+}) {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [selectedChauffeur, setSelectedChauffeur] = useState(course.chauffeur_id ?? '')
+  const [prixInput, setPrixInput] = useState(course.prix_final?.toString() ?? course.prix_estime?.toString() ?? '')
+  const [notesInput, setNotesInput] = useState(course.notes ?? '')
+  const [notesSaved, setNotesSaved] = useState(false)
+
+  const s = STATUT_STYLE[course.statut]
+  const transitions = STATUT_TRANSITIONS[course.statut]
+  const isTerminal = transitions.length === 0
+
+  function run(fn: () => Promise<void>) {
+    startTransition(async () => {
+      await fn()
+      router.refresh()
+    })
+  }
+
+  const NEXT_LABEL: Partial<Record<StatutCourse, string>> = {
+    acceptee:        'Marquer acceptée',
+    en_route:        'Chauffeur en route',
+    prise_en_charge: 'Client à bord',
+    terminee:        'Terminer la course',
+    en_attente:      'Remettre en attente',
+    annulee:         'Annuler la course',
+  }
+
+  // Bouton principal = premier statut dans les transitions (hors annulée)
+  const mainNext = transitions.find(t => t !== 'annulee') ?? null
+  const canCancel = transitions.includes('annulee')
+  const canReset = transitions.includes('en_attente') && course.statut !== 'en_attente'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* === STATUT === */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--gb)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 14 }}>
+          Statut de la course
+        </div>
+
+        {/* Timeline */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 18, gap: 0 }}>
+          {STATUT_ORDER.map((s_step, i) => {
+            const idx = STATUT_ORDER.indexOf(course.statut)
+            const done = course.statut === 'annulee' ? false : i < idx
+            const active = course.statut === 'annulee' ? false : i === idx
+            return (
+              <div key={s_step} style={{ display: 'flex', alignItems: 'center', flex: i < 4 ? 1 : 'none' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: done ? 'var(--grn)' : active ? STATUT_STYLE[s_step].color : 'var(--elevated)',
+                    border: `2px solid ${done ? 'var(--grn)' : active ? STATUT_STYLE[s_step].color : 'var(--t3)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 9, fontWeight: 700, color: done || active ? 'var(--base)' : 'var(--t3)',
+                  }}>
+                    {done ? '✓' : i + 1}
+                  </div>
+                  <div style={{ fontSize: 8, color: done || active ? 'var(--t1)' : 'var(--t3)', textAlign: 'center', letterSpacing: '.02em' }}>
+                    {['Attente', 'Acceptée', 'En route', 'À bord', 'Terminée'][i]}
+                  </div>
+                </div>
+                {i < 4 && (
+                  <div style={{
+                    flex: 1, height: 2, margin: '0 4px', marginBottom: 16,
+                    background: done ? 'var(--grn)' : 'var(--elevated)',
+                  }} />
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {course.statut === 'annulee' && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8,
+            background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)',
+            color: 'var(--red)', fontSize: 12, fontWeight: 500,
+            marginBottom: 14,
+          }}>
+            Course annulée
+          </div>
+        )}
+
+        {/* Bouton avancement principal */}
+        {mainNext && (
+          <button
+            onClick={() => run(() => changerStatut(course.id, mainNext, course.chauffeur_id))}
+            disabled={pending}
+            style={{
+              width: '100%', padding: '12px',
+              borderRadius: 8, border: 'none',
+              background: STATUT_STYLE[mainNext].color,
+              color: 'var(--base)',
+              fontSize: 12, fontWeight: 600, cursor: pending ? 'wait' : 'pointer',
+              opacity: pending ? .6 : 1,
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+              marginBottom: canCancel || canReset ? 8 : 0,
+            }}
+          >
+            {NEXT_LABEL[mainNext] ?? `→ ${STATUT_COURSE_LABEL[mainNext]}`}
+          </button>
+        )}
+
+        {/* Remettre en attente */}
+        {canReset && course.statut === 'acceptee' && (
+          <button
+            onClick={() => run(() => changerStatut(course.id, 'en_attente', course.chauffeur_id))}
+            disabled={pending}
+            style={{
+              width: '100%', padding: '9px', borderRadius: 8, marginBottom: 8,
+              background: 'var(--elevated)', border: '1px solid var(--t3)',
+              color: 'var(--t2)', fontSize: 11, cursor: pending ? 'wait' : 'pointer',
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+            }}
+          >
+            Remettre en attente
+          </button>
+        )}
+
+        {/* Annuler */}
+        {canCancel && (
+          <button
+            onClick={() => {
+              if (!confirm('Annuler cette course ? Cette action est définitive.')) return
+              run(() => changerStatut(course.id, 'annulee', course.chauffeur_id))
+            }}
+            disabled={pending}
+            style={{
+              width: '100%', padding: '9px', borderRadius: 8,
+              background: 'rgba(217,80,80,.08)', border: '1px solid rgba(217,80,80,.2)',
+              color: 'var(--red)', fontSize: 11, cursor: pending ? 'wait' : 'pointer',
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+            }}
+          >
+            Annuler la course
+          </button>
+        )}
+      </div>
+
+      {/* === CHAUFFEUR === */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--gb)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
+          {course.chauffeur ? 'Chauffeur assigné' : 'Assigner un chauffeur'}
+        </div>
+
+        {course.chauffeur && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 12px', borderRadius: 8,
+            background: 'var(--elevated)', marginBottom: 10,
+          }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.06))',
+              border: '1px solid rgba(201,168,76,.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-cormorant), serif',
+              fontSize: 14, color: 'var(--gold)',
+            }}>
+              {course.chauffeur.prenom[0]}{course.chauffeur.nom[0]}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>
+                {course.chauffeur.prenom} {course.chauffeur.nom}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--t2)' }}>{course.chauffeur.vehicule}</div>
+              {course.chauffeur.telephone && (
+                <a href={`tel:${course.chauffeur.telephone}`} style={{
+                  fontSize: 10, color: 'var(--gold)', textDecoration: 'none',
+                }}>
+                  {course.chauffeur.telephone}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!isTerminal && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <select
+              value={selectedChauffeur}
+              onChange={e => setSelectedChauffeur(e.target.value)}
+              style={{
+                flex: 1, padding: '9px 12px',
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                borderRadius: 8, color: selectedChauffeur ? 'var(--t1)' : 'var(--t3)',
+                fontSize: 12, outline: 'none',
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              <option value="">— Non assigné —</option>
+              {chauffeurs.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.prenom} {c.nom} — {c.vehicule}
+                  {c.statut === 'disponible' ? ' ✓' : c.statut === 'en_course' ? ' (en course)' : ' (hors ligne)'}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => run(() => assignerChauffeur(course.id, selectedChauffeur || null))}
+              disabled={pending || selectedChauffeur === (course.chauffeur_id ?? '')}
+              style={{
+                padding: '9px 14px', borderRadius: 8,
+                background: 'var(--gold)', border: 'none',
+                color: 'var(--base)', fontSize: 12, fontWeight: 600,
+                cursor: pending ? 'wait' : 'pointer',
+                opacity: (pending || selectedChauffeur === (course.chauffeur_id ?? '')) ? .4 : 1,
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {course.chauffeur ? 'Réassigner' : 'Assigner'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* === TARIFICATION === */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--gb)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
+          Tarification
+        </div>
+
+        {course.prix_estime !== null && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>Prix estimé</div>
+            <div style={{
+              fontFamily: 'var(--font-jetbrains), monospace',
+              fontSize: 20, color: 'var(--t2)',
+            }}>
+              {course.prix_estime.toFixed(2)} €
+            </div>
+          </div>
+        )}
+
+        <div>
+          <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 6 }}>Prix final</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <input
+                type="number"
+                min={0}
+                step={0.5}
+                value={prixInput}
+                onChange={e => setPrixInput(e.target.value)}
+                placeholder="0.00"
+                style={{
+                  width: '100%', padding: '9px 30px 9px 12px',
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  borderRadius: 8, color: 'var(--t1)', fontSize: 14,
+                  fontFamily: 'var(--font-jetbrains), monospace',
+                  outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+              <span style={{
+                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                fontSize: 12, color: 'var(--t3)',
+              }}>€</span>
+            </div>
+            <button
+              onClick={() => run(() => setPrixFinal(course.id, prixInput ? parseFloat(prixInput) : null))}
+              disabled={pending}
+              style={{
+                padding: '9px 14px', borderRadius: 8,
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                color: 'var(--t2)', fontSize: 12, cursor: pending ? 'wait' : 'pointer',
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Sauver
+            </button>
+          </div>
+          {course.prix_final !== null && (
+            <div style={{
+              fontFamily: 'var(--font-jetbrains), monospace',
+              fontSize: 22, color: 'var(--gold)', marginTop: 8, fontWeight: 500,
+            }}>
+              {course.prix_final.toFixed(2)} €
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* === NOTES === */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--gb)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 10 }}>
+          Notes internes
+        </div>
+        <textarea
+          value={notesInput}
+          onChange={e => { setNotesInput(e.target.value); setNotesSaved(false) }}
+          rows={4}
+          placeholder="Instructions, références, consignes chauffeur..."
+          style={{
+            width: '100%', padding: '10px 12px',
+            background: 'var(--elevated)', border: '1px solid var(--t3)',
+            borderRadius: 8, color: 'var(--t1)', fontSize: 12,
+            resize: 'vertical', outline: 'none',
+            fontFamily: 'var(--font-dm-sans), sans-serif',
+            boxSizing: 'border-box',
+          }}
+        />
+        <button
+          onClick={() => run(async () => {
+            await modifierNotes(course.id, notesInput)
+            setNotesSaved(true)
+          })}
+          disabled={pending}
+          style={{
+            marginTop: 8, padding: '8px 16px', borderRadius: 7,
+            background: notesSaved ? 'rgba(60,196,124,.15)' : 'var(--elevated)',
+            border: `1px solid ${notesSaved ? 'rgba(60,196,124,.3)' : 'var(--t3)'}`,
+            color: notesSaved ? 'var(--grn)' : 'var(--t2)',
+            fontSize: 11, cursor: pending ? 'wait' : 'pointer',
+            fontFamily: 'var(--font-dm-sans), sans-serif',
+          }}
+        >
+          {notesSaved ? '✓ Sauvegardé' : 'Sauvegarder les notes'}
+        </button>
+      </div>
+    </div>
+  )
+}
