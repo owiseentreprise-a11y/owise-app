@@ -8,13 +8,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') redirect('/login')
+  // Rôle depuis app_metadata (JWT) — pas de query DB
+  if (user.app_metadata?.role !== 'admin') redirect('/login')
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
