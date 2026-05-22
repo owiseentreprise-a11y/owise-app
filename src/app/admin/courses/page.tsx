@@ -16,7 +16,7 @@ export default async function CoursesPage() {
 
   return (
     <>
-      <style>{`.course-row { position: relative; } .course-row:hover { background: rgba(201,168,76,.03); } .course-row-link { position: absolute; inset: 0; z-index: 0; } .course-row > * { position: relative; z-index: 1; }`}</style>
+      <style>{`.course-row:hover { background: rgba(201,168,76,.04); }`}</style>
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
         background: 'rgba(7,7,26,.9)', backdropFilter: 'blur(12px)',
@@ -81,6 +81,7 @@ export default async function CoursesPage() {
                   key={course.id}
                   className="course-row"
                   style={{
+                    position: 'relative',
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 140px 130px 160px 100px',
                     padding: '13px 20px',
@@ -88,26 +89,38 @@ export default async function CoursesPage() {
                     alignItems: 'center',
                   }}
                 >
-                  <a href={`/admin/courses/${course.id}`} className="course-row-link" aria-label="Voir la course" />
-                  <div>
+                  {/* Lien invisible qui couvre toute la ligne */}
+                  <a
+                    href={`/admin/courses/${course.id}`}
+                    aria-label="Voir la course"
+                    style={{
+                      position: 'absolute', inset: 0, zIndex: 1,
+                    }}
+                  />
+                  <div style={{ position: 'relative', zIndex: 2 }}>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
                       {course.adresse_depart.split(',')[0]}
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--t2)' }}>→ {course.adresse_arrivee.split(',')[0]}</div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--t2)' }}>{clientNom}</div>
-                  <div style={{ fontSize: 12, color: chauffeur ? 'var(--t2)' : 'var(--t3)' }}>{chauffeurNom}</div>
+                  <div style={{ fontSize: 12, color: 'var(--t2)', position: 'relative', zIndex: 2 }}>{clientNom}</div>
+                  <div style={{ fontSize: 12, color: chauffeur ? 'var(--t2)' : 'var(--t3)', position: 'relative', zIndex: 2 }}>{chauffeurNom}</div>
                   <div style={{
                     fontFamily: 'var(--font-jetbrains), monospace',
                     fontSize: 11, color: 'var(--t2)',
+                    position: 'relative', zIndex: 2,
                   }}>
                     {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} · {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  <UpdateStatutButton courseId={course.id} statut={course.statut} />
+                  {/* Bouton statut au-dessus du lien */}
+                  <div style={{ position: 'relative', zIndex: 3 }}>
+                    <UpdateStatutButton courseId={course.id} statut={course.statut} />
+                  </div>
                   <div style={{
                     textAlign: 'right',
                     fontFamily: 'var(--font-jetbrains), monospace',
                     fontSize: 13, color: 'var(--gold)',
+                    position: 'relative', zIndex: 2,
                   }}>
                     {course.prix_final ?? course.prix_estime ? `${(course.prix_final ?? course.prix_estime)!.toFixed(0)} €` : '—'}
                   </div>
