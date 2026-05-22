@@ -37,7 +37,9 @@ export default function UpdateStatutButton({
   const router = useRouter()
   const nextStatut = PROGRESSION[statut]
 
-  async function handleClick() {
+  async function handleClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
     if (!nextStatut) return
     startTransition(async () => {
       const supabase = createClient()
@@ -61,7 +63,7 @@ export default function UpdateStatutButton({
       </span>
       {nextStatut && (
         <button
-          onClick={handleClick}
+          onClick={handleClick as any}
           disabled={pending}
           title={`→ ${STATUT_COURSE_LABEL[nextStatut]}`}
           style={{

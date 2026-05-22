@@ -104,9 +104,7 @@ export default async function CoursesPage() {
                   }}>
                     {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} · {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  <div onClick={e => e.preventDefault()}>
-                    <UpdateStatutButton courseId={course.id} statut={course.statut} />
-                  </div>
+                  <UpdateStatutButton courseId={course.id} statut={course.statut} />
                   <div style={{
                     textAlign: 'right',
                     fontFamily: 'var(--font-jetbrains), monospace',
