@@ -4,6 +4,10 @@ import type { NextRequest } from 'next/server'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.app_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
   const { searchParams } = new URL(req.url)
   const from = searchParams.get('from')
   const to   = searchParams.get('to')

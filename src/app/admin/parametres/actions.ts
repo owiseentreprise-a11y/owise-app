@@ -1,10 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 
 export async function sauvegarderParametres(formData: FormData): Promise<{ error?: string }> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
 
   const payload = {
     societe_nom:            (formData.get('societe_nom') as string) || null,

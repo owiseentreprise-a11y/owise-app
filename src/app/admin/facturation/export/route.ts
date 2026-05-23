@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.app_metadata?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const { data: factures } = await supabase
     .from('factures')

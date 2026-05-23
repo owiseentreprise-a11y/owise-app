@@ -1,13 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 
 export async function addCollaborateur(
   clientId: string,
   data: { email: string; password: string; nom: string; prenom: string; telephone: string; poste: string },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   const { error } = await supabase.rpc('create_collaborateur_account', {
     p_client_id:  clientId,
     p_email:      data.email,
@@ -22,7 +22,7 @@ export async function addCollaborateur(
 }
 
 export async function deleteCollaborateur(clientId: string, collabId: string): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('collaborateurs').delete().eq('id', collabId)
   revalidatePath(`/admin/clients/${clientId}`)
 }
@@ -31,7 +31,7 @@ export async function updateProfile(
   id: string,
   data: { nom: string; prenom: string; telephone: string },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('profiles').update(data).eq('id', id)
   revalidatePath(`/admin/clients/${id}`)
 }
@@ -40,7 +40,7 @@ export async function updateCompte(
   id: string,
   data: { type_compte: string; entreprise_nom: string; adresse_facturation: string },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('clients').update({
     type_compte: data.type_compte,
     entreprise_nom: data.entreprise_nom || null,

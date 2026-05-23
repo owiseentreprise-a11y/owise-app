@@ -1,19 +1,18 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 import type { StatutCourse } from '@/lib/types'
 import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase
     .from('courses')
     .update({ chauffeur_id: chauffeurId || null })
     .eq('id', courseId)
 
-  // Email au chauffeur si assignation (pas si désassignation)
   if (chauffeurId) {
     const [courseRes, chauffeurProfileRes, chauffeurEmail] = await Promise.all([
       supabase.from('courses')
@@ -29,9 +28,9 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
       const clientNom = client?.type_compte === 'entreprise'
         ? (client.entreprise_nom ?? '')
         : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : ''
-      const refCourse = new Date(course.date_prevue).getTime().toString(36).toUpperCase().slice(-6)
+      const refCourse = courseId.slice(-6).toUpperCase()
       await envoyerNotificationChauffeur({
-        chauffeurEmail: chauffeurEmail,
+        chauffeurEmail,
         chauffeurPrenom: chauffeurProfile?.prenom ?? '',
         adresseDepart: course.adresse_depart,
         adresseArrivee: course.adresse_arrivee,
@@ -51,13 +50,12 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
 }
 
 export async function changerStatut(courseId: string, statut: StatutCourse, chauffeurId: string | null): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   const updates: Record<string, unknown> = { statut }
   if (statut === 'en_route') updates.date_debut = new Date().toISOString()
   if (statut === 'terminee') updates.date_fin = new Date().toISOString()
   await supabase.from('courses').update(updates).eq('id', courseId)
 
-  // Libérer le chauffeur si annulation ou remise en attente
   if (chauffeurId && (statut === 'annulee' || statut === 'en_attente')) {
     await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', chauffeurId)
   }
@@ -65,7 +63,6 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
     await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', chauffeurId)
   }
 
-  // Emails selon le nouveau statut
   if (statut === 'terminee' || statut === 'annulee') {
     const { data: course } = await supabase
       .from('courses')
@@ -75,7 +72,7 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
     if (course) {
       const client = (course as any).clients
       const chauffeurProfile = (course as any).chauffeurs?.profiles
-      const refCourse = new Date(course.date_prevue).getTime().toString(36).toUpperCase().slice(-6)
+      const refCourse = courseId.slice(-6).toUpperCase()
       const clientPrenom = client?.profiles?.prenom ?? (client?.entreprise_nom ?? '')
 
       if (course.client_id) {
@@ -102,7 +99,6 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
         }
       }
 
-      // Notifier le chauffeur de l'annulation
       if (statut === 'annulee' && chauffeurId) {
         const chauffeurEmail = await getUserEmail(chauffeurId)
         if (chauffeurEmail) {
@@ -124,14 +120,14 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
 }
 
 export async function setPrixFinal(courseId: string, prix: number | null): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('courses').update({ prix_final: prix }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin')
 }
 
 export async function modifierNotes(courseId: string, notes: string): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('courses').update({ notes: notes || null }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
 }

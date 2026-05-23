@@ -2,10 +2,10 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 
 export async function createClientAccount(formData: FormData): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
 
   const email               = formData.get('email') as string
   const password            = formData.get('password') as string

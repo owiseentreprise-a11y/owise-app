@@ -14,6 +14,8 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const note    = (formData.get('note') as string) || null
 
   if (!depart || !arrivee || !date) redirect('/espace-client?error=champs-manquants')
+  const dateParsed = new Date(date)
+  if (isNaN(dateParsed.getTime())) redirect('/espace-client?error=champs-manquants')
 
   const isCollab = user.app_metadata?.role === 'collaborateur'
 

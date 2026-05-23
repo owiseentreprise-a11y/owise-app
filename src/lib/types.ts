@@ -81,6 +81,7 @@ export interface FactureRow {
   numero: string
   statut: StatutFacture
   montant_ht: number
+  montant_tva: number | null
   montant_ttc: number
   date_emission: string
   date_echeance: string | null

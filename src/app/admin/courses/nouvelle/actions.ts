@@ -1,12 +1,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 
 export async function creerCourseAction(formData: FormData): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
 
   const adresse_depart  = formData.get('adresse_depart') as string
   const adresse_arrivee = formData.get('adresse_arrivee') as string
@@ -25,7 +25,7 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
     redirect('/admin/courses/nouvelle?error=Champs+obligatoires+manquants')
   }
 
-  const { error } = await supabase.from('courses').insert({
+  const { error, data: newCourse } = await supabase.from('courses').insert({
     adresse_depart,
     adresse_arrivee,
     date_prevue,
@@ -38,11 +38,10 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
     collaborateur_id,
     sous_traitant_id,
     statut: 'en_attente',
-  })
+  }).select('id').single()
 
   if (error) redirect(`/admin/courses/nouvelle?error=${encodeURIComponent(error.message)}`)
 
-  // Emails — on récupère les infos client pour la notification
   if (client_id) {
     const [emailResult, profileRes, clientRes] = await Promise.all([
       getUserEmail(client_id),
@@ -54,7 +53,7 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
     const clientNom = clientRes.data?.type_compte === 'entreprise'
       ? (clientRes.data.entreprise_nom ?? prenom)
       : `${prenom} ${profileRes.data?.nom ?? ''}`.trim()
-    const refCourse = new Date(date_prevue).getTime().toString(36).toUpperCase().slice(-6)
+    const refCourse = (newCourse?.id ?? '').slice(-6).toUpperCase()
 
     await Promise.all([
       email ? envoyerConfirmationClient({

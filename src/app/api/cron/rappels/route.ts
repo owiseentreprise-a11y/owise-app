@@ -13,7 +13,6 @@ export async function GET(req: Request) {
 
   const supabase = createAdminClient()
 
-  // Courses prévues demain (entre 00:00 et 23:59 demain)
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   const from = new Date(tomorrow); from.setHours(0, 0, 0, 0)
@@ -35,55 +34,60 @@ export async function GET(req: Request) {
     return NextResponse.json({ sent: 0, message: 'Aucune course demain' })
   }
 
+  // Récupère tous les emails en parallèle (évite N+1 séquentiels)
+  const emailResults = await Promise.all(
+    courses.map(course => Promise.all([
+      course.client_id ? getUserEmail(course.client_id) : Promise.resolve(null),
+      course.chauffeur_id ? getUserEmail(course.chauffeur_id) : Promise.resolve(null),
+    ]))
+  )
+
   let sent = 0
 
-  for (const course of courses) {
+  await Promise.all(courses.map(async (course, i) => {
+    const [clientEmail, chauffeurEmail] = emailResults[i]
     const client = (course as any).clients
     const chauffeur = (course as any).chauffeurs
-    const refCourse = new Date(course.date_prevue).getTime().toString(36).toUpperCase().slice(-6)
+    const refCourse = course.id.slice(-6).toUpperCase()
 
     const clientNom = client?.type_compte === 'entreprise'
       ? (client.entreprise_nom ?? '')
       : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : ''
 
-    // Rappel client
-    if (course.client_id) {
-      const clientEmail = await getUserEmail(course.client_id)
-      if (clientEmail) {
-        await envoyerConfirmationClient({
-          clientEmail,
-          clientPrenom: client?.profiles?.prenom ?? clientNom,
-          adresseDepart: course.adresse_depart,
-          adresseArrivee: course.adresse_arrivee,
-          datePrevue: course.date_prevue,
-          typeVehicule: course.type_vehicule,
-          nbPassagers: course.nb_passagers,
-          refCourse,
-        })
-        sent++
-      }
+    const sends: Promise<void>[] = []
+
+    if (clientEmail) {
+      sends.push(envoyerConfirmationClient({
+        clientEmail,
+        clientPrenom: client?.profiles?.prenom ?? clientNom,
+        adresseDepart: course.adresse_depart,
+        adresseArrivee: course.adresse_arrivee,
+        datePrevue: course.date_prevue,
+        typeVehicule: course.type_vehicule,
+        nbPassagers: course.nb_passagers,
+        refCourse,
+      }))
+      sent++
     }
 
-    // Rappel chauffeur
-    if (course.chauffeur_id) {
-      const chauffeurEmail = await getUserEmail(course.chauffeur_id)
-      if (chauffeurEmail) {
-        await envoyerNotificationChauffeur({
-          chauffeurEmail,
-          chauffeurPrenom: chauffeur?.profiles?.prenom ?? '',
-          adresseDepart: course.adresse_depart,
-          adresseArrivee: course.adresse_arrivee,
-          datePrevue: course.date_prevue,
-          clientNom,
-          clientTel: client?.profiles?.telephone ?? null,
-          nbPassagers: course.nb_passagers,
-          notes: course.notes,
-          refCourse,
-        })
-        sent++
-      }
+    if (chauffeurEmail) {
+      sends.push(envoyerNotificationChauffeur({
+        chauffeurEmail,
+        chauffeurPrenom: chauffeur?.profiles?.prenom ?? '',
+        adresseDepart: course.adresse_depart,
+        adresseArrivee: course.adresse_arrivee,
+        datePrevue: course.date_prevue,
+        clientNom,
+        clientTel: client?.profiles?.telephone ?? null,
+        nbPassagers: course.nb_passagers,
+        notes: course.notes,
+        refCourse,
+      }))
+      sent++
     }
-  }
+
+    await Promise.all(sends)
+  }))
 
   return NextResponse.json({ sent, courses: courses.length })
 }

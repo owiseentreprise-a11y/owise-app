@@ -2,10 +2,10 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 
 export async function creerSousTraitantAction(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
 
   const nom = (formData.get('nom') as string)?.trim()
   if (!nom) redirect('/admin/sous-traitants/nouveau?error=nom-requis')
@@ -25,7 +25,7 @@ export async function creerSousTraitantAction(formData: FormData) {
 }
 
 export async function modifierSousTraitantAction(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   const id = formData.get('id') as string
 
   const { error } = await supabase.from('sous_traitants').update({

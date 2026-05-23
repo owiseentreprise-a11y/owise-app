@@ -1,14 +1,14 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 import type { StatutChauffeur, TypeContrat, TypeVehicule, TypeDocument } from '@/lib/types'
 
 export async function updateProfile(
   id: string,
   data: { nom: string; prenom: string; telephone: string },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('profiles').update(data).eq('id', id)
   revalidatePath(`/admin/chauffeurs/${id}`)
 }
@@ -22,20 +22,20 @@ export async function updateVehicule(
     type_vehicule: TypeVehicule
   },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('chauffeurs').update(data).eq('id', id)
   revalidatePath(`/admin/chauffeurs/${id}`)
   revalidatePath('/admin/chauffeurs')
 }
 
 export async function updateContrat(id: string, type_contrat: TypeContrat): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('chauffeurs').update({ type_contrat }).eq('id', id)
   revalidatePath(`/admin/chauffeurs/${id}`)
 }
 
 export async function updateStatut(id: string, statut: StatutChauffeur): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('chauffeurs').update({ statut }).eq('id', id)
   revalidatePath(`/admin/chauffeurs/${id}`)
   revalidatePath('/admin/chauffeurs')
@@ -46,7 +46,7 @@ export async function addDocument(
   chauffeurId: string,
   data: { type: TypeDocument; date_expiration: string },
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   const expiry = new Date(data.date_expiration)
   const now = new Date()
   const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / 86400000)
@@ -60,7 +60,7 @@ export async function addDocument(
 }
 
 export async function deleteDocument(chauffeurId: string, docId: string): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
   await supabase.from('documents_chauffeur').delete().eq('id', docId)
   revalidatePath(`/admin/chauffeurs/${chauffeurId}`)
 }

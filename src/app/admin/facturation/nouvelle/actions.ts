@@ -1,10 +1,10 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminClient } from '@/lib/supabase/server'
 
 export async function creerFacture(formData: FormData): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await requireAdminClient()
 
   const client_id    = formData.get('client_id') as string
   const montant_ht   = parseFloat(formData.get('montant_ht') as string)
