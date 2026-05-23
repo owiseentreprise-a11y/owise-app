@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
-  const protectedPrefixes = ['/admin', '/chauffeur', '/client']
+  const protectedPrefixes = ['/admin', '/chauffeur', '/espace-client']
   const isProtected = protectedPrefixes.some(p => path.startsWith(p))
 
   // Non connecté → login
@@ -32,23 +32,26 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Connecté → rediriger vers la bonne section selon le rôle (app_metadata, pas de query DB)
   if (user) {
     const role = user.app_metadata?.role as string | undefined
 
+    // Connecté sur /login → rediriger vers la bonne section
     if (path === '/login') {
       if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
       if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
-      return NextResponse.redirect(new URL('/client', request.url))
+      return NextResponse.redirect(new URL('/espace-client', request.url))
     }
 
+    // Protection par rôle sur les sections réservées
     if (isProtected) {
       if (role === 'admin' && !path.startsWith('/admin'))
         return NextResponse.redirect(new URL('/admin', request.url))
       if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
         return NextResponse.redirect(new URL('/chauffeur', request.url))
-      if (role === 'client' && !path.startsWith('/client'))
-        return NextResponse.redirect(new URL('/client', request.url))
+      if (role !== 'admin' && role !== 'chauffeur' && path.startsWith('/admin'))
+        return NextResponse.redirect(new URL('/login', request.url))
+      if (role !== 'admin' && role !== 'chauffeur' && path.startsWith('/chauffeur'))
+        return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
@@ -56,5 +59,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/chauffeur/:path*', '/client/:path*', '/login'],
+  matcher: ['/admin/:path*', '/chauffeur/:path*', '/espace-client/:path*', '/login'],
 }
