@@ -4,7 +4,9 @@ let _stripe: Stripe | null = null
 
 export function getStripe(): Stripe {
   if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    const raw = process.env.STRIPE_SECRET_KEY ?? ''
+    const key = raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw
+    _stripe = new Stripe(key, {
       apiVersion: '2025-01-27.acacia' as any,
     })
   }
