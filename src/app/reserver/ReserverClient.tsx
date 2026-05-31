@@ -442,7 +442,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
         date_prevue:     date,
         type_vehicule:   vehicule,
         nb_passagers:    passagers,
-        prix,
+        prix:            Math.round(prix!),
         nom, prenom, email, telephone,
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
@@ -623,7 +623,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                 </div>
                 {prix !== null ? (
                   <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: '#C9A84C' }}>
-                    {prix.toFixed(0)} €
+                    {Math.round(prix)} €
                   </div>
                 ) : (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
@@ -689,7 +689,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                 {prix !== null && (
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                     <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>Total</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{prix.toFixed(0)} €</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{Math.round(prix)} €</div>
                   </div>
                 )}
               </div>
@@ -739,7 +739,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
-                  Payer {prix !== null ? `${prix.toFixed(0)} €` : ''} — Paiement sécurisé
+                  Payer {prix !== null ? `${Math.round(prix)} €` : ''} — Paiement sécurisé
                 </>
               )}
             </button>

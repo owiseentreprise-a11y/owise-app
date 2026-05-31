@@ -36,6 +36,7 @@ export async function createReservationCheckout(data: {
   params.set('line_items[0][price_data][currency]', 'eur')
   const prixEntier = Math.round(data.prix)
   params.set('line_items[0][price_data][unit_amount]', String(prixEntier * 100))
+  const prixFinal = prixEntier
   params.set('line_items[0][price_data][product_data][name]', `Course VTC — ${label}`)
   params.set('line_items[0][price_data][product_data][description]', `${data.adresse_depart} → ${data.adresse_arrivee}`)
   params.set('line_items[0][quantity]', '1')
@@ -47,7 +48,7 @@ export async function createReservationCheckout(data: {
   params.set('metadata[date_prevue]', data.date_prevue)
   params.set('metadata[type_vehicule]', data.type_vehicule)
   params.set('metadata[nb_passagers]', String(data.nb_passagers))
-  params.set('metadata[prix]', String(data.prix))
+  params.set('metadata[prix]', String(prixFinal))
   params.set('metadata[nom]', data.nom)
   params.set('metadata[prenom]', data.prenom)
   params.set('metadata[email]', data.email)
