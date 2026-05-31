@@ -610,7 +610,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                 <div>
                   <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499' }}>Prix estimé</div>
                   <div style={{ fontSize: 10, color: '#3F3F5A', marginTop: 3 }}>
-                    {useForfait
+                    {useForfait && zoneDepart && zoneArrivee
                       ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
                       : distanceKm !== null
                         ? `${distanceKm} km · ${labelVehicule}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
