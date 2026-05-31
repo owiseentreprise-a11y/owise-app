@@ -304,6 +304,29 @@ export async function envoyerLienPaiementClient(params: {
   await send(clientEmail, `Facture ${numeroFacture} – ${montantTTC.toFixed(2)} € à régler`, html)
 }
 
+// ── 6b. Réinitialisation mot de passe ────────────────────────────────────────
+
+export async function envoyerResetPassword(params: { email: string; lien: string }) {
+  const { email, lien } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Réinitialisation de votre mot de passe</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Vous avez demandé à réinitialiser votre mot de passe OWISE.<br>
+      Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+    </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${lien}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Réinitialiser mon mot de passe →
+      </a>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Ce lien expire dans 1 heure. Si vous n'avez pas fait cette demande, ignorez cet email.
+    </p>
+  `)
+  await send(email, 'Réinitialisation de votre mot de passe OWISE', html)
+}
+
 // ── 6. Annulation ────────────────────────────────────────────────────────────
 
 export async function envoyerAnnulation(params: {

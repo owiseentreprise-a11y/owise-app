@@ -2,6 +2,8 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { envoyerResetPassword } from '@/lib/email'
 
 export async function loginAction(formData: FormData) {
   const supabase = await createClient()
@@ -31,16 +33,26 @@ export async function logoutAction() {
 }
 
 export async function resetPasswordAction(formData: FormData) {
-  const supabase = await createClient()
   const email = formData.get('email') as string
   if (!email) redirect('/login/reset-password?error=email-requis')
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/login/update-password`,
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const admin  = createAdminClient()
+
+  // Générer le lien de reset via Supabase Admin
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${origin}/login/update-password` },
   })
 
-  if (error) redirect('/login/reset-password?error=envoi-echoue')
+  if (error || !data?.properties?.action_link) {
+    // L'email n'existe pas ou autre erreur — on fait semblant d'envoyer pour ne pas révéler les comptes
+    redirect('/login/reset-password?success=1')
+  }
+
+  // Envoyer un email brandé Owise via Resend
+  await envoyerResetPassword({ email, lien: data.properties.action_link })
   redirect('/login/reset-password?success=1')
 }
 

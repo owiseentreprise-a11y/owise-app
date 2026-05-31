@@ -43,8 +43,9 @@ export async function clientRegisterAction(formData: FormData) {
   })
 
   if (createErr) {
-    const code = createErr.message.includes('already registered') ? 'email-deja-utilise' : 'erreur-creation'
-    redirect(`/client-login?tab=register&error=${code}`)
+    const msg = createErr.message.toLowerCase()
+    const isDuplicate = msg.includes('already') || msg.includes('duplicate') || msg.includes('exists') || msg.includes('registered')
+    redirect(`/client-login?tab=register&error=${isDuplicate ? 'email-deja-utilise' : 'erreur-creation'}`)
   }
 
   const userId = newUser.user?.id
