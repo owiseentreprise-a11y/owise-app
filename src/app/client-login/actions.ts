@@ -29,7 +29,7 @@ export async function clientResetPasswordAction(formData: FormData) {
   const { data, error } = await admin.auth.admin.generateLink({
     type: 'recovery',
     email,
-    options: { redirectTo: `${origin}/login/update-password` },
+    options: { redirectTo: `${origin}/client-login/update-password` },
   })
 
   if (!error && data?.properties?.action_link) {
