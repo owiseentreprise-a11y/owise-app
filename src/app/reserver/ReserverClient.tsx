@@ -345,6 +345,28 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
 
   const [depart,    setDepart]   = useState<AdresseVal>({ label: searchParams.get('depart') || '', codePostal: '' })
   const [arrivee,   setArrivee]  = useState<AdresseVal>({ label: searchParams.get('arrivee') || '', codePostal: '' })
+
+  // Auto-résolution des adresses pré-remplies depuis l'URL
+  useEffect(() => {
+    async function resolve(label: string, setter: (v: AdresseVal) => void) {
+      if (label.length < 3) return
+      try {
+        const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(label)}&limit=1&autocomplete=0`)
+        const json = await res.json()
+        const f    = json.features?.[0]
+        if (f) setter({
+          label:      f.properties.label,
+          codePostal: f.properties.postcode ?? '',
+          lat:        f.geometry.coordinates[1],
+          lng:        f.geometry.coordinates[0],
+        })
+      } catch {}
+    }
+    const dep = searchParams.get('depart')
+    const arr = searchParams.get('arrivee')
+    if (dep) resolve(dep, setDepart)
+    if (arr) resolve(arr, setArrivee)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [date,      setDate]     = useState(() => {
     const d = searchParams.get('date'), t = searchParams.get('time')
     return d && t ? `${d}T${t}` : d ? `${d}T09:00` : ''
