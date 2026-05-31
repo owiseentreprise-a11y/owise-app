@@ -433,7 +433,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   function handlePayer() {
     if (!nom.trim() || !prenom.trim())        return setStep2Error('Nom et prénom requis.')
     if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
-    if (!zoneDepart || !zoneArrivee || prix === null) return setStep2Error('Erreur de tarification.')
+    if (prix === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
     startTransition(() => createReservationCheckout({
       adresse_depart:  depart.label,
@@ -443,8 +443,8 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
       nb_passagers:    passagers,
       prix,
       nom, prenom, email, telephone,
-      zone_depart_id:  zoneDepart.id,
-      zone_arrivee_id: zoneArrivee.id,
+      zone_depart_id:  zoneDepart?.id ?? '',
+      zone_arrivee_id: zoneArrivee?.id ?? '',
     }))
   }
 
