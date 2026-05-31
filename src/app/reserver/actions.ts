@@ -16,7 +16,7 @@ export async function createReservationCheckout(data: {
   telephone: string
   zone_depart_id: string
   zone_arrivee_id: string
-}): Promise<void> {
+}): Promise<{ error?: string } | void> {
   const stripe = getStripe()
 
   const label: Record<string, string> = {
@@ -61,8 +61,10 @@ export async function createReservationCheckout(data: {
     },
     })
   } catch (err: any) {
+    // redirect() lance une erreur spéciale Next.js — la laisser passer
+    if ((err as any)?.digest?.startsWith('NEXT_REDIRECT')) throw err
     console.error('[Stripe] checkout.sessions.create error:', err?.message ?? err)
-    throw new Error(`Stripe: ${err?.message ?? 'Erreur inconnue'}`)
+    return { error: err?.message ?? String(err) }
   }
 
   redirect(session.url!)

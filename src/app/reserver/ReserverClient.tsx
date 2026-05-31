@@ -435,17 +435,20 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
     if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
     if (prix === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
-    startTransition(() => createReservationCheckout({
-      adresse_depart:  depart.label,
-      adresse_arrivee: arrivee.label,
-      date_prevue:     date,
-      type_vehicule:   vehicule,
-      nb_passagers:    passagers,
-      prix,
-      nom, prenom, email, telephone,
-      zone_depart_id:  zoneDepart?.id ?? '',
-      zone_arrivee_id: zoneArrivee?.id ?? '',
-    }))
+    startTransition(async () => {
+      const result = await createReservationCheckout({
+        adresse_depart:  depart.label,
+        adresse_arrivee: arrivee.label,
+        date_prevue:     date,
+        type_vehicule:   vehicule,
+        nb_passagers:    passagers,
+        prix,
+        nom, prenom, email, telephone,
+        zone_depart_id:  zoneDepart?.id ?? '',
+        zone_arrivee_id: zoneArrivee?.id ?? '',
+      })
+      if (result?.error) setStep2Error(`Erreur Stripe: ${result.error}`)
+    })
   }
 
   const fmtDate = (iso: string) => {
