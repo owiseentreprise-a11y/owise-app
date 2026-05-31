@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { envoyerResetPassword } from '@/lib/email'
 
 export async function clientLoginAction(formData: FormData) {
   const supabase = await createClient()
@@ -16,6 +17,26 @@ export async function clientLoginAction(formData: FormData) {
   if (role === 'admin')    redirect('/admin')
   if (role === 'chauffeur') redirect('/chauffeur')
   redirect('/espace-client')
+}
+
+export async function clientResetPasswordAction(formData: FormData) {
+  const email = (formData.get('email') as string).trim()
+  if (!email) redirect('/client-login/reset-password?error=email-requis')
+
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const admin  = createAdminClient()
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${origin}/login/update-password` },
+  })
+
+  if (!error && data?.properties?.action_link) {
+    await envoyerResetPassword({ email, lien: data.properties.action_link })
+  }
+  // Toujours afficher succès (ne pas révéler si le compte existe)
+  redirect('/client-login/reset-password?success=1')
 }
 
 export async function clientRegisterAction(formData: FormData) {

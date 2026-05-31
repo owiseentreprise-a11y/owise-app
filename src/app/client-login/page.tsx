@@ -110,7 +110,7 @@ export default async function ClientLoginPage({
             <Field label="Mot de passe" name="password" type="password" placeholder="••••••••" />
             <Btn>Se connecter</Btn>
             <div style={{ textAlign: 'center', marginTop: 4 }}>
-              <a href="/login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
+              <a href="/client-login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
                 Mot de passe oublié ?
               </a>
             </div>
