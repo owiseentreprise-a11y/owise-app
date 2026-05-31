@@ -390,10 +390,9 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart.codePostal,  depart.label])
   const zoneArrivee = useMemo(() => detectZone(arrivee.codePostal, activeZones, arrivee.label), [arrivee.codePostal, arrivee.label])
 
-  // Forfait si au moins un aéroport détecté, OU si les deux zones définies avec zone forfait
+  // Forfait uniquement si les DEUX zones sont définies et au moins une est forfait
   const useForfait = useMemo(() =>
-    !!(zoneDepart?.type === 'aeroport' || zoneArrivee?.type === 'aeroport' ||
-      (zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee)))),
+    !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee))),
     [zoneDepart, zoneArrivee]
   )
 
@@ -411,13 +410,10 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   }, [useForfait, depart.lat, depart.lng, arrivee.lat, arrivee.lng])
 
   const prix = useMemo(() => {
-    if (useForfait) {
-      // calcul forfait : fonctionne même si une seule zone est définie (aéroport fixe)
-      return calculerPrixForfait(
-        zoneDepart?.id ?? '', zoneArrivee?.id ?? '',
-        vehicule, date, grille, params, tarifs, activeZones
-      )
+    if (useForfait && zoneDepart && zoneArrivee) {
+      return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, date, grille, params, tarifs, activeZones)
     }
+    // Si une zone manque → tarif km (OSRM × prix/km)
     if (distanceKm === null) return null
     return calculerPrixKm(distanceKm, vehicule, date, params, tarifs)
   }, [zoneDepart, zoneArrivee, useForfait, distanceKm, vehicule, date, grille, params])
