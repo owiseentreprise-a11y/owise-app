@@ -50,6 +50,70 @@ body::after {
 ::-webkit-scrollbar-thumb { background: var(--t3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--t2); }
 
+/* ── Améliorations globales lisibilité ──────────────────── */
+
+/* Focus visible accessible */
+:focus-visible {
+  outline: 2px solid #C9A84C;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Liens dans tableaux/listes */
+a { transition: opacity .15s; }
+a:hover { opacity: .8; }
+
+/* Inputs — focus gold */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: rgba(201,168,76,.5) !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,.08);
+}
+
+/* Boutons — transition standard */
+button { transition: opacity .15s, transform .1s; }
+button:active { transform: scale(.98); }
+
+/* ── Thème clair (pages client-facing) ─────────────────── */
+.theme-light {
+  --base:     #F8F6F1;
+  --surface:  #FFFFFF;
+  --elevated: #F3F0EB;
+  --floating: #EDEAE4;
+  --gb:       rgba(0,0,0,.09);
+  --gm:       rgba(201,168,76,.08);
+  --t1:       #0A0A0A;
+  --t2:       #555555;
+  --t3:       #999999;
+  color: #0A0A0A;
+}
+/* Supprime le grain sur les pages claires */
+.theme-light::after {
+  display: none !important;
+}
+
+/* Cards légères avec ombre subtile */
+.theme-light [style*="background: var(--surface)"],
+.theme-light [style*="background:var(--surface)"] {
+  box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 0 rgba(0,0,0,.04) !important;
+}
+
+/* Hover sur les lignes de tableau */
+.theme-light a[style*="display: grid"]:hover,
+.theme-light a[style*="display:grid"]:hover {
+  background: rgba(201,168,76,.04) !important;
+}
+
+/* Inputs thème clair */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background: #fff !important;
+  color: #0A0A0A !important;
+  border-color: rgba(0,0,0,.15) !important;
+}
+.theme-light input::placeholder { color: #AAAAAA !important; }
+
 /* ── Impression PDF ─────────────────────────────────────── */
 @media print {
   :root {

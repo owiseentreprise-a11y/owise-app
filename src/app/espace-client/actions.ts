@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 
 export async function demanderCourse(formData: FormData): Promise<void> {
   const supabase = await createClient()
@@ -21,9 +22,9 @@ export async function demanderCourse(formData: FormData): Promise<void> {
 
   let clientId: string | null = null
   let collabId: string | null = null
+  let clientNom = ''
 
   if (isCollab) {
-    // Récupère l'entreprise liée
     const { data: collab } = await supabase
       .from('collaborateurs')
       .select('client_id')
@@ -35,15 +36,49 @@ export async function demanderCourse(formData: FormData): Promise<void> {
     clientId = user.id
   }
 
-  await supabase.from('courses').insert({
+  const { data: newCourse } = await supabase.from('courses').insert({
     client_id:        clientId,
     collaborateur_id: collabId,
     adresse_depart:   depart,
     adresse_arrivee:  arrivee,
-    date_prevue:      new Date(date).toISOString(),
+    date_prevue:      dateParsed.toISOString(),
     notes:            note,
     statut:           'en_attente',
-  })
+  }).select('id').single()
+
+  // Envoi emails en arrière-plan (non bloquant)
+  if (newCourse) {
+    const refCourse = newCourse.id.slice(-6).toUpperCase()
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('prenom, nom')
+      .eq('id', user.id)
+      .single()
+    const prenom = profileData?.prenom ?? ''
+    clientNom = `${prenom} ${profileData?.nom ?? ''}`.trim()
+    const email = user.email ?? null
+
+    await Promise.all([
+      email ? envoyerConfirmationClient({
+        clientEmail: email,
+        clientPrenom: prenom,
+        adresseDepart: depart,
+        adresseArrivee: arrivee,
+        datePrevue: dateParsed.toISOString(),
+        typeVehicule: 'berline',
+        nbPassagers: 1,
+        refCourse,
+      }) : Promise.resolve(),
+      envoyerNotificationAdmin({
+        adresseDepart: depart,
+        adresseArrivee: arrivee,
+        datePrevue: dateParsed.toISOString(),
+        clientNom: clientNom || email || 'Client',
+        typeVehicule: 'berline',
+        refCourse,
+      }),
+    ])
+  }
 
   redirect('/espace-client?success=demande-envoyee')
 }

@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateProfile, updateCompte } from './actions'
+import { updateProfile, updateCompte, updateTarifClient } from './actions'
 
 interface Props {
   clientId: string
   profile: { nom: string; prenom: string; telephone: string }
   compte: { type_compte: string; entreprise_nom: string; adresse_facturation: string }
+  tarif: { coef_tarifaire: number; paiement_differe: boolean }
 }
 
 const inputStyle: React.CSSProperties = {
@@ -45,11 +46,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-export default function ClientEditActions({ clientId, profile: initProfile, compte: initCompte }: Props) {
+export default function ClientEditActions({ clientId, profile: initProfile, compte: initCompte, tarif: initTarif }: Props) {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
   const [profile, setProfile] = useState(initProfile)
   const [compte, setCompte] = useState(initCompte)
+  const [tarif, setTarif] = useState(initTarif)
   const [saved, setSaved] = useState<string | null>(null)
 
   function flash(key: string) {
@@ -128,6 +130,60 @@ export default function ClientEditActions({ clientId, profile: initProfile, comp
           }}
         >{pending ? 'Enregistrement…' : 'Enregistrer'}</button>
         {saved === 'compte' && <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: -8 }}>✓ Sauvegardé</div>}
+      </Section>
+
+      {/* Tarification */}
+      <Section title="Tarification">
+        <Field label="Coefficient tarifaire">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="number" step="0.05" min="0.5" max="3"
+              style={{ ...inputStyle, width: 90 }}
+              value={tarif.coef_tarifaire}
+              onChange={e => setTarif(t => ({ ...t, coef_tarifaire: parseFloat(e.target.value) || 1 }))}
+            />
+            <span style={{ fontSize: 11, color: 'var(--t3)' }}>
+              {tarif.coef_tarifaire === 1 ? 'tarif standard' : tarif.coef_tarifaire < 1
+                ? `−${Math.round((1 - tarif.coef_tarifaire) * 100)} %`
+                : `+${Math.round((tarif.coef_tarifaire - 1) * 100)} %`}
+            </span>
+          </div>
+        </Field>
+        <Field label="Paiement différé">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setTarif(t => ({ ...t, paiement_differe: !t.paiement_differe }))}
+              style={{
+                width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: tarif.paiement_differe ? 'var(--grn)' : 'var(--elevated)',
+                transition: 'background .2s', position: 'relative', flexShrink: 0,
+              }}
+            >
+              <span style={{
+                position: 'absolute', top: 3,
+                left: tarif.paiement_differe ? 23 : 3,
+                width: 18, height: 18, borderRadius: '50%',
+                background: tarif.paiement_differe ? '#fff' : 'var(--t3)',
+                transition: 'left .2s',
+              }} />
+            </button>
+            <span style={{ fontSize: 12, color: tarif.paiement_differe ? 'var(--grn)' : 'var(--t3)' }}>
+              {tarif.paiement_differe ? 'Autorisé (cash / chèque / virement)' : 'Paiement en ligne uniquement'}
+            </span>
+          </div>
+        </Field>
+        <button
+          disabled={pending}
+          onClick={() => save('tarif', () => updateTarifClient(clientId, tarif))}
+          style={{
+            marginTop: 2, padding: '8px 16px', borderRadius: 8,
+            background: 'var(--gold)', color: 'var(--base)',
+            fontSize: 12, fontWeight: 600, border: 'none', cursor: pending ? 'wait' : 'pointer',
+            opacity: pending ? .6 : 1, fontFamily: 'var(--font-dm-sans), sans-serif',
+          }}
+        >{pending ? 'Enregistrement…' : 'Enregistrer'}</button>
+        {saved === 'tarif' && <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: -8 }}>✓ Sauvegardé</div>}
       </Section>
     </div>
   )

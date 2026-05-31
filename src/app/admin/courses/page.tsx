@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import UpdateStatutButton from './UpdateStatutButton'
+import DispatchRapideButton from './DispatchRapideButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,15 +16,22 @@ export default async function CoursesPage({
   const filterStatut = sp.statut ?? ''
   const filterQ = (sp.q ?? '').toLowerCase().trim()
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(profiles(prenom, nom)), sous_traitants(id, nom)')
-    .order('date_prevue', { ascending: false })
-    .limit(500)
+  const [{ data: courses }, { data: chauffeursDispos }] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(profiles(prenom, nom)), sous_traitants(id, nom)')
+      .order('date_prevue', { ascending: false })
+      .limit(500),
+    supabase
+      .from('chauffeurs')
+      .select('id, statut, profiles(prenom, nom)')
+      .in('statut', ['disponible', 'hors_ligne'])
+      .order('statut'),
+  ])
 
-  const all = courses ?? []
+  const all: any[] = courses ?? []
 
   // Comptages pour les onglets
   const counts = {
@@ -35,7 +43,7 @@ export default async function CoursesPage({
   }
 
   // Filtrage par statut
-  let list = all
+  let list: any[] = all
   if (filterStatut === 'en_attente') list = all.filter(c => c.statut === 'en_attente')
   else if (filterStatut === 'en_cours') list = all.filter(c => EN_COURS.includes(c.statut))
   else if (filterStatut === 'terminee') list = all.filter(c => c.statut === 'terminee')
@@ -286,12 +294,15 @@ export default async function CoursesPage({
                   </div>
 
                   {/* Chauffeur / Sous-traitant */}
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    {chauffeurNom
-                      ? <span style={{ fontSize: 12, color: 'var(--t2)' }}>{chauffeurNom}</span>
-                      : (course as any).sous_traitants?.nom
-                        ? <span style={{ fontSize: 11, color: 'var(--blu)', fontWeight: 500 }}>↗ {(course as any).sous_traitants.nom}</span>
-                        : <span style={{ fontSize: 11, color: 'var(--amb)', fontWeight: 500 }}>Non assigné</span>
+                  <div style={{ position: 'relative', zIndex: 3 }}>
+                    {(course as any).sous_traitants?.nom
+                      ? <span style={{ fontSize: 11, color: 'var(--blu)', fontWeight: 500 }}>↗ {(course as any).sous_traitants.nom}</span>
+                      : <DispatchRapideButton
+                          courseId={course.id}
+                          chauffeurs={chauffeursDispos as any ?? []}
+                          currentChauffeurId={course.chauffeur_id ?? null}
+                          currentChauffeurNom={chauffeurNom}
+                        />
                     }
                   </div>
 

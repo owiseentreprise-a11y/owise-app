@@ -85,6 +85,7 @@ export interface FactureRow {
   montant_ttc: number
   date_emission: string
   date_echeance: string | null
+  stripe_payment_link: string | null
   created_at: string
 }
 

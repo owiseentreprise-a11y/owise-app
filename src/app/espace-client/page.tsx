@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import { demanderCourse } from './actions'
+import SubmitButton from './SubmitButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,17 +42,15 @@ export default async function EspaceClientPage({
   }
 
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
-  const query = supabase
+  const baseQuery = supabase
     .from('courses')
     .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, chauffeurs(profiles(prenom, nom))')
     .order('date_prevue', { ascending: false })
     .limit(50)
 
-  if (isCollab) {
-    query.eq('collaborateur_id', user.id)
-  } else {
-    query.eq('client_id', user.id)
-  }
+  const query = isCollab
+    ? baseQuery.eq('collaborateur_id', user.id)
+    : baseQuery.eq('client_id', user.id)
 
   // Factures (uniquement pour les clients entreprise, jamais pour les collabs)
   const facturesQuery = isEntreprise
@@ -145,18 +144,7 @@ export default async function EspaceClientPage({
                 fontFamily: 'var(--font-dm-sans), sans-serif',
               }} />
             </div>
-            <button type="submit" style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              padding: '10px 20px', borderRadius: 8,
-              background: 'var(--gold)', color: 'var(--base)',
-              fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-              whiteSpace: 'nowrap', fontFamily: 'var(--font-dm-sans), sans-serif',
-            }}>
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
-              </svg>
-              Demander
-            </button>
+            <SubmitButton />
           </div>
         </form>
       </div>

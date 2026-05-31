@@ -2,10 +2,10 @@
 
 import { redirect } from 'next/navigation'
 import { requireAdminClient } from '@/lib/supabase/server'
-import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
-import { getUserEmail } from '@/lib/supabase/admin'
+import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerNotificationChauffeur } from '@/lib/email'
+import { getUserEmail, createAdminClient } from '@/lib/supabase/admin'
 
-export async function creerCourseAction(formData: FormData): Promise<void> {
+export async function creerCourseAction(formData: FormData): Promise<{ error?: string } | void> {
   const supabase = await requireAdminClient()
 
   const adresse_depart  = formData.get('adresse_depart') as string
@@ -22,7 +22,7 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
   const sous_traitant_id = (formData.get('sous_traitant_id') as string) || null
 
   if (!adresse_depart || !adresse_arrivee || !date_prevue || !type_vehicule) {
-    redirect('/admin/courses/nouvelle?error=Champs+obligatoires+manquants')
+    return { error: 'Champs obligatoires manquants' }
   }
 
   const { error, data: newCourse } = await supabase.from('courses').insert({
@@ -40,7 +40,27 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
     statut: 'en_attente',
   }).select('id').single()
 
-  if (error) redirect(`/admin/courses/nouvelle?error=${encodeURIComponent(error.message)}`)
+  if (error) return { error: error.message }
+
+  const refCourse = (newCourse?.id ?? '').slice(-6).toUpperCase()
+
+  // Notifier le chauffeur si assigné à la création
+  if (chauffeur_id && !sous_traitant_id) {
+    const adminClient = createAdminClient()
+    const [chauffeurEmail, chauffeurProfileRes] = await Promise.all([
+      getUserEmail(chauffeur_id),
+      adminClient.from('profiles').select('prenom').eq('id', chauffeur_id).single(),
+    ])
+    if (chauffeurEmail) {
+      await envoyerNotificationChauffeur({
+        chauffeurEmail,
+        chauffeurPrenom: chauffeurProfileRes.data?.prenom ?? '',
+        adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
+        datePrevue: date_prevue, clientNom: '—',
+        nbPassagers: nb_passagers, notes: notes ?? null, refCourse,
+      })
+    }
+  }
 
   if (client_id) {
     const [emailResult, profileRes, clientRes] = await Promise.all([
@@ -53,7 +73,6 @@ export async function creerCourseAction(formData: FormData): Promise<void> {
     const clientNom = clientRes.data?.type_compte === 'entreprise'
       ? (clientRes.data.entreprise_nom ?? prenom)
       : `${prenom} ${profileRes.data?.nom ?? ''}`.trim()
-    const refCourse = (newCourse?.id ?? '').slice(-6).toUpperCase()
 
     await Promise.all([
       email ? envoyerConfirmationClient({

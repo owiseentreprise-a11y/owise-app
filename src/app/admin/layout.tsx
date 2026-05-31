@@ -7,17 +7,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
-
-  // Rôle depuis app_metadata (JWT) — pas de query DB
   if (user.app_metadata?.role !== 'admin') redirect('/login')
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="theme-light" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#F8F6F1' }}>
       <Sidebar />
       <main style={{
         flex: 1, height: '100vh',
         overflowY: 'auto',
         display: 'flex', flexDirection: 'column',
+        background: '#F8F6F1',
       }}>
         {children}
       </main>

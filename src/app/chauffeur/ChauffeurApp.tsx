@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur } from '@/lib/types'
+import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
 
 const ETAPES: { statut: StatutCourse; label: string; action: string; color: string }[] = [
   { statut: 'acceptee',        label: 'Course acceptée',  action: 'Départ vers le client', color: 'var(--blu)' },
@@ -84,9 +85,7 @@ export default function ChauffeurApp({
 
   async function accepterCourse(courseId: string) {
     startTransition(async () => {
-      const supabase = createClient()
-      await supabase.from('courses').update({ statut: 'acceptee' }).eq('id', courseId)
-      await supabase.from('chauffeurs').update({ statut: 'en_course' }).eq('id', userId)
+      await accepterCourseAction(courseId)
       setDispo('en_course')
       router.refresh()
     })
@@ -94,9 +93,7 @@ export default function ChauffeurApp({
 
   async function refuserCourse(courseId: string) {
     startTransition(async () => {
-      const supabase = createClient()
-      // Désassigner le chauffeur et remettre en attente
-      await supabase.from('courses').update({ statut: 'en_attente', chauffeur_id: null }).eq('id', courseId)
+      await refuserCourseAction(courseId)
       router.refresh()
     })
   }
@@ -106,15 +103,8 @@ export default function ChauffeurApp({
     const next = PROGRESSION[activeCourse.statut as StatutCourse]
     if (!next) return
     startTransition(async () => {
-      const supabase = createClient()
-      const updates: Record<string, any> = { statut: next }
-      if (next === 'en_route') updates.date_debut = new Date().toISOString()
-      if (next === 'terminee') updates.date_fin = new Date().toISOString()
-      await supabase.from('courses').update(updates).eq('id', activeCourse.id)
-      if (next === 'terminee') {
-        await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', userId)
-        setDispo('disponible')
-      }
+      await progresserCourseAction(activeCourse.id, next as 'en_route' | 'prise_en_charge' | 'terminee')
+      if (next === 'terminee') setDispo('disponible')
       router.refresh()
     })
   }

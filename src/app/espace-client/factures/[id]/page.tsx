@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PrintButton from '@/components/PrintButton'
+import PayerButton from './PayerButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,10 +18,13 @@ const STATUT_COLOR: Record<string, string> = {
 
 export default async function ClientFacturePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ paid?: string }>
 }) {
   const { id } = await params
+  const { paid } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -65,7 +69,7 @@ export default async function ClientFacturePage({
   return (
     <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
-      {/* Retour + Imprimer */}
+      {/* Retour + actions */}
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <a href="/espace-client" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -76,8 +80,26 @@ export default async function ClientFacturePage({
           </svg>
           Retour
         </a>
-        <PrintButton />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {facture.statut !== 'payee' && <PayerButton factureId={facture.id} />}
+          <PrintButton />
+        </div>
       </div>
+
+      {/* Bannière confirmation paiement */}
+      {paid === '1' && (
+        <div className="no-print" style={{
+          marginBottom: 20, padding: '12px 18px', borderRadius: 10,
+          background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          fontSize: 13, color: 'var(--green)',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 6L9 17l-5-5"/>
+          </svg>
+          Paiement reçu — votre facture sera marquée payée sous quelques instants.
+        </div>
+      )}
 
       {/* Facture */}
       <div style={{

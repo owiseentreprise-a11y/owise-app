@@ -259,6 +259,10 @@ export default async function ClientDetailPage({
               entreprise_nom: client.entreprise_nom ?? '',
               adresse_facturation: client.adresse_facturation ?? '',
             }}
+            tarif={{
+              coef_tarifaire: (client as any).coef_tarifaire ?? 1,
+              paiement_differe: (client as any).paiement_differe ?? false,
+            }}
           />
           {isEntreprise && (
             <CollaborateursSection

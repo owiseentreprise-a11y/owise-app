@@ -130,6 +130,65 @@ export async function envoyerNotificationChauffeur(params: {
   await send(chauffeurEmail, `Course #${refCourse} – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
 }
 
+// ── 3b. Notification client — chauffeur assigné ──────────────────────────────
+
+export async function envoyerChauffeurAssigne(params: {
+  clientEmail: string
+  clientPrenom: string
+  chauffeurPrenom: string
+  chauffeurNom: string
+  adresseDepart: string
+  datePrevue: string
+  refCourse: string
+}) {
+  const { clientEmail, clientPrenom, chauffeurPrenom, chauffeurNom, adresseDepart, datePrevue, refCourse } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre chauffeur est confirmé</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, votre course est prise en charge.</p>
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${refCourse}`)}
+        ${row('Chauffeur', `${chauffeurPrenom} ${chauffeurNom}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+      </table>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;">Votre chauffeur sera à l'heure prévue. Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
+  `)
+  await send(clientEmail, `Votre chauffeur est confirmé – Course #${refCourse}`, html)
+}
+
+// ── 3c. Notification admin — chauffeur a refusé ───────────────────────────────
+
+export async function envoyerRefusChauffeur(params: {
+  chauffeurNom: string
+  adresseDepart: string
+  adresseArrivee: string
+  datePrevue: string
+  refCourse: string
+}) {
+  const { chauffeurNom, adresseDepart, adresseArrivee, datePrevue, refCourse } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Course refusée par le chauffeur</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;"><strong>${chauffeurNom}</strong> a refusé la course suivante. Elle est de nouveau en attente d'attribution.</p>
+    <div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${refCourse}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+      </table>
+    </div>
+    <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/admin/courses"
+       style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;">
+      Réassigner dans l'admin →
+    </a>
+  `)
+  await send(ADMIN_EMAIL, `[OWISE] Course #${refCourse} refusée — à réassigner`, html)
+}
+
 // ── 3. Notification admin (nouvelle course) ──────────────────────────────────
 
 export async function envoyerNotificationAdmin(params: {
@@ -206,7 +265,46 @@ export async function envoyerRecuClient(params: {
   await send(clientEmail, `Reçu course #${refCourse} – ${prixFinal.toFixed(2)} €`, html)
 }
 
-// ── 5. Annulation ────────────────────────────────────────────────────────────
+// ── 5. Lien de paiement facture ──────────────────────────────────────────────
+
+export async function envoyerLienPaiementClient(params: {
+  clientEmail: string
+  clientPrenom: string
+  numeroFacture: string
+  montantTTC: number
+  dateEcheance: string | null
+  lienPaiement: string
+}) {
+  const { clientEmail, clientPrenom, numeroFacture, montantTTC, dateEcheance, lienPaiement } = params
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre facture est disponible</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, veuillez trouver ci-dessous votre facture OWISE.</p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Facture', numeroFacture)}
+        ${row('Montant TTC', `${montantTTC.toFixed(2)} €`)}
+        ${dateEcheance ? row('Échéance', fmtDate(dateEcheance)) : ''}
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${lienPaiement}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Payer ma facture →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Paiement sécurisé par <strong>Stripe</strong>. Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+
+  await send(clientEmail, `Facture ${numeroFacture} – ${montantTTC.toFixed(2)} € à régler`, html)
+}
+
+// ── 6. Annulation ────────────────────────────────────────────────────────────
 
 export async function envoyerAnnulation(params: {
   destinataireEmail: string

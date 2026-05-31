@@ -49,3 +49,15 @@ export async function updateCompte(
   revalidatePath(`/admin/clients/${id}`)
   revalidatePath('/admin/clients')
 }
+
+export async function updateTarifClient(
+  id: string,
+  data: { coef_tarifaire: number; paiement_differe: boolean },
+): Promise<void> {
+  const supabase = await requireAdminClient()
+  await supabase.from('clients').update({
+    coef_tarifaire: data.coef_tarifaire,
+    paiement_differe: data.paiement_differe,
+  }).eq('id', id)
+  revalidatePath(`/admin/clients/${id}`)
+}

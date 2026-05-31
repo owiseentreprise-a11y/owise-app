@@ -90,10 +90,11 @@ export default async function AdminDashboard() {
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.9)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(201,168,76,.08)',
+        background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(0,0,0,.07)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        boxShadow: '0 1px 0 rgba(0,0,0,.06)',
       }}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Dashboard</div>

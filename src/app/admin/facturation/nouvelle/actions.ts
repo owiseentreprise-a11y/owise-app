@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { stripe } from '@/lib/stripe'
 
 export async function creerFacture(formData: FormData): Promise<void> {
   const supabase = await requireAdminClient()
@@ -16,7 +17,6 @@ export async function creerFacture(formData: FormData): Promise<void> {
     redirect('/admin/facturation/nouvelle?error=Données+incomplètes')
   }
 
-  // Lire le préfixe et compter les factures existantes pour générer le numéro
   const [parametresRes, countRes] = await Promise.all([
     supabase.from('parametres').select('facture_prefixe').eq('id', true).single(),
     supabase.from('factures').select('id', { count: 'exact', head: true }),
@@ -48,7 +48,29 @@ export async function creerFacture(formData: FormData): Promise<void> {
     redirect(`/admin/facturation/nouvelle?error=${encodeURIComponent(error?.message ?? 'Erreur')}`)
   }
 
-  // Lier les courses à cette facture
+  // Créer le Stripe Payment Link et le lier à la facture
+  try {
+    const price = await stripe.prices.create({
+      currency: 'eur',
+      unit_amount: Math.round(montant_ttc * 100),
+      product_data: { name: `Facture ${numero} – OWISE VTC` },
+    })
+    const link = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { facture_id: facture.id },
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/paiement/merci` },
+      },
+    })
+    await supabase
+      .from('factures')
+      .update({ stripe_payment_link: link.url })
+      .eq('id', facture.id)
+  } catch {
+    // Non bloquant — la facture existe, le lien peut être régénéré plus tard
+  }
+
   if (course_ids.length > 0) {
     await supabase
       .from('courses')

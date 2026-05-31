@@ -316,7 +316,11 @@ export default async function FactureDetailPage({
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: s.color }}>{s.label}</span>
             </div>
-            <FactureActions factureId={facture.id} statut={facture.statut as any} />
+            <FactureActions
+              factureId={facture.id}
+              statut={facture.statut as any}
+              stripePaymentLink={(facture as any).stripe_payment_link ?? null}
+            />
           </div>
 
           {/* Récap financier */}

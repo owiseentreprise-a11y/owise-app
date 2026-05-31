@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owise — Transport VTC de Prestige · Paris, IDF & Oise</title>
+<meta name="description" content="Chauffeurs VTC professionnels à Paris, Île-de-France et Oise. Transferts aéroport CDG, Orly, Beauvais. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.">
+<meta name="keywords" content="VTC Paris, chauffeur privé Paris, transfert aéroport CDG, VTC IDF, VTC Oise, taxi luxe Paris, chauffeur entreprise">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Owise">
+<link rel="canonical" href="https://owise.fr/">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://owise.fr/">
+<meta property="og:title" content="Owise — Transport VTC de Prestige · Paris & IDF">
+<meta property="og:description" content="Chauffeurs professionnels, tarif fixe garanti, disponible 24h/24. Réservez votre VTC à Paris, en IDF et dans l'Oise.">
+<meta property="og:image" content="https://owise.fr/brand_assets/og-image.jpg">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Owise">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Owise — Transport VTC de Prestige">
+<meta name="twitter:description" content="VTC haut de gamme à Paris. Tarif fixe, chauffeurs certifiés, disponible 24h/24.">
+<meta name="twitter:image" content="https://owise.fr/brand_assets/og-image.jpg">
+
+<link rel="icon" type="image/svg+xml" href="brand_assets/favicon.svg">
+<link rel="apple-touch-icon" href="brand_assets/favicon.svg">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --base:#FFFFFF;--surface:#F7F7F7;--elevated:#EFEFEF;--floating:#E5E5E5;
+  --gold:#0A0A0A;--gold2:#333333;--gm:rgba(0,0,0,.05);--gb:rgba(0,0,0,.09);
+  --t1:#0A0A0A;--t2:#6B6B6B;--t3:#D0D0D0;
+  --green:#16A34A;--amber:#D97706;--red:#DC2626;--blue:#2563EB;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--base);color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden;cursor:none}
+a{text-decoration:none;color:inherit}
+
+/* CURSOR */
+.cursor{position:fixed;width:8px;height:8px;border-radius:50%;background:var(--gold);
+  pointer-events:none;z-index:10000;transform:translate(-50%,-50%);
+  box-shadow:0 0 6px rgba(0,0,0,.25);transition:width .2s,height .2s,opacity .2s}
+.cursor-ring{position:fixed;width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(0,0,0,.28);pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);transition:transform .28s cubic-bezier(.22,1,.36,1),width .3s,height .3s,opacity .3s}
+body:has(a:hover) .cursor,.cursor.hov{width:16px;height:16px}
+body:has(a:hover) .cursor-ring,.cursor-ring.hov{width:48px;height:48px;opacity:.5}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;
+  padding:0 52px;height:72px;
+  background:transparent;border-bottom:1px solid transparent;
+  transition:background .4s,border-color .4s,backdrop-filter .4s}
+nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1);backdrop-filter:blur(16px)}
+.nav-logo{display:flex;align-items:center;gap:16px}
+.nav-emblem{flex-shrink:0}
+.nav-divider{width:1px;height:28px;background:rgba(0,0,0,.15);flex-shrink:0}
+.nav-name-wrap{display:flex;flex-direction:column;gap:1px}
+.nav-name{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;
+  letter-spacing:.12em;line-height:1;color:#0A0A0A}
+.nav-sub{font-size:8px;letter-spacing:.32em;text-transform:uppercase;
+  color:rgba(0,0,0,.4);font-weight:400;font-family:'Plus Jakarta Sans',sans-serif}
+.nav-links{display:flex;align-items:center;gap:36px;margin:0 auto}
+.nav-link{font-size:14px;color:rgba(0,0,0,.5);letter-spacing:.01em;transition:color .15s;font-weight:400}
+.nav-link:hover{color:#0A0A0A}
+.nav-r{display:flex;align-items:center;gap:10px}
+.nav-ghost{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:500;
+  background:transparent;color:var(--t2);border:1px solid rgba(0,0,0,.2);
+  cursor:pointer;transition:border-color .15s,color .15s;font-family:'Plus Jakarta Sans',sans-serif}
+.nav-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.nav-cta{padding:9px 20px;border-radius:7px;font-size:12px;font-weight:600;
+  background:#0A0A0A;color:#FFFFFF;border:none;cursor:pointer;
+  transition:background .15s,transform .15s;font-family:'Plus Jakarta Sans',sans-serif}
+.nav-cta:hover{background:#333333;transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;
+  padding:120px 52px 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none}
+.orb-1{display:block;width:900px;height:700px;
+  background:radial-gradient(ellipse,rgba(116,192,200,.09) 0%,transparent 70%);
+  top:-280px;left:-260px;
+  animation:ob1 20s ease-in-out infinite alternate}
+.orb-2{display:block;width:750px;height:750px;
+  background:radial-gradient(ellipse,rgba(91,143,212,.07) 0%,transparent 70%);
+  top:-180px;right:-200px;
+  animation:ob2 25s ease-in-out infinite alternate}
+.orb-3{display:block;width:700px;height:500px;
+  background:radial-gradient(ellipse,rgba(201,168,76,.055) 0%,transparent 70%);
+  bottom:-200px;left:25%;
+  animation:ob3 18s ease-in-out infinite alternate}
+@keyframes ob1{to{transform:translate(-50px,60px) scale(1.08)}}
+@keyframes ob2{to{transform:translate(40px,-60px)}}
+@keyframes ob3{to{transform:translate(-30px,50px)}}
+
+.hero-grid-lines{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(91,143,212,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(116,192,200,.035) 1px,transparent 1px);
+  background-size:80px 80px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 45% 30%,black 15%,transparent 80%);
+  mask-image:radial-gradient(ellipse 90% 80% at 45% 30%,black 15%,transparent 80%)}
+
+.hero-fade-bottom{position:absolute;bottom:0;left:0;right:0;height:120px;
+  background:linear-gradient(to bottom,transparent,rgba(116,192,200,.04));
+  pointer-events:none;z-index:1}
+
+.hero-rings{position:absolute;right:-5%;top:50%;transform:translateY(-52%);
+  pointer-events:none;z-index:0;opacity:1;
+  animation:rings-rot 100s linear infinite;
+  filter:drop-shadow(0 0 8px rgba(0,0,0,.06))}
+@keyframes rings-rot{to{transform:translateY(-52%) rotate(360deg)}}
+
+.hero-inner{position:relative;z-index:10;width:100%;max-width:1280px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 440px;gap:64px;align-items:center}
+
+/* Hero left */
+.hero-tag{display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:20px;
+  border:1px solid rgba(0,0,0,.18);background:rgba(0,0,0,.04);
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  font-weight:500;margin-bottom:32px;
+  opacity:0;transform:translateY(14px);
+  animation:fadeUp .7s cubic-bezier(.22,1,.36,1) .15s both}
+.hero-tag-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+.hero-title{font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(48px,5vw,84px);font-weight:800;font-style:normal;
+  line-height:1.04;letter-spacing:-.025em;color:#0A0A0A;margin-bottom:28px;
+  opacity:0;transform:translateY(22px);
+  animation:fadeUp .95s cubic-bezier(.22,1,.36,1) .3s both}
+.hero-title strong{font-style:normal;font-weight:800;color:#0A0A0A}
+.hero-title .line{display:block}
+
+.hero-sub{font-size:16px;color:#6B6B6B;line-height:1.85;max-width:460px;
+  font-weight:300;margin-bottom:40px;
+  opacity:0;transform:translateY(16px);
+  animation:fadeUp .8s cubic-bezier(.22,1,.36,1) .5s both}
+
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:48px;
+  opacity:0;transform:translateY(14px);
+  animation:fadeUp .8s cubic-bezier(.22,1,.36,1) .65s both}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;
+  padding:14px 30px;background:#C9A84C;color:#0A0A0A;
+  border-radius:9px;font-size:13.5px;font-weight:700;cursor:pointer;
+  border:none;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.01em;
+  transition:background .2s,transform .15s}
+.btn-primary:hover{background:#DDB95A;transform:translateY(-1px)}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;
+  padding:14px 24px;background:transparent;color:var(--t1);
+  border:1px solid rgba(0,0,0,.22);border-radius:9px;
+  font-size:13.5px;font-weight:400;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:border-color .2s,color .2s}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+
+.hero-trust{display:flex;align-items:center;gap:0;flex-wrap:wrap;
+  padding-top:28px;border-top:1px solid rgba(0,0,0,.09);
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp .8s cubic-bezier(.22,1,.36,1) .8s both}
+.trust-item{display:flex;align-items:center;gap:9px;padding:0 24px}
+.trust-item:first-child{padding-left:0}
+.trust-sep{width:1px;height:22px;background:rgba(0,0,0,.1)}
+.trust-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:500}
+.trust-lbl{font-size:12.5px;color:#6B6B6B;letter-spacing:.04em}
+
+/* Hero right — booking card */
+.hero-right{opacity:0;transform:translateY(28px) scale(.97);
+  animation:fadeUp 1s cubic-bezier(.22,1,.36,1) .45s both}
+.booking-card{
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,.1);border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.04)}
+.bc-header{padding:20px 24px 18px;border-bottom:1px solid rgba(0,0,0,.08);
+  background:var(--surface);
+  display:flex;align-items:center;justify-content:space-between}
+.bc-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:500;letter-spacing:.04em;color:#0A0A0A}
+.bc-badge{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#0A0A0A;
+  background:rgba(0,0,0,.07);padding:4px 10px;border-radius:10px;border:1px solid rgba(0,0,0,.12)}
+.bc-body{padding:20px 24px 24px;display:flex;flex-direction:column;gap:10px}
+
+.route-wrap{position:relative}
+.route-connector{position:absolute;left:16px;top:46px;width:1px;height:26px;
+  background:linear-gradient(to bottom,rgba(22,163,74,.5),rgba(220,38,38,.5));z-index:0}
+.binput-row{position:relative}
+.binput-dot{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:9px;height:9px;border-radius:50%;z-index:2}
+.binput-dot.s{background:var(--green);box-shadow:0 0 6px rgba(22,163,74,.4)}
+.binput-dot.e{border:2px solid var(--red);background:transparent}
+.binput{width:100%;padding:12px 14px 12px 30px;
+  background:#FFFFFF;border:1px solid rgba(0,0,0,.18);
+  border-radius:10px;color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;
+  outline:none;transition:border-color .18s,box-shadow .18s;position:relative;z-index:1}
+.binput:focus{border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+.binput::placeholder{color:rgba(0,0,0,.3)}
+
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bc-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B6B6B;
+  font-weight:500;display:block;margin-bottom:6px}
+.bc-pax-row{display:flex;gap:5px;flex-wrap:wrap}
+.bc-pax-btn{width:34px;height:34px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:500;cursor:pointer;
+  background:var(--elevated);border:1px solid var(--t3);color:var(--t2);
+  transition:all .15s;font-family:'JetBrains Mono',monospace}
+.bc-pax-btn:hover{border-color:rgba(0,0,0,.35);color:var(--t1)}
+.bc-pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--gold)}
+
+.btn-estimate{width:100%;padding:13px;border-radius:10px;
+  background:var(--elevated);
+  border:1px solid rgba(0,0,0,.15);color:var(--gold);
+  font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.025em;
+  transition:background .2s,border-color .2s,transform .15s}
+.btn-estimate:hover{background:var(--floating);
+  border-color:rgba(0,0,0,.25);transform:translateY(-1px)}
+
+.bc-price{display:none;
+  background:var(--surface);
+  border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:16px 18px}
+.bc-price.show{display:block}
+.bc-price-label{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);
+  font-weight:500;margin-bottom:2px}
+.bc-price-amount{font-family:'Plus Jakarta Sans',sans-serif;font-size:46px;font-weight:500;
+  line-height:1}
+.bc-price-amount sup{font-size:22px}
+.bc-price-sub{font-size:11px;color:var(--t2);margin-top:4px}
+
+.btn-book{width:100%;padding:14px;border-radius:10px;
+  background:#0A0A0A;color:#FFFFFF;font-size:13.5px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.01em;border:none;
+  transition:background .2s,transform .15s}
+.btn-book:hover{background:#333333;transform:translateY(-1px)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* CLEAN TEXT ACCENTS */
+.chrome-gold{display:inline-block;color:#C9A84C;font-weight:800}
+.chrome-gold-slow{display:inline;font-style:normal;color:#C9A84C;font-weight:700}
+.chrome-gold-static{display:inline-block;color:#0A0A0A;font-weight:700}
+
+/* SCROLL INDICATOR */
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;z-index:10;
+  animation:scrollPulse 3s infinite}
+@keyframes scrollPulse{0%,100%{opacity:.4;transform:translateX(-50%) translateY(0)}
+  50%{opacity:.9;transform:translateX(-50%) translateY(6px)}}
+.scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,rgba(0,0,0,.4),transparent)}
+.scroll-label{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2)}
+
+/* MARQUEE */
+.marquee-section{border-top:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.08);
+  background:var(--surface);overflow:hidden;height:46px;display:flex;align-items:center}
+.marquee-track{display:flex;align-items:center;white-space:nowrap;
+  animation:marquee 35s linear infinite;gap:0}
+.marquee-item{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--t2);
+  font-weight:500;padding:0 20px;display:flex;align-items:center;gap:20px;opacity:.85}
+.m-dot{width:3px;height:3px;border-radius:50%;background:rgba(0,0,0,.3);flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* STATS */
+.stats-section{padding:80px 52px;border-bottom:1px solid rgba(0,0,0,.07)}
+.stats-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.stat-item{text-align:center;padding:0 28px;position:relative}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:1px;height:44px;background:rgba(0,0,0,.1)}
+.stat-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:58px;font-weight:300;font-style:italic;
+  line-height:1;display:block;margin-bottom:8px}
+.stat-lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#6B6B6B}
+
+/* SECTION COMMONS */
+.section-header{text-align:center;margin-bottom:60px}
+.section-tag{display:inline-flex;align-items:center;gap:10px;
+  font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--t2);
+  font-weight:500;margin-bottom:14px}
+.section-tag::before,.section-tag::after{content:'';width:28px;height:1px;background:var(--t2);opacity:.4}
+.section-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(32px,3.8vw,52px);
+  font-weight:800;font-style:normal;color:#0A0A0A;line-height:1.15;letter-spacing:-.02em}
+.section-title em{font-style:normal;font-weight:800;color:#0A0A0A}
+
+/* SERVICES */
+.services-section{padding:60px 52px 80px;border-bottom:1px solid rgba(0,0,0,.07)}
+.services-inner{max-width:1280px;margin:0 auto}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.service-card{background:var(--surface);border-radius:18px;padding:32px 28px 28px 32px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  min-height:190px;overflow:hidden;cursor:pointer;
+  transition:box-shadow .22s,transform .18s}
+.service-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(-3px)}
+.sc-dark{background:rgba(29,29,43,0.82);backdrop-filter:blur(12px)}
+.sc-teal{background:rgba(116,192,200,0.78);backdrop-filter:blur(12px)}
+.sc-blue{background:rgba(91,143,212,0.78);backdrop-filter:blur(12px)}
+.sc-indigo{background:rgba(123,130,214,0.78);backdrop-filter:blur(12px)}
+.sc-navy{background:rgba(30,58,95,0.84);backdrop-filter:blur(12px)}
+.sc-gold{background:rgba(200,146,42,0.80);backdrop-filter:blur(12px)}
+.sc-left{flex:1;display:flex;flex-direction:column;min-height:140px}
+.sc-title{font-size:21px;font-weight:700;color:#0A0A0A;margin-bottom:9px;
+  font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2}
+.sc-desc{font-size:13.5px;color:#6B6B6B;line-height:1.65;flex:1}
+.sc-btn{display:inline-flex;align-items:center;margin-top:20px;
+  padding:9px 18px;border:1px solid rgba(0,0,0,.22);border-radius:7px;
+  font-size:12.5px;font-weight:500;color:#0A0A0A;background:transparent;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,border-color .15s;
+  width:fit-content;letter-spacing:.01em}
+.sc-btn:hover{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.35)}
+/* White text on dark/vivid cards */
+.sc-dark .sc-title,.sc-blue .sc-title,.sc-indigo .sc-title,.sc-navy .sc-title{color:#FFFFFF}
+.sc-dark .sc-desc,.sc-blue .sc-desc,.sc-indigo .sc-desc,.sc-navy .sc-desc{color:rgba(255,255,255,.72)}
+.sc-dark .sc-btn,.sc-blue .sc-btn,.sc-indigo .sc-btn,.sc-navy .sc-btn{
+  border-color:rgba(255,255,255,.45);color:#FFFFFF}
+.sc-dark .sc-btn:hover,.sc-blue .sc-btn:hover,.sc-indigo .sc-btn:hover,.sc-navy .sc-btn:hover{
+  background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.65)}
+/* Gold text color */
+.sc-gold .sc-title{color:#FFFFFF}
+.sc-gold .sc-desc{color:rgba(255,255,255,.78)}
+.sc-gold .sc-btn{border-color:rgba(255,255,255,.45);color:#FFFFFF}
+.sc-gold .sc-btn:hover{background:rgba(255,255,255,.15)}
+.sc-img{width:130px;height:120px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+@media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.services-grid{grid-template-columns:1fr}}
+
+/* VEHICLES */
+.vehicles-section{padding:100px 52px;background:var(--surface);
+  border-top:1px solid rgba(0,0,0,.07)}
+.vehicles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1280px;margin:0 auto}
+.vehicle-card{background:#FFFFFF;border:1px solid rgba(0,0,0,.09);
+  border-radius:16px;padding:28px 22px;position:relative;overflow:hidden;
+  cursor:pointer;transition:border-color .25s,box-shadow .25s;
+  transform-style:preserve-3d;will-change:transform}
+.vehicle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,0,0,.25),transparent);
+  opacity:0;transition:opacity .3s}
+.vehicle-card:hover{border-color:rgba(0,0,0,.18);
+  box-shadow:0 16px 48px rgba(0,0,0,.1),0 0 0 1px rgba(0,0,0,.05)}
+.vehicle-card:hover::before{opacity:1}
+.vc-badge{position:absolute;top:14px;right:14px;font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 9px;border-radius:4px;font-weight:600;
+  color:#0A0A0A;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.12)}
+.vc-car{margin-bottom:20px}
+.vc-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:500;
+  color:var(--t1);margin-bottom:4px}
+.vc-cap{font-size:13px;color:#6B6B6B;margin-bottom:16px;display:flex;align-items:center;gap:5px}
+.vc-features{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.vc-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:#6B6B6B}
+.vc-feat-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.vc-price{display:flex;align-items:baseline;gap:4px;padding-top:16px;
+  border-top:1px solid rgba(0,0,0,.08)}
+.vc-from{font-size:12.5px;color:#6B6B6B}
+.vc-amount{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500}
+.vc-unit{font-size:12.5px;color:#6B6B6B}
+.vc-visual{margin:-28px -22px 20px;height:152px;border-radius:14px 14px 0 0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.vc-visual svg{position:relative;z-index:1}
+
+/* FAQ */
+.faq-section{padding:100px 52px;background:var(--base);border-top:1px solid rgba(0,0,0,.07)}
+.faq-inner{max-width:780px;margin:0 auto}
+.faq-list{display:flex;flex-direction:column;gap:5px;margin-top:56px}
+.faq-item{border-radius:12px;border:1px solid rgba(0,0,0,.07);background:#FFFFFF;
+  overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.faq-item.open{border-color:rgba(0,0,0,.14);box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:20px 24px;cursor:pointer;user-select:none}
+.faq-q-text{font-size:15px;font-weight:500;color:var(--t1);line-height:1.4}
+.faq-icon{width:26px;height:26px;flex-shrink:0;border-radius:50%;
+  border:1.5px solid rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;
+  transition:transform .3s,border-color .3s,background .3s}
+.faq-item.open .faq-icon{background:#0A0A0A;border-color:#0A0A0A;transform:rotate(45deg)}
+.faq-icon-svg{width:10px;height:10px;transition:stroke .3s}
+.faq-item.open .faq-icon-svg{stroke:#fff!important}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.25,.8,.25,1)}
+.faq-item.open .faq-a{max-height:220px}
+.faq-a-inner{padding:0 24px 22px;font-size:14px;color:#5A5A6E;line-height:1.8;
+  border-top:1px solid rgba(0,0,0,.05);padding-top:14px}
+.faq-cta-row{text-align:center;margin-top:48px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+
+/* PROCESS */
+.process-section{padding:100px 52px;border-top:1px solid rgba(0,0,0,.07)}
+.process-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  max-width:900px;margin:60px auto 0}
+.process-step{padding:0 44px;text-align:center;position:relative}
+.process-step:not(:last-child)::after{content:'';position:absolute;right:0;top:32px;
+  width:1px;height:56px;background:rgba(0,0,0,.1)}
+.process-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:72px;font-weight:300;
+  font-style:italic;line-height:1;margin-bottom:14px}
+.process-icon{width:44px;height:44px;border-radius:12px;
+  background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;color:var(--gold)}
+.process-step-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;font-weight:500;
+  color:var(--t1);margin-bottom:10px}
+.process-step-desc{font-size:14px;color:#6B6B6B;line-height:1.8}
+
+/* TESTIMONIALS */
+.testimonials-section{padding:100px 52px;background:var(--surface);
+  border-top:1px solid rgba(0,0,0,.07)}
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:1100px;margin:60px auto 0}
+.testimonial-card{background:#FFFFFF;border:1px solid rgba(0,0,0,.09);
+  border-radius:16px;padding:28px 26px;transition:border-color .2s,transform .2s}
+.testimonial-card:hover{border-color:rgba(0,0,0,.2);transform:translateY(-4px)}
+.t-quote-mark{font-family:'Plus Jakarta Sans',sans-serif;font-size:80px;line-height:.55;
+  color:rgba(0,0,0,.1);font-weight:300;display:block;margin-bottom:14px}
+.t-stars{display:flex;gap:3px;margin-bottom:14px}
+.t-star{color:#F59E0B;font-size:13px}
+.t-text{font-size:14.5px;color:#6B6B6B;line-height:1.85;font-style:italic;margin-bottom:22px}
+.t-author{display:flex;align-items:center;gap:12px}
+.t-avatar{width:62px;height:62px;border-radius:50%;flex-shrink:0;
+  overflow:hidden;
+  box-shadow:0 0 0 2px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.1);
+  transition:transform .2s,box-shadow .2s}
+.t-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.testimonial-card:hover .t-avatar{box-shadow:0 0 0 2px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.15);transform:scale(1.06)}
+.t-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
+.t-role{font-size:12px;color:#6B6B6B}
+
+/* ENTERPRISE CTA */
+.enterprise-section{padding:96px 52px;position:relative;overflow:hidden;
+  border-top:1px solid rgba(0,0,0,.07)}
+.enterprise-section::before{content:'';display:none}
+.enterprise-inner{max-width:1000px;margin:0 auto;
+  display:grid;grid-template-columns:1fr auto;gap:48px;align-items:center;position:relative;z-index:1}
+.ent-label{font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--t2);font-weight:500;margin-bottom:14px}
+.ent-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(32px,3.5vw,50px);
+  font-weight:300;font-style:italic;color:var(--t1);line-height:1.15;margin-bottom:16px}
+.ent-title em{font-style:normal;font-weight:500}
+.ent-desc{font-size:14.5px;color:#6B6B6B;line-height:1.8;max-width:500px;margin-bottom:20px}
+.ent-perks{display:flex;flex-direction:column;gap:10px}
+.ent-perk{display:flex;align-items:center;gap:9px;font-size:14px;color:#6B6B6B}
+.ent-perk-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.ent-actions{display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+.btn-ent{display:inline-flex;align-items:center;gap:8px;
+  padding:16px 32px;border-radius:10px;background:#0A0A0A;color:#FFFFFF;
+  font-size:14px;font-weight:700;cursor:pointer;border:none;
+  font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;
+  transition:background .2s,transform .15s,box-shadow .2s}
+.btn-ent:hover{background:#333333;transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.btn-ent-ghost{display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--t2);cursor:pointer;transition:color .15s;background:none;border:none;
+  font-family:'Plus Jakarta Sans',sans-serif}
+.btn-ent-ghost:hover{color:var(--gold)}
+
+/* ZONES */
+.zones-section{padding:100px 52px;max-width:1200px;margin:0 auto}
+.zones-grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center}
+.zones-map-wrap{position:relative;height:360px;background:var(--surface);
+  border:1px solid rgba(0,0,0,.09);border-radius:18px;overflow:hidden}
+.zones-map-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,0,0,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,0,0,.05) 1px,transparent 1px);
+  background-size:32px 32px}
+.zones-vignette{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,transparent 35%,rgba(247,247,247,.9) 100%)}
+.zones-list{display:flex;flex-direction:column;gap:11px}
+.zone-item{display:flex;align-items:center;gap:13px;padding:13px 17px;
+  background:var(--surface);border:1px solid rgba(0,0,0,.09);
+  border-radius:10px;transition:border-color .15s,background .15s}
+.zone-item:hover{border-color:rgba(0,0,0,.2);background:var(--elevated)}
+.zone-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.zone-info{flex:1}
+.zone-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
+.zone-desc{font-size:13px;color:#6B6B6B}
+.zone-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6B6B;
+  background:var(--elevated);padding:3px 9px;border-radius:4px;
+  border:1px solid rgba(0,0,0,.12);white-space:nowrap}
+
+/* DEVIS SECTION */
+.devis-section{padding:80px 52px;background:var(--surface);
+  border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07);
+  position:relative;overflow:hidden}
+.devis-section::before{display:none}
+.devis-card{max-width:860px;margin:0 auto;
+  background:#FFFFFF;border:1px solid rgba(0,0,0,.1);border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.devis-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,.08)}
+.dtab{flex:1;padding:16px;text-align:center;font-size:12px;font-weight:500;
+  color:var(--t2);cursor:pointer;transition:all .15s;
+  border-bottom:2px solid transparent;letter-spacing:.04em}
+.dtab:hover{color:var(--t1)}
+.dtab.on{color:#0A0A0A;border-bottom-color:#0A0A0A;background:rgba(0,0,0,.02)}
+.dtab-num{display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;font-size:10px;
+  background:var(--t3);color:var(--t2);margin-right:7px;
+  font-family:'JetBrains Mono',monospace;transition:all .15s}
+.dtab.on .dtab-num{background:#0A0A0A;color:#FFFFFF}
+.dtab.done .dtab-num{background:var(--green);color:#FFFFFF}
+.devis-body{padding:32px 36px}
+.step-panel{display:none}.step-panel.on{display:block}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#9090AE;font-weight:500}
+.field input,.field select{background:#FFFFFF;border:1px solid rgba(0,0,0,.18);
+  border-radius:9px;padding:13px 16px;color:var(--t1);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;outline:none;
+  transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+.field input::placeholder{color:rgba(0,0,0,.28)}
+.field select option{background:#FFFFFF}
+.route-fields{display:flex;flex-direction:column;gap:0;position:relative;margin-bottom:16px}
+.route-fields::before{content:'';position:absolute;left:22px;top:52px;bottom:52px;width:1px;
+  background:linear-gradient(to bottom,var(--green),var(--red));opacity:.3;z-index:0}
+.route-input-wrap{position:relative;display:flex;align-items:center}
+.route-dot{width:10px;height:10px;border-radius:50%;position:absolute;left:17px;z-index:1;flex-shrink:0}
+.route-dot.o{background:var(--green)}
+.route-dot.d{border:2px solid var(--red);background:transparent}
+.route-input-wrap input{padding-left:40px}
+.route-sep{height:10px}
+.pax-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pax-btn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:500;cursor:pointer;
+  background:var(--elevated);border:1px solid var(--t3);color:var(--t2);
+  transition:all .15s;font-family:'JetBrains Mono',monospace}
+.pax-btn:hover{border-color:rgba(0,0,0,.35);color:var(--t1)}
+.pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--gold)}
+.pax-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t2);
+  font-weight:500;display:block;margin-bottom:8px}
+.vehicle-hint{background:var(--surface);border:1px solid rgba(0,0,0,.09);border-radius:8px;
+  padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;transition:all .3s}
+.vh-name{font-size:13px;font-weight:500;color:var(--t1)}
+.vh-sub{font-size:11px;color:var(--t2);margin-top:1px}
+.vh-badge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:#0A0A0A;background:var(--elevated);padding:4px 10px;border-radius:5px;border:1px solid rgba(0,0,0,.1)}
+.supps{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.supp-row{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--elevated);border-radius:8px;border:1px solid rgba(0,0,0,.1);
+  cursor:pointer;transition:all .15s;user-select:none}
+.supp-row:hover{border-color:rgba(0,0,0,.25)}
+.supp-row.on{border-color:rgba(0,0,0,.3);background:var(--gm)}
+.supp-lbl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)}
+.supp-row.on .supp-lbl{color:var(--t1)}
+.supp-check{width:18px;height:18px;border-radius:5px;border:1px solid rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.supp-row.on .supp-check{background:#0A0A0A;border-color:#0A0A0A}
+.supp-check::after{content:'';width:9px;height:5px;border-left:2px solid #FFFFFF;
+  border-bottom:2px solid #FFFFFF;transform:rotate(-45deg) translateY(-1px);display:none}
+.supp-row.on .supp-check::after{display:block}
+.supp-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2)}
+.estimate-display{background:var(--surface);
+  border:1px solid rgba(0,0,0,.08);border-radius:12px;
+  padding:24px 28px;text-align:center;margin-bottom:24px;position:relative;overflow:hidden}
+.estimate-display::before{display:none}
+.est-lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);
+  margin-bottom:8px;position:relative}
+.est-price{font-family:'Plus Jakarta Sans',sans-serif;font-size:64px;font-weight:500;
+  color:var(--t1);line-height:1;letter-spacing:-.02em;position:relative;
+  transition:all .3s cubic-bezier(.22,1,.36,1)}
+.est-price .est-cur{font-size:32px;vertical-align:super;color:var(--t2)}
+.est-price .est-ttc{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--t2);
+  font-weight:300;vertical-align:baseline}
+.est-details{display:flex;justify-content:center;gap:20px;margin-top:12px;
+  font-size:11px;color:var(--t2);position:relative;flex-wrap:wrap}
+.form-nav{display:flex;justify-content:flex-end;gap:10px;
+  padding-top:8px;border-top:1px solid rgba(0,0,0,.08);margin-top:24px}
+.btn-prev{background:var(--elevated);color:var(--t2);border:1px solid rgba(0,0,0,.1);
+  padding:11px 22px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif}
+.btn-prev:hover{color:var(--t1)}
+.btn-next{background:#0A0A0A;color:#FFFFFF;border:none;
+  padding:11px 28px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.02em;
+  display:flex;align-items:center;gap:6px}
+.btn-next:hover{background:#333333;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60px 52px 36px}
+.footer-inner{max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:48px}
+.footer-brand .brand-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:500;
+  letter-spacing:.1em;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.footer-brand .brand-sub{font-size:12px;color:var(--t2);line-height:1.7;max-width:200px}
+.footer-col-title{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--t2);font-weight:500;margin-bottom:16px}
+.footer-links{display:flex;flex-direction:column;gap:10px}
+.footer-link{font-size:12.5px;color:var(--t2);transition:color .15s}
+.footer-link:hover{color:var(--gold)}
+.footer-contact{display:flex;flex-direction:column;gap:10px}
+.fc-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2)}
+.fc-item svg{width:13px;height:13px;color:var(--t1);flex-shrink:0}
+.footer-bottom{max-width:1200px;margin:36px auto 0;padding-top:22px;
+  border-top:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:10.5px;color:var(--t2)}
+
+/* FOOTER SOCIAL */
+.footer-social{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.fs-link{width:38px;height:38px;border-radius:10px;
+  background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.1);
+  display:flex;align-items:center;justify-content:center;color:#6B6B6B;
+  transition:background .18s,border-color .18s,transform .18s,color .18s;
+  position:relative;flex-shrink:0}
+.fs-link:hover{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.22);
+  transform:translateY(-3px);color:#0A0A0A}
+.fs-link.soon{opacity:.45}
+.fs-link.soon::after{content:'Bientôt';position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%);background:#0A0A0A;color:#FFF;
+  font-size:9px;letter-spacing:.06em;white-space:nowrap;padding:4px 8px;border-radius:5px;
+  font-family:'Plus Jakarta Sans',sans-serif;pointer-events:none;
+  opacity:0;transition:opacity .2s}
+.fs-link.soon:hover::after{opacity:1}
+.fs-wa{background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.3);color:#16A34A}
+.fs-wa:hover{background:rgba(37,211,102,.2);border-color:rgba(37,211,102,.5);color:#16A34A}
+.footer-social-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(0,0,0,.3);font-family:'Plus Jakarta Sans',sans-serif;
+  margin-top:14px;display:block}
+
+/* WHATSAPP FLOATING */
+.wa-float{position:fixed;bottom:28px;left:28px;z-index:800;
+  opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s;pointer-events:none}
+.wa-float.show{opacity:1;transform:translateY(0);pointer-events:all}
+.wa-btn{display:inline-flex;align-items:center;gap:9px;
+  padding:13px 20px;border-radius:50px;
+  background:#25D366;color:#FFFFFF;
+  font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:0 8px 28px rgba(37,211,102,.38);
+  transition:transform .15s,box-shadow .2s,background .15s}
+.wa-btn:hover{transform:translateY(-2px);
+  box-shadow:0 14px 40px rgba(37,211,102,.48);background:#1fba57}
+.wa-pulse{position:absolute;top:0;right:0;width:10px;height:10px;
+  border-radius:50%;background:#ff4444;border:2px solid #fff;
+  animation:waPulse 2.5s infinite}
+@keyframes waPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+
+/* FLOATING CTA */
+.float-cta{position:fixed;bottom:28px;right:28px;z-index:800;
+  opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s;pointer-events:none}
+.float-cta.show{opacity:1;transform:translateY(0);pointer-events:all}
+.float-cta-btn{display:inline-flex;align-items:center;gap:8px;
+  padding:13px 22px;border-radius:50px;
+  background:#0A0A0A;color:#FFFFFF;
+  font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  transition:transform .15s,box-shadow .2s}
+.float-cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.35)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .75s ease,transform .75s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}.rd4{transition-delay:.4s}
+
+/* SCROLL PROGRESS BAR */
+.scroll-progress{position:fixed;top:0;left:0;z-index:1001;height:2px;
+  background:#0A0A0A;width:0%;pointer-events:none;transition:width .08s linear}
+
+/* HAMBURGER */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5.5px;
+  width:40px;height:40px;padding:8px;background:none;border:1px solid rgba(0,0,0,.18);
+  border-radius:9px;cursor:pointer;z-index:1002;flex-shrink:0}
+.nav-hamburger span{display:block;height:1.5px;background:#0A0A0A;border-radius:1px;
+  transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s,width .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0;width:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* MOBILE MENU */
+.mobile-menu{position:fixed;inset:0;z-index:950;
+  background:rgba(255,255,255,.98);backdrop-filter:blur(24px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  opacity:0;pointer-events:none;transition:opacity .3s ease}
+.mobile-menu.open{opacity:1;pointer-events:all}
+.mm-links{display:flex;flex-direction:column;align-items:center;width:100%;padding:0 32px}
+.mm-link{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:700;
+  color:#0A0A0A;padding:18px 0;width:100%;text-align:center;
+  border-bottom:1px solid rgba(0,0,0,.07);letter-spacing:-.01em;
+  transition:opacity .15s,transform .15s;transform:translateY(0)}
+.mm-link:hover{opacity:.55}
+.mm-cta{margin-top:32px;padding:15px 48px;background:#0A0A0A;color:#FFFFFF;
+  border-radius:10px;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:background .15s}
+.mm-cta:hover{background:#333}
+.mm-sub{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.3);
+  margin-top:24px;font-family:'Plus Jakarta Sans',sans-serif}
+
+/* SERVICE CARD ILLUSTRATION HOVER */
+.sc-img{transition:transform .38s cubic-bezier(.22,1,.36,1)}
+.service-card:hover .sc-img{transform:translateY(-12px) scale(1.1)}
+
+/* SERVICE CARD BUTTON ARROW */
+.sc-btn-arrow{display:inline-block;transition:transform .2s cubic-bezier(.22,1,.36,1);margin-left:5px;opacity:.7}
+.sc-btn:hover .sc-btn-arrow{transform:translateX(5px);opacity:1}
+
+/* ACTIVE NAV LINK */
+.nav-link.active{color:#0A0A0A;font-weight:600}
+.nav-link{position:relative}
+.nav-link::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;
+  background:#0A0A0A;transition:width .25s cubic-bezier(.22,1,.36,1)}
+.nav-link.active::after,.nav-link:hover::after{width:100%}
+
+/* VEHICLE ICON (form) */
+.vh-icon{width:36px;height:36px;border-radius:9px;background:rgba(0,0,0,.06);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid rgba(0,0,0,.09)}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .hero-inner{grid-template-columns:1fr}
+  .hero-right{max-width:520px}
+  .vehicles-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-inner{grid-template-columns:repeat(2,1fr);gap:32px}
+  .stat-item:nth-child(2)::after{display:none}
+}
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .nav-r{display:none}
+  .nav-hamburger{display:flex}
+  .hero{padding:100px 20px 60px}
+  .hero-title{font-size:clamp(44px,10vw,70px)}
+  .vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}
+  .process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(0,0,0,.08);
+    padding-bottom:36px;margin-bottom:36px}
+  .zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}
+  .ent-actions{align-items:flex-start}
+  .footer-inner{grid-template-columns:1fr 1fr;gap:28px}
+  .bg2{grid-template-columns:1fr}
+  .stats-inner{grid-template-columns:1fr 1fr}
+  .stat-item{padding:20px 0}
+  .stat-item::after{display:none}
+  .devis-body{padding:20px 20px}
+  .vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}
+  .marquee-section{height:40px}
+  .services-section{padding:50px 20px 60px}
+}
+@media(max-width:480px){
+  .footer-inner{grid-template-columns:1fr}
+  .hero-trust{gap:16px}
+  .trust-item{padding:0 12px}
+}
+
+/* ── COOKIE BANNER ── */
+.cookie-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:9998;
+  padding:18px 52px;background:#09091A;
+  border-top:1px solid rgba(201,168,76,.22);
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  transform:translateY(100%);transition:transform .45s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 -12px 48px rgba(0,0,0,.45)}
+.cookie-banner.visible{transform:translateY(0)}
+.cookie-text{flex:1;min-width:260px}
+.cookie-title{font-size:13px;font-weight:600;color:#EDE8DF;margin-bottom:3px;font-family:'Plus Jakarta Sans',sans-serif}
+.cookie-desc{font-size:11.5px;color:rgba(237,232,223,.5);line-height:1.65;font-family:'Plus Jakarta Sans',sans-serif}
+.cookie-desc a{color:#C9A84C;cursor:pointer}
+.cookie-desc a:hover{text-decoration:underline}
+.cookie-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.c-btn-accept{padding:9px 20px;background:#C9A84C;color:#09091A;border:none;border-radius:8px;
+  font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:background .18s,transform .15s}
+.c-btn-accept:hover{background:#DDB95A;transform:translateY(-1px)}
+.c-btn-refuse{padding:9px 16px;background:transparent;color:rgba(237,232,223,.65);
+  border:1px solid rgba(237,232,223,.14);border-radius:8px;font-size:12.5px;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .18s,color .18s}
+.c-btn-refuse:hover{border-color:rgba(237,232,223,.32);color:rgba(237,232,223,.9)}
+.c-btn-manage{font-size:11px;color:rgba(237,232,223,.38);cursor:pointer;
+  background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;
+  letter-spacing:.02em;padding:0;transition:color .15s}
+.c-btn-manage:hover{color:rgba(237,232,223,.72)}
+
+/* Cookie Modal */
+.cookie-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.cookie-overlay.open{opacity:1;pointer-events:all}
+.cookie-modal{width:100%;max-width:540px;background:#111128;
+  border-radius:20px 20px 0 0;padding:32px 36px 40px;
+  transform:translateY(32px);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.cookie-overlay.open .cookie-modal{transform:translateY(0)}
+.cm-title{font-size:17px;font-weight:700;color:#EDE8DF;margin-bottom:6px;font-family:'Plus Jakarta Sans',sans-serif}
+.cm-sub{font-size:12.5px;color:rgba(237,232,223,.48);line-height:1.7;margin-bottom:24px;font-family:'Plus Jakarta Sans',sans-serif}
+.cm-cat{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  padding:18px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cm-cat:last-of-type{border-bottom:none}
+.cm-cat-name{font-size:13px;font-weight:600;color:#EDE8DF;margin-bottom:3px;font-family:'Plus Jakarta Sans',sans-serif}
+.cm-cat-desc{font-size:11.5px;color:rgba(237,232,223,.42);line-height:1.6;font-family:'Plus Jakarta Sans',sans-serif}
+.cm-toggle{position:relative;width:38px;height:21px;flex-shrink:0;margin-top:3px;cursor:pointer}
+.cm-toggle input{opacity:0;width:0;height:0;position:absolute}
+.cm-track{position:absolute;inset:0;border-radius:11px;
+  background:rgba(255,255,255,.1);transition:background .2s}
+.cm-toggle input:checked+.cm-track{background:#C9A84C}
+.cm-thumb{position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;
+  background:#fff;transition:transform .2s;pointer-events:none}
+.cm-toggle input:checked~.cm-thumb{transform:translateX(17px)}
+.cm-footer{margin-top:24px;display:flex;gap:10px;justify-content:flex-end}
+.cm-save{padding:11px 24px;background:#C9A84C;color:#09091A;border:none;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:background .18s}
+.cm-save:hover{background:#DDB95A}
+.cm-cancel{padding:11px 16px;background:transparent;color:rgba(237,232,223,.48);
+  border:1px solid rgba(237,232,223,.1);border-radius:9px;font-size:13px;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .18s}
+.cm-cancel:hover{border-color:rgba(237,232,223,.28)}
+@media(max-width:640px){
+  .cookie-banner{padding:18px 20px;flex-direction:column;align-items:flex-start}
+  .cookie-modal{padding:26px 20px 36px}
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Curseur custom -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mm-links">
+    <a href="#vehicules" class="mm-link" onclick="closeMobileMenu()">Véhicules</a>
+    <a href="#comment" class="mm-link" onclick="closeMobileMenu()">Comment ça marche</a>
+    <a href="#zones" class="mm-link" onclick="closeMobileMenu()">Zones</a>
+    <a href="#faq" class="mm-link" onclick="closeMobileMenu()">FAQ</a>
+    <a href="#contact" class="mm-link" onclick="closeMobileMenu()">Contact</a>
+  </div>
+  <a href="/login" class="mm-cta" onclick="closeMobileMenu()">Espace client</a>
+  <div class="mm-sub">Transport de prestige · Paris · IDF</div>
+  <div style="display:flex;gap:12px;margin-top:28px">
+    <a href="#" class="fs-link soon" style="width:44px;height:44px;border-radius:12px" aria-label="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+    <a href="#" class="fs-link soon" style="width:44px;height:44px;border-radius:12px" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg></a>
+    <a href="#" class="fs-link soon" style="width:44px;height:44px;border-radius:12px" aria-label="TikTok"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.53V6.77a4.85 4.85 0 01-1.02-.08z"/></svg></a>
+    <a href="#" class="fs-link soon" style="width:44px;height:44px;border-radius:12px" aria-label="YouTube"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg></a>
+    <a href="https://wa.me/33619106356" class="fs-link fs-wa" style="width:44px;height:44px;border-radius:12px" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg></a>
+  </div>
+</div>
+
+<!-- WhatsApp floating -->
+<div class="wa-float" id="waFloat">
+  <a href="https://wa.me/33619106356" class="wa-btn" target="_blank" rel="noopener" aria-label="Nous contacter sur WhatsApp" style="position:relative">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/>
+    </svg>
+    WhatsApp
+    <span class="wa-pulse"></span>
+  </a>
+</div>
+
+<!-- Floating CTA -->
+<div class="float-cta" id="floatCta">
+  <a href="/reserver" class="float-cta-btn">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    Réserver maintenant
+  </a>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="/" class="nav-logo" style="text-decoration:none">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#09091A"/>
+      <circle cx="18" cy="18" r="10" stroke="rgba(255,255,255,0.88)" stroke-width="1.8" fill="none"/>
+      <path d="M18 8 A10 10 0 0 1 28 18" stroke="#C9A84C" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <circle cx="18" cy="18" r="2.2" fill="#C9A84C"/>
+    </svg>
+    <div class="nav-divider"></div>
+    <div class="nav-name-wrap">
+      <span class="nav-name">OWISE</span>
+      <span class="nav-sub">Transport de prestige</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="#vehicules" class="nav-link">Véhicules</a>
+    <a href="#comment" class="nav-link">Comment ça marche</a>
+    <a href="#zones" class="nav-link">Zones</a>
+    <a href="#faq" class="nav-link">FAQ</a>
+    <a href="#contact" class="nav-link">Contact</a>
+  </div>
+  <div class="nav-r">
+    <a href="/login" class="nav-ghost" style="cursor:pointer">Espace client</a>
+    <button class="nav-cta" onclick="scrollTo('#devis')">Obtenir un devis</button>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="hero-grid-lines"></div>
+    <div class="hero-fade-bottom"></div>
+    <div class="hero-rings">
+      <svg width="700" height="700" viewBox="0 0 700 700" fill="none">
+        <circle cx="350" cy="350" r="340" stroke="rgba(91,143,212,.1)" stroke-width="1"/>
+        <circle cx="350" cy="350" r="300" stroke="rgba(116,192,200,.12)" stroke-width="1" stroke-dasharray="5 9"/>
+        <circle cx="350" cy="350" r="255" stroke="rgba(91,143,212,.14)" stroke-width="1.5"/>
+        <circle cx="350" cy="350" r="208" stroke="rgba(123,130,214,.1)" stroke-width="1" stroke-dasharray="3 7"/>
+        <circle cx="350" cy="350" r="160" stroke="rgba(116,192,200,.16)" stroke-width="1.5"/>
+        <circle cx="350" cy="350" r="110" stroke="rgba(201,168,76,.13)" stroke-width="1" stroke-dasharray="2 5"/>
+        <circle cx="350" cy="350" r="62" stroke="rgba(201,168,76,.2)" stroke-width="2"/>
+        <circle cx="350" cy="350" r="24" stroke="rgba(201,168,76,.26)" stroke-width="1.5"/>
+        <line x1="350" y1="6" x2="350" y2="36" stroke="rgba(116,192,200,.22)" stroke-width="1.5"/>
+        <line x1="350" y1="664" x2="350" y2="694" stroke="rgba(116,192,200,.22)" stroke-width="1.5"/>
+        <line x1="6" y1="350" x2="36" y2="350" stroke="rgba(116,192,200,.22)" stroke-width="1.5"/>
+        <line x1="664" y1="350" x2="694" y2="350" stroke="rgba(116,192,200,.22)" stroke-width="1.5"/>
+        <line x1="100" y1="100" x2="118" y2="118" stroke="rgba(201,168,76,.18)" stroke-width="1.2"/>
+        <line x1="600" y1="100" x2="582" y2="118" stroke="rgba(201,168,76,.18)" stroke-width="1.2"/>
+        <line x1="100" y1="600" x2="118" y2="582" stroke="rgba(201,168,76,.18)" stroke-width="1.2"/>
+        <line x1="600" y1="600" x2="582" y2="582" stroke="rgba(201,168,76,.18)" stroke-width="1.2"/>
+        <circle cx="350" cy="10" r="3" fill="rgba(116,192,200,.35)"/>
+        <circle cx="350" cy="690" r="3" fill="rgba(116,192,200,.35)"/>
+        <circle cx="10" cy="350" r="3" fill="rgba(91,143,212,.35)"/>
+        <circle cx="690" cy="350" r="3" fill="rgba(91,143,212,.35)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="hero-inner">
+    <!-- Texte gauche -->
+    <div class="hero-left">
+      <div class="hero-tag">
+        <span class="hero-tag-dot"></span>
+        Transport VTC de Prestige · Paris · IDF · Oise · Aéroports
+      </div>
+      <h1 class="hero-title">
+        <span class="line">Voyagez avec</span>
+        <span class="line"><strong class="chrome-gold">l'excellence</strong></span>
+        <span class="line">où que vous alliez</span>
+      </h1>
+      <p class="hero-sub">Chauffeurs professionnels certifiés, véhicules haut de gamme, ponctualité garantie. Pour vos déplacements d'affaires, transferts aéroport et événements — Paris, Île-de-France et l'Oise.</p>
+      <div class="hero-actions">
+        <a href="/reserver" class="btn-primary">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Réserver maintenant
+        </a>
+        <a href="#vehicules" class="btn-secondary" onclick="scrollTo('#vehicules');return false">
+          Nos véhicules
+        </a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item">
+          <span class="trust-val" style="color:#C9A84C">4.9 ★</span>
+          <span class="trust-lbl">Note moyenne</span>
+        </div>
+        <div class="trust-sep"></div>
+        <div class="trust-item">
+          <span class="trust-val" style="color:#74C0C8">24/7</span>
+          <span class="trust-lbl">Disponible</span>
+        </div>
+        <div class="trust-sep"></div>
+        <div class="trust-item">
+          <span class="trust-val" style="color:#5B8FD4">100%</span>
+          <span class="trust-lbl">Prix fixe garanti</span>
+        </div>
+        <div class="trust-sep"></div>
+        <div class="trust-item">
+          <span class="trust-val" style="color:#7B82D6">6+</span>
+          <span class="trust-lbl">Chauffeurs certifiés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking widget droite -->
+    <div class="hero-right">
+      <div class="booking-card">
+        <div class="bc-header">
+          <span class="bc-title">Estimation rapide</span>
+          <span class="bc-badge">Tarif fixe garanti</span>
+        </div>
+        <div class="bc-body">
+          <div class="route-wrap">
+            <div class="route-connector" id="bConnector"></div>
+            <div class="binput-row" style="margin-bottom:8px">
+              <span class="binput-dot s"></span>
+              <input class="binput" id="bDepart" type="text" placeholder="Adresse de départ…">
+            </div>
+            <div class="binput-row" id="bEtapeWrap" style="display:none;margin-bottom:8px">
+              <span class="binput-dot" style="width:7px;height:7px;background:#E8A030;border:none;box-shadow:0 0 5px rgba(232,160,48,.4)"></span>
+              <input class="binput" id="bEtape" type="text" placeholder="Étape intermédiaire…">
+            </div>
+            <div class="binput-row">
+              <span class="binput-dot e"></span>
+              <input class="binput" id="bArrivee" type="text" placeholder="Destination, aéroport, gare…">
+            </div>
+          </div>
+          <button onclick="toggleBcEtape()" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);cursor:pointer;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;padding:2px 0 6px;transition:color .15s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--t2)'">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span id="bEtapeBtnLbl">Ajouter une étape</span>
+          </button>
+
+          <div class="bg2">
+            <div>
+              <span class="bc-label">Date</span>
+              <input class="binput" id="bDate" type="date" style="padding:12px 14px">
+            </div>
+            <div>
+              <span class="bc-label">Heure</span>
+              <input class="binput" id="bTime" type="time" value="09:00" style="padding:12px 14px">
+            </div>
+          </div>
+
+          <div>
+            <span class="bc-label" style="margin-bottom:8px;display:block">Passagers</span>
+            <div class="bc-pax-row" id="bcPax">
+              <div class="bc-pax-btn on" onclick="setBcPax(1,this)">1</div>
+              <div class="bc-pax-btn" onclick="setBcPax(2,this)">2</div>
+              <div class="bc-pax-btn" onclick="setBcPax(3,this)">3</div>
+              <div class="bc-pax-btn" onclick="setBcPax(4,this)">4</div>
+              <div class="bc-pax-btn" onclick="setBcPax(5,this)">5</div>
+              <div class="bc-pax-btn" onclick="setBcPax(6,this)">6</div>
+              <div class="bc-pax-btn" onclick="setBcPax(7,this)">7</div>
+              <div class="bc-pax-btn" onclick="setBcPax(8,this)">8</div>
+            </div>
+          </div>
+
+          <button class="btn-estimate" onclick="estimateBooking()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Calculer mon estimation
+          </button>
+
+          <div class="bc-price" id="bcPrice">
+            <div class="bc-price-label">Estimation TTC</div>
+            <div class="bc-price-amount"><sup class="chrome-gold-static">€</sup><span id="bcPriceNum" class="chrome-gold-static">--</span></div>
+            <div class="bc-price-sub" id="bcPriceSub">Berline · Tarif fixe · Prix garanti</div>
+          </div>
+
+          <a href="/reserver" class="btn-book" onclick="goReserver();return false">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Confirmer la réservation
+          </a>
+
+          <p style="font-size:10px;color:var(--t3);text-align:center;line-height:1.6;margin-top:-4px">
+            Estimation indicative · Tarif définitif confirmé à la réservation
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span class="scroll-label">Découvrir</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item">Paris <span class="m-dot"></span> Aéroport CDG <span class="m-dot"></span> Orly <span class="m-dot"></span> Beauvais <span class="m-dot"></span> Gare du Nord <span class="m-dot"></span> Gare de Lyon <span class="m-dot"></span> Gare Montparnasse <span class="m-dot"></span> Versailles <span class="m-dot"></span> Compiègne <span class="m-dot"></span> Chantilly <span class="m-dot"></span> Senlis <span class="m-dot"></span> Roissy <span class="m-dot"></span> Saint-Germain-en-Laye <span class="m-dot"></span> Opéra <span class="m-dot"></span></div>
+    <div class="marquee-item" aria-hidden="true">Paris <span class="m-dot"></span> Aéroport CDG <span class="m-dot"></span> Orly <span class="m-dot"></span> Beauvais <span class="m-dot"></span> Gare du Nord <span class="m-dot"></span> Gare de Lyon <span class="m-dot"></span> Gare Montparnasse <span class="m-dot"></span> Versailles <span class="m-dot"></span> Compiègne <span class="m-dot"></span> Chantilly <span class="m-dot"></span> Senlis <span class="m-dot"></span> Roissy <span class="m-dot"></span> Saint-Germain-en-Laye <span class="m-dot"></span> Opéra <span class="m-dot"></span></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <span class="stat-num chrome-gold-static" data-target="4.9" data-float="1" data-suffix="">0</span>
+      <span class="stat-lbl">Note client moyenne</span>
+    </div>
+    <div class="stat-item reveal rd1">
+      <span class="stat-num chrome-gold-static" data-target="500" data-suffix="+">0</span>
+      <span class="stat-lbl">Courses réalisées</span>
+    </div>
+    <div class="stat-item reveal rd2">
+      <span class="stat-num chrome-gold-static" data-target="100" data-suffix="%">0</span>
+      <span class="stat-lbl">Ponctualité garantie</span>
+    </div>
+    <div class="stat-item reveal rd3">
+      <span class="stat-num chrome-gold-static" data-target="24" data-suffix="/7">0</span>
+      <span class="stat-lbl">Disponibilité</span>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services-section">
+  <div class="services-inner">
+    <div class="section-header reveal" style="margin-bottom:44px">
+      <div class="section-tag">Nos services</div>
+      <h2 class="section-title" style="margin-top:10px">Choisissez votre <em>expérience de voyage</em></h2>
+    </div>
+    <div class="services-grid">
+
+      <!-- Course immédiate -->
+      <div class="service-card sc-dark reveal">
+        <div class="sc-left">
+          <div class="sc-title">Course immédiate</div>
+          <div class="sc-desc">Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.</div>
+          <button class="sc-btn" onclick="scrollTo('#devis');return false">Réserver <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-immediat.png.png" alt="Course immédiate" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+      <!-- Réserver à l'avance -->
+      <div class="service-card sc-teal reveal rd1">
+        <div class="sc-left">
+          <div class="sc-title">Réserver à l'avance</div>
+          <div class="sc-desc">Planifiez votre trajet des jours à l'avance. Votre chauffeur sera là, à l'heure exacte.</div>
+          <button class="sc-btn" onclick="scrollTo('#devis');return false">Planifier <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-avance.png.png" alt="Réserver à l'avance" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+      <!-- Transfert aéroport -->
+      <div class="service-card sc-blue reveal rd2">
+        <div class="sc-left">
+          <div class="sc-title">Transfert aéroport</div>
+          <div class="sc-desc">CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.</div>
+          <button class="sc-btn" onclick="scrollTo('#devis');return false">Réserver <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-aeroport.png.png" alt="Transfert aéroport" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+      <!-- Groupes & familles -->
+      <div class="service-card sc-indigo reveal rd1">
+        <div class="sc-left">
+          <div class="sc-title">Groupes & familles</div>
+          <div class="sc-desc">Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.</div>
+          <button class="sc-btn" onclick="scrollTo('#devis');return false">Réserver <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-groupes.png.png" alt="Groupes et familles" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+      <!-- Comptes entreprise -->
+      <div class="service-card sc-navy reveal rd2">
+        <div class="sc-left">
+          <div class="sc-title">Comptes entreprise</div>
+          <div class="sc-desc">Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.</div>
+          <button class="sc-btn" onclick="scrollTo('#contact');return false">En savoir plus <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-entreprise.png.png" alt="Comptes entreprise" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+      <!-- Événements & soirées -->
+      <div class="service-card sc-gold reveal rd3">
+        <div class="sc-left">
+          <div class="sc-title">Événements & soirées</div>
+          <div class="sc-desc">Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.</div>
+          <button class="sc-btn" onclick="scrollTo('#devis');return false">Demander un devis <span class="sc-btn-arrow">→</span></button>
+        </div>
+        <div class="sc-img">
+          <img src="brand_assets/service-evenements.png.png" alt="Événements et soirées" style="max-width:130px;max-height:120px;object-fit:contain;display:block">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VEHICLES -->
+<section class="vehicles-section" id="vehicules">
+  <div class="section-header reveal">
+    <div class="section-tag">Notre flotte</div>
+    <h2 class="section-title">Des véhicules<br><em class="chrome-gold-slow">à la hauteur de vos exigences</em></h2>
+  </div>
+  <div class="vehicles-grid">
+
+    <div class="vehicle-card tilt-card reveal rd1">
+      <div class="vc-visual" style="background:#C8D8EE">
+        <img src="brand_assets/vehicle-berline.jpg.png" alt="Berline VTC Owise" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+      </div>
+      <div class="vc-name">Berline</div>
+      <div class="vc-cap">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        1 à 3 passagers
+      </div>
+      <div class="vc-features">
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Peugeot 508, Volkswagen Passat</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Climatisation bi-zone</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>WiFi embarqué</div>
+      </div>
+      <div class="vc-price"><span class="vc-from">dès</span><span class="vc-amount chrome-gold-static">45 €</span><span class="vc-unit">/ course</span></div>
+    </div>
+
+    <div class="vehicle-card tilt-card reveal rd2" style="border-color:rgba(255,255,255,.22)">
+      <div class="vc-visual" style="background:#08081A">
+        <img src="brand_assets/vehicle-berline-premium.jpg.png" alt="Berline Premium VTC Owise" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <span class="vc-badge" style="position:absolute;top:12px;right:12px;z-index:5;color:rgba(255,255,255,.82);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(4px)">Populaire</span>
+      </div>
+      <div class="vc-name">Berline Premium</div>
+      <div class="vc-cap">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        1 à 4 passagers
+      </div>
+      <div class="vc-features">
+        <div class="vc-feat"><div class="vc-feat-dot"></div>BMW Série 5, Mercedes Classe E</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Cuir, eau minérale offerte</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Chargeurs universels, WiFi</div>
+      </div>
+      <div class="vc-price"><span class="vc-from">dès</span><span class="vc-amount chrome-gold-static">65 €</span><span class="vc-unit">/ course</span></div>
+    </div>
+
+    <div class="vehicle-card tilt-card reveal rd3">
+      <div class="vc-visual" style="background:#D8D4CA">
+        <img src="brand_assets/vehicle-van7.jpg.png" alt="Van 7 places VTC Owise" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+      </div>
+      <div class="vc-name">Van 7 places</div>
+      <div class="vc-cap">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        5 à 7 passagers
+      </div>
+      <div class="vc-features">
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Mercedes Vito, VW Caravelle</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Grand coffre, idéal aéroport</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Transferts groupes & familles</div>
+      </div>
+      <div class="vc-price"><span class="vc-from">dès</span><span class="vc-amount chrome-gold-static">75 €</span><span class="vc-unit">/ course</span></div>
+    </div>
+
+    <div class="vehicle-card tilt-card reveal rd4">
+      <div class="vc-visual" style="background:#0D0D0D">
+        <img src="brand_assets/vehicle-grand-van.jpg.png" alt="Grand Van 8 places VTC Owise" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+      </div>
+      <div class="vc-name">Grand Van 8 pl.</div>
+      <div class="vc-cap">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        8 passagers · Sur demande
+      </div>
+      <div class="vc-features">
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Mercedes Sprinter</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Séminaires, événements d'entreprise</div>
+        <div class="vc-feat"><div class="vc-feat-dot"></div>Disponible sur réservation</div>
+      </div>
+      <div class="vc-price"><span class="vc-from">dès</span><span class="vc-amount chrome-gold-static">95 €</span><span class="vc-unit">/ course</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section class="process-section" id="comment">
+  <div class="section-header reveal" style="max-width:900px;margin:0 auto 60px">
+    <div class="section-tag">Simple & rapide</div>
+    <h2 class="section-title">Comment ça marche</h2>
+  </div>
+  <div class="process-steps">
+    <div class="process-step reveal">
+      <div class="process-num chrome-gold-static">01</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div class="process-step-title">Renseignez votre trajet</div>
+      <div class="process-step-desc">Indiquez votre départ, votre destination et l'heure de prise en charge. Notre estimateur calcule le tarif en quelques secondes.</div>
+    </div>
+    <div class="process-step reveal rd1">
+      <div class="process-num chrome-gold-static">02</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="process-step-title">Confirmez la réservation</div>
+      <div class="process-step-desc">Renseignez vos coordonnées et validez. Confirmation immédiate par e-mail avec tous les détails de votre course.</div>
+    </div>
+    <div class="process-step reveal rd2">
+      <div class="process-num chrome-gold-static">03</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
+      </div>
+      <div class="process-step-title">Votre chauffeur arrive</div>
+      <div class="process-step-desc">Le jour J, votre chauffeur est ponctuel et vous attend. Tarif fixe, aucune mauvaise surprise en fin de course.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="section-header reveal">
+    <div class="section-tag">Ils nous font confiance</div>
+    <h2 class="section-title">Ce que disent<br><em class="chrome-gold-slow">nos clients</em></h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal rd1">
+      <span class="t-quote-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">Nous utilisons Owise pour tous nos transferts aéroport depuis 6 mois. La ponctualité est irréprochable, les chauffeurs sont professionnels et discrets. Je recommande à toute entreprise.</p>
+      <div class="t-author">
+        <div class="t-avatar">
+          <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sophie M.">
+        </div>
+        <div>
+          <div class="t-name">Sophie M.</div>
+          <div class="t-role">Directrice Marketing · Groupe Beaumont</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card reveal rd2">
+      <span class="t-quote-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">Premier trajet Paris-CDG : le chauffeur était 10 minutes en avance, Mercedes Classe E impeccable. Le tarif fixe sans surprise, c'est exactement ce dont j'avais besoin.</p>
+      <div class="t-author">
+        <div class="t-avatar">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Thomas R.">
+        </div>
+        <div>
+          <div class="t-name">Thomas R.</div>
+          <div class="t-role">Entrepreneur · Paris</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card reveal rd3">
+      <span class="t-quote-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">Le compte entreprise a simplifié notre gestion des déplacements. La facturation mensuelle consolidée et le portail de réservation dédié à nos collaborateurs sont parfaits.</p>
+      <div class="t-author">
+        <div class="t-avatar">
+          <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Isabelle C.">
+        </div>
+        <div>
+          <div class="t-name">Isabelle C.</div>
+          <div class="t-role">DRH · Groupe Legrand</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTERPRISE CTA -->
+<section class="enterprise-section">
+  <div class="enterprise-inner reveal">
+    <div>
+      <div class="ent-label">Comptes entreprises</div>
+      <h2 class="ent-title">Vous gérez les<br>déplacements de votre<br><em class="chrome-gold-slow">équipe ?</em></h2>
+      <p class="ent-desc">Owise propose des solutions dédiées aux entreprises : tarifs négociés, facturation mensuelle centralisée, portail de réservation multi-utilisateurs et reporting détaillé.</p>
+      <div class="ent-perks">
+        <div class="ent-perk"><div class="ent-perk-dot"></div>Tarifs préférentiels dès 10 courses/mois</div>
+        <div class="ent-perk"><div class="ent-perk-dot"></div>Facturation mensuelle consolidée + export comptable</div>
+        <div class="ent-perk"><div class="ent-perk-dot"></div>Portail de réservation pour vos collaborateurs</div>
+        <div class="ent-perk"><div class="ent-perk-dot"></div>Gestionnaire de compte dédié</div>
+      </div>
+    </div>
+    <div class="ent-actions">
+      <button class="btn-ent" onclick="scrollTo('#contact')">
+        Nous contacter
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-ent-ghost" onclick="scrollTo('#devis')">
+        Ou réserver directement →
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ZONES -->
+<section class="zones-section" id="zones">
+  <div class="reveal" style="margin-bottom:52px">
+    <div class="section-tag">Zones desservies</div>
+    <h2 class="section-title">Paris, IDF & Oise<br><em class="chrome-gold-slow">et tous les aéroports</em></h2>
+  </div>
+  <div class="zones-grid">
+    <div class="zones-map-wrap reveal">
+      <div class="zones-map-grid"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 360" fill="none">
+        <ellipse cx="200" cy="180" rx="150" ry="105" stroke="rgba(0,0,0,.08)" stroke-width="8" fill="none"/>
+        <ellipse cx="200" cy="180" rx="95" ry="68" stroke="rgba(0,0,0,.12)" stroke-width="3" fill="none"/>
+        <ellipse cx="200" cy="180" rx="44" ry="32" fill="rgba(0,0,0,.05)" stroke="rgba(0,0,0,.2)" stroke-width="1.5"/>
+        <text x="200" y="184" font-family="DM Sans" font-size="9" fill="rgba(0,0,0,.65)" text-anchor="middle" letter-spacing="2">PARIS</text>
+        <circle cx="148" cy="108" r="6" fill="rgba(74,142,208,.85)"/>
+        <text x="148" y="96" font-family="DM Sans" font-size="8" fill="rgba(74,142,208,.75)" text-anchor="middle">CDG</text>
+        <circle cx="188" cy="272" r="6" fill="rgba(74,142,208,.85)"/>
+        <text x="188" y="286" font-family="DM Sans" font-size="8" fill="rgba(74,142,208,.75)" text-anchor="middle">Orly</text>
+        <circle cx="68" cy="60" r="5" fill="rgba(74,142,208,.7)"/>
+        <text x="68" y="50" font-family="DM Sans" font-size="7" fill="rgba(74,142,208,.65)" text-anchor="middle">BVA</text>
+        <circle cx="78" cy="188" r="5" fill="rgba(60,196,124,.7)"/>
+        <text x="54" y="191" font-family="DM Sans" font-size="7" fill="rgba(60,196,124,.6)" text-anchor="middle">Versailles</text>
+        <circle cx="338" cy="82" r="5" fill="rgba(232,160,48,.75)"/>
+        <text x="356" y="85" font-family="DM Sans" font-size="7" fill="rgba(232,160,48,.65)" text-anchor="middle">Oise</text>
+        <path d="M200,180 L148,108" stroke="rgba(0,0,0,.1)" stroke-width="1" stroke-dasharray="4,4"/>
+        <path d="M200,180 L188,272" stroke="rgba(0,0,0,.1)" stroke-width="1" stroke-dasharray="4,4"/>
+        <path d="M200,180 L338,82" stroke="rgba(0,0,0,.07)" stroke-width="1" stroke-dasharray="4,4"/>
+        <path d="M200,180 L68,60" stroke="rgba(0,0,0,.07)" stroke-width="1" stroke-dasharray="4,4"/>
+      </svg>
+      <div class="zones-vignette"></div>
+    </div>
+    <div class="zones-list reveal rd1">
+      <div class="zone-item">
+        <div class="zone-dot" style="background:var(--gold)"></div>
+        <div class="zone-info"><div class="zone-name">Paris intramuros</div><div class="zone-desc">Tous les arrondissements</div></div>
+        <span class="zone-tag">Couverture totale</span>
+      </div>
+      <div class="zone-item">
+        <div class="zone-dot" style="background:var(--green)"></div>
+        <div class="zone-info"><div class="zone-name">Île-de-France</div><div class="zone-desc">Versailles, Boulogne, Saint-Denis…</div></div>
+        <span class="zone-tag">+15 à 45 min</span>
+      </div>
+      <div class="zone-item">
+        <div class="zone-dot" style="background:var(--blue)"></div>
+        <div class="zone-info"><div class="zone-name">Aéroports CDG & Orly</div><div class="zone-desc">Tous terminaux, toutes compagnies</div></div>
+        <span class="zone-tag">Tarif fixe</span>
+      </div>
+      <div class="zone-item">
+        <div class="zone-dot" style="background:var(--blue);opacity:.7"></div>
+        <div class="zone-info"><div class="zone-name">Beauvais (BVA)</div><div class="zone-desc">Aéroport Paris-Beauvais</div></div>
+        <span class="zone-tag">Tarif fixe</span>
+      </div>
+      <div class="zone-item">
+        <div class="zone-dot" style="background:var(--amber)"></div>
+        <div class="zone-info"><div class="zone-name">Oise</div><div class="zone-desc">Compiègne, Senlis, Chantilly…</div></div>
+        <span class="zone-tag">Sur devis</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="section-header reveal" style="text-align:center">
+      <div class="section-tag">Questions fréquentes</div>
+      <h2 class="section-title rd1">Tout ce que vous<br><em class="chrome-gold-slow">devez savoir</em></h2>
+    </div>
+    <div class="faq-list">
+
+      <div class="faq-item reveal rd1">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Comment réserver un VTC Owise ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Réservez directement via notre formulaire en ligne, disponible 24h/24. Renseignez votre trajet, vos passagers et l'horaire souhaité, et recevez une confirmation immédiate par e-mail et SMS. Vous pouvez aussi nous joindre par téléphone ou WhatsApp pour une réservation assistée.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd2">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Les tarifs sont-ils fixes et garantis ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Oui. Chaque devis est calculé à l'avance et garanti — aucune majoration en cours de route, aucune surprise à l'arrivée. Le tarif communiqué lors de la réservation est celui que vous payez, quelle que soit la durée du trajet ou les conditions de circulation.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd1">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Quelles sont vos conditions d'annulation ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">L'annulation est gratuite jusqu'à 2 heures avant le départ prévu. Au-delà, des frais d'annulation peuvent s'appliquer. En cas d'annulation tardive répétée, une empreinte bancaire peut être demandée à la réservation suivante.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd2">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Quels aéroports desservez-vous ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Nous assurons les transferts vers et depuis Paris-CDG (Roissy), Paris-Orly, et Beauvais-Tillé. Nous intervenons également sur les héliports parisiens et les aéroports secondaires d'Île-de-France sur demande. Pour CDG, nous suivons les retards de vol en temps réel.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd1">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Que se passe-t-il si mon vol est retardé ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Nous surveillons les horaires de vol en temps réel. Si votre vol est retardé, votre chauffeur ajuste son arrivée en conséquence, sans frais supplémentaires pour des retards raisonnables. En cas de délai important, notre équipe vous contacte directement pour adapter la prise en charge.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd2">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Puis-je réserver à l'avance ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Absolument — et c'est même recommandé pour les transferts aéroport, les événements ou les déplacements d'entreprise. Vous pouvez réserver jusqu'à 6 mois à l'avance. Votre confirmation est immédiate et votre chauffeur est attribué dès la réservation.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd1">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Acceptez-vous les animaux de compagnie ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Les petits animaux en cage de transport sont acceptés dans tous nos véhicules. Pour les animaux de plus grande taille, merci de le mentionner lors de la réservation afin que nous adaptions le véhicule. Des frais de nettoyage peuvent s'appliquer selon les cas.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd2">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Proposez-vous des solutions pour les entreprises ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Oui. Nous proposons des comptes entreprise avec tableau de bord dédié, facturation mensuelle consolidée et gestion multi-collaborateurs. Vos équipes réservent facilement sans avoir à avancer de frais, et votre service comptable reçoit une facture unique en fin de mois. Contactez-nous pour un devis personnalisé.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd1">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Couvrez-vous l'Oise et les zones hors IDF ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Oui, nous opérons sur Paris, l'ensemble de l'Île-de-France et l'Oise (Compiègne, Senlis, Chantilly, Creil, Beauvais). Pour les longues distances ou les destinations hors zone, contactez-nous directement — nous établissons un devis sur mesure avec tarif forfaitaire garanti.</div></div>
+      </div>
+
+      <div class="faq-item reveal rd2">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Comment obtenir une facture après ma course ?</span>
+          <span class="faq-icon"><svg class="faq-icon-svg" viewBox="0 0 10 10" stroke="rgba(0,0,0,.5)" stroke-width="1.8" fill="none"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></span>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Une facture est automatiquement envoyée par e-mail à la fin de chaque course. Les clients ayant un compte entreprise reçoivent une facture mensuelle consolidée. Si vous avez besoin d'une facture complémentaire ou d'un justificatif spécifique, contactez notre service client.</div></div>
+      </div>
+
+    </div>
+
+    <div class="faq-cta-row reveal">
+      <span style="font-size:14px;color:#6B6B6B">Vous ne trouvez pas la réponse ?</span>
+      <a href="https://wa.me/33619106356" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;background:#25D366;color:#fff;font-size:14px;font-weight:500;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Nous contacter
+      </a>
+      <a href="#devis" onclick="document.querySelector('#devis').scrollIntoView({behavior:'smooth'});return false" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;border:1.5px solid rgba(0,0,0,.15);color:#0A0A0A;font-size:14px;font-weight:500;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(0,0,0,.4)'" onmouseout="this.style.borderColor='rgba(0,0,0,.15)'">
+        Obtenir un devis
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- DEVIS COMPLET -->
+<section class="devis-section" id="devis">
+  <div style="max-width:860px;margin:0 auto 0;position:relative;z-index:1">
+    <div class="section-tag reveal">Réservation complète</div>
+    <h2 class="section-title reveal rd1" style="margin-bottom:48px">Réservez votre<br><em class="chrome-gold-slow">course en 3 étapes</em></h2>
+  </div>
+  <div class="devis-card reveal rd2">
+    <div class="devis-tabs">
+      <div class="dtab on" id="tab1"><span class="dtab-num">1</span>Itinéraire</div>
+      <div class="dtab" id="tab2"><span class="dtab-num">2</span>Options</div>
+      <div class="dtab" id="tab3"><span class="dtab-num">3</span>Estimation</div>
+    </div>
+    <div class="devis-body">
+
+      <div class="step-panel on" id="panel1">
+        <div class="route-fields">
+          <div class="route-input-wrap" style="margin-bottom:8px">
+            <div class="route-dot o"></div>
+            <div class="field" style="flex:1">
+              <label>Prise en charge</label>
+              <input type="text" id="origin" placeholder="Adresse de départ, hôtel, bureau…" oninput="calcEstimate()">
+            </div>
+          </div>
+          <div class="route-sep"></div>
+          <div class="route-input-wrap" id="etapeWrap" style="display:none;margin-bottom:8px">
+            <div class="route-dot" style="background:var(--amber);width:8px;height:8px;left:18px"></div>
+            <div class="field" style="flex:1">
+              <label>Étape intermédiaire</label>
+              <input type="text" placeholder="Adresse de l'étape" oninput="calcEstimate()">
+            </div>
+          </div>
+          <div class="route-input-wrap">
+            <div class="route-dot d"></div>
+            <div class="field" style="flex:1">
+              <label>Destination</label>
+              <input type="text" id="dest" placeholder="Destination, aéroport, gare…" oninput="calcEstimate()">
+            </div>
+          </div>
+        </div>
+        <button style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);cursor:pointer;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;padding:0;transition:color .15s;margin-bottom:16px" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--t2)'" onclick="toggleEtape()">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <span id="etapeBtnLbl">Ajouter une étape intermédiaire</span>
+        </button>
+        <div class="form-grid">
+          <div class="field"><label>Date</label><input type="date" id="dateInput" oninput="calcEstimate()"></div>
+          <div class="field"><label>Heure de prise en charge</label><input type="time" id="timeInput" value="09:00" oninput="calcEstimate()"></div>
+        </div>
+        <div class="field" style="margin-bottom:16px">
+          <label>Type de destination</label>
+          <select id="destType" onchange="calcEstimate()">
+            <option value="addr">Adresse standard</option>
+            <option value="airport">Aéroport (CDG, Orly, Beauvais…)</option>
+            <option value="gare">Gare (Nord, Lyon, Montparnasse…)</option>
+            <option value="event">Événement / soirée</option>
+          </select>
+        </div>
+        <div class="form-nav">
+          <button class="btn-next" onclick="goStep(2)">Suivant — Passagers <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+
+      <div class="step-panel" id="panel2">
+        <span class="pax-lbl">Nombre de passagers</span>
+        <div class="pax-selector" id="paxSelector">
+          <div class="pax-btn on" onclick="setPax(1,this)">1</div>
+          <div class="pax-btn" onclick="setPax(2,this)">2</div>
+          <div class="pax-btn" onclick="setPax(3,this)">3</div>
+          <div class="pax-btn" onclick="setPax(4,this)">4</div>
+          <div class="pax-btn" onclick="setPax(5,this)">5</div>
+          <div class="pax-btn" onclick="setPax(6,this)">6</div>
+          <div class="pax-btn" onclick="setPax(7,this)">7</div>
+          <div class="pax-btn" onclick="setPax(8,this)">8</div>
+        </div>
+        <div class="vehicle-hint" id="vehicleHint">
+          <div class="vh-icon" id="vhIcon">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none"><path d="M2 8 L4 3 Q5 1 7.5 1 L12.5 1 Q15 1 16 3 L18 8 Z" fill="#0A0A0A"/><path d="M5 8 Q6 3.5 8 3 L12 3 L12 8 Z" fill="#4A6FA5" opacity=".7"/><rect x="18" y="6.5" width="1.5" height="2.5" rx=".7" fill="#FFE080"/><rect x=".5" y="6.5" width="1.5" height="2.5" rx=".7" fill="#FC8181" opacity=".8"/><path d="M2 8 L18 8 L18.5 9.5 L1.5 9.5 Z" fill="#111"/><circle cx="5.5" cy="11" r="2.5" fill="#222"/><circle cx="5.5" cy="11" r="1.3" fill="#444"/><circle cx="14.5" cy="11" r="2.5" fill="#222"/><circle cx="14.5" cy="11" r="1.3" fill="#444"/></svg>
+          </div>
+          <div><div class="vh-name" id="vhName">Berline</div><div class="vh-sub" id="vhSub">1–3 passagers · confort premium</div></div>
+          <div class="vh-badge" id="vhFrom">dès 45 €</div>
+        </div>
+        <div class="supps">
+          <div class="supp-row" onclick="toggleSupp(this,'bagages',10)">
+            <div class="supp-lbl"><div class="supp-check"></div>🧳 Bagages volumineux (ski, golf…)</div>
+            <span class="supp-price">+ 10 €</span>
+          </div>
+          <div class="supp-row" onclick="toggleSupp(this,'panneau',8)">
+            <div class="supp-lbl"><div class="supp-check"></div>📋 Panneau nominatif à l'arrivée</div>
+            <span class="supp-price">+ 8 €</span>
+          </div>
+          <div class="supp-row" onclick="toggleSupp(this,'animaux',15)">
+            <div class="supp-lbl"><div class="supp-check"></div>🐾 Animal de compagnie (cage requise)</div>
+            <span class="supp-price">+ 15 €</span>
+          </div>
+        </div>
+        <div class="form-nav">
+          <button class="btn-prev" onclick="goStep(1)">← Retour</button>
+          <button class="btn-next" onclick="goStep(3)">Voir l'estimation <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+
+      <div class="step-panel" id="panel3">
+        <div class="estimate-display">
+          <div class="est-lbl">Estimation TTC</div>
+          <div class="est-price"><span class="est-cur">€</span><span id="priceNum">--</span> <span class="est-ttc">TTC</span></div>
+          <div class="est-details">
+            <span id="estVehicle">Berline</span> · <span id="estRoute">Course standard</span>
+            <span id="estMaj" style="display:none;color:var(--amber)">· <span id="estMajTxt"></span></span>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:20px;line-height:1.6">
+          Estimation indicative — Prix fixe confirmé à la réservation. Aucune surprise en fin de course.
+        </p>
+        <div class="form-grid" style="margin-bottom:20px">
+          <div class="field"><label>Prénom & Nom</label><input type="text" id="dNom" placeholder="Jean Dupont" required></div>
+          <div class="field"><label>Téléphone</label><input type="tel" id="dTel" placeholder="+33 6 00 00 00 00" required></div>
+          <div class="field"><label>E-mail</label><input type="email" id="dEmail" placeholder="jean@entreprise.fr" required></div>
+          <div class="field"><label>Société (optionnel)</label><input type="text" id="dSociete" placeholder="Nom de l'entreprise"></div>
+        </div>
+        <div id="devisErrMsg" style="display:none;background:rgba(217,80,80,.08);border:1px solid rgba(217,80,80,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#D95454;margin-bottom:12px;text-align:center"></div>
+        <div class="form-nav">
+          <button class="btn-prev" onclick="goStep(2)">← Retour</button>
+          <button class="btn-next" id="devisSubmitBtn" onclick="submitDevis()" style="padding:14px 36px;font-size:14px">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Confirmer la réservation
+          </button>
+        </div>
+      </div>
+
+      <!-- PANEL 4 : SUCCÈS -->
+      <div class="step-panel" id="panel4" style="text-align:center;padding:20px 0 10px">
+        <div style="width:60px;height:60px;border-radius:50%;background:rgba(61,184,122,.1);border:1px solid rgba(61,184,122,.25);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+          <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#3DB87A" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#0A0A0A;margin-bottom:10px">Demande envoyée !</div>
+        <p style="font-size:13px;color:var(--t2);line-height:1.7;max-width:340px;margin:0 auto 24px">
+          Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong> pour confirmer votre réservation.
+        </p>
+        <div id="devisConfirmRef" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);background:rgba(0,0,0,.04);border-radius:6px;padding:8px 14px;display:inline-block;margin-bottom:28px"></div>
+        <br>
+        <button onclick="resetDevis()" style="background:none;border:1px solid rgba(0,0,0,.15);border-radius:8px;padding:10px 22px;font-size:13px;color:var(--t2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,0,0,.3)'" onmouseout="this.style.borderColor='rgba(0,0,0,.15)'">
+          Nouvelle demande
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand-name" style="align-items:center;gap:12px;margin-bottom:12px">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="flex-shrink:0">
+          <rect width="36" height="36" rx="8" fill="#0A0A0A"/>
+          <text x="18" y="26" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">O</text>
+        </svg>
+        <div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:.2em;color:#0A0A0A">OWISE</div>
+          <div style="font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:rgba(0,0,0,.4);font-family:'Plus Jakarta Sans',sans-serif;margin-top:2px">Transport de prestige</div>
+        </div>
+      </div>
+      <div class="brand-sub">Paris, Île-de-France & Oise.</div>
+      <span class="footer-social-label">Suivez-nous</span>
+      <div class="footer-social">
+        <!-- Facebook — à mettre à jour quand le compte est créé -->
+        <a href="#" class="fs-link soon" title="Facebook" aria-label="Facebook" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </a>
+        <!-- Instagram — à mettre à jour quand le compte est créé -->
+        <a href="#" class="fs-link soon" title="Instagram" aria-label="Instagram" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <!-- TikTok — à mettre à jour quand le compte est créé -->
+        <a href="#" class="fs-link soon" title="TikTok" aria-label="TikTok" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.53V6.77a4.85 4.85 0 01-1.02-.08z"/></svg>
+        </a>
+        <!-- YouTube — à mettre à jour quand la chaîne est créée -->
+        <a href="#" class="fs-link soon" title="YouTube" aria-label="YouTube" rel="noopener">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>
+        </a>
+        <!-- WhatsApp — mettre à jour le numéro réel -->
+        <a href="https://wa.me/33619106356" class="fs-link fs-wa" title="WhatsApp" aria-label="WhatsApp" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Services</div>
+      <div class="footer-links">
+        <a href="#devis" class="footer-link">Réservation immédiate</a>
+        <a href="#vehicules" class="footer-link">Transferts aéroport</a>
+        <a href="#devis" class="footer-link" onclick="document.querySelector('#devis').scrollIntoView({behavior:'smooth'});return false">Comptes entreprises</a>
+        <a href="#devis" class="footer-link" onclick="document.querySelector('#devis').scrollIntoView({behavior:'smooth'});return false">Événements &amp; soirées</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Informations</div>
+      <div class="footer-links">
+        <a href="mentions-legales.html#cgu" class="footer-link">Conditions générales</a>
+        <a href="mentions-legales.html#confidentialite" class="footer-link">Politique de confidentialité</a>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="/login" class="footer-link">Espace administration</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <div class="footer-contact">
+        <div class="fc-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          +33 6 19 10 63 56
+        </div>
+        <div class="fc-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          owise.entreprise@gmail.com
+        </div>
+        <div class="fc-item" style="align-items:flex-start">
+          <svg style="margin-top:2px;flex-shrink:0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+          Paris · IDF · Oise · Aéroports<br>Disponible 24h/24, 7j/7
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Owise — Tous droits réservés</span>
+    <span>SIRET : 477 534 135 00041</span>
+  </div>
+</footer>
+
+<script>
+/* ── SCROLL PROGRESS ── */
+const progressBar = document.getElementById('scrollProgress')
+function updateProgress() {
+  const total = document.documentElement.scrollHeight - window.innerHeight
+  progressBar.style.width = (window.scrollY / total * 100) + '%'
+}
+window.addEventListener('scroll', updateProgress, { passive: true })
+
+/* ── MOBILE MENU ── */
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu')
+  const btn  = document.getElementById('navHamburger')
+  const open = menu.classList.toggle('open')
+  btn.classList.toggle('open', open)
+  document.body.style.overflow = open ? 'hidden' : ''
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('open')
+  document.getElementById('navHamburger').classList.remove('open')
+  document.body.style.overflow = ''
+}
+
+/* ── NAV ACTIVE ── */
+const navSections = [
+  { id: 'vehicules', link: document.querySelector('a[href="#vehicules"]') },
+  { id: 'comment',   link: document.querySelector('a[href="#comment"]') },
+  { id: 'zones',     link: document.querySelector('a[href="#zones"]') },
+  { id: 'faq',       link: document.querySelector('a[href="#faq"]') },
+  { id: 'contact',   link: document.querySelector('a[href="#contact"]') },
+]
+const navActiveObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const match = navSections.find(s => s.id === e.target.id)
+    if (match?.link) match.link.classList.toggle('active', e.isIntersecting)
+  })
+}, { threshold: 0.2 })
+navSections.forEach(s => {
+  const el = document.getElementById(s.id)
+  if (el) navActiveObs.observe(el)
+})
+
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor')
+const ring   = document.getElementById('cursorRing')
+let mx = 0, my = 0, rx = 0, ry = 0
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY
+  cursor.style.left = mx + 'px'
+  cursor.style.top  = my + 'px'
+})
+
+;(function animRing() {
+  rx += (mx - rx) * 0.14
+  ry += (my - ry) * 0.14
+  ring.style.left = rx + 'px'
+  ring.style.top  = ry + 'px'
+  requestAnimationFrame(animRing)
+})()
+
+document.querySelectorAll('a,button,.vehicle-card,.zone-item,.testimonial-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('hov'); ring.classList.add('hov') })
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('hov'); ring.classList.remove('hov') })
+})
+
+/* ── NAV SCROLL ── */
+const nav = document.getElementById('mainNav')
+const floatCta = document.getElementById('floatCta')
+const waFloat  = document.getElementById('waFloat')
+window.addEventListener('scroll', () => {
+  const y = window.scrollY
+  nav.classList.toggle('scrolled', y > 60)
+  const past = y > window.innerHeight - 100
+  floatCta.classList.toggle('show', past)
+  waFloat.classList.toggle('show', past)
+})
+
+/* ── SMOOTH SCROLL ── */
+function scrollTo(id) {
+  document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
+}
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'))
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }) }
+  })
+})
+
+/* ── SCROLL REVEAL ── */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
+}, { threshold: 0.1 })
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
+
+/* ── COUNT-UP ── */
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting || entry.target.dataset.counted) return
+    entry.target.dataset.counted = '1'
+    const target  = parseFloat(entry.target.dataset.target)
+    const suffix  = entry.target.dataset.suffix || ''
+    const isFloat = entry.target.dataset.float === '1'
+    const dur = 1800
+    const start = performance.now()
+    const tick = now => {
+      const p = Math.min((now - start) / dur, 1)
+      const ease = 1 - Math.pow(1 - p, 3)
+      const v = target * ease
+      entry.target.textContent = (isFloat ? v.toFixed(1) : Math.round(v)) + (p >= 1 ? suffix : '')
+      if (p < 1) requestAnimationFrame(tick)
+      else entry.target.textContent = (isFloat ? target.toFixed(1) : target) + suffix
+    }
+    requestAnimationFrame(tick)
+  })
+}, { threshold: 0.3 })
+document.querySelectorAll('[data-target]').forEach(el => countObs.observe(el))
+
+/* ── 3D TILT ── */
+document.querySelectorAll('.tilt-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width  - 0.5
+    const y = (e.clientY - r.top)  / r.height - 0.5
+    card.style.transform = `perspective(800px) rotateY(${x*10}deg) rotateX(${-y*7}deg) translateZ(6px)`
+    card.style.transition = 'transform 0.05s'
+  })
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = ''
+    card.style.transition = 'transform 0.5s ease, border-color 0.25s, box-shadow 0.25s'
+  })
+})
+
+/* ── VEHICLES DATA ── */
+const vehicles = [
+  { min:1, max:3, name:'Berline',        sub:'1–3 passagers · confort premium',    from:'dès 45 €', base:45  },
+  { min:4, max:4, name:'Berline Premium', sub:'4 passagers · haut de gamme',        from:'dès 65 €', base:65  },
+  { min:5, max:7, name:'Van 7 places',   sub:'5–7 passagers · transfert groupe',   from:'dès 75 €', base:75  },
+  { min:8, max:8, name:'Grand Van',      sub:'8 passagers · sur réservation',      from:'dès 95 €', base:95  },
+]
+function getVehicle(p) { return vehicles.find(v => p >= v.min && p <= v.max) || vehicles[3] }
+
+/* ── BOOKING WIDGET (hero) ── */
+let bcPax = 1, bcEtapeOpen = false
+function toggleBcEtape() {
+  bcEtapeOpen = !bcEtapeOpen
+  document.getElementById('bEtapeWrap').style.display = bcEtapeOpen ? 'flex' : 'none'
+  document.getElementById('bEtapeBtnLbl').textContent = bcEtapeOpen ? "Retirer l'étape" : 'Ajouter une étape'
+}
+function setBcPax(n, el) {
+  bcPax = n
+  document.querySelectorAll('.bc-pax-btn').forEach(b => b.classList.remove('on'))
+  el.classList.add('on')
+}
+function estimateBooking() {
+  const v    = getVehicle(bcPax)
+  const h    = parseInt((document.getElementById('bTime')?.value || '09:00').split(':')[0])
+  const dest = (document.getElementById('bArrivee')?.value || '').toLowerCase()
+  const from = placeCoords['bDepart']
+  const to   = placeCoords['bArrivee']
+
+  let total
+  if (from && to) {
+    // Distance réelle (straight-line × 1.3 pour approximer la route)
+    const km = haversineKm(from, to) * 1.3
+    total = Math.max(v.base, Math.ceil(km * 2.0 / 5) * 5)
+  } else {
+    // Fallback si pas de sélection autocomplete
+    total = v.base
+    if (/aéroport|cdg|orly|roissy|beauvais|bva/i.test(dest)) total += 25
+    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) total += 12
+  }
+
+  if (h >= 22 || h < 6) total = Math.round(total * 1.2)
+
+  document.getElementById('bcPriceNum').textContent = total
+  document.getElementById('bcPriceSub').textContent = v.name + ' · Tarif fixe · Prix garanti'
+  document.getElementById('bcPrice').classList.add('show')
+}
+
+function goReserver() {
+  const depart  = document.getElementById('bDepart')?.value  || ''
+  const arrivee = document.getElementById('bArrivee')?.value || ''
+  const date    = document.getElementById('bDate')?.value    || ''
+  const time    = document.getElementById('bTime')?.value    || '09:00'
+  const prix    = document.getElementById('bcPriceNum')?.textContent || ''
+  const params  = new URLSearchParams({ depart, arrivee, date, time, pax: String(bcPax), prix })
+  window.location.href = '/reserver?' + params.toString()
+}
+
+function prefillDevis() {
+  const depart  = document.getElementById('bDepart')?.value  || ''
+  const arrivee = document.getElementById('bArrivee')?.value || ''
+  const date    = document.getElementById('bDate')?.value    || ''
+  const time    = document.getElementById('bTime')?.value    || ''
+
+  // Pré-remplir les champs de l'étape 1 du formulaire
+  const originEl = document.getElementById('origin')
+  const destEl   = document.getElementById('dest')
+  const dateEl   = document.getElementById('dateInput')
+  const timeEl   = document.getElementById('timeInput')
+  if (originEl && depart)  originEl.value = depart
+  if (destEl   && arrivee) destEl.value   = arrivee
+  if (dateEl   && date)    dateEl.value   = date
+  if (timeEl   && time)    timeEl.value   = time
+
+  // Transférer les coordonnées pour que calcEstimate() utilise la vraie distance
+  if (placeCoords['bDepart'])  placeCoords['origin'] = placeCoords['bDepart']
+  if (placeCoords['bArrivee']) placeCoords['dest']   = placeCoords['bArrivee']
+
+  // Détecter automatiquement le type de destination
+  const destTypeEl = document.getElementById('destType')
+  if (destTypeEl) {
+    const a = arrivee.toLowerCase()
+    if (/aéroport|aeroport|cdg|orly|roissy|beauvais|bva/i.test(a)) destTypeEl.value = 'airport'
+    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(a))   destTypeEl.value = 'gare'
+    else destTypeEl.value = 'addr'
+  }
+
+  // Synchroniser le nombre de passagers
+  const paxBtns = document.querySelectorAll('#paxSelector .pax-btn')
+  const paxIdx  = Math.min(bcPax - 1, paxBtns.length - 1)
+  if (paxBtns[paxIdx]) setPax(bcPax, paxBtns[paxIdx])
+
+  scrollTo('#devis')
+}
+
+/* ── DEVIS FORM ── */
+let pax = 1, etapeOpen = false, suppTotal = 0, suppMap = {}
+
+function setPax(n, el) {
+  pax = n
+  document.querySelectorAll('.pax-btn').forEach(b => b.classList.remove('on'))
+  el.classList.add('on')
+  const v = getVehicle(n)
+  document.getElementById('vhName').textContent = v.name
+  document.getElementById('vhSub').textContent  = v.sub
+  document.getElementById('vhFrom').textContent  = v.from
+  calcEstimate()
+}
+function toggleEtape() {
+  etapeOpen = !etapeOpen
+  document.getElementById('etapeWrap').style.display = etapeOpen ? 'flex' : 'none'
+  document.getElementById('etapeBtnLbl').textContent = etapeOpen
+    ? "Retirer l'étape" : 'Ajouter une étape intermédiaire'
+  calcEstimate()
+}
+function toggleSupp(el, key, price) {
+  el.classList.toggle('on')
+  if (el.classList.contains('on')) suppMap[key] = price
+  else delete suppMap[key]
+  suppTotal = Object.values(suppMap).reduce((a, b) => a + b, 0)
+  calcEstimate()
+}
+function calcEstimate() {
+  const v        = getVehicle(pax)
+  const destType = document.getElementById('destType')?.value || 'addr'
+  const h        = parseInt((document.getElementById('timeInput')?.value || '09:00').split(':')[0])
+  let base = v.base
+  if (destType === 'airport') base += 25
+  if (destType === 'gare')    base += 12
+  if (etapeOpen)              base += 10
+  let maj = 0, majTxt = ''
+  if (h >= 22 || h < 6) { maj = Math.round(base * 0.2); majTxt = 'Majoration nuit +20%' }
+  const total = base + maj + suppTotal
+  document.getElementById('priceNum').textContent  = total
+  document.getElementById('estVehicle').textContent = v.name
+  document.getElementById('estRoute').textContent   =
+    destType === 'airport' ? 'Avec supplément aéroport' :
+    destType === 'gare'    ? 'Avec supplément gare' :
+    etapeOpen              ? 'Avec étape intermédiaire' : 'Course standard'
+  const majEl = document.getElementById('estMaj')
+  if (maj > 0) { majEl.style.display = 'inline'; document.getElementById('estMajTxt').textContent = majTxt }
+  else majEl.style.display = 'none'
+}
+function goStep(n) {
+  ;[1,2,3].forEach(i => {
+    document.getElementById('panel'+i).classList.remove('on')
+    const t = document.getElementById('tab'+i)
+    t.classList.remove('on')
+    if (i < n) t.classList.add('done')
+    else t.classList.remove('done')
+  })
+  document.getElementById('panel'+n).classList.add('on')
+  document.getElementById('tab'+n).classList.add('on')
+  if (n === 3) calcEstimate()
+}
+
+/* ── FAQ ACCORDION ── */
+function toggleFaq(qEl) {
+  const item = qEl.closest('.faq-item')
+  const wasOpen = item.classList.contains('open')
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'))
+  if (!wasOpen) item.classList.add('open')
+}
+
+/* ── GOOGLE PLACES AUTOCOMPLETE ── */
+const placeCoords = {}
+
+function haversineKm(a, b) {
+  const R = 6371
+  const dLat = (b.lat - a.lat) * Math.PI / 180
+  const dLng = (b.lng - a.lng) * Math.PI / 180
+  const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x))
+}
+
+window.initAutocomplete = function() {
+  const opts = {
+    componentRestrictions: { country: 'fr' },
+    fields: ['formatted_address', 'geometry'],
+    types: ['geocode', 'establishment']
+  }
+  const pairs = [
+    ['bDepart',  'bDepart',  null],
+    ['bEtape',   'bEtape',   null],
+    ['bArrivee', 'bArrivee', null],
+    ['origin',   'origin',   calcEstimate],
+    ['dest',     'dest',     calcEstimate]
+  ]
+  pairs.forEach(([id, key, cb]) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    const ac = new google.maps.places.Autocomplete(el, opts)
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace()
+      if (place?.geometry?.location) {
+        placeCoords[key] = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+      }
+      if (cb) cb()
+    })
+  })
+}
+
+/* ── INIT ── */
+window.addEventListener('load', () => {
+  const d = new Date()
+  const fmt = d.toISOString().split('T')[0]
+  const bDate = document.getElementById('bDate')
+  const dDate = document.getElementById('dateInput')
+  if (bDate) bDate.value = fmt
+  if (dDate) dDate.value = fmt
+  calcEstimate()
+})
+
+/* ── RGPD COOKIES ── */
+;(function(){
+  const KEY = 'owise_cookies_v1'
+  const b = () => document.getElementById('cookieBanner')
+  const o = () => document.getElementById('cookieOverlay')
+
+  function getConsent(){ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } }
+  function setConsent(p){ localStorage.setItem(KEY, JSON.stringify({...p, ts:Date.now()})) }
+
+  window.acceptAllCookies = function(){
+    setConsent({essential:true,analytics:true,marketing:true})
+    b()?.classList.remove('visible')
+  }
+  window.refuseCookies = function(){
+    setConsent({essential:true,analytics:false,marketing:false})
+    b()?.classList.remove('visible')
+  }
+  window.openCookieModal = function(){
+    const c = getConsent()
+    document.getElementById('toggleAnalytics').checked = c ? !!c.analytics : false
+    document.getElementById('toggleMarketing').checked = c ? !!c.marketing : false
+    o()?.classList.add('open')
+  }
+  window.closeCookieModal = function(){ o()?.classList.remove('open') }
+  window.closeCookieOverlay = function(e){ if(e.target===o()) o()?.classList.remove('open') }
+  window.saveCookieChoices = function(){
+    setConsent({
+      essential:true,
+      analytics:document.getElementById('toggleAnalytics').checked,
+      marketing:document.getElementById('toggleMarketing').checked
+    })
+    o()?.classList.remove('open')
+    b()?.classList.remove('visible')
+  }
+
+  const existing = getConsent()
+  const LIMIT = 13 * 30 * 24 * 60 * 60 * 1000
+  if(!existing || (Date.now() - existing.ts > LIMIT)){
+    setTimeout(()=> b()?.classList.add('visible'), 2000)
+  }
+})();
+</script>
+
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookieBanner">
+  <div class="cookie-text">
+    <div class="cookie-title">Gestion des cookies</div>
+    <div class="cookie-desc">Nous utilisons des cookies pour améliorer votre expérience et analyser notre trafic.
+      <a onclick="openCookieModal()">Gérer mes préférences</a> — Politique de confidentialité conforme RGPD.</div>
+  </div>
+  <div class="cookie-actions">
+    <button class="c-btn-manage" onclick="openCookieModal()">Personnaliser</button>
+    <button class="c-btn-refuse" onclick="refuseCookies()">Refuser</button>
+    <button class="c-btn-accept" onclick="acceptAllCookies()">Tout accepter</button>
+  </div>
+</div>
+
+<!-- COOKIE MODAL -->
+<div class="cookie-overlay" id="cookieOverlay" onclick="closeCookieOverlay(event)">
+  <div class="cookie-modal">
+    <div class="cm-title">Préférences de cookies</div>
+    <div class="cm-sub">Choisissez les catégories que vous autorisez. Votre choix est mémorisé 13 mois. Vous pouvez le modifier à tout moment.</div>
+
+    <div class="cm-cat">
+      <div>
+        <div class="cm-cat-name">Cookies essentiels</div>
+        <div class="cm-cat-desc">Indispensables au fonctionnement du site (session, préférences). Ne peuvent pas être refusés.</div>
+      </div>
+      <label class="cm-toggle" style="opacity:.35;pointer-events:none">
+        <input type="checkbox" checked disabled>
+        <span class="cm-track"></span>
+        <span class="cm-thumb"></span>
+      </label>
+    </div>
+
+    <div class="cm-cat">
+      <div>
+        <div class="cm-cat-name">Cookies analytiques</div>
+        <div class="cm-cat-desc">Mesure d'audience anonymisée — pages visitées, durée de session. Aide à améliorer le site.</div>
+      </div>
+      <label class="cm-toggle">
+        <input type="checkbox" id="toggleAnalytics">
+        <span class="cm-track"></span>
+        <span class="cm-thumb"></span>
+      </label>
+    </div>
+
+    <div class="cm-cat">
+      <div>
+        <div class="cm-cat-name">Cookies marketing</div>
+        <div class="cm-cat-desc">Permettent de vous proposer des publicités adaptées sur d'autres sites (Google Ads, Meta Pixel).</div>
+      </div>
+      <label class="cm-toggle">
+        <input type="checkbox" id="toggleMarketing">
+        <span class="cm-track"></span>
+        <span class="cm-thumb"></span>
+      </label>
+    </div>
+
+    <div class="cm-footer">
+      <button class="cm-cancel" onclick="closeCookieModal()">Annuler</button>
+      <button class="cm-save" onclick="saveCookieChoices()">Enregistrer mes choix</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUPABASE ══ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase
+const _sb = createClient('https://fbawdscnczdpjsbvyhfe.supabase.co','sb_publishable_K_f8z2VOMBzzQPqUMtPSBQ_A5JXsnJQ')
+
+async function submitDevis() {
+  const nom     = document.getElementById('dNom')?.value.trim()
+  const tel     = document.getElementById('dTel')?.value.trim()
+  const email   = document.getElementById('dEmail')?.value.trim()
+  const societe = document.getElementById('dSociete')?.value.trim()
+  const errEl   = document.getElementById('devisErrMsg')
+  const btn     = document.getElementById('devisSubmitBtn')
+
+  if (!nom || !tel || !email) {
+    errEl.textContent = 'Merci de remplir les champs obligatoires (nom, téléphone, e-mail).'
+    errEl.style.display = 'block'
+    return
+  }
+  errEl.style.display = 'none'
+
+  // Récupérer tous les champs
+  const origin    = document.getElementById('origin')?.value.trim()
+  const etape     = document.getElementById('etape')?.value.trim() || null
+  const dest      = document.getElementById('dest')?.value.trim()
+  const dateVal   = document.getElementById('dateInput')?.value
+  const heureVal  = document.getElementById('timeInput')?.value
+  const destType  = document.getElementById('destType')?.value
+  const pax       = parseInt(document.querySelector('#paxSelector .pax-btn.on')?.textContent) || 1
+  const price     = parseInt(document.getElementById('priceNum')?.textContent) || null
+  const vehicle   = document.getElementById('estVehicle')?.textContent || null
+
+  // Suppléments sélectionnés
+  const suppEls = document.querySelectorAll('.supp-row.on .supp-lbl')
+  const supps   = Array.from(suppEls).map(el => el.textContent.trim().replace(/^.{2}\s/,''))
+
+  btn.disabled = true
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-18 0" stroke-opacity=".3"/><path d="M21 12a9 9 0 00-9-9"/></svg> Envoi en cours…'
+
+  const { data, error } = await _sb.from('devis').insert([{
+    origin, etape, destination: dest,
+    date: dateVal || null,
+    heure: heureVal || null,
+    dest_type: destType,
+    passengers: pax,
+    supplements: supps,
+    vehicle_type: vehicle,
+    estimated_price: price,
+    nom, telephone: tel, email, societe: societe || null,
+    status: 'nouveau'
+  }]).select('id').single()
+
+  if (error) {
+    errEl.textContent = 'Une erreur est survenue. Veuillez réessayer ou nous appeler directement.'
+    errEl.style.display = 'block'
+    btn.disabled = false
+    btn.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Confirmer la réservation'
+    return
+  }
+
+  // Succès
+  const ref = data?.id?.slice(0,8).toUpperCase()
+  document.getElementById('devisConfirmRef').textContent = 'Réf. ' + (ref || '—')
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('on'))
+  document.getElementById('panel4').classList.add('on')
+  document.querySelectorAll('.step-dot').forEach((d,i) => {
+    d.classList.toggle('on', i < 3)
+    d.classList.toggle('done', i < 3)
+  })
+}
+
+function resetDevis() {
+  ['dNom','dTel','dEmail','dSociete','origin','dest','etape'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = ''
+  })
+  document.getElementById('dateInput').value = ''
+  document.getElementById('timeInput').value = '09:00'
+  document.getElementById('devisSubmitBtn').disabled = false
+  document.getElementById('devisSubmitBtn').innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Confirmer la réservation'
+  document.querySelectorAll('.supp-row.on').forEach(r => r.classList.remove('on'))
+  document.querySelectorAll('.pax-btn').forEach((b,i) => b.classList.toggle('on', i===0))
+  goStep(1)
+}
+</script>
+
+<!-- ══ GOOGLE MAPS PLACES — remplacer par ta vraie clé API ══ -->
+<script>
+  var GMAPS_KEY = 'AIzaSyAnvC-dvdsrXdbszc749Fb7WzWJmIpUJdY'
+  if (GMAPS_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY') {
+    var s = document.createElement('script')
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + GMAPS_KEY + '&libraries=places&callback=initAutocomplete&loading=async'
+    s.async = true; s.defer = true
+    document.head.appendChild(s)
+  }
+</script>
+
+<!-- Indicateur admin connecté (chargé en dernier, ne bloque pas la page) -->
+<div id="adminBar" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:#09091A;border:1px solid rgba(201,168,76,.35);border-radius:12px;
+  padding:10px 16px;display:none;align-items:center;gap:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif">
+  <div style="width:8px;height:8px;border-radius:50%;background:#3DB87A;animation:ab-pulse 2s infinite"></div>
+  <span style="font-size:12px;color:#EDE8DF;font-weight:500" id="adminBarName">Admin connecté</span>
+  <a href="https://www.owise.fr/index" style="font-size:11px;background:#C9A84C;color:#07071a;padding:4px 12px;
+    border-radius:6px;font-weight:600;text-decoration:none;margin-left:4px">Dashboard →</a>
+  <button onclick="doAdminLogout()" style="background:none;border:none;color:#848499;cursor:pointer;
+    font-size:18px;line-height:1;padding:0 2px" title="Déconnexion">×</button>
+</div>
+<style>@keyframes ab-pulse{0%,100%{box-shadow:0 0 0 0 rgba(61,184,122,.5)}50%{box-shadow:0 0 0 5px rgba(61,184,122,0)}}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script defer>
+window.addEventListener('load', function(){
+  var sb = supabase.createClient(
+    'https://fbawdscnczdpjsbvyhfe.supabase.co',
+    'sb_publishable_K_f8z2VOMBzzQPqUMtPSBQ_A5JXsnJQ'
+  );
+  sb.auth.getSession().then(function(res){
+    var session = res.data && res.data.session;
+    if(!session) return;
+    var bar = document.getElementById('adminBar');
+    var nameEl = document.getElementById('adminBarName');
+    if(bar){
+      var name = (session.user.user_metadata && session.user.user_metadata.name) || session.user.email || 'Admin';
+      nameEl.textContent = name.split(' ')[0] + ' · connecté';
+      bar.style.display = 'flex';
+    }
+  });
+  window.doAdminLogout = function(){
+    var sb2 = supabase.createClient(
+      'https://fbawdscnczdpjsbvyhfe.supabase.co',
+      'sb_publishable_K_f8z2VOMBzzQPqUMtPSBQ_A5JXsnJQ'
+    );
+    sb2.auth.signOut().then(function(){ document.getElementById('adminBar').style.display='none'; });
+  };
+});
+</script>
+</body>
+</html>

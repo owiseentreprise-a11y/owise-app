@@ -31,12 +31,12 @@ export default async function EspaceClientLayout({ children }: { children: React
   const entrepriseNom = (collab?.clients as any)?.entreprise_nom ?? null
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--base)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F6F1', display: 'flex', flexDirection: 'column' }}>
       {/* Topbar */}
       <header data-noprint className="no-print" style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(9,9,26,.95)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(201,168,76,.1)',
+        background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(0,0,0,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -49,11 +49,11 @@ export default async function EspaceClientLayout({ children }: { children: React
             fontSize: 15, fontWeight: 600, color: 'var(--base)',
           }}>O</div>
           <div>
-            <div style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: 16, fontWeight: 500, color: 'var(--t1)', letterSpacing: '.06em' }}>
+            <div style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: 16, fontWeight: 500, color: '#0A0A0A', letterSpacing: '.06em' }}>
               OWISE
             </div>
             {entrepriseNom && (
-              <div style={{ fontSize: 9, color: 'var(--gold)', letterSpacing: '.1em', textTransform: 'uppercase', marginTop: -2 }}>
+              <div style={{ fontSize: 9, color: '#C9A84C', letterSpacing: '.1em', textTransform: 'uppercase', marginTop: -2 }}>
                 {entrepriseNom}
               </div>
             )}
@@ -62,16 +62,16 @@ export default async function EspaceClientLayout({ children }: { children: React
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{nomAffiche}</div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{nomAffiche}</div>
             {collab?.poste && (
-              <div style={{ fontSize: 10, color: 'var(--t3)' }}>{collab.poste}</div>
+              <div style={{ fontSize: 10, color: '#999999' }}>{collab.poste}</div>
             )}
           </div>
           <form action={logoutAction}>
             <button type="submit" style={{
-              background: 'var(--elevated)', border: '1px solid var(--t3)',
+              background: '#F3F0EB', border: '1px solid rgba(0,0,0,.12)',
               borderRadius: 7, padding: '6px 12px',
-              fontSize: 11, color: 'var(--t2)', cursor: 'pointer',
+              fontSize: 11, color: '#555555', cursor: 'pointer',
               fontFamily: 'var(--font-dm-sans), sans-serif',
             }}>
               Déconnexion
