@@ -35,8 +35,8 @@ export async function proxy(request: NextRequest) {
   if (user) {
     const role = user.app_metadata?.role as string | undefined
 
-    // Connecté sur /login → rediriger vers la bonne section
-    if (path === '/login') {
+    // Connecté sur /login ou /client-login → rediriger vers la bonne section
+    if (path === '/login' || path === '/client-login') {
       if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
       if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
       return NextResponse.redirect(new URL('/espace-client', request.url))
@@ -59,5 +59,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/chauffeur/:path*', '/espace-client/:path*', '/login'],
+  matcher: ['/admin/:path*', '/chauffeur/:path*', '/espace-client/:path*', '/login', '/client-login'],
 }
