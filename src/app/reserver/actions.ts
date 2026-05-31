@@ -25,7 +25,9 @@ export async function createReservationCheckout(data: {
     van: 'Van',
   }
 
-  const session = await stripe.checkout.sessions.create({
+  let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
+  try {
+    session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
     customer_email: data.email,
@@ -57,7 +59,11 @@ export async function createReservationCheckout(data: {
       zone_depart_id:  data.zone_depart_id,
       zone_arrivee_id: data.zone_arrivee_id,
     },
-  })
+    })
+  } catch (err: any) {
+    console.error('[Stripe] checkout.sessions.create error:', err?.message ?? err)
+    throw new Error(`Stripe: ${err?.message ?? 'Erreur inconnue'}`)
+  }
 
   redirect(session.url!)
 }
