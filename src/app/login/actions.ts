@@ -43,7 +43,7 @@ export async function resetPasswordAction(formData: FormData) {
   const { data, error } = await admin.auth.admin.generateLink({
     type: 'recovery',
     email,
-    options: { redirectTo: `${origin}/login/update-password` },
+    options: { redirectTo: `${origin}/auth/callback?next=/login/update-password` },
   })
 
   if (error || !data?.properties?.action_link) {
@@ -64,7 +64,16 @@ export async function updatePasswordAction(formData: FormData) {
   if (!password || password.length < 6) redirect('/login/update-password?error=mot-de-passe-court')
   if (password !== confirm) redirect('/login/update-password?error=mots-de-passe-differents')
 
-  const { error } = await supabase.auth.updateUser({ password })
-  if (error) redirect('/login/update-password?error=mise-a-jour-echouee')
-  redirect('/login?success=mot-de-passe-mis-a-jour')
+  const { data: { user }, error } = await supabase.auth.updateUser({ password })
+  if (error) {
+    // Détecter si on vient du flow client ou admin selon le referrer
+    const role = user?.app_metadata?.role
+    const base = (role && role !== 'admin' && role !== 'chauffeur') ? '/client-login' : '/login'
+    redirect(`${base}/update-password?error=mise-a-jour-echouee`)
+  }
+  const role = user?.app_metadata?.role
+  if (role === 'admin' || role === 'chauffeur') {
+    redirect('/login?success=mot-de-passe-mis-a-jour')
+  }
+  redirect('/client-login?success=mot-de-passe-mis-a-jour')
 }
