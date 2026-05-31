@@ -22,7 +22,8 @@ export async function createReservationCheckout(data: {
   zone_depart_id: string
   zone_arrivee_id: string
 }): Promise<{ error?: string } | void> {
-  const key = process.env.STRIPE_SECRET_KEY
+  const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
+  const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
   if (!key) return { error: 'Clé Stripe manquante' }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
