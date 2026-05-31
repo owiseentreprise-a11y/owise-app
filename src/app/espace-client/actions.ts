@@ -9,10 +9,12 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const depart  = formData.get('depart') as string
-  const arrivee = formData.get('arrivee') as string
-  const date    = formData.get('date') as string
-  const note    = (formData.get('note') as string) || null
+  const depart    = formData.get('depart') as string
+  const arrivee   = formData.get('arrivee') as string
+  const date      = formData.get('date') as string
+  const note      = (formData.get('note') as string) || null
+  const vehicule  = (formData.get('vehicule') as string) || 'berline'
+  const passagers = parseInt(formData.get('passagers') as string) || 1
 
   if (!depart || !arrivee || !date) redirect('/espace-client?error=champs-manquants')
   const dateParsed = new Date(date)
@@ -43,6 +45,8 @@ export async function demanderCourse(formData: FormData): Promise<void> {
     adresse_arrivee:  arrivee,
     date_prevue:      dateParsed.toISOString(),
     notes:            note,
+    type_vehicule:    vehicule,
+    nb_passagers:     passagers,
     statut:           'en_attente',
   }).select('id').single()
 

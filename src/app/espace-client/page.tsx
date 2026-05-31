@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
-import { demanderCourse } from './actions'
-import SubmitButton from './SubmitButton'
+import DemanderCourseClient from './DemanderCourseClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,77 +76,7 @@ export default async function EspaceClientPage({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
       {/* Demande de course */}
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--gb)',
-        borderRadius: 16, padding: 28,
-        backgroundImage: 'radial-gradient(ellipse at 80% 0%, rgba(201,168,76,.06) 0%, transparent 60%)',
-      }}>
-        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 18 }}>
-          Réserver un transfert
-        </div>
-        {success && (
-          <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.2)', fontSize: 12, color: 'var(--grn)' }}>
-            ✓ Demande envoyée — notre équipe vous contactera pour confirmer.
-          </div>
-        )}
-        {error && (
-          <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.2)', fontSize: 12, color: 'var(--red)' }}>
-            Veuillez renseigner le départ, l'arrivée et la date.
-          </div>
-        )}
-        <form action={demanderCourse} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <div>
-              <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>
-                Adresse de départ
-              </label>
-              <input name="depart" placeholder="15 rue de la Paix, Paris" style={{
-                background: 'var(--elevated)', border: '1px solid var(--t3)',
-                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
-                width: '100%', boxSizing: 'border-box', outline: 'none',
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-              }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>
-                Adresse d'arrivée
-              </label>
-              <input name="arrivee" placeholder="Aéroport CDG, Terminal 2E" style={{
-                background: 'var(--elevated)', border: '1px solid var(--t3)',
-                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
-                width: '100%', boxSizing: 'border-box', outline: 'none',
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-              }} />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 14, alignItems: 'flex-end' }}>
-            <div>
-              <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>
-                Date et heure
-              </label>
-              <input name="date" type="datetime-local" style={{
-                background: 'var(--elevated)', border: '1px solid var(--t3)',
-                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
-                width: '100%', boxSizing: 'border-box', outline: 'none',
-                fontFamily: 'var(--font-jetbrains), monospace',
-                colorScheme: 'dark',
-              }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>
-                Commentaire (optionnel)
-              </label>
-              <input name="note" placeholder="Vol AF123, bagages..." style={{
-                background: 'var(--elevated)', border: '1px solid var(--t3)',
-                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
-                width: '100%', boxSizing: 'border-box', outline: 'none',
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-              }} />
-            </div>
-            <SubmitButton />
-          </div>
-        </form>
-      </div>
+      <DemanderCourseClient success={success} error={error} />
 
       {/* Courses en cours */}
       {enCours.length > 0 && (
