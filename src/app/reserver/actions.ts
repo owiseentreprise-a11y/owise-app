@@ -1,7 +1,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { getStripe } from '@/lib/stripe'
+
+const VEHICULE_LABEL: Record<string, string> = {
+  berline: 'Berline',
+  berline_premium: 'Berline Premium',
+  van: 'Van',
+}
 
 export async function createReservationCheckout(data: {
   adresse_depart: string
@@ -17,55 +22,57 @@ export async function createReservationCheckout(data: {
   zone_depart_id: string
   zone_arrivee_id: string
 }): Promise<{ error?: string } | void> {
-  const stripe = getStripe()
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return { error: 'Clé Stripe manquante' }
 
-  const label: Record<string, string> = {
-    berline: 'Berline',
-    berline_premium: 'Berline Premium',
-    van: 'Van',
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const label = VEHICULE_LABEL[data.type_vehicule] ?? data.type_vehicule
 
-  let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
+  const params = new URLSearchParams()
+  params.set('mode', 'payment')
+  params.set('payment_method_types[]', 'card')
+  params.set('customer_email', data.email)
+  params.set('line_items[0][price_data][currency]', 'eur')
+  params.set('line_items[0][price_data][unit_amount]', String(Math.round(data.prix * 100)))
+  params.set('line_items[0][price_data][product_data][name]', `Course VTC — ${label}`)
+  params.set('line_items[0][price_data][product_data][description]', `${data.adresse_depart} → ${data.adresse_arrivee}`)
+  params.set('line_items[0][quantity]', '1')
+  params.set('success_url', `${siteUrl}/paiement/merci?session_id={CHECKOUT_SESSION_ID}&reservation=1`)
+  params.set('cancel_url', `${siteUrl}/reserver`)
+  params.set('metadata[type]', 'reservation')
+  params.set('metadata[adresse_depart]', data.adresse_depart.slice(0, 499))
+  params.set('metadata[adresse_arrivee]', data.adresse_arrivee.slice(0, 499))
+  params.set('metadata[date_prevue]', data.date_prevue)
+  params.set('metadata[type_vehicule]', data.type_vehicule)
+  params.set('metadata[nb_passagers]', String(data.nb_passagers))
+  params.set('metadata[prix]', String(data.prix))
+  params.set('metadata[nom]', data.nom)
+  params.set('metadata[prenom]', data.prenom)
+  params.set('metadata[email]', data.email)
+  params.set('metadata[telephone]', data.telephone || '')
+  params.set('metadata[zone_depart_id]', data.zone_depart_id)
+  params.set('metadata[zone_arrivee_id]', data.zone_arrivee_id)
+
   try {
-    session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    mode: 'payment',
-    customer_email: data.email,
-    line_items: [{
-      price_data: {
-        currency: 'eur',
-        unit_amount: Math.round(data.prix * 100),
-        product_data: {
-          name: `Course VTC — ${label[data.type_vehicule] ?? data.type_vehicule}`,
-          description: `${data.adresse_depart} → ${data.adresse_arrivee}`,
-        },
+    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      quantity: 1,
-    }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/paiement/merci?session_id={CHECKOUT_SESSION_ID}&reservation=1`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/reserver`,
-    metadata: {
-      type: 'reservation',
-      adresse_depart:  data.adresse_depart.slice(0, 499),
-      adresse_arrivee: data.adresse_arrivee.slice(0, 499),
-      date_prevue:     data.date_prevue,
-      type_vehicule:   data.type_vehicule,
-      nb_passagers:    String(data.nb_passagers),
-      prix:            String(data.prix),
-      nom:             data.nom,
-      prenom:          data.prenom,
-      email:           data.email,
-      telephone:       data.telephone || '',
-      zone_depart_id:  data.zone_depart_id,
-      zone_arrivee_id: data.zone_arrivee_id,
-    },
+      body: params.toString(),
     })
-  } catch (err: any) {
-    // redirect() lance une erreur spéciale Next.js — la laisser passer
-    if ((err as any)?.digest?.startsWith('NEXT_REDIRECT')) throw err
-    console.error('[Stripe] checkout.sessions.create error:', err?.message ?? err)
-    return { error: err?.message ?? String(err) }
-  }
 
-  redirect(session.url!)
+    const json = await res.json() as any
+
+    if (!res.ok) {
+      console.error('[Stripe] API error:', json?.error?.message)
+      return { error: json?.error?.message ?? `HTTP ${res.status}` }
+    }
+
+    redirect(json.url)
+  } catch (err: any) {
+    console.error('[Stripe] fetch error:', err?.message)
+    return { error: `Connexion: ${err?.message}` }
+  }
 }
