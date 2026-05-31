@@ -73,6 +73,8 @@ export async function createReservationCheckout(data: {
 
     redirect(json.url)
   } catch (err: any) {
+    // redirect() de Next.js lance une erreur NEXT_REDIRECT — la laisser passer
+    if (err?.digest?.startsWith('NEXT_REDIRECT') || err?.message === 'NEXT_REDIRECT') throw err
     console.error('[Stripe] fetch error:', err?.message)
     return { error: `Connexion: ${err?.message}` }
   }
