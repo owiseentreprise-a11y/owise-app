@@ -390,8 +390,10 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart.codePostal,  depart.label])
   const zoneArrivee = useMemo(() => detectZone(arrivee.codePostal, activeZones, arrivee.label), [arrivee.codePostal, arrivee.label])
 
+  // Forfait si au moins un aéroport détecté, OU si les deux zones définies avec zone forfait
   const useForfait = useMemo(() =>
-    !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee))),
+    !!(zoneDepart?.type === 'aeroport' || zoneArrivee?.type === 'aeroport' ||
+      (zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee)))),
     [zoneDepart, zoneArrivee]
   )
 
@@ -409,9 +411,12 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   }, [useForfait, depart.lat, depart.lng, arrivee.lat, arrivee.lng])
 
   const prix = useMemo(() => {
-    if (!zoneDepart || !zoneArrivee) return null
     if (useForfait) {
-      return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, date, grille, params, tarifs, activeZones)
+      // calcul forfait : fonctionne même si une seule zone est définie (aéroport fixe)
+      return calculerPrixForfait(
+        zoneDepart?.id ?? '', zoneArrivee?.id ?? '',
+        vehicule, date, grille, params, tarifs, activeZones
+      )
     }
     if (distanceKm === null) return null
     return calculerPrixKm(distanceKm, vehicule, date, params, tarifs)
@@ -423,7 +428,6 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
     if (!date)                 return setStep1Error('Date et heure requises.')
     if (!depart.codePostal)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
     if (!arrivee.codePostal)   return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
-    if (!zoneDepart || !zoneArrivee) return setStep1Error('Zone non couverte. Contactez-nous pour un devis.')
     if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
     setStep(2)
@@ -511,7 +515,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                     {zoneDepart
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneDepart.nom}</span>
                       : depart.codePostal
-                        ? <span style={{ color: '#E8A030' }}>Zone non couverte ({depart.codePostal})</span>
+                        ? <span style={{ color: '#848499' }}>Tarif calculé au km</span>
                         : <span style={{ color: '#848499' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
@@ -527,7 +531,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
                     {zoneArrivee
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneArrivee.nom}</span>
                       : arrivee.codePostal
-                        ? <span style={{ color: '#E8A030' }}>Zone non couverte ({arrivee.codePostal})</span>
+                        ? <span style={{ color: '#848499' }}>Tarif calculé au km</span>
                         : <span style={{ color: '#848499' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
@@ -535,7 +539,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
               </div>
 
               {/* Badge mode de tarification */}
-              {zoneDepart && zoneArrivee && (
+              {depart.codePostal && arrivee.codePostal && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{
                     fontSize: 10, padding: '3px 10px', borderRadius: 10, fontWeight: 500,
@@ -599,7 +603,7 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
             </div>
 
             {/* Prix estimé */}
-            {(prix !== null || loadingRoute) && zoneDepart && zoneArrivee && (
+            {(prix !== null || loadingRoute) && depart.codePostal && arrivee.codePostal && (
               <div style={{
                 background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05))',
                 border: '1px solid rgba(201,168,76,.25)',
