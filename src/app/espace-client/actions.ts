@@ -17,6 +17,18 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const passagers = parseInt(formData.get('passagers') as string) || 1
 
   if (!depart || !arrivee || !date) redirect('/espace-client?error=champs-manquants')
+
+  // Sécurité : les particuliers sans "payer_a_bord" doivent passer par Stripe
+  const isCollab = user.app_metadata?.role === 'collaborateur'
+  if (!isCollab) {
+    const { data: clientData } = await supabase.from('clients').select('type_compte, payer_a_bord').eq('id', user.id).single()
+    const isEntreprise   = clientData?.type_compte === 'entreprise'
+    const peutPayerAbord = clientData?.payer_a_bord === true
+    if (!isEntreprise && !peutPayerAbord) {
+      // Particulier non autorisé → bloquer la demande directe
+      redirect('/espace-client?error=paiement-requis')
+    }
+  }
   const dateParsed = new Date(date)
   if (isNaN(dateParsed.getTime())) redirect('/espace-client?error=champs-manquants')
 

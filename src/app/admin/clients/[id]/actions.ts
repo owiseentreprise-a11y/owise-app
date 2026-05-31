@@ -36,6 +36,12 @@ export async function updateProfile(
   revalidatePath(`/admin/clients/${id}`)
 }
 
+export async function togglePayerAbord(id: string, valeur: boolean): Promise<void> {
+  const supabase = await requireAdminClient()
+  await supabase.from('clients').update({ payer_a_bord: valeur }).eq('id', id)
+  revalidatePath(`/admin/clients/${id}`)
+}
+
 export async function updateCompte(
   id: string,
   data: { type_compte: string; entreprise_nom: string; adresse_facturation: string },

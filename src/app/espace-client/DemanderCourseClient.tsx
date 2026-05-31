@@ -121,15 +121,37 @@ const VEHICULES = [
   { value: 'van',             label: 'Van',             places: '1–7' },
 ]
 
-export default function DemanderCourseClient({ success, error }: { success?: boolean; error?: boolean }) {
+export default function DemanderCourseClient({
+  success, error, isEntreprise = false, peutPayerAbord = false
+}: {
+  success?: boolean; error?: boolean; isEntreprise?: boolean; peutPayerAbord?: boolean
+}) {
   const [depart,   setDepart]   = useState('')
   const [arrivee,  setArrivee]  = useState('')
   const [vehicule, setVehicule] = useState('berline')
   const [passagers, setPass]    = useState(1)
+  const [date, setDate]         = useState('')
   const [pending, startTransition] = useTransition()
+
+  // Particulier sans autorisation → redirige vers /reserver pour payer
+  const doitPayer = !isEntreprise && !peutPayerAbord
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (doitPayer) {
+      // Rediriger vers le formulaire de paiement avec les adresses pré-remplies
+      const params = new URLSearchParams()
+      if (depart)  params.set('depart', depart)
+      if (arrivee) params.set('arrivee', arrivee)
+      if (date) {
+        const d = new Date(date)
+        params.set('date', d.toISOString().split('T')[0])
+        params.set('time', d.toTimeString().slice(0, 5))
+      }
+      params.set('pax', String(passagers))
+      window.location.href = `/reserver?${params.toString()}`
+      return
+    }
     const form = e.currentTarget
     const data = new FormData(form)
     data.set('depart', depart)
@@ -174,12 +196,14 @@ export default function DemanderCourseClient({ success, error }: { success?: boo
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>Date et heure</label>
-            <input name="date" type="datetime-local" required style={{
-              background: 'var(--elevated)', border: '1px solid var(--gb)',
-              borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
-              width: '100%', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit',
-              colorScheme: 'light',
-            }} />
+            <input name="date" type="datetime-local" required value={date}
+              onChange={e => setDate(e.target.value)}
+              style={{
+                background: 'var(--elevated)', border: '1px solid var(--gb)',
+                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--t1)',
+                width: '100%', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit',
+                colorScheme: 'light',
+              }} />
           </div>
           <div>
             <label style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 6 }}>Commentaire (optionnel)</label>
@@ -227,6 +251,12 @@ export default function DemanderCourseClient({ success, error }: { success?: boo
           </div>
         </div>
 
+        {doitPayer && (
+          <div style={{ fontSize: 11, color: 'var(--t2)', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '8px 12px' }}>
+            💳 Particulier — le paiement en ligne sera demandé à l'étape suivante.
+          </div>
+        )}
+
         <button type="submit" disabled={pending} style={{
           background: pending ? 'rgba(201,168,76,.5)' : '#C9A84C',
           color: '#0A0A0A', border: 'none', borderRadius: 8,
@@ -234,7 +264,7 @@ export default function DemanderCourseClient({ success, error }: { success?: boo
           cursor: pending ? 'wait' : 'pointer', fontFamily: 'inherit',
           alignSelf: 'flex-end',
         }}>
-          {pending ? 'Envoi…' : '+ Demander'}
+          {pending ? 'Envoi…' : doitPayer ? '→ Réserver et payer' : '+ Demander'}
         </button>
       </form>
     </div>

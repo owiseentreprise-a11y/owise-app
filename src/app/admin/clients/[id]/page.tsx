@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import ClientEditActions from './ClientEditActions'
 import CollaborateursSection from './CollaborateursSection'
+import { togglePayerAbord } from './actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -264,6 +265,46 @@ export default async function ClientDetailPage({
               paiement_differe: (client as any).paiement_differe ?? false,
             }}
           />
+
+          {/* Toggle payer à bord — particuliers uniquement */}
+          {!isEntreprise && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 20px' }}>
+              <div style={{ fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
+                Paiement
+              </div>
+              <form action={async () => {
+                'use server'
+                await togglePayerAbord(id, !(client as any).payer_a_bord)
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                  <input type="checkbox" defaultChecked={(client as any).payer_a_bord === true}
+                    onChange={() => {}} style={{ display: 'none' }} />
+                  <button type="submit" style={{
+                    width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+                    background: (client as any).payer_a_bord ? 'var(--gold)' : 'var(--t3)',
+                    position: 'relative', transition: 'background .2s', flexShrink: 0,
+                    padding: 0,
+                  }}>
+                    <span style={{
+                      position: 'absolute', top: 3,
+                      left: (client as any).payer_a_bord ? 21 : 3,
+                      width: 16, height: 16, borderRadius: '50%',
+                      background: '#fff', transition: 'left .2s',
+                      display: 'block',
+                    }} />
+                  </button>
+                  <span style={{ fontSize: 13, color: 'var(--t1)' }}>
+                    Autoriser paiement à bord (cash / chèque)
+                  </span>
+                </label>
+                <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 8 }}>
+                  {(client as any).payer_a_bord
+                    ? '✓ Ce client peut réserver sans payer en ligne.'
+                    : 'Par défaut : paiement Stripe obligatoire à la réservation.'}
+                </div>
+              </form>
+            </div>
+          )}
           {isEntreprise && (
             <CollaborateursSection
               clientId={id}

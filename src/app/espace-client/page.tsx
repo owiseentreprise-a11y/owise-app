@@ -30,14 +30,19 @@ export default async function EspaceClientPage({
   const isCollab = user.app_metadata?.role === 'collaborateur'
 
   // Vérifie le type de compte (seulement si pas collab)
-  let isEntreprise = false
+  let isEntreprise    = false
+  let peutPayerAbord  = false
   if (!isCollab) {
     const { data: clientData } = await supabase
       .from('clients')
-      .select('type_compte')
+      .select('type_compte, payer_a_bord')
       .eq('id', user.id)
       .single()
-    isEntreprise = clientData?.type_compte === 'entreprise'
+    isEntreprise   = clientData?.type_compte === 'entreprise'
+    peutPayerAbord = clientData?.payer_a_bord === true
+  } else {
+    // Collaborateur → facturation entreprise
+    isEntreprise = true
   }
 
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
@@ -76,7 +81,11 @@ export default async function EspaceClientPage({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
       {/* Demande de course */}
-      <DemanderCourseClient success={success} error={error} />
+      <DemanderCourseClient
+        success={success} error={error}
+        isEntreprise={isEntreprise}
+        peutPayerAbord={peutPayerAbord}
+      />
 
       {/* Courses en cours */}
       {enCours.length > 0 && (
