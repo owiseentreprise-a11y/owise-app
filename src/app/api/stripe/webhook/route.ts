@@ -71,6 +71,9 @@ async function handleNewReservation(meta: Record<string, string>) {
 
   if (existingId) {
     userId = existingId
+    // Mettre à jour le profil si les champs sont vides
+    await supabase.from('profiles')
+      .upsert({ id: userId, nom, prenom, telephone }, { onConflict: 'id', ignoreDuplicates: false })
   } else {
     // Créer le compte (mot de passe aléatoire — le client utilisera un magic link)
     const password = Math.random().toString(36).slice(2, 10)
@@ -90,16 +93,11 @@ async function handleNewReservation(meta: Record<string, string>) {
 
     userId = newUser.user.id
 
-    // Créer le profil
-    await supabase.from('profiles').insert({
-      id: userId, nom, prenom, telephone,
-    })
-
-    // Créer le client
-    await supabase.from('clients').insert({
-      id: userId,
-      type_compte: 'particulier',
-    })
+    // Créer profil et client (upsert pour éviter les doublons)
+    await Promise.all([
+      supabase.from('profiles').upsert({ id: userId, nom, prenom, telephone }, { onConflict: 'id' }),
+      supabase.from('clients').upsert({ id: userId, type_compte: 'particulier' }, { onConflict: 'id' }),
+    ])
   }
 
   // 2. Créer la course
