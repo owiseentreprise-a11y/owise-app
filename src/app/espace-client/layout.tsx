@@ -31,7 +31,24 @@ export default async function EspaceClientLayout({ children }: { children: React
   const entrepriseNom = (collab?.clients as any)?.entreprise_nom ?? null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F6F1', display: 'flex', flexDirection: 'column' }}>
+    <div style={{
+      minHeight: '100vh', background: '#F8F6F1', display: 'flex', flexDirection: 'column',
+      // Surcharge les variables CSS en thème clair pour l'espace client
+      ['--base' as any]:     '#F8F6F1',
+      ['--surface' as any]:  '#FFFFFF',
+      ['--elevated' as any]: '#F3F0EB',
+      ['--floating' as any]: '#FFFFFF',
+      ['--gb' as any]:       'rgba(0,0,0,.1)',
+      ['--t1' as any]:       '#0A0A0A',
+      ['--t2' as any]:       '#555555',
+      ['--t3' as any]:       '#999999',
+      ['--gold' as any]:     '#C9A84C',
+      ['--grn' as any]:      '#2E9E5E',
+      ['--amb' as any]:      '#C07020',
+      ['--red' as any]:      '#C03030',
+      ['--blue' as any]:     '#3070C0',
+      color:                  '#0A0A0A',
+    }}>
       {/* Topbar */}
       <header data-noprint className="no-print" style={{
         position: 'sticky', top: 0, zIndex: 50,
