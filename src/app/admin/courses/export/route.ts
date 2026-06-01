@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('courses')
-    .select('*, clients(type_compte, entreprise_nom, profiles(prenom, nom)), chauffeurs(profiles(prenom, nom)), collaborateurs(profiles(prenom, nom)), sous_traitants(nom)')
+    .select('*, clients(type_compte, entreprise_nom, profiles(prenom, nom)), chauffeurs(profiles(prenom, nom)), collaborateurs(prenom, nom), sous_traitants(nom)')
     .order('date_prevue', { ascending: false })
 
   if (from) query = query.gte('date_prevue', from)

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import DemanderCourseClient from './DemanderCourseClient'
+import CollaborateursManager from './CollaborateursManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,19 @@ export default async function EspaceClientPage({
     isEntreprise = true
   }
 
+  // Modes de paiement autorisés (config globale admin)
+  const { data: paramsData } = await supabase
+    .from('parametres')
+    .select('paiement_stripe_actif, paiement_cash_actif, paiement_cheque_actif, paiement_virement_actif')
+    .eq('id', true)
+    .single()
+  const modesActifs = {
+    stripe:   paramsData?.paiement_stripe_actif   ?? true,
+    cash:     (paramsData?.paiement_cash_actif     ?? false) && peutPayerAbord,
+    cheque:   paramsData?.paiement_cheque_actif   ?? false,
+    virement: paramsData?.paiement_virement_actif ?? false,
+  }
+
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
   const baseQuery = supabase
     .from('courses')
@@ -66,13 +80,24 @@ export default async function EspaceClientPage({
         .limit(20)
     : null
 
-  const [coursesRes, facturesRes] = await Promise.all([
+  // Collaborateurs — uniquement pour les comptes entreprise (non-collab)
+  const collabsQuery = isEntreprise && !isCollab
+    ? supabase
+        .from('collaborateurs')
+        .select('id, nom, prenom, tel, email, poste, adresse')
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: true })
+    : null
+
+  const [coursesRes, facturesRes, collabsRes] = await Promise.all([
     query,
     facturesQuery ?? Promise.resolve({ data: null }),
+    collabsQuery  ?? Promise.resolve({ data: null }),
   ])
 
   const list = coursesRes.data ?? []
   const factures = (facturesRes.data ?? []) as any[]
+  const collaborateurs = (collabsRes.data ?? []) as any[]
 
   const enCours = list.filter(c => ['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
   const historique = list.filter(c => !['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
@@ -85,6 +110,8 @@ export default async function EspaceClientPage({
         success={success} error={error}
         isEntreprise={isEntreprise}
         peutPayerAbord={peutPayerAbord}
+        modesActifs={modesActifs}
+        collaborateurs={isEntreprise && !isCollab ? collaborateurs : []}
       />
 
       {/* Courses en cours */}
@@ -118,6 +145,11 @@ export default async function EspaceClientPage({
           </div>
         )}
       </div>
+
+      {/* Mon équipe — uniquement pour les comptes entreprise (pas les collabs) */}
+      {isEntreprise && !isCollab && (
+        <CollaborateursManager collaborateurs={collaborateurs} />
+      )}
 
       {/* Factures — uniquement pour les clients entreprise */}
       {isEntreprise && (

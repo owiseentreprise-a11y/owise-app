@@ -28,7 +28,7 @@ export default async function NouvelleCourse() {
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.9)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,

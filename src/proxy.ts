@@ -24,21 +24,23 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
-  const protectedPrefixes = ['/admin', '/chauffeur', '/espace-client']
+  const protectedPrefixes = ['/admin', '/chauffeur', '/espace-client', '/sous-traitant']
   const isProtected = protectedPrefixes.some(p => path.startsWith(p))
 
   // Non connecté → login
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const loginPage = path.startsWith('/sous-traitant') ? '/sous-traitant-login' : '/login'
+    return NextResponse.redirect(new URL(loginPage, request.url))
   }
 
   if (user) {
     const role = user.app_metadata?.role as string | undefined
 
-    // Connecté sur /login ou /client-login → rediriger vers la bonne section
-    if (path === '/login' || path === '/client-login') {
+    // Connecté sur une page de login → rediriger vers la bonne section
+    if (path === '/login' || path === '/client-login' || path === '/sous-traitant-login') {
       if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
       if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
+      if (role === 'sous_traitant') return NextResponse.redirect(new URL('/sous-traitant', request.url))
       return NextResponse.redirect(new URL('/espace-client', request.url))
     }
 
@@ -48,6 +50,10 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin', request.url))
       if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
         return NextResponse.redirect(new URL('/chauffeur', request.url))
+      if (role === 'sous_traitant' && !path.startsWith('/sous-traitant'))
+        return NextResponse.redirect(new URL('/sous-traitant', request.url))
+      if (path.startsWith('/sous-traitant') && role !== 'sous_traitant' && role !== 'admin')
+        return NextResponse.redirect(new URL('/sous-traitant-login', request.url))
       if (role !== 'admin' && role !== 'chauffeur' && path.startsWith('/admin'))
         return NextResponse.redirect(new URL('/login', request.url))
       if (role !== 'admin' && role !== 'chauffeur' && path.startsWith('/chauffeur'))
@@ -59,5 +65,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/chauffeur/:path*', '/espace-client/:path*', '/login', '/client-login', '/client-login/:path*'],
+  matcher: [
+    '/admin/:path*', '/chauffeur/:path*', '/espace-client/:path*',
+    '/sous-traitant/:path*', '/sous-traitant',
+    '/login', '/client-login', '/client-login/:path*', '/sous-traitant-login',
+  ],
 }

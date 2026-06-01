@@ -27,7 +27,7 @@ export default async function FactureDetailPage({
       .single(),
     supabase
       .from('courses')
-      .select('id, adresse_depart, adresse_arrivee, date_prevue, prix_final, type_vehicule, nb_passagers, collaborateurs(profiles(prenom, nom))')
+      .select('id, adresse_depart, adresse_arrivee, date_prevue, prix_final, type_vehicule, nb_passagers, collaborateurs(prenom, nom)')
       .eq('facture_id', id)
       .order('date_prevue'),
     supabase.from('parametres').select('*').eq('id', true).single(),
@@ -61,7 +61,7 @@ export default async function FactureDetailPage({
       {/* Topbar */}
       <div className="no-print" style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',

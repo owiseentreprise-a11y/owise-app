@@ -27,7 +27,7 @@ export default async function NouveauSousTraitantPage({
     <>
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -83,6 +83,15 @@ export default async function NouveauSousTraitantPage({
           <div>
             <label style={labelStyle}>Adresse</label>
             <input name="adresse" type="text" placeholder="12 rue de la Paix, 75001 Paris" style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Mode de paiement</label>
+            <select name="mode_paiement" defaultValue="mensuel" style={inputStyle}>
+              <option value="immediat">Immédiat — à la fin de chaque course</option>
+              <option value="hebdomadaire">Hebdomadaire — fin de semaine</option>
+              <option value="mensuel">Mensuel — fin de mois</option>
+            </select>
           </div>
 
           <div>

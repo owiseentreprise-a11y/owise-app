@@ -3,37 +3,73 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { createAdminClient }   from '@/lib/supabase/admin'
+import { envoyerBienvenueChauffeur } from '@/lib/email'
 
 export async function createChauffeur(formData: FormData): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const admin = createAdminClient()
 
   const email          = formData.get('email') as string
   const password       = formData.get('password') as string
   const nom            = formData.get('nom') as string
   const prenom         = formData.get('prenom') as string
-  const telephone      = formData.get('telephone') as string
+  const telephone      = (formData.get('telephone') as string) || null
   const type_contrat   = formData.get('type_contrat') as string
   const type_vehicule  = formData.get('type_vehicule') as string
-  const vehicule_marque        = (formData.get('vehicule_marque') as string) || null
-  const vehicule_modele        = (formData.get('vehicule_modele') as string) || null
+  const vehicule_marque          = (formData.get('vehicule_marque') as string) || null
+  const vehicule_modele          = (formData.get('vehicule_modele') as string) || null
   const vehicule_immatriculation = (formData.get('vehicule_immatriculation') as string) || null
 
-  const { data, error } = await supabase.rpc('create_chauffeur_account', {
-    p_email: email,
-    p_password: password,
-    p_nom: nom,
-    p_prenom: prenom,
-    p_telephone: telephone,
-    p_type_contrat: type_contrat,
-    p_type_vehicule: type_vehicule,
-    p_vehicule_marque: vehicule_marque,
-    p_vehicule_modele: vehicule_modele,
-    p_vehicule_immatriculation: vehicule_immatriculation,
+  // 1. Créer le compte Auth avec le bon rôle
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+    email:         email.trim(),
+    password,
+    email_confirm: true,
+    app_metadata: {
+      provider: 'email', providers: ['email'],
+      role: 'chauffeur',
+    },
+    user_metadata: { prenom, nom },
   })
+  if (authError) throw new Error(authError.message)
 
-  if (error) throw new Error(error.message)
+  const userId = authData.user.id
+
+  // 2. Profil
+  const { error: profileError } = await admin.from('profiles').upsert({
+    id: userId, nom, prenom, telephone, role: 'chauffeur',
+  })
+  if (profileError) {
+    await admin.auth.admin.deleteUser(userId)
+    throw new Error(profileError.message)
+  }
+
+  // 3. Enregistrement chauffeur
+  const { error: chauffeurError } = await admin.from('chauffeurs').insert({
+    id:                       userId,
+    statut:                   'hors_ligne',
+    type_contrat,
+    type_vehicule,
+    vehicule_marque,
+    vehicule_modele,
+    vehicule_immatriculation,
+    note_moyenne:             0,
+    nb_courses:               0,
+  })
+  if (chauffeurError) {
+    await admin.auth.admin.deleteUser(userId)
+    throw new Error(chauffeurError.message)
+  }
+
+  // Email de bienvenue (non bloquant)
+  envoyerBienvenueChauffeur({
+    email, prenom, nom, password,
+    typeContrat: type_contrat,
+    vehicule: [vehicule_marque, vehicule_modele].filter(Boolean).join(' ') || null,
+  }).catch(() => {})
 
   revalidatePath('/admin/chauffeurs')
   revalidatePath('/admin')
-  redirect(`/admin/chauffeurs/${data}`)
+  redirect(`/admin/chauffeurs/${userId}`)
 }

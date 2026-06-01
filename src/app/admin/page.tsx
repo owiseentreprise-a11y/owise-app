@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
   const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, docsAlertRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(profiles(prenom, nom))')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(prenom, nom)')
       .order('date_prevue', { ascending: false })
       .limit(60),
     supabase
@@ -59,26 +59,38 @@ export default async function AdminDashboard() {
   const facturesRetard = facturesRetardRes.data ?? []
 
   // KPIs jour
-  const coursesAujourdHui = courses.filter(c => c.date_prevue.startsWith(today))
-  const coursesActives    = courses.filter(c => ['en_route', 'prise_en_charge', 'acceptee'].includes(c.statut))
-  const coursesEnAttente      = courses.filter(c => c.statut === 'en_attente')
+  const coursesAujourdHui    = courses.filter(c => c.date_prevue.startsWith(today))
+  const coursesActives       = courses.filter(c => ['en_route', 'prise_en_charge', 'acceptee'].includes(c.statut))
+  const coursesEnAttente     = courses.filter(c => c.statut === 'en_attente')
   const demandesCollaborateur = coursesEnAttente.filter(c => !!(c as any).collaborateur_id && !c.chauffeur_id)
-  const nonAssignees          = coursesEnAttente.filter(c => !c.chauffeur_id)
-  const caJour = coursesAujourdHui
+  const nonAssignees         = coursesEnAttente.filter(c => !c.chauffeur_id)
+
+  // CA jour : terminée (prix_final) + en attente (prix_estime)
+  const caJourTerminee = coursesAujourdHui
     .filter(c => c.statut === 'terminee')
     .reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  const caJourEstime = coursesAujourdHui
+    .filter(c => c.statut !== 'terminee' && c.statut !== 'annulee')
+    .reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  const caJour = caJourTerminee + caJourEstime
 
-  // KPIs semaine
+  // KPIs semaine — toutes statuts hors annulée
+  const coursesSemaine = weekCourses.filter((c: any) => c.statut !== 'annulee').length
   const caSemaine = weekCourses
-    .filter(c => c.statut === 'terminee')
+    .filter((c: any) => c.statut !== 'annulee')
     .reduce((s: number, c: any) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
-  const coursesSemaine = weekCourses.filter((c: any) => c.statut === 'terminee').length
+  const caRéelSemaine = weekCourses
+    .filter((c: any) => c.statut === 'terminee')
+    .reduce((s: number, c: any) => s + (c.prix_final ?? 0), 0)
 
-  // KPIs mois
+  // KPIs mois — toutes statuts hors annulée
+  const coursesMois = monthCourses.filter((c: any) => c.statut !== 'annulee').length
   const caMois = monthCourses
-    .filter(c => c.statut === 'terminee')
+    .filter((c: any) => c.statut !== 'annulee')
     .reduce((s: number, c: any) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
-  const coursesMois = monthCourses.filter((c: any) => c.statut === 'terminee').length
+  const caRéelMois = monthCourses
+    .filter((c: any) => c.statut === 'terminee')
+    .reduce((s: number, c: any) => s + (c.prix_final ?? 0), 0)
 
   const chauffeursDisponibles = chauffeurs.filter(c => c.statut === 'disponible')
   const dateLabel = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -90,7 +102,7 @@ export default async function AdminDashboard() {
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(12px)',
+        background: 'rgba(255,255,255,.95)', 
         borderBottom: '1px solid rgba(0,0,0,.07)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -123,29 +135,64 @@ export default async function AdminDashboard() {
 
         {/* KPI strip */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
-          {[
-            { label: "Aujourd'hui", value: coursesAujourdHui.length, unit: 'courses', color: 'var(--t1)' },
-            { label: 'En cours', value: coursesActives.length, unit: 'actives', color: 'var(--blu)' },
-            { label: 'Sans chauffeur', value: nonAssignees.length, unit: 'en attente', color: nonAssignees.length > 0 ? 'var(--amb)' : 'var(--t3)' },
-            { label: 'CA du jour', value: caJour.toFixed(0), unit: '€', color: 'var(--gold)' },
-            { label: 'Disponibles', value: `${chauffeursDisponibles.length}/${chauffeurs.length}`, unit: 'chauffeurs', color: 'var(--grn)' },
-          ].map(kpi => (
-            <div key={kpi.label} style={{
-              background: 'var(--surface)', border: '1px solid var(--gb)',
-              borderRadius: 12, padding: '16px 18px',
-            }}>
-              <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>
-                {kpi.label}
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-jetbrains), monospace',
-                fontSize: 26, fontWeight: 500, color: kpi.color, lineHeight: 1,
-              }}>
-                {kpi.value}
-                <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>{kpi.unit}</span>
-              </div>
+
+          {/* Aujourd'hui */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Aujourd'hui</div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--t1)', lineHeight: 1 }}>
+              {coursesAujourdHui.length}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>courses</span>
             </div>
-          ))}
+            {coursesEnAttente.length > 0 && coursesAujourdHui.length === 0 && (
+              <div style={{ fontSize: 10, color: 'var(--amb)', marginTop: 5 }}>
+                {coursesEnAttente.length} en attente au total
+              </div>
+            )}
+          </div>
+
+          {/* En cours */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>En cours</div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--blu)', lineHeight: 1 }}>
+              {coursesActives.length}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>actives</span>
+            </div>
+          </div>
+
+          {/* Sans chauffeur */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Sans chauffeur</div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: nonAssignees.length > 0 ? 'var(--amb)' : 'var(--t3)', lineHeight: 1 }}>
+              {nonAssignees.length}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>en attente</span>
+            </div>
+          </div>
+
+          {/* CA du jour */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>
+              {caJourTerminee > 0 ? 'CA du jour' : 'CA estimé / jour'}
+            </div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--gold)', lineHeight: 1 }}>
+              {caJour.toFixed(0)}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>€</span>
+            </div>
+            {caJourTerminee < caJour && caJour > 0 && (
+              <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 5 }}>
+                {caJourTerminee.toFixed(0)} € encaissé
+              </div>
+            )}
+          </div>
+
+          {/* Chauffeurs disponibles */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Disponibles</div>
+            <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--grn)', lineHeight: 1 }}>
+              {chauffeursDisponibles.length}/{chauffeurs.length}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>chauffeurs</span>
+            </div>
+          </div>
+
         </div>
 
         {/* Demandes collaborateur */}
@@ -502,8 +549,8 @@ export default async function AdminDashboard() {
                 Périodes
               </div>
               {[
-                { label: 'Cette semaine', courses: coursesSemaine, ca: caSemaine },
-                { label: 'Ce mois', courses: coursesMois, ca: caMois },
+                { label: 'Cette semaine', courses: coursesSemaine, ca: caSemaine, caReel: caRéelSemaine },
+                { label: 'Ce mois',       courses: coursesMois,    ca: caMois,    caReel: caRéelMois   },
               ].map(p => (
                 <div key={p.label} style={{
                   paddingBottom: 12, marginBottom: 12,
@@ -515,13 +562,18 @@ export default async function AdminDashboard() {
                       {p.courses}
                       <span style={{ fontSize: 10, color: 'var(--t3)', marginLeft: 4 }}>courses</span>
                     </span>
-                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, color: 'var(--gold)' }}>
-                      {p.ca.toFixed(0)} €
-                    </span>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, color: 'var(--gold)' }}>
+                        {p.ca.toFixed(0)} €
+                      </div>
+                      {p.caReel < p.ca && p.caReel > 0 && (
+                        <div style={{ fontSize: 9, color: 'var(--t3)' }}>{p.caReel.toFixed(0)} € encaissé</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
-              <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: -4 }}>Courses terminées uniquement</div>
+              <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: -4 }}>Pipeline (estimé · hors annulées)</div>
             </div>
 
             {/* Chauffeurs */}

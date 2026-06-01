@@ -34,7 +34,7 @@ export default async function TarifsPage() {
       {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(12px)',
+        background: 'rgba(255,255,255,.95)', 
         borderBottom: '1px solid rgba(0,0,0,.07)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center',

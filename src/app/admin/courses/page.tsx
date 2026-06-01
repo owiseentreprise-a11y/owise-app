@@ -21,7 +21,7 @@ export default async function CoursesPage({
   const [{ data: courses }, { data: chauffeursDispos }] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(profiles(prenom, nom)), sous_traitants(id, nom)')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(prenom, nom), sous_traitants(id, nom)')
       .order('date_prevue', { ascending: false })
       .limit(500),
     supabase
@@ -57,9 +57,7 @@ export default async function CoursesPage({
       const clientNom = client?.type_compte === 'entreprise'
         ? (client.entreprise_nom ?? '')
         : `${client?.profiles?.prenom ?? ''} ${client?.profiles?.nom ?? ''}`.trim()
-      const collabNom = collab?.profiles
-        ? `${collab.profiles.prenom} ${collab.profiles.nom}`
-        : ''
+      const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() : ''
       return (
         c.adresse_depart.toLowerCase().includes(filterQ) ||
         c.adresse_arrivee.toLowerCase().includes(filterQ) ||
@@ -88,7 +86,7 @@ export default async function CoursesPage({
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -129,7 +127,7 @@ export default async function CoursesPage({
       {/* Barre de filtres */}
       <div style={{
         position: 'sticky', top: 60, zIndex: 40,
-        background: 'rgba(7,7,26,.95)', backdropFilter: 'blur(8px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.06)',
         padding: '0 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -248,10 +246,12 @@ export default async function CoursesPage({
               const clientNom = client
                 ? client.type_compte === 'entreprise'
                   ? (client.entreprise_nom ?? '—')
-                  : `${client.profiles?.prenom ?? ''} ${client.profiles?.nom ?? ''}`.trim() || '—'
+                  : (`${client.prenom ?? ''} ${client.nom ?? ''}`.trim()
+                      || `${client.profiles?.prenom ?? ''} ${client.profiles?.nom ?? ''}`.trim()
+                      || '—')
                 : '—'
-              const collabNom = collab?.profiles
-                ? `${collab.profiles.prenom} ${collab.profiles.nom}`
+              const collabNom = collab
+                ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || null
                 : null
               const chauffeurNom = chauffeur?.profiles
                 ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`

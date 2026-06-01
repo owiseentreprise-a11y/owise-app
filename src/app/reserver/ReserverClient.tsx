@@ -333,11 +333,14 @@ const baseInput: React.CSSProperties = {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function ReserverClient({ zones, grille, params, tarifs }: {
+type Profil = { prenom: string; nom: string; email: string; telephone: string }
+
+export default function ReserverClient({ zones, grille, params, tarifs, profil }: {
   zones: Zone[]
   grille: Grille[]
   params: any
   tarifs: TarifVehicule[]
+  profil?: Profil | null
 }) {
   const searchParams = useSearchParams()
   const [step, setStep] = useState<1 | 2>(1)
@@ -374,10 +377,10 @@ export default function ReserverClient({ zones, grille, params, tarifs }: {
   const [vehicule,  setVehicule] = useState('berline')
   const [passagers, setPassagers] = useState(() => parseInt(searchParams.get('pax') || '1') || 1)
 
-  const [nom,       setNom]       = useState('')
-  const [prenom,    setPrenom]    = useState('')
-  const [email,     setEmail]     = useState('')
-  const [telephone, setTelephone] = useState('')
+  const [nom,       setNom]       = useState(profil?.nom       ?? '')
+  const [prenom,    setPrenom]    = useState(profil?.prenom    ?? '')
+  const [email,     setEmail]     = useState(profil?.email     ?? '')
+  const [telephone, setTelephone] = useState(profil?.telephone ?? '')
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)

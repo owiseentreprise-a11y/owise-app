@@ -2,7 +2,20 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutChauffeur, TypeContrat, TypeVehicule, TypeDocument } from '@/lib/types'
+
+export async function updateEmail(
+  id: string,
+  newEmail: string,
+): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.updateUserById(id, { email: newEmail.trim() })
+  if (error) return { error: error.message }
+  revalidatePath(`/admin/chauffeurs/${id}`)
+  return {}
+}
 
 export async function updateProfile(
   id: string,

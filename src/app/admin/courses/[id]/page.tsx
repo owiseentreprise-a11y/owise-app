@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 import CourseActions from './CourseActions'
 
@@ -33,24 +33,30 @@ export default async function CourseDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
-  const [courseRes, chauffeursRes] = await Promise.all([
+  const [courseRes, chauffeursRes, sousTraitantsRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(poste, profiles(prenom, nom, telephone)), sous_traitants(*)')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(poste, nom, prenom, tel), sous_traitants(*)')
       .eq('id', id)
       .single(),
     supabase
       .from('chauffeurs')
       .select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom, telephone)')
       .order('statut'),
+    supabase
+      .from('sous_traitants')
+      .select('id, nom')
+      .eq('actif', true)
+      .order('nom'),
   ])
 
   if (courseRes.error || !courseRes.data) notFound()
 
   const course = courseRes.data
-  const chauffeurs = chauffeursRes.data ?? []
+  const chauffeurs    = chauffeursRes.data ?? []
+  const sousTraitants = sousTraitantsRes.data ?? []
   const statut = course.statut as StatutCourse
   const s = STATUT_STYLE[statut]
 
@@ -67,11 +73,11 @@ export default async function CourseDetailPage({
   const clientTel: string | null = clientData?.profiles?.telephone ?? null
   const clientType: string = clientData?.type_compte ?? 'particulier'
 
-  const collabNom = collabData?.profiles
-    ? `${collabData.profiles.prenom} ${collabData.profiles.nom}`.trim()
+  const collabNom = collabData
+    ? `${collabData.prenom ?? ''} ${collabData.nom ?? ''}`.trim() || null
     : null
   const collabPoste: string | null = collabData?.poste ?? null
-  const collabTel: string | null = collabData?.profiles?.telephone ?? null
+  const collabTel: string | null = collabData?.tel ?? null
 
   const chauffeurNom = chauffeurData?.profiles
     ? `${chauffeurData.profiles.prenom} ${chauffeurData.profiles.nom}`.trim()
@@ -87,6 +93,9 @@ export default async function CourseDetailPage({
     chauffeur_id: course.chauffeur_id,
     prix_estime: course.prix_estime,
     prix_final: course.prix_final,
+    prix_sous_traitant: (course as any).prix_sous_traitant ?? null,
+    sous_traitant_id: (course as any).sous_traitant_id ?? null,
+    sous_traitant_nom: sousTraitantData?.nom ?? null,
     notes: course.notes,
     type_vehicule: course.type_vehicule,
     nb_passagers: course.nb_passagers,
@@ -116,7 +125,7 @@ export default async function CourseDetailPage({
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -177,6 +186,27 @@ export default async function CourseDetailPage({
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>{course.adresse_depart}</div>
                 </div>
               </div>
+              {/* Étapes intermédiaires */}
+              {(() => {
+                const etapes: string[] = Array.isArray((course as any).etapes) ? (course as any).etapes : []
+                return etapes.map((etape, i) => (
+                  <div key={i}>
+                    <div style={{ marginLeft: 5, width: 1.5, height: 16, background: 'var(--t3)' }} />
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <div style={{
+                        width: 10, height: 10, borderRadius: '50%',
+                        background: 'var(--amb)', marginTop: 4, flexShrink: 0,
+                        boxShadow: '0 0 4px rgba(232,160,48,.4)',
+                      }} />
+                      <div>
+                        <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 2 }}>Étape {i + 1}</div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{etape}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              })()}
+
               <div style={{ marginLeft: 5, width: 1.5, height: 20, background: 'var(--t3)' }} />
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <div style={{
@@ -409,6 +439,7 @@ export default async function CourseDetailPage({
         <CourseActions
           course={courseForActions}
           chauffeurs={chauffeursForActions}
+          sousTraitants={sousTraitants as any}
         />
       </div>
     </>

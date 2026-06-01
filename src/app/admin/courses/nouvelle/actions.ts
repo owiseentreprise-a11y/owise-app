@@ -19,7 +19,12 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const client_id        = (formData.get('client_id') as string) || null
   const chauffeur_id     = (formData.get('chauffeur_id') as string) || null
   const collaborateur_id = (formData.get('collaborateur_id') as string) || null
-  const sous_traitant_id = (formData.get('sous_traitant_id') as string) || null
+  const sous_traitant_id    = (formData.get('sous_traitant_id') as string) || null
+  const etapesRaw = (formData.get('etapes') as string) || '[]'
+  let etapes: string[] = []
+  try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
+  const prix_sous_traitant_raw = formData.get('prix_sous_traitant') as string
+  const prix_sous_traitant  = prix_sous_traitant_raw ? parseFloat(prix_sous_traitant_raw) : null
 
   if (!adresse_depart || !adresse_arrivee || !date_prevue || !type_vehicule) {
     return { error: 'Champs obligatoires manquants' }
@@ -37,6 +42,8 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     chauffeur_id: sous_traitant_id ? null : chauffeur_id,
     collaborateur_id,
     sous_traitant_id,
+    prix_sous_traitant: sous_traitant_id ? prix_sous_traitant : null,
+    etapes: etapes.length > 0 ? etapes : null,
     statut: 'en_attente',
   }).select('id').single()
 

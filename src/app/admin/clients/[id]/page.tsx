@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getUserEmail }  from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import ClientEditActions from './ClientEditActions'
 import CollaborateursSection from './CollaborateursSection'
@@ -15,7 +16,7 @@ export default async function ClientDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [clientRes, coursesRes, collabsRes] = await Promise.all([
+  const [clientRes, coursesRes, collabsRes, email] = await Promise.all([
     supabase
       .from('clients')
       .select('*, profiles(*)')
@@ -29,26 +30,29 @@ export default async function ClientDetailPage({
       .limit(20),
     supabase
       .from('collaborateurs')
-      .select('id, poste, profiles(nom, prenom, telephone)')
+      .select('id, poste, nom, prenom, tel, email, adresse')
       .eq('client_id', id)
       .order('created_at', { ascending: true }),
+    getUserEmail(id),
   ])
 
   if (clientRes.error || !clientRes.data) notFound()
 
-  const client = clientRes.data
-  const p = (client as any).profiles
+  const client = clientRes.data as any
+  const p = client.profiles  // peut être null dans le nouveau schéma
   const courses = coursesRes.data ?? []
   const collaborateurs = (collabsRes.data ?? []) as any[]
   const isEntreprise = client.type_compte === 'entreprise'
-  const prenom = p?.prenom ?? ''
-  const nom    = p?.nom ?? ''
+  // Colonnes directes sur clients (nouveau schéma) avec fallback profiles (ancien)
+  const prenom = client.prenom || p?.prenom || ''
+  const nom    = client.nom    || p?.nom    || ''
+  const tel    = client.tel    || p?.telephone || ''
   const nomAffiche = isEntreprise
     ? (client.entreprise_nom ?? '—')
     : `${prenom} ${nom}`.trim() || '—'
   const initials = isEntreprise
     ? (client.entreprise_nom?.[0] ?? 'E').toUpperCase()
-    : `${prenom[0] ?? ''}${nom[0] ?? ''}`.toUpperCase()
+    : `${(prenom[0] ?? '')}${(nom[0] ?? '')}`.toUpperCase()
 
   const coursesTerminees = courses.filter(c => c.statut === 'terminee')
   const caTotal = coursesTerminees.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
@@ -58,8 +62,9 @@ export default async function ClientDetailPage({
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(201,168,76,.08)',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--gb)',
+        boxShadow: '0 1px 3px rgba(0,0,0,.04)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -135,14 +140,14 @@ export default async function ClientDetailPage({
                 {!isEntreprise && prenom && (
                   <div style={{ fontSize: 12, color: 'var(--t2)', marginTop: 2 }}>{prenom} {nom}</div>
                 )}
-                {p?.telephone && (
-                  <a href={`tel:${p.telephone}`} style={{
+                {tel && (
+                  <a href={`tel:${tel}`} style={{
                     fontSize: 12, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 4,
-                  }}>{p.telephone}</a>
+                  }}>{tel}</a>
                 )}
               </div>
-              {p?.telephone && (
-                <a href={`tel:${p.telephone}`} style={{
+              {tel && (
+                <a href={`tel:${tel}`} style={{
                   marginLeft: 'auto',
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '8px 14px', borderRadius: 8,
@@ -254,16 +259,18 @@ export default async function ClientDetailPage({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <ClientEditActions
             clientId={id}
-            profile={{ nom, prenom, telephone: p?.telephone ?? '' }}
+            email={email ?? undefined}
+            profile={{ nom, prenom, telephone: tel ?? '' }}
             compte={{
               type_compte: client.type_compte,
               entreprise_nom: client.entreprise_nom ?? '',
               adresse_facturation: client.adresse_facturation ?? '',
             }}
             tarif={{
-              coef_tarifaire: (client as any).coef_tarifaire ?? 1,
-              paiement_differe: (client as any).paiement_differe ?? false,
+              coef_tarifaire: client.coef_tarifaire ?? 1,
+              paiement_differe: client.paiement_differe ?? false,
             }}
+            facturationMode={(client.facturation_mode as 'mensuelle' | 'par_prestation') ?? 'mensuelle'}
           />
 
           {/* Toggle payer à bord — particuliers uniquement */}
@@ -274,20 +281,20 @@ export default async function ClientDetailPage({
               </div>
               <form action={async () => {
                 'use server'
-                await togglePayerAbord(id, !(client as any).payer_a_bord)
+                await togglePayerAbord(id, !client.payer_a_bord)
               }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" defaultChecked={(client as any).payer_a_bord === true}
-                    onChange={() => {}} style={{ display: 'none' }} />
+                  <input type="checkbox" defaultChecked={client.payer_a_bord === true}
+                    style={{ display: 'none' }} readOnly />
                   <button type="submit" style={{
                     width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
-                    background: (client as any).payer_a_bord ? 'var(--gold)' : 'var(--t3)',
+                    background: client.payer_a_bord ? 'var(--gold)' : 'var(--t3)',
                     position: 'relative', transition: 'background .2s', flexShrink: 0,
                     padding: 0,
                   }}>
                     <span style={{
                       position: 'absolute', top: 3,
-                      left: (client as any).payer_a_bord ? 21 : 3,
+                      left: client.payer_a_bord ? 21 : 3,
                       width: 16, height: 16, borderRadius: '50%',
                       background: '#fff', transition: 'left .2s',
                       display: 'block',
@@ -298,7 +305,7 @@ export default async function ClientDetailPage({
                   </span>
                 </label>
                 <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 8 }}>
-                  {(client as any).payer_a_bord
+                  {client.payer_a_bord
                     ? '✓ Ce client peut réserver sans payer en ligne.'
                     : 'Par défaut : paiement Stripe obligatoire à la réservation.'}
                 </div>

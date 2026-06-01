@@ -61,22 +61,28 @@ export default async function ClientsPage({
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(201,168,76,.08)',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--gb)',
+        boxShadow: '0 1px 3px rgba(0,0,0,.04)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Clients</div>
-          <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, color: 'var(--t3)' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)' }}>Clients</div>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11,
+            color: 'var(--t3)', background: 'var(--elevated)',
+            border: '1px solid var(--gb)', borderRadius: 6, padding: '2px 7px',
+          }}>
             {list.length}{filterType || filterQ ? ` / ${counts.total}` : ''}
           </div>
         </div>
         <a href="/admin/clients/nouveau" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8,
-          background: 'var(--gold)', color: 'var(--base)',
-          fontSize: 11, fontWeight: 600, textDecoration: 'none',
+          background: 'var(--gold)', color: '#0A0A0A',
+          fontSize: 12, fontWeight: 600, textDecoration: 'none',
+          boxShadow: '0 2px 8px rgba(201,168,76,.25)',
         }}>
           <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
@@ -88,8 +94,8 @@ export default async function ClientsPage({
       {/* Barre de filtres */}
       <div style={{
         position: 'sticky', top: 60, zIndex: 40,
-        background: 'rgba(7,7,26,.95)', backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid rgba(201,168,76,.06)',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--gb)',
         padding: '0 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         height: 44,

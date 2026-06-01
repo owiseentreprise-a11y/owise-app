@@ -63,6 +63,37 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
     await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', chauffeurId)
   }
 
+  // Auto-facturation immédiate si le sous-traitant est en mode "immediat"
+  if (statut === 'terminee') {
+    const { data: courseForST } = await supabase
+      .from('courses')
+      .select('id, prix_sous_traitant, sous_traitant_id, adresse_depart, adresse_arrivee, date_prevue')
+      .eq('id', courseId).single()
+
+    if (courseForST?.sous_traitant_id && courseForST?.prix_sous_traitant) {
+      const { data: st } = await supabase
+        .from('sous_traitants')
+        .select('mode_paiement')
+        .eq('id', courseForST.sous_traitant_id)
+        .single()
+
+      if (st?.mode_paiement === 'immediat') {
+        const depart = courseForST.adresse_depart.split(',')[0]
+        const arrivee = courseForST.adresse_arrivee.split(',')[0]
+        const dateLabel = new Date(courseForST.date_prevue)
+          .toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        await supabase.from('factures_sous_traitants').insert({
+          sous_traitant_id: courseForST.sous_traitant_id,
+          periode: `course-${courseId.slice(-8).toUpperCase()}`,
+          montant_ht: courseForST.prix_sous_traitant,
+          statut: 'en_attente',
+          notes: `${dateLabel} · ${depart} → ${arrivee}`,
+        })
+        revalidatePath(`/admin/sous-traitants/${courseForST.sous_traitant_id}`)
+      }
+    }
+  }
+
   if (statut === 'terminee' || statut === 'annulee') {
     const { data: course } = await supabase
       .from('courses')
@@ -130,4 +161,19 @@ export async function modifierNotes(courseId: string, notes: string): Promise<vo
   const supabase = await requireAdminClient()
   await supabase.from('courses').update({ notes: notes || null }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
+}
+
+export async function assignerSousTraitant(
+  courseId: string,
+  sousTraitantId: string | null,
+  prixSousTraitant: number | null,
+): Promise<void> {
+  const supabase = await requireAdminClient()
+  await supabase.from('courses').update({
+    sous_traitant_id: sousTraitantId || null,
+    prix_sous_traitant: sousTraitantId ? prixSousTraitant : null,
+    chauffeur_id: sousTraitantId ? null : undefined, // on retire le chauffeur si ST assigné
+  }).eq('id', courseId)
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
 }

@@ -7,7 +7,11 @@ import { addCollaborateur, deleteCollaborateur } from './actions'
 interface Collab {
   id: string
   poste: string | null
-  profiles: { nom: string; prenom: string; telephone: string | null } | null
+  nom: string | null
+  prenom: string | null
+  tel: string | null
+  email: string | null
+  adresse: string | null
 }
 
 const inputStyle: React.CSSProperties = {
@@ -33,7 +37,7 @@ export default function CollaborateursSection({
   const [pending, startTransition] = useTransition()
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ email: '', password: '', prenom: '', nom: '', telephone: '', poste: '' })
+  const [form, setForm] = useState({ email: '', password: '', prenom: '', nom: '', telephone: '', poste: '', adresse: '' })
   const [error, setError] = useState<string | null>(null)
 
   function submit() {
@@ -43,13 +47,13 @@ export default function CollaborateursSection({
     }
     setError(null)
     startTransition(async () => {
-      try {
-        await addCollaborateur(clientId, form)
-        setForm({ email: '', password: '', prenom: '', nom: '', telephone: '', poste: '' })
+      const result = await addCollaborateur(clientId, form as any)
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        setForm({ email: '', password: '', prenom: '', nom: '', telephone: '', poste: '', adresse: '' })
         setOpen(false)
         router.refresh()
-      } catch (e: any) {
-        setError(e.message)
       }
     })
   }
@@ -139,6 +143,11 @@ export default function CollaborateursSection({
                 onChange={e => setForm(f => ({ ...f, poste: e.target.value }))} />
             </div>
           </div>
+          <div>
+            <label style={labelStyle}>Adresse personnelle (optionnel)</label>
+            <input style={inputStyle} value={form.adresse} placeholder="12 rue des Lilas, 75001 Paris"
+              onChange={e => setForm(f => ({ ...f, adresse: e.target.value }))} />
+          </div>
           {error && <div style={{ fontSize: 11, color: 'var(--red)' }}>{error}</div>}
           <button
             onClick={submit}
@@ -163,21 +172,21 @@ export default function CollaborateursSection({
         </div>
       ) : (
         init.map(c => {
-          const nom = c.profiles ? `${c.profiles.prenom} ${c.profiles.nom}` : '—'
+          const nomAffiche = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
           return (
             <div key={c.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '12px 20px', borderBottom: '1px solid rgba(201,168,76,.04)',
             }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{nom}</div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{nomAffiche}</div>
                 <div style={{ display: 'flex', gap: 10, marginTop: 2 }}>
                   {c.poste && (
                     <span style={{ fontSize: 10, color: 'var(--t3)' }}>{c.poste}</span>
                   )}
-                  {c.profiles?.telephone && (
-                    <a href={`tel:${c.profiles.telephone}`} style={{ fontSize: 10, color: 'var(--gold)', textDecoration: 'none' }}>
-                      {c.profiles.telephone}
+                  {c.tel && (
+                    <a href={`tel:${c.tel}`} style={{ fontSize: 10, color: 'var(--gold)', textDecoration: 'none' }}>
+                      {c.tel}
                     </a>
                   )}
                 </div>

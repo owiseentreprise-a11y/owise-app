@@ -51,6 +51,136 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
+// ── 0a. Bienvenue — nouveau client ───────────────────────────────────────────
+
+export async function envoyerBienvenueClient(params: {
+  email: string
+  prenom: string
+  nom: string
+  password: string
+  typeCompte: string
+  entrepriseNom?: string | null
+}) {
+  const { email, prenom, nom, password, typeCompte, entrepriseNom } = params
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const isEntreprise = typeCompte === 'entreprise'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Bienvenue chez OWISE 🎉</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom}, votre espace client${isEntreprise && entrepriseNom ? ` <strong style="color:#09091A">${entrepriseNom}</strong>` : ''} a été créé.<br>
+      Vous pouvez dès maintenant réserver vos transferts VTC en ligne.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Vos identifiants de connexion</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Email', email)}
+        ${row('Mot de passe', password)}
+      </table>
+      <p style="margin:12px 0 0;font-size:11px;color:#AAAAAA;">Vous pouvez modifier votre mot de passe depuis votre espace client.</p>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${siteUrl}/client-login"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Accéder à mon espace →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Des questions ? Contactez-nous : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(email, 'Bienvenue chez OWISE — Vos accès client', html)
+}
+
+// ── 0b. Bienvenue — nouveau collaborateur ─────────────────────────────────────
+
+export async function envoyerBienvenueCollaborateur(params: {
+  email: string
+  prenom: string
+  nom: string
+  password: string
+  entrepriseNom: string
+  poste?: string | null
+}) {
+  const { email, prenom, nom, password, entrepriseNom, poste } = params
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre accès OWISE est prêt</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom},<br>
+      Vous avez été ajouté(e) comme collaborateur${poste ? ` <strong style="color:#09091A">${poste}</strong>` : ''} pour le compte <strong style="color:#09091A">${entrepriseNom}</strong>.<br>
+      Vous pouvez désormais réserver des transferts VTC depuis votre espace personnel.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Vos identifiants de connexion</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Email', email)}
+        ${row('Mot de passe', password)}
+        ${row('Compte', entrepriseNom)}
+      </table>
+      <p style="margin:12px 0 0;font-size:11px;color:#AAAAAA;">Vous pouvez modifier votre mot de passe depuis votre espace.</p>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${siteUrl}/client-login"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Accéder à mon espace →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Des questions ? <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(email, `Votre accès OWISE — ${entrepriseNom}`, html)
+}
+
+// ── 0c. Bienvenue — nouveau chauffeur ─────────────────────────────────────────
+
+export async function envoyerBienvenueChauffeur(params: {
+  email: string
+  prenom: string
+  nom: string
+  password: string
+  typeContrat: string
+  vehicule?: string | null
+}) {
+  const { email, prenom, nom, password, typeContrat, vehicule } = params
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Bienvenue dans l'équipe OWISE</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom}, votre compte chauffeur a été activé.<br>
+      Vous pouvez maintenant vous connecter à l'application et recevoir des courses.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Vos identifiants de connexion</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Email', email)}
+        ${row('Mot de passe', password)}
+        ${row('Contrat', typeContrat === 'salarie' ? 'Salarié' : 'Sous-traitant')}
+        ${vehicule ? row('Véhicule', vehicule) : ''}
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${siteUrl}/chauffeur"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Accéder à l'app chauffeur →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Questions ? <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(email, 'Bienvenue chez OWISE — Votre compte chauffeur', html)
+}
+
 // ── 1. Confirmation client ───────────────────────────────────────────────────
 
 export async function envoyerConfirmationClient(params: {
@@ -302,6 +432,92 @@ export async function envoyerLienPaiementClient(params: {
   `)
 
   await send(clientEmail, `Facture ${numeroFacture} – ${montantTTC.toFixed(2)} € à régler`, html)
+}
+
+// ── 5b. Nouvelle facture auto-générée ────────────────────────────────────────
+
+export async function envoyerNouvelleFacture(params: {
+  clientEmail: string
+  clientNom: string
+  factureNumero: string
+  montantHt: number
+  montantTtc: number
+  dateEcheance: string
+  refCourse: string
+  lienFacture: string
+}) {
+  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, dateEcheance, refCourse, lienFacture } = params
+  const tva = montantTtc - montantHt
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre facture OWISE</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${clientNom},<br>
+      Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Facture', factureNumero)}
+        ${row('Course', `#${refCourse}`)}
+        ${row('Montant HT', `${montantHt.toFixed(2)} €`)}
+        ${row('TVA (20%)', `${tva.toFixed(2)} €`)}
+        ${row('Montant TTC', `<strong style="color:#09091A">${montantTtc.toFixed(2)} €</strong>`)}
+        ${row('Échéance', fmtDate(dateEcheance))}
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${lienFacture}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Voir ma facture →
+      </a>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Questions : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(clientEmail, `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC`, html)
+}
+
+// ── 5c. Relance facture en retard ─────────────────────────────────────────────
+
+export async function envoyerRelanceFacture(params: {
+  clientEmail: string
+  clientNom: string
+  factureNumero: string
+  montantTtc: number
+  dateEcheance: string
+  joursRetard: number
+  lienFacture: string
+}) {
+  const { clientEmail, clientNom, factureNumero, montantTtc, dateEcheance, joursRetard, lienFacture } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#D95454;font-weight:600;">Facture en attente de règlement</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${clientNom},<br>
+      Nous n'avons pas encore reçu le règlement de la facture ci-dessous, échue depuis <strong style="color:#D95454">${joursRetard} jour${joursRetard > 1 ? 's' : ''}</strong>.
+    </p>
+
+    <div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Facture', factureNumero)}
+        ${row('Montant TTC', `<strong style="color:#D95454">${montantTtc.toFixed(2)} €</strong>`)}
+        ${row('Échéance', fmtDate(dateEcheance))}
+        ${row('Retard', `${joursRetard} jour${joursRetard > 1 ? 's' : ''}`)}
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${lienFacture}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Régler ma facture →
+      </a>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Pour tout arrangement : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(clientEmail, `[Relance] Facture ${factureNumero} – ${montantTtc.toFixed(2)} € en retard de ${joursRetard}j`, html)
 }
 
 // ── 6b. Réinitialisation mot de passe ────────────────────────────────────────

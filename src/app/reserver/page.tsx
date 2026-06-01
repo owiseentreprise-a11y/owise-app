@@ -1,17 +1,37 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient }      from '@/lib/supabase/server'
 import ReserverClient from './ReserverClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ReserverPage() {
-  const supabase = createAdminClient()
+  const admin    = createAdminClient()
+  const supabase = await createClient()
 
-  const [zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
-    supabase.from('zones').select('*').order('ordre'),
-    supabase.from('grilles_tarifaires').select('*'),
-    supabase.from('parametres').select('*').eq('id', true).single(),
-    supabase.from('tarifs').select('*'),
+  const [{ data: { user } }, zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
+    supabase.auth.getUser(),
+    admin.from('zones').select('*').order('ordre'),
+    admin.from('grilles_tarifaires').select('*'),
+    admin.from('parametres').select('*').eq('id', true).single(),
+    admin.from('tarifs').select('*'),
   ])
+
+  let profil: { prenom: string; nom: string; email: string; telephone: string } | null = null
+  if (user) {
+    const { data: p } = await admin
+      .from('profiles')
+      .select('prenom, nom, telephone')
+      .eq('id', user.id)
+      .single()
+    if (p) {
+      profil = {
+        prenom:    p.prenom    ?? '',
+        nom:       p.nom       ?? '',
+        email:     user.email  ?? '',
+        telephone: p.telephone ?? '',
+      }
+    }
+  }
 
   return (
     <ReserverClient
@@ -19,6 +39,7 @@ export default async function ReserverPage() {
       grille={grilleRes.data ?? []}
       params={paramsRes.data}
       tarifs={tarifsRes.data ?? []}
+      profil={profil}
     />
   )
 }

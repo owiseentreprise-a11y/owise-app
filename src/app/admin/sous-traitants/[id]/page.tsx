@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { modifierSousTraitantAction } from '../actions'
+import { modifierSousTraitantAction, genererFactureSTAction, marquerFactureSTPayeeAction, creerCompteSTAction, supprimerCompteSTAction } from '../actions'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,18 +16,23 @@ export default async function SousTraitantDetailPage({
   const sp = await searchParams
   const supabase = await createClient()
 
-  const [stRes, coursesRes] = await Promise.all([
+  const [stRes, coursesRes, facturesRes] = await Promise.all([
     supabase.from('sous_traitants').select('*').eq('id', id).single(),
     supabase.from('courses')
-      .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, prix_final, clients(type_compte, entreprise_nom, profiles(prenom, nom))')
+      .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_sous_traitant, clients(type_compte, entreprise_nom, profiles(prenom, nom))')
       .eq('sous_traitant_id', id)
       .order('date_prevue', { ascending: false })
       .limit(50),
+    supabase.from('factures_sous_traitants')
+      .select('*')
+      .eq('sous_traitant_id', id)
+      .order('periode', { ascending: false }),
   ])
 
   if (!stRes.data) notFound()
-  const st = stRes.data
-  const courses = coursesRes.data ?? []
+  const st       = stRes.data
+  const courses  = coursesRes.data ?? []
+  const factures = facturesRes.data ?? []
 
   const inputStyle = {
     background: 'var(--elevated)', border: '1px solid rgba(201,168,76,.18)',
@@ -40,17 +45,18 @@ export default async function SousTraitantDetailPage({
     color: 'var(--t2)', fontWeight: 500, display: 'block', marginBottom: 6,
   }
 
-  const totalCA = courses
-    .filter(c => c.statut === 'terminee' && c.prix_final)
-    .reduce((s, c) => s + (c.prix_final ?? 0), 0)
-  const nbTerminees = courses.filter(c => c.statut === 'terminee').length
+  const terminees = courses.filter(c => c.statut === 'terminee')
+  const nbTerminees = terminees.length
+  const totalCA   = terminees.reduce((s, c) => s + ((c as any).prix_final ?? 0), 0)
+  const totalCout = terminees.reduce((s, c) => s + ((c as any).prix_sous_traitant ?? 0), 0)
+  const totalMarge = totalCA - totalCout
 
   return (
     <>
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(7,7,26,.92)', backdropFilter: 'blur(12px)',
+        background: 'var(--surface)', 
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -93,11 +99,11 @@ export default async function SousTraitantDetailPage({
         )}
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 12 }}>
           {[
             { label: 'Courses totales', value: courses.length, mono: true },
             { label: 'Courses terminées', value: nbTerminees, mono: true },
-            { label: 'CA généré', value: totalCA > 0 ? `${totalCA.toFixed(2)} €` : '—', mono: true, gold: totalCA > 0 },
+            { label: 'CA client', value: totalCA > 0 ? `${totalCA.toFixed(2)} €` : '—', mono: true, gold: true },
           ].map(k => (
             <div key={k.label} style={{
               background: 'var(--surface)', border: '1px solid var(--gb)',
@@ -116,6 +122,120 @@ export default async function SousTraitantDetailPage({
             </div>
           ))}
         </div>
+
+        {/* KPIs financiers */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
+          {[
+            { label: 'Coût sous-traitant', value: totalCout > 0 ? `${totalCout.toFixed(2)} €` : '—', color: 'var(--red)' },
+            { label: 'Marge Owise', value: totalCout > 0 ? `${totalMarge.toFixed(2)} €` : '—', color: totalMarge >= 0 ? 'var(--grn)' : 'var(--red)' },
+            { label: 'Taux de marge', value: totalCA > 0 && totalCout > 0 ? `${((totalMarge / totalCA) * 100).toFixed(1)} %` : '—', color: 'var(--blu)' },
+          ].map(k => (
+            <div key={k.label} style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 12, padding: '16px 18px',
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 6 }}>
+                {k.label}
+              </div>
+              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 22, fontWeight: 600, color: k.color }}>
+                {k.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── ACCÈS PORTAL ── */}
+        {(() => {
+          const userId = (st as any).user_id as string | null
+          const hasAccount = !!userId
+          const errorMsg = sp.error === 'compte-existant' ? 'Un compte existe déjà avec cet email.'
+            : sp.error === 'champs-requis' ? 'Email et mot de passe requis.' : null
+          const successMsg = sp.success === 'compte-cree' ? 'Compte créé avec succès.' : null
+
+          return (
+            <div style={{
+              background: 'var(--surface)', border: `1px solid ${hasAccount ? 'rgba(61,184,122,.25)' : 'rgba(201,168,76,.15)'}`,
+              borderRadius: 14, padding: '20px 24px', marginBottom: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>Accès portal sous-traitant</div>
+                  <span style={{
+                    fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                    color: hasAccount ? 'var(--grn)' : 'var(--amb)',
+                    background: hasAccount ? 'rgba(61,184,122,.1)' : 'rgba(232,160,48,.1)',
+                    border: hasAccount ? '1px solid rgba(61,184,122,.25)' : '1px solid rgba(232,160,48,.2)',
+                  }}>
+                    {hasAccount ? '● Compte actif' : '○ Pas de compte'}
+                  </span>
+                </div>
+                {hasAccount && (
+                  <a href="/sous-traitant" target="_blank" style={{
+                    fontSize: 10, color: 'var(--grn)', textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    Voir le portal ↗
+                  </a>
+                )}
+              </div>
+
+              {successMsg && (
+                <div style={{ background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: 'var(--grn)' }}>
+                  ✓ {successMsg}
+                </div>
+              )}
+              {errorMsg && (
+                <div style={{ background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.25)', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: 'var(--red)' }}>
+                  {errorMsg}
+                </div>
+              )}
+
+              {!hasAccount ? (
+                <form action={creerCompteSTAction} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <input type="hidden" name="sous_traitant_id" value={st.id} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div>
+                      <label style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 5 }}>Email</label>
+                      <input type="email" name="email" required defaultValue={st.email ?? ''} placeholder="contact@vtc.fr"
+                        style={{ width: '100%', padding: '9px 12px', background: 'var(--elevated)', border: '1px solid var(--t3)', borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none', boxSizing: 'border-box' as const }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', display: 'block', marginBottom: 5 }}>Mot de passe</label>
+                      <input type="password" name="password" required placeholder="8 caractères min."
+                        style={{ width: '100%', padding: '9px 12px', background: 'var(--elevated)', border: '1px solid var(--t3)', borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none', boxSizing: 'border-box' as const }} />
+                    </div>
+                  </div>
+                  <button type="submit" style={{
+                    alignSelf: 'flex-start', padding: '9px 18px', borderRadius: 8,
+                    background: 'var(--gold)', border: 'none',
+                    color: 'var(--base)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}>
+                    Créer le compte portal
+                  </button>
+                </form>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+                    Le sous-traitant peut se connecter sur <strong style={{ color: 'var(--t1)' }}>owise.fr/sous-traitant-login</strong>
+                  </div>
+                  <form action={supprimerCompteSTAction}>
+                    <input type="hidden" name="sous_traitant_id" value={st.id} />
+                    <input type="hidden" name="user_id" value={userId} />
+                    <button type="submit" style={{
+                      padding: '6px 12px', borderRadius: 7, fontSize: 10,
+                      background: 'transparent', border: '1px solid rgba(217,84,84,.3)',
+                      color: 'var(--red)', cursor: 'pointer',
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}>
+                      Supprimer l'accès
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
 
@@ -155,6 +275,15 @@ export default async function SousTraitantDetailPage({
               <div>
                 <label style={labelStyle}>Adresse</label>
                 <input name="adresse" type="text" defaultValue={st.adresse ?? ''} style={inputStyle} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Mode de paiement</label>
+                <select name="mode_paiement" defaultValue={(st as any).mode_paiement ?? 'mensuel'} style={inputStyle}>
+                  <option value="immediat">Immédiat — à la fin de chaque course</option>
+                  <option value="hebdomadaire">Hebdomadaire — fin de semaine</option>
+                  <option value="mensuel">Mensuel — fin de mois</option>
+                </select>
               </div>
 
               <div>
@@ -245,6 +374,110 @@ export default async function SousTraitantDetailPage({
             })}
           </div>
         </div>
+
+        {/* ── FACTURATION SORTANTE ── */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 14, padding: '24px' }}>
+        {(() => {
+          const mode = (st as any).mode_paiement ?? 'mensuel'
+          const modeLabel = mode === 'immediat' ? 'Immédiat (auto)' : mode === 'hebdomadaire' ? 'Hebdomadaire' : 'Mensuel'
+          const btnLabel = mode === 'hebdomadaire' ? '+ Générer facture semaine' : '+ Générer facture du mois'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>Facturation sortante</div>
+                <span style={{
+                  fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                  color: mode === 'immediat' ? 'var(--grn)' : mode === 'hebdomadaire' ? 'var(--blu)' : 'var(--gold)',
+                  background: mode === 'immediat' ? 'rgba(61,184,122,.1)' : mode === 'hebdomadaire' ? 'rgba(77,142,212,.1)' : 'rgba(201,168,76,.1)',
+                  border: mode === 'immediat' ? '1px solid rgba(61,184,122,.25)' : mode === 'hebdomadaire' ? '1px solid rgba(77,142,212,.25)' : '1px solid rgba(201,168,76,.25)',
+                }}>
+                  {modeLabel}
+                </span>
+              </div>
+              {mode !== 'immediat' && (
+                <form action={genererFactureSTAction}>
+                  <input type="hidden" name="sous_traitant_id" value={st.id} />
+                  <input type="hidden" name="mode_paiement" value={mode} />
+                  <button type="submit" style={{
+                    padding: '8px 16px', borderRadius: 8,
+                    background: 'var(--gold)', border: 'none',
+                    color: 'var(--base)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}>
+                    {btnLabel}
+                  </button>
+                </form>
+              )}
+              {mode === 'immediat' && (
+                <span style={{ fontSize: 10, color: 'var(--t3)', fontStyle: 'italic' }}>
+                  Factures créées automatiquement à la fin de chaque course
+                </span>
+              )}
+            </div>
+          )
+        })()}
+
+        {factures.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px', color: 'var(--t3)', fontSize: 12 }}>
+            Aucune facture générée
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {factures.map((f: any) => (
+              <div key={f.id} style={{
+                display: 'grid', gridTemplateColumns: '1fr auto auto',
+                alignItems: 'center', gap: 16,
+                padding: '12px 16px',
+                background: 'var(--elevated)', borderRadius: 10,
+                border: `1px solid ${f.statut === 'payee' ? 'rgba(61,184,122,.2)' : 'rgba(232,160,48,.2)'}`,
+              }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+                    {f.periode}
+                  </div>
+                  {f.notes && <div style={{ fontSize: 10, color: 'var(--t3)' }}>{f.notes}</div>}
+                  {f.date_paiement && (
+                    <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: 2 }}>
+                      Payée le {new Date(f.date_paiement).toLocaleDateString('fr-FR')}
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--font-jetbrains), monospace',
+                  fontSize: 16, fontWeight: 600, color: 'var(--t1)',
+                }}>
+                  {f.montant_ht.toFixed(2)} €
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    fontSize: 9, padding: '3px 9px', borderRadius: 4, fontWeight: 600,
+                    color:      f.statut === 'payee' ? 'var(--grn)' : 'var(--amb)',
+                    background: f.statut === 'payee' ? 'rgba(61,184,122,.1)' : 'rgba(232,160,48,.1)',
+                    border:     f.statut === 'payee' ? '1px solid rgba(61,184,122,.25)' : '1px solid rgba(232,160,48,.25)',
+                  }}>
+                    {f.statut === 'payee' ? 'Payée' : 'En attente'}
+                  </span>
+                  {f.statut === 'en_attente' && (
+                    <form action={marquerFactureSTPayeeAction} style={{ display: 'inline' }}>
+                      <input type="hidden" name="facture_id" value={f.id} />
+                      <input type="hidden" name="sous_traitant_id" value={st.id} />
+                      <button type="submit" style={{
+                        padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500,
+                        background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)',
+                        color: 'var(--grn)', cursor: 'pointer',
+                        fontFamily: 'var(--font-dm-sans), sans-serif',
+                      }}>
+                        Marquer payée
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       </div>
     </>
   )

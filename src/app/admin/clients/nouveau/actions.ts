@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { envoyerBienvenueClient } from '@/lib/email'
 
 export async function createClientAccount(formData: FormData): Promise<void> {
   const supabase = await requireAdminClient()
@@ -28,6 +29,13 @@ export async function createClientAccount(formData: FormData): Promise<void> {
   })
 
   if (error) throw new Error(error.message)
+
+  // Email de bienvenue (non bloquant)
+  envoyerBienvenueClient({
+    email, prenom, nom, password,
+    typeCompte: type_compte,
+    entrepriseNom: entreprise_nom,
+  }).catch(() => {})
 
   revalidatePath('/admin/clients')
   revalidatePath('/admin')

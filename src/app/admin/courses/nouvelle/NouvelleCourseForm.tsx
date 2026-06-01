@@ -220,6 +220,7 @@ export default function NouvelleCourseForm({
 
   const [depart,  setDepart]  = useState<AdresseVal>({ label: '', codePostal: '' })
   const [arrivee, setArrivee] = useState<AdresseVal>({ label: '', codePostal: '' })
+  const [etapes,  setEtapes]  = useState<string[]>([])
   const [dateHeure, setDateHeure] = useState(defaultDatetime)
   const [vehicule, setVehicule]   = useState('berline')
   const [prixManuel, setPrixManuel] = useState<string>('')
@@ -260,6 +261,7 @@ export default function NouvelleCourseForm({
     // Override adresses avec les valeurs autocomplétées
     fd.set('adresse_depart', depart.label || (fd.get('adresse_depart') as string))
     fd.set('adresse_arrivee', arrivee.label || (fd.get('adresse_arrivee') as string))
+    fd.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
     if (prixFinal !== null) fd.set('prix_estime', String(prixFinal))
     startTransition(async () => {
       const res = await creerCourseAction(fd)
@@ -282,6 +284,50 @@ export default function NouvelleCourseForm({
               dotColor="var(--green)" dotShape="circle"
               value={depart} onChange={setDepart}
             />
+
+            {/* Étapes intermédiaires (max 2) */}
+            {etapes.map((etape, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    value={etape}
+                    onChange={e => setEtapes(prev => prev.map((v, j) => j === i ? e.target.value : v))}
+                    placeholder={`Étape ${i + 1} — adresse intermédiaire`}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 9, boxSizing: 'border-box' as const,
+                      background: 'var(--elevated)', border: '1px solid rgba(201,168,76,.25)',
+                      color: 'var(--t1)', fontSize: 13, outline: 'none',
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEtapes(prev => prev.filter((_, j) => j !== i))}
+                  style={{
+                    width: 32, height: 32, borderRadius: 7, flexShrink: 0,
+                    background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
+                    color: 'var(--red)', cursor: 'pointer', fontSize: 16,
+                  }}
+                >×</button>
+              </div>
+            ))}
+
+            {etapes.length < 2 && (
+              <button
+                type="button"
+                onClick={() => setEtapes(prev => [...prev, ''])}
+                style={{
+                  alignSelf: 'flex-start', padding: '5px 12px', borderRadius: 7,
+                  background: 'transparent', border: '1px dashed rgba(201,168,76,.35)',
+                  color: 'var(--gold)', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+                }}
+              >
+                + Ajouter une étape
+              </button>
+            )}
+
             <AddressInput
               name="adresse_arrivee" placeholder="Adresse d'arrivée"
               dotColor="var(--red)" dotShape="square"
@@ -406,6 +452,12 @@ export default function NouvelleCourseForm({
                 <option key={st.id} value={st.id}>{st.nom}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label style={lbl}>Prix sous-traitant (€)</label>
+            <input type="number" name="prix_sous_traitant" min={0} step={0.5}
+              placeholder="0.00"
+              style={inp} />
           </div>
         </div>
 

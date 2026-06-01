@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -28,6 +28,7 @@ const STATUT_ORDER: StatutCourse[] = ['en_attente', 'acceptee', 'en_route', 'pri
 export default function CourseActions({
   course,
   chauffeurs,
+  sousTraitants,
 }: {
   course: {
     id: string
@@ -46,12 +47,18 @@ export default function CourseActions({
     adresse_arrivee: string
     client: { nom: string; prenom: string; telephone: string | null; entreprise: string | null } | null
     chauffeur: { nom: string; prenom: string; telephone: string | null; vehicule: string } | null
+    prix_sous_traitant: number | null
+    sous_traitant_nom: string | null
+    sous_traitant_id: string | null
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string }>
+  sousTraitants: Array<{ id: string; nom: string }>
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [selectedChauffeur, setSelectedChauffeur] = useState(course.chauffeur_id ?? '')
+  const [selectedST, setSelectedST] = useState(course.sous_traitant_id ?? '')
+  const [prixSTInput, setPrixSTInput] = useState(course.prix_sous_traitant?.toString() ?? '')
   const [prixInput, setPrixInput] = useState(course.prix_final?.toString() ?? course.prix_estime?.toString() ?? '')
   const [notesInput, setNotesInput] = useState(course.notes ?? '')
   const [notesSaved, setNotesSaved] = useState(false)
@@ -240,7 +247,7 @@ export default function CourseActions({
               value={selectedChauffeur}
               onChange={e => setSelectedChauffeur(e.target.value)}
               style={{
-                flex: 1, padding: '9px 12px',
+                flex: 1, minWidth: 0, padding: '9px 12px',
                 background: 'var(--elevated)', border: '1px solid var(--t3)',
                 borderRadius: 8, color: selectedChauffeur ? 'var(--t1)' : 'var(--t3)',
                 fontSize: 12, outline: 'none',
@@ -273,6 +280,85 @@ export default function CourseActions({
           </div>
         )}
       </div>
+
+      {/* === SOUS-TRAITANT === */}
+      {sousTraitants.length > 0 && !isTerminal && (
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '18px 20px' }}>
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
+            Sous-traitant
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <select
+              value={selectedST}
+              onChange={e => setSelectedST(e.target.value)}
+              style={{
+                width: '100%', padding: '9px 12px', minWidth: 0,
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                borderRadius: 8, color: selectedST ? 'var(--t1)' : 'var(--t3)',
+                fontSize: 12, outline: 'none',
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              <option value="">— Aucun sous-traitant —</option>
+              {sousTraitants.map(st => (
+                <option key={st.id} value={st.id}>{st.nom}</option>
+              ))}
+            </select>
+            {selectedST && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    type="number" min={0} step={0.5}
+                    value={prixSTInput}
+                    onChange={e => setPrixSTInput(e.target.value)}
+                    placeholder="Prix ST (€)"
+                    style={{
+                      width: '100%', padding: '9px 30px 9px 12px',
+                      background: 'var(--elevated)', border: '1px solid var(--t3)',
+                      borderRadius: 8, color: 'var(--t1)', fontSize: 13,
+                      fontFamily: 'var(--font-jetbrains), monospace',
+                      outline: 'none', boxSizing: 'border-box',
+                    }}
+                  />
+                  <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--t3)' }}>€</span>
+                </div>
+                <button
+                  onClick={() => run(() => assignerSousTraitant(
+                    course.id,
+                    selectedST || null,
+                    prixSTInput ? parseFloat(prixSTInput) : null,
+                  ))}
+                  disabled={pending}
+                  style={{
+                    padding: '9px 14px', borderRadius: 8,
+                    background: 'var(--gold)', border: 'none',
+                    color: 'var(--base)', fontSize: 12, fontWeight: 600,
+                    cursor: pending ? 'wait' : 'pointer',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Assigner
+                </button>
+              </div>
+            )}
+            {!selectedST && course.sous_traitant_nom && (
+              <button
+                onClick={() => run(() => assignerSousTraitant(course.id, null, null))}
+                disabled={pending}
+                style={{
+                  padding: '7px', borderRadius: 8, width: '100%',
+                  background: 'transparent', border: '1px solid rgba(217,80,80,.25)',
+                  color: 'var(--red)', fontSize: 11, cursor: 'pointer',
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                Retirer {course.sous_traitant_nom}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* === TARIFICATION === */}
       <div style={{
@@ -342,6 +428,42 @@ export default function CourseActions({
             </div>
           )}
         </div>
+
+        {/* Bloc sous-traitant : coût + marge */}
+        {course.sous_traitant_nom && (
+          <div style={{
+            marginTop: 16, paddingTop: 14,
+            borderTop: '1px solid rgba(201,168,76,.08)',
+          }}>
+            <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 10, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+              Sous-traitant · {course.sous_traitant_nom}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ background: 'var(--elevated)', borderRadius: 8, padding: '10px 12px' }}>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4 }}>Coût ST</div>
+                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600, color: 'var(--red)' }}>
+                  {course.prix_sous_traitant != null ? `${course.prix_sous_traitant.toFixed(2)} €` : '—'}
+                </div>
+              </div>
+              <div style={{ background: 'var(--elevated)', borderRadius: 8, padding: '10px 12px' }}>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4 }}>Marge Owise</div>
+                {(() => {
+                  const prixClient = course.prix_final ?? course.prix_estime
+                  const marge = prixClient != null && course.prix_sous_traitant != null
+                    ? prixClient - course.prix_sous_traitant : null
+                  return (
+                    <div style={{
+                      fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600,
+                      color: marge == null ? 'var(--t3)' : marge >= 0 ? 'var(--grn)' : 'var(--red)',
+                    }}>
+                      {marge != null ? `${marge.toFixed(2)} €` : '—'}
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* === NOTES === */}
