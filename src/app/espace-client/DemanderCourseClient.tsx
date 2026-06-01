@@ -216,12 +216,34 @@ export default function DemanderCourseClient({
                   })}
                 </div>
 
-                {/* Adresses de l'équipe — liste unifiée, sélectionné en or */}
-                {collaborateurs.some(c => c.adresse) && (
+                {/* Adresses de l'équipe — tous les collabs, sélectionné en or */}
+                {collaborateurs.length > 0 && (
                   <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {collaborateurs.filter(c => c.adresse).map(c => {
+                    {collaborateurs.map(c => {
                       const sel = selectedCollab?.id === c.id
                       const nom = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
+
+                      if (!c.adresse) {
+                        return (
+                          <div key={c.id} style={{
+                            padding: '8px 12px', borderRadius: 8,
+                            background: sel ? 'rgba(201,168,76,.04)' : 'var(--elevated)',
+                            border: `1px solid ${sel ? 'rgba(201,168,76,.14)' : 'var(--gb)'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                          }}>
+                            <div style={{ fontSize: 11, color: 'var(--t3)' }}>
+                              <span style={{ color: sel ? 'rgba(201,168,76,.6)' : 'var(--t3)', fontWeight: 500 }}>
+                                📍 {nom} :
+                              </span>{' '}
+                              <em style={{ fontStyle: 'normal' }}>Aucune adresse enregistrée</em>
+                            </div>
+                            <a href="#mon-equipe" style={{ fontSize: 9, color: 'var(--t3)', textDecoration: 'underline', flexShrink: 0 }}>
+                              Ajouter ↓
+                            </a>
+                          </div>
+                        )
+                      }
+
                       const bStyle: React.CSSProperties = {
                         padding: '3px 9px', borderRadius: 5, cursor: 'pointer', fontFamily: 'inherit',
                         fontSize: 10, fontWeight: 600,
@@ -244,7 +266,11 @@ export default function DemanderCourseClient({
                           <div style={{ display: 'flex', gap: 5, marginTop: 5 }}>
                             <button type="button" onClick={() => setDepart(c.adresse!)} style={bStyle}>→ Départ</button>
                             {etapes.length < 2 && (
-                              <button type="button" onClick={() => setEtapes(p => [...p, c.adresse!])} style={bStyle}>+ Étape</button>
+                              <button type="button" onClick={() => {
+                                const idx = etapes.findIndex(e => !e.trim())
+                                if (idx >= 0) setEtapes(p => p.map((e, i) => i === idx ? c.adresse! : e))
+                                else setEtapes(p => [...p, c.adresse!])
+                              }} style={bStyle}>+ Étape</button>
                             )}
                             <button type="button" onClick={() => setArrivee(c.adresse!)} style={bStyle}>→ Arrivée</button>
                           </div>
