@@ -222,7 +222,7 @@ export default async function CourseDetailPage({
 
             {/* Méta trajet */}
             <div style={{
-              display: 'flex', gap: 24, marginTop: 18,
+              display: 'flex', gap: 24, marginTop: 18, flexWrap: 'wrap',
               paddingTop: 16, borderTop: '1px solid rgba(201,168,76,.07)',
             }}>
               {[
@@ -244,6 +244,56 @@ export default async function CourseDetailPage({
                 </div>
               ))}
             </div>
+
+            {/* Infos vol / train */}
+            {((course as any).num_vol_train || (course as any).heure_arrivee_vol) && (
+              <div style={{
+                marginTop: 16, padding: '12px 16px', borderRadius: 10,
+                background: 'rgba(77,142,212,.07)', border: '1px solid rgba(77,142,212,.2)',
+                display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4D8ED4', fontWeight: 600, width: '100%' }}>
+                  ✈ Infos vol / train
+                </div>
+                {(course as any).num_vol_train && (
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>N° VOL / TRAIN</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: '#4D8ED4', fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.08em' }}>
+                      {(course as any).num_vol_train}
+                    </div>
+                  </div>
+                )}
+                {(course as any).terminal && (
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>TERMINAL / VOIE</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      {(course as any).terminal}
+                    </div>
+                  </div>
+                )}
+                {(course as any).heure_arrivee_vol && (
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>HEURE D'ARRIVÉE</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      {(course as any).heure_arrivee_vol}
+                    </div>
+                  </div>
+                )}
+                {(course as any).num_vol_train && (
+                  <a
+                    href={`https://www.flightradar24.com/data/flights/${((course as any).num_vol_train || '').toLowerCase().replace(/\s/g, '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{
+                      marginLeft: 'auto', padding: '5px 12px', borderRadius: 6,
+                      background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)',
+                      color: '#4D8ED4', fontSize: 10, fontWeight: 600, textDecoration: 'none',
+                    }}
+                  >
+                    Suivi FlightRadar24 →
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Client */}

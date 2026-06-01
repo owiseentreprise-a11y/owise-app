@@ -19,8 +19,11 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const etapesRaw    = (formData.get('etapes') as string) || '[]'
   let etapes: string[] = []
   try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
-  const allerRetour  = formData.get('aller_retour') === 'true'
+  const allerRetour   = formData.get('aller_retour') === 'true'
   const dateRetourRaw = (formData.get('date_retour') as string) || ''
+  const numVolTrain   = (formData.get('num_vol_train') as string) || null
+  const terminal      = (formData.get('terminal') as string) || null
+  const heureArriveeVol = (formData.get('heure_arrivee_vol') as string) || null
 
   if (!depart || !arrivee || !date) redirect('/espace-client?error=champs-manquants')
 
@@ -65,6 +68,9 @@ export async function demanderCourse(formData: FormData): Promise<void> {
     nb_passagers:     passagers,
     mode_paiement:    modePaiement,
     statut:           'en_attente' as const,
+    num_vol_train:    numVolTrain,
+    terminal,
+    heure_arrivee_vol: heureArriveeVol,
   }
 
   const { data: newCourse } = await supabase.from('courses').insert({

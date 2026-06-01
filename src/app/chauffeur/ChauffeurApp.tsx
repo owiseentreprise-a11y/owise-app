@@ -344,6 +344,55 @@ export default function ChauffeurApp({
                 </a>
               </div>
 
+              {/* Vol / Train — priorité haute pour le chauffeur */}
+              {(activeCourse as any).num_vol_train && (
+                <div style={{
+                  background: 'rgba(77,142,212,.1)', border: '1px solid rgba(77,142,212,.3)',
+                  borderRadius: 10, padding: '10px 14px', marginBottom: 12,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4D8ED4', marginBottom: 2 }}>
+                      ✈ N° VOL / TRAIN
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#4D8ED4', fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.1em' }}>
+                      {(activeCourse as any).num_vol_train}
+                    </div>
+                  </div>
+                  {(activeCourse as any).terminal && (
+                    <div>
+                      <div style={{ fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 2 }}>
+                        TERMINAL / VOIE
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                        {(activeCourse as any).terminal}
+                      </div>
+                    </div>
+                  )}
+                  {(activeCourse as any).heure_arrivee_vol && (
+                    <div style={{ marginLeft: 'auto' }}>
+                      <div style={{ fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 2 }}>
+                        ARRIVÉE PRÉVUE
+                      </div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                        {(activeCourse as any).heure_arrivee_vol}
+                      </div>
+                    </div>
+                  )}
+                  <a
+                    href={`https://www.flightradar24.com/data/flights/${((activeCourse as any).num_vol_train || '').toLowerCase().replace(/\s/g, '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{
+                      width: '100%', padding: '7px 12px', borderRadius: 7, textAlign: 'center',
+                      background: 'rgba(77,142,212,.2)', border: '1px solid rgba(77,142,212,.35)',
+                      color: '#4D8ED4', fontSize: 11, fontWeight: 600, textDecoration: 'none',
+                    }}
+                  >
+                    📡 Suivre le vol en temps réel →
+                  </a>
+                </div>
+              )}
+
               {/* Client */}
               <div style={{
                 background: 'rgba(77,142,212,.05)', border: '1px solid rgba(77,142,212,.12)',

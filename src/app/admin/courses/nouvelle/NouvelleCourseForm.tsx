@@ -228,6 +228,9 @@ export default function NouvelleCourseForm({
   const [clientId, setClientId]     = useState('')
   const [allerRetour, setAllerRetour] = useState(false)
   const [dateRetour, setDateRetour]   = useState('')
+  const [numVolTrain, setNumVolTrain] = useState('')
+  const [terminal, setTerminal]       = useState('')
+  const [heureArrivee, setHeureArrivee] = useState('')
 
   const activeZones = useMemo(() => zones.filter(z => z.code !== 'HORS'), [zones])
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart,  activeZones])
@@ -266,6 +269,9 @@ export default function NouvelleCourseForm({
     if (prixFinal !== null) fd.set('prix_estime', String(prixFinal))
     fd.set('aller_retour', allerRetour ? 'true' : 'false')
     fd.set('date_retour', dateRetour)
+    fd.set('num_vol_train', numVolTrain)
+    fd.set('terminal', terminal)
+    fd.set('heure_arrivee_vol', heureArrivee)
     startTransition(async () => {
       const res = await creerCourseAction(fd)
       if (res?.error) setError(res.error)
@@ -427,6 +433,59 @@ export default function NouvelleCourseForm({
             </div>
           )}
         </div>
+
+        {/* Infos vol / train — affichage conditionnel selon les zones */}
+        {(() => {
+          const aeroTypes = ['aeroport']
+          const gareTypes = ['gare']
+          const depAero  = aeroTypes.includes(zoneDepart?.type  ?? '')
+          const arrAero  = aeroTypes.includes(zoneArrivee?.type ?? '')
+          const depGare  = gareTypes.includes(zoneDepart?.type  ?? '')
+          const arrGare  = gareTypes.includes(zoneArrivee?.type ?? '')
+          const showInfo = depAero || arrAero || depGare || arrGare
+          if (!showInfo && !depart.label && !arrivee.label) return null
+          // Fallback label-based detection si zones non encore détectées
+          const labelAero = /aéroport|aeroport|cdg|orly|roissy|beauvais/i
+          const labelGare = /\bgare\b/i
+          const isAero = depAero || arrAero || labelAero.test(depart.label) || labelAero.test(arrivee.label)
+          const isGare = !isAero && (depGare || arrGare || labelGare.test(depart.label) || labelGare.test(arrivee.label))
+          if (!isAero && !isGare) return null
+          const type = isAero ? 'vol' : 'train'
+          const color = isAero ? '#4D8ED4' : '#3DB87A'
+          const bg    = isAero ? 'rgba(77,142,212,.06)' : 'rgba(61,184,122,.06)'
+          const border = isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'
+          return (
+            <div style={{ padding: 14, borderRadius: 10, background: bg, border: `1px solid ${border}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color, fontWeight: 600 }}>
+                {isAero ? '✈ Infos de vol' : '🚄 Infos de train'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={lbl}>N° de {type}</label>
+                  <input name="num_vol_train" value={numVolTrain} placeholder={isAero ? 'AF1234, EZY8521…' : 'TGV 6423, TER 87650…'}
+                    onChange={e => setNumVolTrain(e.target.value)}
+                    style={{ ...inp, fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.06em' }} />
+                </div>
+                <div>
+                  <label style={lbl}>{isAero ? 'Terminal' : 'Voie / Quai'}</label>
+                  <input name="terminal" value={terminal} placeholder={isAero ? '2E, T1, 3…' : 'Voie 6, Hall 2…'}
+                    onChange={e => setTerminal(e.target.value)} style={inp} />
+                </div>
+              </div>
+              <div>
+                <label style={lbl}>
+                  Heure {(depAero || depGare) ? 'd'arrivée' : 'de départ'} du {type}
+                  <span style={{ color: 'var(--t3)', textTransform: 'none', letterSpacing: 0, fontWeight: 400, marginLeft: 6 }}>
+                    (pour anticiper la prise en charge)
+                  </span>
+                </label>
+                <input name="heure_arrivee_vol" type="time" value={heureArrivee}
+                  onChange={e => setHeureArrivee(e.target.value)}
+                  style={{ ...inp, width: '50%' }} />
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Véhicule */}
         <div>

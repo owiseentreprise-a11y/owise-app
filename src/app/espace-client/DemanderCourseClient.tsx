@@ -54,10 +54,24 @@ export default function DemanderCourseClient({
   const [note, setNote]         = useState('')
   const [allerRetour, setAllerRetour] = useState(false)
   const [dateRetour, setDateRetour]   = useState('')
+  const [numVolTrain, setNumVolTrain] = useState('')
+  const [terminal, setTerminal]       = useState('')
+  const [heureArrivee, setHeureArrivee] = useState('')
   const [payMode, setPayMode]   = useState<string | null>(null)
   const [stepErr, setStepErr]   = useState('')
   const [pending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+
+  // Détection aéroport / gare dans les adresses
+  const isAeroport = (a: string) => /aéroport|aeroport|cdg|orly|roissy|beauvais|le bourget/i.test(a)
+  const isGare     = (a: string) => /\bgare\b|gare\s|\bsncf\b|tgv\b|eurostar/i.test(a)
+  const departAero  = isAeroport(depart)
+  const arriveeAero = isAeroport(arrivee)
+  const departGare  = isGare(depart)
+  const arriveeGare = isGare(arrivee)
+  const showVolInfo = departAero || arriveeAero || departGare || arriveeGare
+  const isAero      = departAero || arriveeAero
+  const typeTransport = isAero ? 'vol' : 'train'
 
   // Modes disponibles (Stripe toujours si actif + modes alternatifs)
   const modes = Object.entries(modesActifs ?? { stripe: true, cash: false, cheque: false, virement: false })
@@ -77,16 +91,22 @@ export default function DemanderCourseClient({
     setStep(2)
   }
 
+  function buildFormData(base: FormData, mode: string): FormData {
+    base.set('depart', depart)
+    base.set('arrivee', arrivee)
+    base.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
+    base.set('mode_paiement', mode)
+    base.set('aller_retour', allerRetour ? 'true' : 'false')
+    base.set('date_retour', dateRetour)
+    base.set('num_vol_train', numVolTrain)
+    base.set('terminal', terminal)
+    base.set('heure_arrivee_vol', heureArrivee)
+    return base
+  }
+
   function submitDirect(mode: string) {
     if (!formRef.current) return
-    const data = new FormData(formRef.current)
-    data.set('depart', depart)
-    data.set('arrivee', arrivee)
-    data.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
-    data.set('mode_paiement', mode)
-    data.set('aller_retour', allerRetour ? 'true' : 'false')
-    data.set('date_retour', dateRetour)
-    startTransition(() => demanderCourse(data))
+    startTransition(() => demanderCourse(buildFormData(new FormData(formRef.current!), mode)))
   }
 
   function handleConfirm() {
@@ -112,14 +132,7 @@ export default function DemanderCourseClient({
   function handleFormSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     if (isEntreprise) {
-      const data = new FormData(formRef.current!)
-      data.set('depart', depart)
-      data.set('arrivee', arrivee)
-      data.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
-      data.set('mode_paiement', 'entreprise')
-      data.set('aller_retour', allerRetour ? 'true' : 'false')
-      data.set('date_retour', dateRetour)
-      startTransition(() => demanderCourse(data))
+      startTransition(() => demanderCourse(buildFormData(new FormData(formRef.current!), 'entreprise')))
     } else {
       goToStep2()
     }
@@ -419,6 +432,67 @@ export default function DemanderCourseClient({
                 </div>
               )}
             </div>
+
+            {/* Infos vol / train — apparaît automatiquement si aéroport ou gare détecté */}
+            {showVolInfo && (
+              <div style={{
+                padding: '14px', borderRadius: 10,
+                background: isAero ? 'rgba(77,142,212,.06)' : 'rgba(61,184,122,.06)',
+                border: `1px solid ${isAero ? 'rgba(77,142,212,.25)' : 'rgba(61,184,122,.25)'}`,
+                display: 'flex', flexDirection: 'column', gap: 10,
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: isAero ? '#4D8ED4' : '#3DB87A', fontWeight: 600 }}>
+                  {isAero ? '✈ Infos de vol' : '🚄 Infos de train'}
+                </div>
+
+                {/* Contexte : prise en charge ou dépôt */}
+                <div style={{ fontSize: 10, color: 'var(--t2)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {(departAero || departGare) && (
+                    <span style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.2)', color: '#3DB87A' }}>
+                      ● Prise en charge à {isAero ? 'l'aéroport' : 'la gare'}
+                    </span>
+                  )}
+                  {(arriveeAero || arriveeGare) && (
+                    <span style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: '#D95454' }}>
+                      ● Dépôt à {isAero ? 'l'aéroport' : 'la gare'}
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label style={labelStyle}>N° de {typeTransport}</label>
+                    <input
+                      name="num_vol_train" value={numVolTrain} placeholder={isAero ? 'AF1234, EZY8521…' : 'TGV 6423, RER B…'}
+                      onChange={e => setNumVolTrain(e.target.value)}
+                      style={{ ...inputStyle, fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.06em' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>{isAero ? 'Terminal' : 'Voie / Quai'}</label>
+                    <input
+                      name="terminal" value={terminal} placeholder={isAero ? '2E, 1, 3…' : 'Voie 6, Hall 2…'}
+                      onChange={e => setTerminal(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>
+                    Heure {departAero || departGare ? 'd'arrivée' : 'de départ'} du {typeTransport}
+                    <span style={{ color: 'var(--t3)', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 6 }}>
+                      (pour que le chauffeur anticipe)
+                    </span>
+                  </label>
+                  <input
+                    name="heure_arrivee_vol" type="time" value={heureArrivee}
+                    onChange={e => setHeureArrivee(e.target.value)}
+                    style={{ ...inputStyle, colorScheme: 'light', width: '50%' }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Véhicule + passagers */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 14, alignItems: 'end' }}>

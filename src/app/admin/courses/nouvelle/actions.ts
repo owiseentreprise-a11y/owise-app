@@ -25,6 +25,9 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
   const allerRetour   = formData.get('aller_retour') === 'true'
   const dateRetourRaw = (formData.get('date_retour') as string) || ''
+  const num_vol_train    = (formData.get('num_vol_train') as string) || null
+  const terminal_val     = (formData.get('terminal') as string) || null
+  const heure_arrivee_vol = (formData.get('heure_arrivee_vol') as string) || null
   const prix_sous_traitant_raw = formData.get('prix_sous_traitant') as string
   const prix_sous_traitant  = prix_sous_traitant_raw ? parseFloat(prix_sous_traitant_raw) : null
 
@@ -46,6 +49,9 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     sous_traitant_id,
     prix_sous_traitant: sous_traitant_id ? prix_sous_traitant : null,
     etapes: etapes.length > 0 ? etapes : null,
+    num_vol_train,
+    terminal: terminal_val,
+    heure_arrivee_vol,
     statut: 'en_attente',
   }).select('id').single()
 
