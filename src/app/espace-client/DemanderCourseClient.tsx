@@ -216,27 +216,64 @@ export default function DemanderCourseClient({
                   })}
                 </div>
 
-                {/* Suggestion d'adresse si le collab en a une */}
-                {selectedCollab?.adresse && (
-                  <div style={{
-                    marginTop: 8, padding: '8px 12px', borderRadius: 8,
-                    background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.18)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-                  }}>
-                    <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-                      <span style={{ color: 'var(--gold)', fontWeight: 500 }}>📍 {selectedCollab.prenom} :</span>{' '}
-                      {selectedCollab.adresse}
+                {/* Adresses rapides — collab sélectionné + toute l'équipe */}
+                {(() => {
+                  const collabsAvecAdresse = collaborateurs.filter(c => c.adresse)
+                  if (collabsAvecAdresse.length === 0) return null
+
+                  const qBtn = (label: string, onClick: () => void, gold = false): React.CSSProperties => ({
+                    padding: '3px 9px', borderRadius: 5, cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: 10, fontWeight: 600,
+                    border: gold ? '1px solid rgba(201,168,76,.35)' : '1px solid var(--gb)',
+                    background: gold ? 'rgba(201,168,76,.1)' : 'var(--floating)',
+                    color: gold ? '#C9A84C' : 'var(--t2)',
+                  })
+
+                  const QuickFill = ({ adresse, gold = false }: { adresse: string; gold?: boolean }) => (
+                    <div style={{ display: 'flex', gap: 5, marginTop: 6 }}>
+                      <button type="button" onClick={() => setDepart(adresse)} style={qBtn('→ Départ', () => {}, gold)}>→ Départ</button>
+                      {etapes.length < 2 && (
+                        <button type="button" onClick={() => setEtapes(p => [...p, adresse])} style={qBtn('+ Étape', () => {}, gold)}>+ Étape</button>
+                      )}
+                      <button type="button" onClick={() => setArrivee(adresse)} style={qBtn('→ Arrivée', () => {}, gold)}>→ Arrivée</button>
                     </div>
-                    <button type="button" onClick={() => setDepart(selectedCollab.adresse!)} style={{
-                      padding: '4px 10px', borderRadius: 6, flexShrink: 0,
-                      border: '1px solid rgba(201,168,76,.3)',
-                      background: 'rgba(201,168,76,.1)', color: '#C9A84C',
-                      fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                    }}>
-                      Utiliser comme départ
-                    </button>
-                  </div>
-                )}
+                  )
+
+                  return (
+                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {/* Collab sélectionné — style or */}
+                      {selectedCollab?.adresse && (
+                        <div style={{
+                          padding: '8px 12px', borderRadius: 8,
+                          background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.18)',
+                        }}>
+                          <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+                            <span style={{ color: '#C9A84C', fontWeight: 600 }}>📍 {selectedCollab.prenom} :</span>{' '}
+                            {selectedCollab.adresse}
+                          </div>
+                          <QuickFill adresse={selectedCollab.adresse} gold />
+                        </div>
+                      )}
+
+                      {/* Autres collabs avec adresse */}
+                      {collabsAvecAdresse.filter(c => c.id !== selectedCollab?.id).map(c => {
+                        const nom = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
+                        return (
+                          <div key={c.id} style={{
+                            padding: '7px 12px', borderRadius: 8,
+                            background: 'var(--elevated)', border: '1px solid var(--gb)',
+                          }}>
+                            <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+                              <span style={{ color: 'var(--t1)', fontWeight: 500 }}>📍 {nom} :</span>{' '}
+                              <span style={{ color: 'var(--t3)' }}>{c.adresse}</span>
+                            </div>
+                            <QuickFill adresse={c.adresse!} />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
 
                 <input type="hidden" name="collaborateur_id" value={selectedCollab?.id ?? ''} />
               </div>
