@@ -19,6 +19,8 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const etapesRaw    = (formData.get('etapes') as string) || '[]'
   let etapes: string[] = []
   try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
+  const allerRetour  = formData.get('aller_retour') === 'true'
+  const dateRetourRaw = (formData.get('date_retour') as string) || ''
 
   if (!depart || !arrivee || !date) redirect('/espace-client?error=champs-manquants')
 
@@ -56,19 +58,38 @@ export async function demanderCourse(formData: FormData): Promise<void> {
     if (collabIdForm) collabId = collabIdForm
   }
 
-  const { data: newCourse } = await supabase.from('courses').insert({
+  const courseBase = {
     client_id:        clientId,
     collaborateur_id: collabId,
-    adresse_depart:   depart,
-    adresse_arrivee:  arrivee,
-    etapes:           etapes.length > 0 ? etapes : null,
-    date_prevue:      dateParsed.toISOString(),
-    notes:            note,
     type_vehicule:    vehicule,
     nb_passagers:     passagers,
     mode_paiement:    modePaiement,
-    statut:           'en_attente',
+    statut:           'en_attente' as const,
+  }
+
+  const { data: newCourse } = await supabase.from('courses').insert({
+    ...courseBase,
+    adresse_depart:  depart,
+    adresse_arrivee: arrivee,
+    etapes:          etapes.length > 0 ? etapes : null,
+    date_prevue:     dateParsed.toISOString(),
+    notes:           note,
   }).select('id').single()
+
+  // Retour — adresses inversées
+  if (allerRetour && dateRetourRaw) {
+    const dateRetourParsed = new Date(dateRetourRaw)
+    if (!isNaN(dateRetourParsed.getTime())) {
+      await supabase.from('courses').insert({
+        ...courseBase,
+        adresse_depart:  arrivee,
+        adresse_arrivee: depart,
+        etapes:          etapes.length > 0 ? [...etapes].reverse() : null,
+        date_prevue:     dateRetourParsed.toISOString(),
+        notes:           note ? `Retour — ${note}` : 'Retour',
+      })
+    }
+  }
 
   // Envoi emails en arrière-plan (non bloquant)
   if (newCourse) {

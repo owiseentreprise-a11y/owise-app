@@ -226,6 +226,8 @@ export default function NouvelleCourseForm({
   const [prixManuel, setPrixManuel] = useState<string>('')
   const [distanceKm, setDistanceKm] = useState<number | null>(null)
   const [clientId, setClientId]     = useState('')
+  const [allerRetour, setAllerRetour] = useState(false)
+  const [dateRetour, setDateRetour]   = useState('')
 
   const activeZones = useMemo(() => zones.filter(z => z.code !== 'HORS'), [zones])
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart,  activeZones])
@@ -258,11 +260,12 @@ export default function NouvelleCourseForm({
     e.preventDefault()
     setError(null)
     const fd = new FormData(e.currentTarget)
-    // Override adresses avec les valeurs autocomplétées
     fd.set('adresse_depart', depart.label || (fd.get('adresse_depart') as string))
     fd.set('adresse_arrivee', arrivee.label || (fd.get('adresse_arrivee') as string))
     fd.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
     if (prixFinal !== null) fd.set('prix_estime', String(prixFinal))
+    fd.set('aller_retour', allerRetour ? 'true' : 'false')
+    fd.set('date_retour', dateRetour)
     startTransition(async () => {
       const res = await creerCourseAction(fd)
       if (res?.error) setError(res.error)
@@ -366,6 +369,63 @@ export default function NouvelleCourseForm({
             <label style={lbl}>Passagers</label>
             <input name="nb_passagers" type="number" min={1} max={8} defaultValue={1} style={inp} />
           </div>
+        </div>
+
+        {/* Aller-Retour */}
+        <div>
+          <button
+            type="button"
+            onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+              border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'var(--t3)'}`,
+              background: allerRetour ? 'rgba(201,168,76,.1)' : 'var(--elevated)',
+              color: allerRetour ? 'var(--gold)' : 'var(--t2)',
+              fontSize: 12, fontWeight: allerRetour ? 600 : 400,
+            }}
+          >
+            <span style={{ fontSize: 15 }}>↩</span>
+            Aller-Retour
+            <span style={{
+              fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 700,
+              background: allerRetour ? 'rgba(201,168,76,.2)' : 'var(--floating)',
+              color: allerRetour ? 'var(--gold)' : 'var(--t3)',
+            }}>
+              {allerRetour ? 'ON' : 'OFF'}
+            </span>
+          </button>
+
+          {allerRetour && (
+            <div style={{
+              marginTop: 10, padding: '14px', borderRadius: 10,
+              background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.2)',
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}>
+              <div>
+                <label style={lbl}>Date et heure du retour</label>
+                <input type="datetime-local" value={dateRetour} required={allerRetour}
+                  onChange={e => setDateRetour(e.target.value)} style={inp} />
+              </div>
+              {(depart.label || arrivee.label) && (
+                <div style={{
+                  fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 10px', borderRadius: 7, background: 'var(--elevated)', border: '1px solid var(--t3)',
+                }}>
+                  <span style={{ color: 'var(--red)', fontSize: 9 }}>●</span>
+                  <span style={{ color: 'var(--t3)' }}>{arrivee.label || '…'}</span>
+                  <span style={{ color: 'var(--t3)' }}>→</span>
+                  <span style={{ color: 'var(--grn)', fontSize: 9 }}>●</span>
+                  <span style={{ color: 'var(--t3)' }}>{depart.label || '…'}</span>
+                  <span style={{ marginLeft: 4, fontSize: 9, color: 'var(--t3)' }}>(adresses inversées)</span>
+                </div>
+              )}
+              <div style={{ fontSize: 10, color: 'var(--t3)' }}>
+                Le prix du retour sera à définir séparément sur la fiche course.
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Véhicule */}

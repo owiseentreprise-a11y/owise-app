@@ -52,6 +52,8 @@ export default function DemanderCourseClient({
   const [passagers, setPass]    = useState(1)
   const [date, setDate]         = useState('')
   const [note, setNote]         = useState('')
+  const [allerRetour, setAllerRetour] = useState(false)
+  const [dateRetour, setDateRetour]   = useState('')
   const [payMode, setPayMode]   = useState<string | null>(null)
   const [stepErr, setStepErr]   = useState('')
   const [pending, startTransition] = useTransition()
@@ -82,6 +84,8 @@ export default function DemanderCourseClient({
     data.set('arrivee', arrivee)
     data.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
     data.set('mode_paiement', mode)
+    data.set('aller_retour', allerRetour ? 'true' : 'false')
+    data.set('date_retour', dateRetour)
     startTransition(() => demanderCourse(data))
   }
 
@@ -113,6 +117,8 @@ export default function DemanderCourseClient({
       data.set('arrivee', arrivee)
       data.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
       data.set('mode_paiement', 'entreprise')
+      data.set('aller_retour', allerRetour ? 'true' : 'false')
+      data.set('date_retour', dateRetour)
       startTransition(() => demanderCourse(data))
     } else {
       goToStep2()
@@ -355,6 +361,63 @@ export default function DemanderCourseClient({
                 <label style={labelStyle}>Commentaire (optionnel)</label>
                 <input name="note" placeholder="Vol AF123, bagages..." value={note} onChange={e => setNote(e.target.value)} style={inputStyle} />
               </div>
+            </div>
+
+            {/* Aller-Retour */}
+            <div>
+              <button
+                type="button"
+                onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '7px 14px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
+                  border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'var(--gb)'}`,
+                  background: allerRetour ? 'rgba(201,168,76,.1)' : 'var(--elevated)',
+                  color: allerRetour ? '#C9A84C' : 'var(--t2)',
+                  fontSize: 12, fontWeight: allerRetour ? 600 : 400,
+                }}
+              >
+                <span style={{ fontSize: 15 }}>↩</span>
+                Aller-Retour
+                <span style={{
+                  marginLeft: 4, fontSize: 9, padding: '2px 6px', borderRadius: 4,
+                  background: allerRetour ? 'rgba(201,168,76,.2)' : 'var(--floating)',
+                  color: allerRetour ? '#C9A84C' : 'var(--t3)', fontWeight: 700, letterSpacing: '.05em',
+                }}>
+                  {allerRetour ? 'ON' : 'OFF'}
+                </span>
+              </button>
+
+              {allerRetour && (
+                <div style={{
+                  marginTop: 10, padding: '12px 14px', borderRadius: 10,
+                  background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.2)',
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  <div>
+                    <label style={labelStyle}>Date et heure du retour</label>
+                    <input
+                      type="datetime-local" value={dateRetour} required={allerRetour}
+                      onChange={e => setDateRetour(e.target.value)}
+                      style={{ ...inputStyle, colorScheme: 'light' }}
+                    />
+                  </div>
+                  {(depart || arrivee) && (
+                    <div style={{
+                      fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '6px 10px', borderRadius: 7,
+                      background: 'var(--elevated)', border: '1px solid var(--gb)',
+                    }}>
+                      <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
+                      <span style={{ color: 'var(--t3)' }}>{arrivee || '…'}</span>
+                      <span style={{ color: 'var(--t3)', fontSize: 10 }}>→</span>
+                      <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
+                      <span style={{ color: 'var(--t3)' }}>{depart || '…'}</span>
+                      <span style={{ marginLeft: 4, fontSize: 9, color: 'var(--t3)' }}>(adresses inversées)</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Véhicule + passagers */}

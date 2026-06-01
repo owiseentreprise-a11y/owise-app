@@ -23,6 +23,8 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const etapesRaw = (formData.get('etapes') as string) || '[]'
   let etapes: string[] = []
   try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
+  const allerRetour   = formData.get('aller_retour') === 'true'
+  const dateRetourRaw = (formData.get('date_retour') as string) || ''
   const prix_sous_traitant_raw = formData.get('prix_sous_traitant') as string
   const prix_sous_traitant  = prix_sous_traitant_raw ? parseFloat(prix_sous_traitant_raw) : null
 
@@ -48,6 +50,29 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   }).select('id').single()
 
   if (error) return { error: error.message }
+
+  // Retour — adresses inversées
+  if (allerRetour && dateRetourRaw && newCourse) {
+    const dateRetourParsed = new Date(dateRetourRaw)
+    if (!isNaN(dateRetourParsed.getTime())) {
+      await supabase.from('courses').insert({
+        adresse_depart:    adresse_arrivee,
+        adresse_arrivee:   adresse_depart,
+        etapes:            etapes.length > 0 ? [...etapes].reverse() : null,
+        date_prevue:       dateRetourParsed.toISOString(),
+        type_vehicule,
+        nb_passagers,
+        prix_estime:       null,
+        notes:             notes ? `Retour — ${notes}` : 'Retour',
+        client_id,
+        collaborateur_id,
+        chauffeur_id:      sous_traitant_id ? null : chauffeur_id,
+        sous_traitant_id,
+        prix_sous_traitant: sous_traitant_id ? prix_sous_traitant : null,
+        statut:            'en_attente',
+      })
+    }
+  }
 
   const refCourse = (newCourse?.id ?? '').slice(-6).toUpperCase()
 
