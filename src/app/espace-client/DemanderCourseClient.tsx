@@ -216,64 +216,43 @@ export default function DemanderCourseClient({
                   })}
                 </div>
 
-                {/* Adresses rapides — collab sélectionné + toute l'équipe */}
-                {(() => {
-                  const collabsAvecAdresse = collaborateurs.filter(c => c.adresse)
-                  if (collabsAvecAdresse.length === 0) return null
-
-                  const qBtn = (label: string, onClick: () => void, gold = false): React.CSSProperties => ({
-                    padding: '3px 9px', borderRadius: 5, cursor: 'pointer', fontFamily: 'inherit',
-                    fontSize: 10, fontWeight: 600,
-                    border: gold ? '1px solid rgba(201,168,76,.35)' : '1px solid var(--gb)',
-                    background: gold ? 'rgba(201,168,76,.1)' : 'var(--floating)',
-                    color: gold ? '#C9A84C' : 'var(--t2)',
-                  })
-
-                  const QuickFill = ({ adresse, gold = false }: { adresse: string; gold?: boolean }) => (
-                    <div style={{ display: 'flex', gap: 5, marginTop: 6 }}>
-                      <button type="button" onClick={() => setDepart(adresse)} style={qBtn('→ Départ', () => {}, gold)}>→ Départ</button>
-                      {etapes.length < 2 && (
-                        <button type="button" onClick={() => setEtapes(p => [...p, adresse])} style={qBtn('+ Étape', () => {}, gold)}>+ Étape</button>
-                      )}
-                      <button type="button" onClick={() => setArrivee(adresse)} style={qBtn('→ Arrivée', () => {}, gold)}>→ Arrivée</button>
-                    </div>
-                  )
-
-                  return (
-                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                      {/* Collab sélectionné — style or */}
-                      {selectedCollab?.adresse && (
-                        <div style={{
+                {/* Adresses de l'équipe — liste unifiée, sélectionné en or */}
+                {collaborateurs.some(c => c.adresse) && (
+                  <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {collaborateurs.filter(c => c.adresse).map(c => {
+                      const sel = selectedCollab?.id === c.id
+                      const nom = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
+                      const bStyle: React.CSSProperties = {
+                        padding: '3px 9px', borderRadius: 5, cursor: 'pointer', fontFamily: 'inherit',
+                        fontSize: 10, fontWeight: 600,
+                        border: sel ? '1px solid rgba(201,168,76,.35)' : '1px solid var(--gb)',
+                        background: sel ? 'rgba(201,168,76,.1)' : 'var(--floating)',
+                        color: sel ? '#C9A84C' : 'var(--t2)',
+                      }
+                      return (
+                        <div key={c.id} style={{
                           padding: '8px 12px', borderRadius: 8,
-                          background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.18)',
+                          background: sel ? 'rgba(201,168,76,.06)' : 'var(--elevated)',
+                          border: `1px solid ${sel ? 'rgba(201,168,76,.22)' : 'var(--gb)'}`,
                         }}>
                           <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-                            <span style={{ color: '#C9A84C', fontWeight: 600 }}>📍 {selectedCollab.prenom} :</span>{' '}
-                            {selectedCollab.adresse}
+                            <span style={{ color: sel ? '#C9A84C' : 'var(--t1)', fontWeight: sel ? 600 : 500 }}>
+                              📍 {nom} :
+                            </span>{' '}
+                            {c.adresse}
                           </div>
-                          <QuickFill adresse={selectedCollab.adresse} gold />
+                          <div style={{ display: 'flex', gap: 5, marginTop: 5 }}>
+                            <button type="button" onClick={() => setDepart(c.adresse!)} style={bStyle}>→ Départ</button>
+                            {etapes.length < 2 && (
+                              <button type="button" onClick={() => setEtapes(p => [...p, c.adresse!])} style={bStyle}>+ Étape</button>
+                            )}
+                            <button type="button" onClick={() => setArrivee(c.adresse!)} style={bStyle}>→ Arrivée</button>
+                          </div>
                         </div>
-                      )}
-
-                      {/* Autres collabs avec adresse */}
-                      {collabsAvecAdresse.filter(c => c.id !== selectedCollab?.id).map(c => {
-                        const nom = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
-                        return (
-                          <div key={c.id} style={{
-                            padding: '7px 12px', borderRadius: 8,
-                            background: 'var(--elevated)', border: '1px solid var(--gb)',
-                          }}>
-                            <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-                              <span style={{ color: 'var(--t1)', fontWeight: 500 }}>📍 {nom} :</span>{' '}
-                              <span style={{ color: 'var(--t3)' }}>{c.adresse}</span>
-                            </div>
-                            <QuickFill adresse={c.adresse!} />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })()}
+                      )
+                    })}
+                  </div>
+                )}
 
                 <input type="hidden" name="collaborateur_id" value={selectedCollab?.id ?? ''} />
               </div>
