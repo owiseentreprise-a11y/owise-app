@@ -80,6 +80,36 @@ export async function deleteCollaborateur(clientId: string, collabId: string): P
   revalidatePath(`/admin/clients/${clientId}`)
 }
 
+export async function updateCollaborateur(
+  clientId: string,
+  collabId: string,
+  data: { nom: string; prenom: string; telephone: string; poste: string; adresse: string },
+): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const admin = createAdminClient()
+
+  const [r1, r2] = await Promise.all([
+    admin.from('collaborateurs').update({
+      nom:     data.nom     || null,
+      prenom:  data.prenom  || null,
+      tel:     data.telephone || null,
+      poste:   data.poste   || null,
+      adresse: data.adresse || null,
+    }).eq('id', collabId),
+    admin.from('profiles').update({
+      nom:       data.nom       || null,
+      prenom:    data.prenom    || null,
+      telephone: data.telephone || null,
+    }).eq('id', collabId),
+  ])
+
+  if (r1.error) return { error: r1.error.message }
+  if (r2.error) return { error: r2.error.message }
+
+  revalidatePath(`/admin/clients/${clientId}`)
+  return {}
+}
+
 export async function updateEmail(
   id: string,
   newEmail: string,
