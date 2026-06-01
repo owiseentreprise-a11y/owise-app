@@ -279,19 +279,41 @@ export default async function CourseDetailPage({
                     </div>
                   </div>
                 )}
-                {(course as any).num_vol_train && (
-                  <a
-                    href={`https://www.flightradar24.com/data/flights/${((course as any).num_vol_train || '').toLowerCase().replace(/\s/g, '')}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{
-                      marginLeft: 'auto', padding: '5px 12px', borderRadius: 6,
-                      background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)',
-                      color: '#4D8ED4', fontSize: 10, fontWeight: 600, textDecoration: 'none',
-                    }}
-                  >
-                    Suivi FlightRadar24 →
-                  </a>
-                )}
+                {(course as any).num_vol_train && (() => {
+                  const num = ((course as any).num_vol_train as string).trim()
+                  const isVol = /^[A-Za-z]{2}\d{1,4}$/.test(num.replace(/\s/g, ''))
+                  return (
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {isVol ? (
+                        <>
+                          <a href={`https://www.flightradar24.com/data/flights/${num.toLowerCase().replace(/\s/g, '')}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)', color: '#4D8ED4', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
+                            FlightRadar24 →
+                          </a>
+                          <a href={`https://www.aeroport.fr/vols?type=arrivee`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.08)', border: '1px solid rgba(77,142,212,.2)', color: '#4D8ED4', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
+                            ADP Arrivées →
+                          </a>
+                        </>
+                      ) : (
+                        <>
+                          <a href={`https://www.sncf-connect.com/recherche/trains`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.12)', border: '1px solid rgba(61,184,122,.3)', color: '#3DB87A', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
+                            SNCF Connect →
+                          </a>
+                          <a href="https://www.infra.sncf.com/fr/ponctualite-transilien"
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.06)', border: '1px solid rgba(61,184,122,.2)', color: '#3DB87A', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
+                            Info trafic →
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </div>
