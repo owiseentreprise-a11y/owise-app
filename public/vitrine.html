@@ -1561,6 +1561,29 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
           <div class="field"><label>Date</label><input type="date" id="dateInput" oninput="calcEstimate()"></div>
           <div class="field"><label>Heure de prise en charge</label><input type="time" id="timeInput" value="09:00" oninput="calcEstimate()"></div>
         </div>
+
+        <!-- Aller-Retour -->
+        <div style="margin-bottom:16px">
+          <button type="button" id="allerRetourBtn" onclick="toggleAllerRetour()" style="display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:1px solid rgba(0,0,0,.12);background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--t2);cursor:pointer;transition:all .15s">
+            <span>↩</span> Aller-Retour
+            <span id="allerRetourBadge" style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.06);color:var(--t3);font-weight:700;letter-spacing:.04em">OFF</span>
+          </button>
+          <div id="retourPanel" style="display:none;margin-top:10px;padding:14px;border-radius:10px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2)">
+            <div class="form-grid" style="margin-bottom:10px">
+              <div class="field"><label>Date de retour</label><input type="date" id="dateRetour"></div>
+              <div class="field"><label>Heure de retour</label><input type="time" id="heureRetour" value="09:00"></div>
+            </div>
+            <div style="font-size:11px;color:var(--t2);display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span style="color:var(--red);font-size:9px">●</span>
+              <span>Destination</span>
+              <span style="color:var(--t3)">→</span>
+              <span style="color:var(--green);font-size:9px">●</span>
+              <span>Départ de l'aller</span>
+              <span style="color:var(--t3);font-size:10px">(adresses automatiquement inversées)</span>
+            </div>
+          </div>
+        </div>
+
         <div class="field" style="margin-bottom:16px">
           <label>Type de destination</label>
           <select id="destType" onchange="calcEstimate()">
@@ -2199,6 +2222,33 @@ window.addEventListener('load', () => {
 const { createClient } = supabase
 const _sb = createClient('https://fbawdscnczdpjsbvyhfe.supabase.co','sb_publishable_K_f8z2VOMBzzQPqUMtPSBQ_A5JXsnJQ')
 
+let allerRetourOn = false
+function toggleAllerRetour() {
+  allerRetourOn = !allerRetourOn
+  const btn   = document.getElementById('allerRetourBtn')
+  const badge = document.getElementById('allerRetourBadge')
+  const panel = document.getElementById('retourPanel')
+  if (allerRetourOn) {
+    btn.style.borderColor  = 'rgba(201,168,76,.5)'
+    btn.style.background   = 'rgba(201,168,76,.08)'
+    btn.style.color        = '#C9A84C'
+    badge.textContent      = 'ON'
+    badge.style.background = 'rgba(201,168,76,.2)'
+    badge.style.color      = '#C9A84C'
+    panel.style.display    = 'block'
+  } else {
+    btn.style.borderColor  = 'rgba(0,0,0,.12)'
+    btn.style.background   = 'transparent'
+    btn.style.color        = 'var(--t2)'
+    badge.textContent      = 'OFF'
+    badge.style.background = 'rgba(0,0,0,.06)'
+    badge.style.color      = 'var(--t3)'
+    panel.style.display    = 'none'
+    document.getElementById('dateRetour').value  = ''
+    document.getElementById('heureRetour').value = '09:00'
+  }
+}
+
 async function submitDevis() {
   const nom     = document.getElementById('dNom')?.value.trim()
   const tel     = document.getElementById('dTel')?.value.trim()
@@ -2215,19 +2265,22 @@ async function submitDevis() {
   errEl.style.display = 'none'
 
   // Récupérer tous les champs
-  const origin    = document.getElementById('origin')?.value.trim()
-  const etape     = document.getElementById('etape')?.value.trim() || null
-  const dest      = document.getElementById('dest')?.value.trim()
-  const dateVal   = document.getElementById('dateInput')?.value
-  const heureVal  = document.getElementById('timeInput')?.value
-  const destType  = document.getElementById('destType')?.value
-  const pax       = parseInt(document.querySelector('#paxSelector .pax-btn.on')?.textContent) || 1
-  const price     = parseInt(document.getElementById('priceNum')?.textContent) || null
-  const vehicle   = document.getElementById('estVehicle')?.textContent || null
+  const origin      = document.getElementById('origin')?.value.trim()
+  const etape       = document.getElementById('etape')?.value.trim() || null
+  const dest        = document.getElementById('dest')?.value.trim()
+  const dateVal     = document.getElementById('dateInput')?.value
+  const heureVal    = document.getElementById('timeInput')?.value
+  const destType    = document.getElementById('destType')?.value
+  const pax         = parseInt(document.querySelector('#paxSelector .pax-btn.on')?.textContent) || 1
+  const price       = parseInt(document.getElementById('priceNum')?.textContent) || null
+  const vehicle     = document.getElementById('estVehicle')?.textContent || null
+  const dateRetour  = allerRetourOn ? (document.getElementById('dateRetour')?.value || null) : null
+  const heureRetour = allerRetourOn ? (document.getElementById('heureRetour')?.value || '09:00') : null
 
   // Suppléments sélectionnés
   const suppEls = document.querySelectorAll('.supp-row.on .supp-lbl')
   const supps   = Array.from(suppEls).map(el => el.textContent.trim().replace(/^.{2}\s/,''))
+  if (allerRetourOn && dateRetour) supps.push(`↩ Retour le ${dateRetour} à ${heureRetour}`)
 
   btn.disabled = true
   btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-18 0" stroke-opacity=".3"/><path d="M21 12a9 9 0 00-9-9"/></svg> Envoi en cours…'
