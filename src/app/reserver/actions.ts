@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -21,6 +22,8 @@ export async function createReservationCheckout(data: {
   telephone: string
   zone_depart_id: string
   zone_arrivee_id: string
+  aller_retour?: boolean
+  date_retour?: string
 }): Promise<{ error?: string } | void> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
@@ -55,6 +58,30 @@ export async function createReservationCheckout(data: {
   params.set('metadata[telephone]', data.telephone || '')
   params.set('metadata[zone_depart_id]', data.zone_depart_id)
   params.set('metadata[zone_arrivee_id]', data.zone_arrivee_id)
+  if (data.aller_retour && data.date_retour) {
+    params.set('metadata[aller_retour]', 'true')
+    params.set('metadata[date_retour]', data.date_retour)
+  }
+
+  // Créer le retour immédiatement en_attente si aller-retour demandé
+  if (data.aller_retour && data.date_retour) {
+    try {
+      const dateRetourParsed = new Date(data.date_retour)
+      if (!isNaN(dateRetourParsed.getTime())) {
+        const supabase = await createClient()
+        await supabase.from('courses').insert({
+          adresse_depart:  data.adresse_arrivee,
+          adresse_arrivee: data.adresse_depart,
+          date_prevue:     dateRetourParsed.toISOString(),
+          type_vehicule:   data.type_vehicule,
+          nb_passagers:    data.nb_passagers,
+          notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
+          mode_paiement:   'stripe',
+          statut:          'en_attente',
+        })
+      }
+    } catch { /* non-bloquant */ }
+  }
 
   try {
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

@@ -381,6 +381,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   const [prenom,    setPrenom]    = useState(profil?.prenom    ?? '')
   const [email,     setEmail]     = useState(profil?.email     ?? '')
   const [telephone, setTelephone] = useState(profil?.telephone ?? '')
+  const [allerRetour, setAllerRetour] = useState(false)
+  const [dateRetour,  setDateRetour]  = useState('')
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)
@@ -449,10 +451,14 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         nom, prenom, email, telephone,
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
+        aller_retour:    allerRetour,
+        date_retour:     allerRetour ? dateRetour : '',
       })
       if (result?.error) setStep2Error(`Erreur Stripe: ${result.error}`)
     })
   }
+
+  const fmtDateShort = (iso: string) => iso ? new Date(iso + (iso.length === 16 ? '' : 'T00:00')).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : ''
 
   const fmtDate = (iso: string) => {
     if (!iso) return ''
@@ -565,10 +571,60 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             </div>
 
             {/* Date */}
-            <div style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: 16 }}>
               <FieldLabel>Date et heure de prise en charge</FieldLabel>
               <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark' }}
                 value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
+            </div>
+
+            {/* Aller-Retour */}
+            <div style={{ marginBottom: 24 }}>
+              <button type="button"
+                onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13,
+                  border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'rgba(10,10,10,.12)'}`,
+                  background: allerRetour ? 'rgba(201,168,76,.08)' : 'rgba(255,255,255,.5)',
+                  color: allerRetour ? '#C9A84C' : '#848499',
+                  fontWeight: allerRetour ? 600 : 400,
+                  transition: 'all .15s',
+                }}>
+                <span style={{ fontSize: 16 }}>↩</span>
+                Aller-Retour
+                <span style={{
+                  fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 700, letterSpacing: '.04em',
+                  background: allerRetour ? 'rgba(201,168,76,.2)' : 'rgba(0,0,0,.06)',
+                  color: allerRetour ? '#C9A84C' : '#848499',
+                }}>
+                  {allerRetour ? 'ON' : 'OFF'}
+                </span>
+              </button>
+
+              {allerRetour && (
+                <div style={{
+                  marginTop: 12, padding: '14px 16px', borderRadius: 10,
+                  background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.2)',
+                }}>
+                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499', marginBottom: 8 }}>
+                    Date et heure du retour
+                  </div>
+                  <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', marginBottom: 10 }}
+                    value={dateRetour} min={date || new Date().toISOString().slice(0, 16)}
+                    onChange={e => setDateRetour(e.target.value)} />
+                  {(depart.label || arrivee.label) && (
+                    <div style={{ fontSize: 11, color: '#848499', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
+                      <span>{arrivee.label || '…'}</span>
+                      <span>→</span>
+                      <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
+                      <span>{depart.label || '…'}</span>
+                      <span style={{ fontSize: 10, color: '#848499', opacity: .7 }}>(adresses inversées)</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Véhicule */}
