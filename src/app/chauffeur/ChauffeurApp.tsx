@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur } from '@/lib/types'
 import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
+import { useFcmRegistration } from './useFcmRegistration'
 
 const ETAPES: { statut: StatutCourse; label: string; action: string; color: string }[] = [
   { statut: 'acceptee',        label: 'Course acceptée',  action: 'Départ vers le client', color: 'var(--blu)' },
@@ -68,6 +69,7 @@ export default function ChauffeurApp({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  useFcmRegistration()  // Demande permission + enregistre token FCM au montage
   const [dispo, setDispo] = useState<StatutChauffeur>(profile?.chauffeurs?.statut ?? 'hors_ligne')
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
   const [expandedId, setExpandedId] = useState<string | null>(null)

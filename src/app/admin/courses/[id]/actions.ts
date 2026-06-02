@@ -5,6 +5,7 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import type { StatutCourse } from '@/lib/types'
 import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
+import { envoyerNotifChauffeur } from '@/lib/fcm'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   const supabase = await requireAdminClient()
@@ -14,33 +15,49 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
     .eq('id', courseId)
 
   if (chauffeurId) {
-    const [courseRes, chauffeurProfileRes, chauffeurEmail] = await Promise.all([
+    const [courseRes, chauffeurProfileRes, chauffeurEmail, fcmRes] = await Promise.all([
       supabase.from('courses')
         .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
         .eq('id', courseId).single(),
       supabase.from('profiles').select('prenom').eq('id', chauffeurId).single(),
       getUserEmail(chauffeurId),
+      supabase.from('chauffeurs').select('fcm_token').eq('id', chauffeurId).single(),
     ])
     const course = courseRes.data
     const chauffeurProfile = chauffeurProfileRes.data
+    const fcmToken: string | null = (fcmRes.data as any)?.fcm_token ?? null
+
     if (course && chauffeurEmail) {
       const client = (course as any).clients
       const clientNom = client?.type_compte === 'entreprise'
         ? (client.entreprise_nom ?? '')
         : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : ''
       const refCourse = courseId.slice(-6).toUpperCase()
-      await envoyerNotificationChauffeur({
-        chauffeurEmail,
-        chauffeurPrenom: chauffeurProfile?.prenom ?? '',
-        adresseDepart: course.adresse_depart,
-        adresseArrivee: course.adresse_arrivee,
-        datePrevue: course.date_prevue,
-        clientNom,
-        clientTel: client?.profiles?.telephone ?? null,
-        nbPassagers: course.nb_passagers,
-        notes: course.notes,
-        refCourse,
+      const dateStr = new Date(course.date_prevue).toLocaleString('fr-FR', {
+        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
       })
+
+      // Email + push notification en parallèle
+      await Promise.all([
+        envoyerNotificationChauffeur({
+          chauffeurEmail,
+          chauffeurPrenom: chauffeurProfile?.prenom ?? '',
+          adresseDepart: course.adresse_depart,
+          adresseArrivee: course.adresse_arrivee,
+          datePrevue: course.date_prevue,
+          clientNom,
+          clientTel: client?.profiles?.telephone ?? null,
+          nbPassagers: course.nb_passagers,
+          notes: course.notes,
+          refCourse,
+        }),
+        fcmToken ? envoyerNotifChauffeur({
+          fcmToken,
+          title: `🚗 Nouvelle course #${refCourse}`,
+          body:  `${course.adresse_depart.split(',')[0]} → ${course.adresse_arrivee.split(',')[0]} · ${dateStr}`,
+          data:  { courseId, type: 'assignation' },
+        }) : Promise.resolve(),
+      ])
     }
   }
 
