@@ -54,6 +54,9 @@ export async function accepterCourseAction(courseId: string): Promise<void> {
   }
 
   revalidatePath('/chauffeur')
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+  revalidatePath('/admin')
 }
 
 export async function refuserCourseAction(courseId: string): Promise<void> {
@@ -87,6 +90,9 @@ export async function refuserCourseAction(courseId: string): Promise<void> {
   }
 
   revalidatePath('/chauffeur')
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+  revalidatePath('/admin')
 }
 
 export async function progresserCourseAction(
@@ -201,4 +207,7 @@ export async function progresserCourseAction(
   }
 
   revalidatePath('/chauffeur')
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+  revalidatePath('/admin')
 }
