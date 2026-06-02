@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { searchLieux } from '@/lib/lieux'
+import { soumettreDevis } from '@/app/vitrine/actions'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -372,23 +373,27 @@ export default function VitrineBody() {
     }
     setSubmitErr('')
     setSubmitting(true)
-    const v    = getVehicle(pax)
-    const price = calcEstimate()
-    const ref  = 'OW-' + Date.now().toString(36).toUpperCase()
+    const v       = getVehicle(pax)
+    const price   = calcEstimate()
+    const ref     = 'OW-' + Date.now().toString(36).toUpperCase()
     const supList = Object.keys(suppls)
 
     try {
-      const sb = createClient()
-      const { error } = await sb.from('devis').insert({
-        nom: form.nom, tel: form.tel, email: form.email,
-        societe: form.societe || null,
-        origin: form.origin, destination: form.dest,
-        date_course: form.date, heure: form.time,
-        pax, vehicle: v.name, price,
+      await soumettreDevis({
+        nom:         form.nom,
+        tel:         form.tel,
+        email:       form.email,
+        societe:     form.societe || null,
+        origin:      form.origin,
+        destination: form.dest,
+        date_course: form.date || null,
+        heure:       form.time || null,
+        pax,
+        vehicle:     v.name,
+        price:       price ?? null,
         supplements: supList.length ? supList : null,
-        dest_type: form.destType,
+        dest_type:   form.destType,
       })
-      if (error) throw error
       setConfirmRef(ref)
       setSubmitted(true)
       setStep(4)

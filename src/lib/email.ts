@@ -543,6 +543,113 @@ export async function envoyerResetPassword(params: { email: string; lien: string
   await send(email, 'Réinitialisation de votre mot de passe OWISE', html)
 }
 
+// ── 5d. Nouveau devis vitrine ─────────────────────────────────────────────────
+
+export async function envoyerNouveauDevis(params: {
+  nom: string
+  tel: string
+  email: string
+  societe?: string | null
+  origin: string
+  destination: string
+  date_course?: string | null
+  heure?: string | null
+  pax: number
+  vehicle: string
+  price?: number | null
+  supplements?: string[] | null
+  dest_type?: string | null
+}) {
+  const { nom, tel, email, societe, origin, destination, date_course, heure, pax, vehicle, price, supplements } = params
+
+  // Email admin
+  const htmlAdmin = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Nouveau devis reçu 📋</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Un visiteur vient de soumettre une demande de devis sur <strong>owise.fr</strong>.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Contact</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Nom', nom)}
+        ${row('Téléphone', tel)}
+        ${row('Email', email)}
+        ${societe ? row('Société', societe) : ''}
+      </table>
+    </div>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Trajet</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Départ', origin)}
+        ${row('Destination', destination)}
+        ${date_course ? row('Date', fmtDate(date_course)) : ''}
+        ${heure ? row('Heure', heure) : ''}
+        ${row('Passagers', String(pax))}
+        ${row('Véhicule', vehicle)}
+        ${price ? row('Estimation', `${price} €`) : ''}
+        ${supplements?.length ? row('Suppléments', supplements.join(', ')) : ''}
+      </table>
+    </div>
+
+    <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:11px;color:#848499;text-transform:uppercase;letter-spacing:.1em;">À rappeler dès que possible</p>
+      <a href="tel:${tel}" style="font-size:24px;font-weight:700;color:#C9A84C;text-decoration:none;font-family:'Courier New',monospace;">${tel}</a>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/admin"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.02em;">
+        Voir dans l'admin →
+      </a>
+    </div>
+  `)
+  await send(ADMIN_EMAIL, `[OWISE] Nouveau devis — ${nom}${societe ? ` (${societe})` : ''} · ${origin} → ${destination}`, htmlAdmin)
+
+  // Accusé réception au client
+  const htmlClient = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre demande de devis a bien été reçue</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${nom.split(' ')[0]},<br>
+      Nous avons bien reçu votre demande de devis. Notre équipe vous recontactera dans les plus brefs délais, généralement sous <strong style="color:#09091A">2 heures</strong> en journée.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Votre demande</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Départ', origin)}
+        ${row('Destination', destination)}
+        ${date_course ? row('Date', fmtDate(date_course)) : ''}
+        ${heure ? row('Heure', heure) : ''}
+        ${row('Passagers', String(pax))}
+        ${row('Véhicule', vehicle)}
+        ${price ? row('Estimation indicative', `${price} €`) : ''}
+      </table>
+    </div>
+
+    <p style="margin:0 0 24px;font-size:13px;color:#555;text-align:center;">
+      Besoin d'une réponse urgente ?
+    </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="https://wa.me/33619106356"
+         style="display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.02em;margin-right:10px;">
+        WhatsApp →
+      </a>
+      <a href="tel:+33619106356"
+         style="display:inline-block;background:#09091A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.02em;">
+        Appeler →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      OWISE · Service VTC · Paris & Île-de-France<br>
+      <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a>
+    </p>
+  `)
+  await send(email, 'OWISE — Votre demande de devis a bien été reçue', htmlClient)
+}
+
 // ── 6. Annulation ────────────────────────────────────────────────────────────
 
 export async function envoyerAnnulation(params: {
