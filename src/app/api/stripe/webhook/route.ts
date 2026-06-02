@@ -3,6 +3,8 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
+
 export async function POST(req: Request) {
   const body      = await req.text()
   const signature = req.headers.get('stripe-signature')
@@ -22,6 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // ── Paiement confirmé ──────────────────────────────────────────────────────
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
 
@@ -29,14 +32,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true })
     }
 
-    // ── Paiement facture existante ──
     if (session.metadata?.facture_id) {
       const supabase = createAdminClient()
       await supabase.from('factures').update({ statut: 'payee' }).eq('id', session.metadata.facture_id)
       return NextResponse.json({ received: true })
     }
 
-    // ── Nouvelle réservation publique ──
     if (session.metadata?.type === 'reservation') {
       try {
         await handleNewReservation(session.metadata)
@@ -45,6 +46,51 @@ export async function POST(req: Request) {
       }
       return NextResponse.json({ received: true })
     }
+  }
+
+  // ── Remboursement ──────────────────────────────────────────────────────────
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object
+    const montant = (charge.amount_refunded / 100).toFixed(2)
+    const supabase = createAdminClient()
+
+    // Cas 1 : remboursement d'une facture → remettre en attente
+    const factureId = (charge.metadata as any)?.facture_id
+    if (factureId) {
+      await supabase.from('factures').update({ statut: 'en_attente' }).eq('id', factureId)
+      console.log(`[webhook] Facture ${factureId} remboursée (${montant} €)`)
+    }
+
+    // Notif admin dans tous les cas
+    try {
+      const { Resend } = await import('resend')
+      const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+      if (resend) {
+        await resend.emails.send({
+          from: 'OWISE <noreply@owise.fr>',
+          to: ADMIN_EMAIL,
+          subject: `[OWISE] Remboursement Stripe — ${montant} €`,
+          html: `<p>Un remboursement de <strong>${montant} €</strong> a été effectué sur Stripe.</p>
+                 <p>Charge ID : <code>${charge.id}</code></p>
+                 ${factureId ? `<p>Facture : <code>${factureId}</code> → remise en attente</p>` : ''}
+                 <p><a href="https://dashboard.stripe.com/charges/${charge.id}">Voir sur Stripe →</a></p>`,
+        })
+      }
+    } catch { /* ne pas planter si email échoue */ }
+  }
+
+  // ── Paiement échoué ────────────────────────────────────────────────────────
+  if (event.type === 'payment_intent.payment_failed') {
+    const pi = event.data.object
+    const montant = ((pi.amount ?? 0) / 100).toFixed(2)
+    const raison = pi.last_payment_error?.message ?? 'Raison inconnue'
+    console.warn(`[webhook] Paiement échoué — ${montant} € — ${raison} — PI: ${pi.id}`)
+  }
+
+  // ── Session expirée (abandon panier) ─────────────────────────────────────
+  if (event.type === 'checkout.session.expired') {
+    const session = event.data.object
+    console.log(`[webhook] Session expirée — ${session.id} — type: ${session.metadata?.type ?? 'inconnu'}`)
   }
 
   return NextResponse.json({ received: true })
