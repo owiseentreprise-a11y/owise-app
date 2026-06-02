@@ -651,7 +651,8 @@ nav.scrolled{
 /* ── Scroll progress bar gradient ─────────────────────── */
 .scroll-progress{background:linear-gradient(90deg,#C9A84C,#DDB95A,#C9A84C)!important;background-size:200%!important;animation:shimmerBtn 2s linear infinite}
 
-/* ── Cartes véhicules à fond sombre — texte blanc ─────── */
+/* ── Cartes véhicules à fond sombre — corps sombre + texte blanc ─────── */
+.vehicle-card.vc-dark{background:#0D0D1A!important;border-color:rgba(201,168,76,.15)!important}
 .vehicle-card.vc-dark .vc-name{color:rgba(255,255,255,.92)!important}
 .vehicle-card.vc-dark .vc-cap{color:rgba(255,255,255,.55)!important}
 .vehicle-card.vc-dark .vc-feat{color:rgba(255,255,255,.6)!important}
