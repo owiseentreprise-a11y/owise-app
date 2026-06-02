@@ -141,10 +141,10 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .scroll-label{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2)}
 
 /* MARQUEE */
-.marquee-section{border-top:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.08);background:var(--surface);overflow:hidden;height:46px;display:flex;align-items:center}
+.marquee-section{border-top:1px solid rgba(201,168,76,.18);border-bottom:1px solid rgba(201,168,76,.18);background:rgba(201,168,76,.06);overflow:hidden;height:46px;display:flex;align-items:center}
 .marquee-track{display:flex;align-items:center;white-space:nowrap;animation:marquee 35s linear infinite;gap:0}
-.marquee-item{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--t2);font-weight:500;padding:0 20px;display:flex;align-items:center;gap:20px;opacity:.85}
-.m-dot{width:3px;height:3px;border-radius:50%;background:rgba(0,0,0,.3);flex-shrink:0}
+.marquee-item{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#0A0A0A;font-weight:500;padding:0 20px;display:flex;align-items:center;gap:20px;opacity:.9}
+.m-dot{width:3px;height:3px;border-radius:50%;background:rgba(201,168,76,.6);flex-shrink:0}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* STATS */
@@ -628,7 +628,7 @@ nav.scrolled{
 }
 
 /* ── Marquee vitesse + glow ────────────────────────────── */
-.marquee-section{background:linear-gradient(90deg,var(--surface),rgba(247,247,247,.95),var(--surface))}
+.marquee-section{background:linear-gradient(90deg,rgba(201,168,76,.08),rgba(201,168,76,.05),rgba(201,168,76,.08))}
 
 /* ── Stats — gradient animé sur les chiffres ───────────── */
 .stat-num{
