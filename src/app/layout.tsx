@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Cormorant_Garamond, JetBrains_Mono } from 'next/font/google'
+import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600'],
   variable: '--font-dm-sans',
+  display: 'swap',
+})
+
+const jakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
   display: 'swap',
 })
 
@@ -31,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${cormorant.variable} ${jetbrains.variable} h-full`}>
+    <html lang="fr" className={`${dmSans.variable} ${cormorant.variable} ${jetbrains.variable} ${jakartaSans.variable} h-full`}>
       <body className="h-full">{children}</body>
     </html>
   )

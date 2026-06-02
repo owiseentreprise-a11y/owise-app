@@ -32,13 +32,13 @@ export default async function ClientsPage({
 
   if (filterQ) {
     list = list.filter(c => {
-      const p = (c as any).profiles
       const nom = c.type_compte === 'entreprise'
         ? (c.entreprise_nom ?? '')
-        : `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim()
+        : `${c.prenom ?? ''} ${c.nom ?? ''}`.trim()
       return (
         nom.toLowerCase().includes(filterQ) ||
-        (p?.telephone ?? '').toLowerCase().includes(filterQ) ||
+        (c.tel ?? '').toLowerCase().includes(filterQ) ||
+        (c.email ?? '').toLowerCase().includes(filterQ) ||
         (c.adresse_facturation ?? '').toLowerCase().includes(filterQ)
       )
     })
