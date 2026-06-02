@@ -28,12 +28,12 @@ const FAQS = [
 
 /* ── services ──────────────────────────────────────────── */
 const SERVICES = [
-  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver', href:'#devis' },
-  { cls:'sc-teal',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.', cta:'Planifier', href:'#devis' },
-  { cls:'sc-blue',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.', cta:'Réserver', href:'#devis' },
-  { cls:'sc-indigo', title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.', cta:'Réserver', href:'#devis' },
-  { cls:'sc-navy',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.', cta:'En savoir plus', href:'#contact' },
-  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.', cta:'Demander un devis', href:'#devis' },
+  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-immediat.png.png',   alt:'Course immédiate' },
+  { cls:'sc-teal',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.',        cta:'Planifier',         href:'#devis',   img:'/brand_assets/service-avance.png.png',     alt:'Réserver à l\'avance' },
+  { cls:'sc-blue',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.',             cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-aeroport.png.png',   alt:'Transfert aéroport' },
+  { cls:'sc-indigo', title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.',          cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-groupes.png.png',    alt:'Groupes et familles' },
+  { cls:'sc-navy',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.',           cta:'En savoir plus',   href:'#contact', img:'/brand_assets/service-entreprise.png.png', alt:'Comptes entreprise' },
+  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.',   cta:'Demander un devis',href:'#devis',   img:'/brand_assets/service-evenements.png.png', alt:'Événements et soirées' },
 ]
 
 /* ── vehicles display ──────────────────────────────────── */
@@ -526,8 +526,8 @@ export default function VitrineBody() {
                   <div className="sc-desc">{s.desc}</div>
                   <button className="sc-btn" onClick={()=>scrollTo(s.href)}>{s.cta} <span className="sc-btn-arrow">→</span></button>
                 </div>
-                <div className="sc-img" style={{width:110,height:100,display:'flex',alignItems:'center',justifyContent:'center',fontSize:48}}>
-                  {['🚗','📅','✈️','👨‍👩‍👧','🏢','🎭'][i]}
+                <div className="sc-img">
+                  <img src={s.img} alt={s.alt} style={{maxWidth:130,maxHeight:120,objectFit:'contain',display:'block'}}/>
                 </div>
               </div>
             ))}
