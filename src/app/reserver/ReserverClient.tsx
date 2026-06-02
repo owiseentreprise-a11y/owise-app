@@ -310,9 +310,30 @@ function AddressInput({
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const VEHICULES = [
-  { value: 'berline',         label: 'Berline',        places: '1–4 passagers', icon: '🚘' },
-  { value: 'berline_premium', label: 'Berline Premium', places: '1–4 passagers', icon: '🚙' },
-  { value: 'van',             label: 'Van',             places: '1–7 passagers', icon: '🚐' },
+  {
+    value: 'berline',
+    label: 'Berline',
+    places: '1–4 passagers',
+    models: 'Peugeot 508, Volkswagen Passat',
+    image: '/brand_assets/vehicle-berline.png',
+    badge: null,
+  },
+  {
+    value: 'berline_premium',
+    label: 'Berline Premium',
+    places: '1–4 passagers',
+    models: 'BMW Série 5, Mercedes Classe E',
+    image: '/brand_assets/vehicle-berline-premium.png',
+    badge: 'Populaire',
+  },
+  {
+    value: 'van',
+    label: 'Van 7 places',
+    places: '1–7 passagers',
+    models: 'Mercedes Vito, VW Caravelle',
+    image: '/brand_assets/vehicle-van7.png',
+    badge: null,
+  },
 ]
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -740,21 +761,61 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               padding: '20px', marginBottom: 16,
             }}>
               <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                {VEHICULES.map(v => (
-                  <div key={v.value} className={`veh-card${vehicule === v.value ? ' active' : ''}`}
-                    onClick={() => setVehicule(v.value)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', borderRadius: 10, border: `1px solid ${vehicule === v.value ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'}`, background: vehicule === v.value ? 'rgba(201,168,76,.08)' : '#FFFFFF', cursor: 'pointer' }}>
-                    <span style={{ fontSize: 22 }}>{v.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#09091A' }}>{v.label}</div>
-                      <div style={{ fontSize: 11, color: '#6B6B6B' }}>{v.places}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                {VEHICULES.map(v => {
+                  const active = vehicule === v.value
+                  return (
+                    <div key={v.value} className={`veh-card${active ? ' active' : ''}`}
+                      onClick={() => setVehicule(v.value)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 0,
+                        borderRadius: 12,
+                        border: `1.5px solid ${active ? '#C9A84C' : 'rgba(0,0,0,.09)'}`,
+                        background: active ? 'rgba(201,168,76,.06)' : '#FAFAF8',
+                        cursor: 'pointer', overflow: 'hidden',
+                        boxShadow: active ? '0 0 0 3px rgba(201,168,76,.12)' : 'none',
+                        transition: 'border-color .15s, box-shadow .15s, background .15s',
+                      }}>
+                      {/* Image véhicule */}
+                      <div style={{
+                        width: 110, minWidth: 110, height: 72,
+                        background: 'linear-gradient(135deg, #f0ede8 0%, #e8e4de 100%)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        overflow: 'hidden', flexShrink: 0,
+                      }}>
+                        <img
+                          src={v.image} alt={v.label}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                        />
+                      </div>
+                      {/* Infos */}
+                      <div style={{ flex: 1, padding: '10px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#09091A' }}>{v.label}</div>
+                          {v.badge && (
+                            <span style={{
+                              fontSize: 8.5, fontWeight: 600, letterSpacing: '.08em',
+                              textTransform: 'uppercase', padding: '2px 7px', borderRadius: 20,
+                              background: '#C9A84C', color: '#fff',
+                            }}>{v.badge}</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 10.5, color: '#6B6B6B', marginBottom: 2 }}>{v.models}</div>
+                        <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 500 }}>{v.places}</div>
+                      </div>
+                      {/* Check */}
+                      <div style={{ paddingRight: 14 }}>
+                        <div style={{
+                          width: 22, height: 22, borderRadius: '50%',
+                          background: active ? '#C9A84C' : 'rgba(0,0,0,.08)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 11, color: active ? '#fff' : 'transparent',
+                          fontWeight: 700, transition: 'background .15s',
+                        }}>✓</div>
+                      </div>
                     </div>
-                    {vehicule === v.value && (
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#09091A', fontWeight: 700 }}>✓</div>
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16 }}>
