@@ -573,10 +573,10 @@ nav.scrolled{
 .booking-card-wrap{
   border-radius:22px;
   padding:2px;
-  background:linear-gradient(135deg,#C9A84C,#5B8FD4,#74C0C8,#C9A84C);
+  background:linear-gradient(135deg,#B8922A,#DDB95A,#EDD070,#C9A84C,#B8922A);
   background-size:300% 300%;
   animation:gradBorder 5s ease infinite,floatCard 7s ease-in-out .5s infinite;
-  box-shadow:0 32px 88px rgba(0,0,0,.16),0 0 48px rgba(201,168,76,.18);
+  box-shadow:0 32px 88px rgba(0,0,0,.12),0 0 56px rgba(201,168,76,.30);
 }
 /* supprime l'ancien float qui était sur .booking-card seul */
 .booking-card{animation:none!important}
