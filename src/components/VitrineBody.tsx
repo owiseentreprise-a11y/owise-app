@@ -751,11 +751,20 @@ export default function VitrineBody() {
 
       {/* DEVIS FORM */}
       <section className="devis-section" id="devis">
-        <div style={{maxWidth:860,margin:'0 auto 0',position:'relative',zIndex:1}}>
-          <div className="section-tag reveal">Réservation complète</div>
-          <h2 className="section-title reveal rd1" style={{marginBottom:48}}>Réservez votre<br/><em className="chrome-gold-slow">course en 3 étapes</em></h2>
+        <div style={{maxWidth:880,margin:'0 auto',position:'relative',zIndex:1,textAlign:'center',paddingBottom:56}}>
+          <div className="section-tag reveal" style={{justifyContent:'center'}}>Réservation</div>
+          <h2 className="reveal rd1" style={{
+            fontFamily:"'Plus Jakarta Sans',sans-serif",
+            fontSize:'clamp(52px,6vw,92px)',
+            fontWeight:800,letterSpacing:'-.03em',lineHeight:1.02,
+            color:'#0A0A0A',marginTop:12,marginBottom:0,
+          }}>Réservez<br/><span style={{color:'#C9A84C'}}>maintenant</span></h2>
+          <p className="reveal rd2" style={{fontSize:16,color:'#6B6B6B',marginTop:18,fontWeight:300,lineHeight:1.7}}>
+            Tarif fixe garanti · Confirmation immédiate · 0 surprise en fin de course
+          </p>
         </div>
-        <div className="devis-card reveal rd2">
+        <div className="devis-card-wrap reveal rd3">
+        <div className="devis-card">
           <div className="devis-tabs">
             {[['1','Itinéraire'],['2','Options'],['3','Estimation']].map(([n,l])=>{
               const ni = parseInt(n)
@@ -936,7 +945,8 @@ export default function VitrineBody() {
               </div>
             )}
           </div>
-        </div>
+        </div>{/* /devis-card */}
+        </div>{/* /devis-card-wrap */}
       </section>
 
       {/* FOOTER */}

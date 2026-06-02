@@ -12,6 +12,7 @@ html:has(.vt) body {
 html:has(.vt) body::after { display: none !important; }
 
 .vt {
+  background:#FFFFFF;min-height:100vh;
   --base:#FFFFFF;--surface:#F7F7F7;--elevated:#EFEFEF;--floating:#E5E5E5;
   --gold:#0A0A0A;--gold2:#333333;--gm:rgba(0,0,0,.05);--gb:rgba(0,0,0,.09);
   --t1:#0A0A0A;--t2:#6B6B6B;--t3:#D0D0D0;
@@ -288,17 +289,46 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .zone-desc{font-size:13px;color:#6B6B6B}
 .zone-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B6B6B;background:var(--elevated);padding:3px 9px;border-radius:4px;border:1px solid rgba(0,0,0,.12);white-space:nowrap}
 
-/* DEVIS SECTION */
-.devis-section{padding:80px 52px;background:var(--surface);border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07);position:relative;overflow:hidden}
-.devis-card{max-width:860px;margin:0 auto;background:#FFFFFF;border:1px solid rgba(0,0,0,.1);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}
-.devis-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,.08)}
-.dtab{flex:1;padding:16px;text-align:center;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;border-bottom:2px solid transparent;letter-spacing:.04em}
+/* DEVIS SECTION — redesign premium */
+.devis-section{padding:100px 52px 120px;background:#FFFFFF;position:relative;overflow:visible}
+
+/* Gradient halo derrière le formulaire */
+.devis-section::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:900px;height:600px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(201,168,76,.07) 0%,rgba(91,143,212,.04) 50%,transparent 80%);
+  pointer-events:none;z-index:0;
+}
+
+/* Wrapper — gradient border animé */
+.devis-card-wrap{
+  position:relative;z-index:1;
+  border-radius:26px;padding:2px;
+  background:linear-gradient(135deg,rgba(201,168,76,.55),rgba(0,0,0,.1),rgba(91,143,212,.25),rgba(201,168,76,.55));
+  background-size:300% 300%;
+  animation:gradBorder 6s ease infinite,floatCard 9s ease-in-out 1s infinite;
+  box-shadow:0 40px 100px rgba(0,0,0,.1),0 0 60px rgba(201,168,76,.08);
+  max-width:880px;margin:0 auto;
+}
+
+/* Card — glass morphism */
+.devis-card{
+  background:rgba(255,255,255,.95)!important;
+  backdrop-filter:blur(24px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(160%)!important;
+  border:none!important;
+  border-radius:24px!important;
+  overflow:hidden;
+  box-shadow:none!important;
+}
+.devis-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,.07);background:rgba(0,0,0,.015)}
+.dtab{flex:1;padding:20px 16px;text-align:center;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .18s;border-bottom:2px solid transparent;letter-spacing:.03em}
 .dtab:hover{color:var(--t1)}
 .dtab.on{color:#0A0A0A;border-bottom-color:#0A0A0A;background:rgba(0,0,0,.02)}
 .dtab-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;background:var(--t3);color:var(--t2);margin-right:7px;font-family:'JetBrains Mono',monospace;transition:all .15s}
 .dtab.on .dtab-num{background:#0A0A0A;color:#FFFFFF}
 .dtab.done .dtab-num{background:var(--green);color:#FFFFFF}
-.devis-body{padding:32px 36px}
+.devis-body{padding:40px 44px}
 .step-panel{display:none}.step-panel.on{display:block}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .field{display:flex;flex-direction:column;gap:6px}
