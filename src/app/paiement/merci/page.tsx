@@ -35,8 +35,7 @@ export default function PaiementMerciPage() {
 
         {/* Logo */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, marginBottom: 56 }}>
-          <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 30 }}
-            onError={() => {}} />
+          <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 30 }} />
           <div style={{ textAlign: 'left' }}>
             <div style={{
               fontFamily: 'var(--font-cormorant, Georgia), serif',
