@@ -40,7 +40,7 @@ export default async function CourseDetailPage({
       .from('courses')
       .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(poste, nom, prenom, tel), sous_traitants(*)')
       .eq('id', id)
-      .single(),
+      .maybeSingle(),
     supabase
       .from('chauffeurs')
       .select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom, telephone)')
@@ -52,9 +52,23 @@ export default async function CourseDetailPage({
       .order('nom'),
   ])
 
-  if (courseRes.error || !courseRes.data) notFound()
+  // PGRST116 = 0 rows — course vraiment inexistante
+  if (!courseRes.data && courseRes.error?.code === 'PGRST116') notFound()
 
-  const course = courseRes.data
+  // Erreur de join (FK manquante, relation ambiguë, etc.) → fallback requête simple
+  let courseData = courseRes.data
+  if (!courseData && courseRes.error) {
+    const { data: simple, error: simpleErr } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+    if (!simple || simpleErr) notFound()
+    courseData = simple
+  }
+  if (!courseData) notFound()
+
+  const course = courseData
   const chauffeurs    = chauffeursRes.data ?? []
   const sousTraitants = sousTraitantsRes.data ?? []
   const statut = course.statut as StatutCourse
