@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { searchLieux } from '@/lib/lieux'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -43,6 +44,123 @@ const VEH_DISPLAY = [
   { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.jpg.png',             alt:'Van 7 places VTC Owise' },
   { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.jpg.png',        alt:'Grand Van 8 places VTC Owise' },
 ]
+
+/* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
+type VtSugg = { label: string; sublabel?: string; isLieu?: boolean }
+
+function VtAddressInput({ value, onChange, placeholder, className, style }: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const [sugg, setSugg]       = useState<VtSugg[]>([])
+  const [open, setOpen]       = useState(false)
+  const [focused, setFocused] = useState(-1)
+  const timerRef              = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapRef               = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const search = useCallback(async (q: string) => {
+    if (q.length < 2) { setSugg([]); setOpen(false); return }
+    const lieux = searchLieux(q)
+    try {
+      const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)
+      const json = await res.json()
+      const api: VtSugg[] = (json.features ?? []).map((f: any) => ({
+        label:    f.properties.label,
+        sublabel: f.properties.context,
+      }))
+      const all = [...lieux, ...api].slice(0, 7)
+      setSugg(all); setOpen(all.length > 0)
+    } catch {
+      setSugg(lieux); setOpen(lieux.length > 0)
+    }
+  }, [])
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    onChange(e.target.value)
+    setFocused(-1)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => search(e.target.value), 250)
+  }
+
+  function pick(label: string) {
+    onChange(label); setSugg([]); setOpen(false); setFocused(-1)
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (!open) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setFocused(f => Math.min(f + 1, sugg.length - 1)) }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setFocused(f => Math.max(f - 1, 0)) }
+    if (e.key === 'Enter' && focused >= 0) { e.preventDefault(); pick(sugg[focused].label) }
+    if (e.key === 'Escape') { setOpen(false); setFocused(-1) }
+  }
+
+  function getIcon(label: string) {
+    const l = label.toLowerCase()
+    if (l.includes('aéroport') || l.includes('aeroport')) return '✈️'
+    if (l.includes('gare')) return '🚆'
+    return '📍'
+  }
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative', width: '100%' }}>
+      <input
+        className={className}
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onKeyDown={handleKey}
+        onFocus={() => { if (sugg.length > 0) setOpen(true) }}
+        placeholder={placeholder}
+        autoComplete="off"
+        style={style}
+      />
+      {open && sugg.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 500,
+          background: '#fff', border: '1px solid rgba(0,0,0,.12)',
+          borderTop: 'none', borderRadius: '0 0 10px 10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,.1)', overflow: 'hidden',
+        }}>
+          {sugg.map((s, i) => (
+            <button
+              key={i} type="button"
+              onMouseDown={() => pick(s.label)}
+              onMouseEnter={() => setFocused(i)}
+              onMouseLeave={() => setFocused(-1)}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                width: '100%', padding: '9px 14px',
+                background: i === focused ? 'rgba(0,0,0,.04)' : '#fff',
+                border: 'none', cursor: 'pointer', textAlign: 'left',
+                borderBottom: i < sugg.length - 1 ? '1px solid rgba(0,0,0,.05)' : 'none',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>
+                {s.isLieu ? getIcon(s.label) : '📍'}
+              </span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: s.isLieu ? 500 : 400, color: '#0A0A0A' }}>{s.label}</div>
+                {s.sublabel && <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 1 }}>{s.sublabel}</div>}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function VitrineBody() {
   /* ── state ─────────────────────────────────────────────── */
@@ -448,7 +566,7 @@ export default function VitrineBody() {
                   <div className="route-connector"/>
                   <div className="binput-row" style={{marginBottom:8}}>
                     <span className="binput-dot s"/>
-                    <input className="binput" type="text" placeholder="Adresse de départ…" value={bcDepart} onChange={e=>setBcDepart(e.target.value)}/>
+                    <VtAddressInput className="binput" placeholder="Adresse de départ…" value={bcDepart} onChange={setBcDepart}/>
                   </div>
                   {bcEtape && (
                     <div className="binput-row" style={{marginBottom:8}}>
@@ -458,7 +576,7 @@ export default function VitrineBody() {
                   )}
                   <div className="binput-row">
                     <span className="binput-dot e"/>
-                    <input className="binput" type="text" placeholder="Destination, aéroport, gare…" value={bcArrivee} onChange={e=>setBcArrivee(e.target.value)}/>
+                    <VtAddressInput className="binput" placeholder="Destination, aéroport, gare…" value={bcArrivee} onChange={setBcArrivee}/>
                   </div>
                 </div>
                 <button onClick={()=>setBcEtape(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:'2px 0 6px',transition:'color .15s'}}>
@@ -785,7 +903,7 @@ export default function VitrineBody() {
                     <div className="route-dot o"/>
                     <div className="field" style={{flex:1}}>
                       <label>Prise en charge</label>
-                      <input type="text" placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onChange={e=>setForm(f=>({...f,origin:e.target.value}))}/>
+                      <VtAddressInput placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onChange={v=>setForm(f=>({...f,origin:v}))}/>
                     </div>
                   </div>
                   <div className="route-sep"/>
@@ -802,7 +920,7 @@ export default function VitrineBody() {
                     <div className="route-dot d"/>
                     <div className="field" style={{flex:1}}>
                       <label>Destination</label>
-                      <input type="text" placeholder="Destination, aéroport, gare…" value={form.dest} onChange={e=>setForm(f=>({...f,dest:e.target.value}))}/>
+                      <VtAddressInput placeholder="Destination, aéroport, gare…" value={form.dest} onChange={v=>setForm(f=>({...f,dest:v}))}/>
                     </div>
                   </div>
                 </div>

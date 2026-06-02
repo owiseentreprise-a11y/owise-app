@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
+import { searchLieux } from '@/lib/lieux'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -155,7 +156,11 @@ async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number
 
 // ── AddressInput ──────────────────────────────────────────────────────────────
 
-type Suggestion = { label: string; postcode: string; city: string; lat: number; lng: number }
+type Suggestion = {
+  label: string; postcode?: string; city?: string
+  lat?: number; lng?: number
+  sublabel?: string; isLieu?: boolean
+}
 
 function AddressInput({
   value, placeholder, icon, onSelect,
@@ -184,22 +189,25 @@ function AddressInput({
   }, [])
 
   const search = useCallback(async (q: string) => {
-    if (q.length < 3) { setSuggestions([]); setOpen(false); return }
+    if (q.length < 2) { setSuggestions([]); setOpen(false); return }
     setLoading(true)
+    const lieux = searchLieux(q)
     try {
       const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`)
       const json = await res.json()
-      const items: Suggestion[] = (json.features ?? []).map((f: any) => ({
+      const api: Suggestion[] = (json.features ?? []).map((f: any) => ({
         label:    f.properties.label,
         postcode: f.properties.postcode ?? '',
         city:     f.properties.city ?? '',
         lng:      f.geometry.coordinates[0],
         lat:      f.geometry.coordinates[1],
       }))
-      setSuggestions(items)
-      setOpen(items.length > 0)
+      const all = [...lieux, ...api].slice(0, 7)
+      setSuggestions(all)
+      setOpen(all.length > 0)
     } catch {
-      setSuggestions([])
+      setSuggestions(lieux)
+      setOpen(lieux.length > 0)
     } finally {
       setLoading(false)
     }
@@ -219,7 +227,7 @@ function AddressInput({
     setSuggestions([])
     setOpen(false)
     setFocused(-1)
-    onSelect({ label: s.label, codePostal: s.postcode, lat: s.lat, lng: s.lng })
+    onSelect({ label: s.label, codePostal: s.postcode ?? '', lat: s.lat, lng: s.lng })
   }
 
   function handleKey(e: React.KeyboardEvent) {
@@ -291,13 +299,23 @@ function AddressInput({
               onMouseEnter={() => setFocused(i)}
               onMouseLeave={() => setFocused(-1)}
             >
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#848499" strokeWidth={2} style={{ flexShrink: 0 }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
+              {s.isLieu ? (
+                <span style={{ fontSize: 14, flexShrink: 0 }}>
+                  {s.label.toLowerCase().includes('aéroport') || s.label.toLowerCase().includes('aeroport') ? '✈️' : s.label.toLowerCase().includes('gare') ? '🚆' : '📍'}
+                </span>
+              ) : (
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#848499" strokeWidth={2} style={{ flexShrink: 0 }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, color: '#EDE8DF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
-                {s.postcode && <div style={{ fontSize: 10, color: '#848499', marginTop: 1 }}>{s.postcode} {s.city}</div>}
+                {(s.sublabel || s.postcode) && (
+                  <div style={{ fontSize: 10, color: '#848499', marginTop: 1 }}>
+                    {s.sublabel ?? `${s.postcode} ${s.city}`}
+                  </div>
+                )}
               </div>
             </button>
           ))}

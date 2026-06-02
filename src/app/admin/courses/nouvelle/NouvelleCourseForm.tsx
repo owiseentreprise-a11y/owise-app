@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition, useMemo, useCallback } from 'react'
 import { creerCourseAction } from './actions'
+import { searchLieux } from '@/lib/lieux'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -121,14 +122,30 @@ function AddressInput({
   const containerRef          = useRef<HTMLDivElement>(null)
 
   const search = useCallback(async (q: string) => {
-    if (q.length < 3) { setSug([]); setOpen(false); return }
+    if (q.length < 2) { setSug([]); setOpen(false); return }
+    const lieux = searchLieux(q)
     try {
       const r = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5`)
       const j = await r.json()
-      setSug(j.features ?? [])
-      setOpen(true)
+      // Merge landmarks + API results; landmarks are flagged with __isLieu
+      const api = (j.features ?? []).map((f: any) => ({ ...f, __isLieu: false }))
+      const lieuFeatures = lieux.map(l => ({
+        __isLieu: true,
+        properties: { label: l.label, postcode: '', city: l.sublabel },
+        geometry: { coordinates: [0, 0] },
+      }))
+      setSug([...lieuFeatures, ...api].slice(0, 7))
+      setOpen(lieux.length > 0 || (j.features ?? []).length > 0)
       setIdx(-1)
-    } catch { setSug([]) }
+    } catch {
+      const lieuFeatures = lieux.map(l => ({
+        __isLieu: true,
+        properties: { label: l.label, postcode: '', city: l.sublabel },
+        geometry: { coordinates: [0, 0] },
+      }))
+      setSug(lieuFeatures)
+      setOpen(lieuFeatures.length > 0)
+    }
   }, [])
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -142,7 +159,7 @@ function AddressInput({
   function pick(f: any) {
     const label = f.properties.label
     const cp    = f.properties.postcode ?? ''
-    const [lng, lat] = f.geometry.coordinates
+    const [lng, lat] = f.__isLieu ? [undefined, undefined] : f.geometry.coordinates
     setQuery(label)
     onChange({ label, codePostal: cp, lat, lng })
     setSug([]); setOpen(false); setIdx(-1)
@@ -187,14 +204,26 @@ function AddressInput({
         }}>
           {suggestions.map((f, i) => (
             <div key={i} onMouseDown={() => pick(f)} style={{
+              display: 'flex', alignItems: 'flex-start', gap: 6,
               padding: '9px 14px', fontSize: 12, color: 'var(--t1)', cursor: 'pointer',
               background: i === idx ? 'rgba(201,168,76,.12)' : 'transparent',
               borderBottom: i < suggestions.length - 1 ? '1px solid rgba(201,168,76,.06)' : undefined,
             }}>
-              <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, marginRight: 8 }}>
-                {f.properties.postcode}
+              {f.__isLieu ? (
+                <span style={{ marginRight: 8, fontSize: 13 }}>
+                  {f.properties.label.toLowerCase().includes('aéroport') || f.properties.label.toLowerCase().includes('aeroport') ? '✈️' : f.properties.label.toLowerCase().includes('gare') ? '🚆' : '📍'}
+                </span>
+              ) : (
+                <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, marginRight: 8 }}>
+                  {f.properties.postcode}
+                </span>
+              )}
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span>{f.properties.label}</span>
+                {f.__isLieu && f.properties.city && (
+                  <span style={{ display: 'block', fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{f.properties.city}</span>
+                )}
               </span>
-              {f.properties.label}
             </div>
           ))}
         </div>
