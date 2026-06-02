@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 
 export async function demanderCourse(formData: FormData): Promise<void> {
@@ -132,4 +133,48 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   }
 
   redirect('/espace-client?success=demande-envoyee')
+}
+
+export async function noterCourse(courseId: string, note: number): Promise<{ ok: boolean; error?: string }> {
+  if (note < 1 || note > 5) return { ok: false, error: 'Note invalide' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Non connecté' }
+
+  const admin = createAdminClient()
+
+  // Vérifier que la course appartient au client et est terminée
+  const { data: course } = await admin
+    .from('courses')
+    .select('id, chauffeur_id, statut, note_client')
+    .eq('id', courseId)
+    .or(`client_id.eq.${user.id},collaborateur_id.eq.${user.id}`)
+    .eq('statut', 'terminee')
+    .is('note_client', null)
+    .single()
+
+  if (!course) return { ok: false, error: 'Course introuvable ou déjà notée' }
+
+  // Enregistrer la note sur la course
+  await admin.from('courses').update({ note_client: note }).eq('id', courseId)
+
+  // Recalculer la note moyenne du chauffeur
+  if (course.chauffeur_id) {
+    const { data: notes } = await admin
+      .from('courses')
+      .select('note_client')
+      .eq('chauffeur_id', course.chauffeur_id)
+      .eq('statut', 'terminee')
+      .not('note_client', 'is', null)
+
+    if (notes && notes.length > 0) {
+      const moyenne = notes.reduce((sum, c) => sum + (c.note_client ?? 0), 0) / notes.length
+      await admin.from('chauffeurs')
+        .update({ note_moyenne: Math.round(moyenne * 10) / 10 })
+        .eq('id', course.chauffeur_id)
+    }
+  }
+
+  return { ok: true }
 }

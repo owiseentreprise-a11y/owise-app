@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import DemanderCourseClient from './DemanderCourseClient'
 import CollaborateursManager from './CollaborateursManager'
+import NotationCourse from './NotationCourse'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,7 +63,7 @@ export default async function EspaceClientPage({
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
   const baseQuery = supabase
     .from('courses')
-    .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, chauffeurs(profiles(prenom, nom))')
+    .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, note_client, chauffeur_id, chauffeurs(profiles(prenom, nom))')
     .order('date_prevue', { ascending: false })
     .limit(50)
 
@@ -249,41 +250,52 @@ function CourseCard({ course, highlight = false }: { course: any; highlight?: bo
     : null
   const color = STATUT_COURSE_COLOR[course.statut as keyof typeof STATUT_COURSE_COLOR]
   const label = STATUT_COURSE_LABEL[course.statut as keyof typeof STATUT_COURSE_LABEL]
+  const peutNoter = course.statut === 'terminee' && course.chauffeur_id && !course.note_client
 
   return (
     <div style={{
       background: highlight ? 'rgba(201,168,76,.04)' : 'var(--surface)',
       border: `1px solid ${highlight ? 'rgba(201,168,76,.15)' : 'var(--gb)'}`,
       borderRadius: 12, padding: '16px 20px',
-      display: 'grid', gridTemplateColumns: '1fr auto',
-      alignItems: 'center', gap: 20,
     }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <span style={{
-            fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 500,
-            color, background: `${color}18`, border: `1px solid ${color}30`,
-          }}>{label}</span>
-          <span style={{
-            fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)',
-          }}>
-            {date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
-            {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-          </span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 20 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{
+              fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 500,
+              color, background: `${color}18`, border: `1px solid ${color}30`,
+            }}>{label}</span>
+            <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
+              {date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
+              {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+            {course.adresse_depart.split(',')[0]}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+            → {course.adresse_arrivee.split(',')[0]}
+          </div>
+          {chauffeurNom && (
+            <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 6 }}>
+              Chauffeur : {chauffeurNom}
+            </div>
+          )}
         </div>
-        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
-          {course.adresse_depart.split(',')[0]}
-        </div>
-        <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-          → {course.adresse_arrivee.split(',')[0]}
-        </div>
-        {chauffeurNom && (
-          <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 6 }}>
-            Chauffeur : {chauffeurNom}
+        {/* Note existante */}
+        {course.note_client && (
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 14, color: '#C9A84C', letterSpacing: 1 }}>
+              {'★'.repeat(course.note_client)}{'☆'.repeat(5 - course.note_client)}
+            </div>
+            <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 2 }}>Votre note</div>
           </div>
         )}
       </div>
-      {/* Pas de prix affiché intentionnellement */}
+      {/* Widget de notation */}
+      {peutNoter && (
+        <NotationCourse courseId={course.id} chauffeurNom={chauffeurNom} />
+      )}
     </div>
   )
 }

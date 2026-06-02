@@ -72,6 +72,7 @@ export interface CourseRow {
   type_vehicule: TypeVehicule
   nb_passagers: number
   notes: string | null
+  note_client: number | null
   created_at: string
 }
 
