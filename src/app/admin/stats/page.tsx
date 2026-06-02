@@ -13,25 +13,72 @@ export default async function StatsPage() {
   // 6 mois glissants (mois courant inclus)
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
-  const [coursesRes, chauffeursRes, clientsRes] = await Promise.all([
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const [coursesRes, chauffeursRes, clientsRes, newClientsRes, notesRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('statut, date_prevue, prix_final, prix_estime, chauffeur_id, client_id, chauffeurs(profiles(prenom, nom)), clients(type_compte, entreprise_nom, profiles(prenom, nom))')
+      .select('statut, date_prevue, prix_final, prix_estime, type_vehicule, chauffeur_id, client_id, chauffeurs(profiles(prenom, nom)), clients(type_compte, entreprise_nom, profiles(prenom, nom))')
       .gte('date_prevue', sixMonthsAgo.toISOString())
       .order('date_prevue', { ascending: true }),
     supabase
       .from('chauffeurs')
-      .select('id, profiles(prenom, nom)')
+      .select('id, note_moyenne, profiles(prenom, nom)')
       .order('created_at'),
     supabase
       .from('clients')
-      .select('id, type_compte, entreprise_nom, profiles(prenom, nom)')
+      .select('id, type_compte, entreprise_nom, created_at, profiles(prenom, nom)')
       .order('created_at'),
+    // Nouveaux clients ce mois
+    supabase
+      .from('clients')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', currentMonthStart.toISOString()),
+    // Courses avec note ce mois
+    supabase
+      .from('courses')
+      .select('note_client', { count: 'exact' })
+      .eq('statut', 'terminee')
+      .not('note_client', 'is', null),
   ])
 
-  const courses = coursesRes.data ?? []
-  const terminées = courses.filter(c => c.statut === 'terminee')
-  const annulées = courses.filter(c => c.statut === 'annulee')
+  const courses    = coursesRes.data ?? []
+  const terminées  = courses.filter(c => c.statut === 'terminee')
+  const annulées   = courses.filter(c => c.statut === 'annulee')
+  const nouveauxClients = newClientsRes.count ?? 0
+
+  // ── Taux de notation moyen ──
+  const chauffeursAvecNote = (chauffeursRes.data ?? []).filter(c => c.note_moyenne && c.note_moyenne > 0)
+  const noteMoyenneGlobale = chauffeursAvecNote.length > 0
+    ? chauffeursAvecNote.reduce((s, c) => s + Number(c.note_moyenne), 0) / chauffeursAvecNote.length
+    : null
+
+  // ── Répartition par type de véhicule ──
+  const vehiculeLabels: Record<string, string> = {
+    berline:         'Berline',
+    berline_premium: 'Berline Premium',
+    van_7:           'Van 7 pl.',
+    grand_van_8:     'Grand Van',
+  }
+  const vehiculeStats: Record<string, { count: number; ca: number }> = {}
+  for (const c of terminées) {
+    const k = (c as any).type_vehicule ?? 'berline'
+    if (!vehiculeStats[k]) vehiculeStats[k] = { count: 0, ca: 0 }
+    vehiculeStats[k].count++
+    vehiculeStats[k].ca += Number(c.prix_final ?? c.prix_estime ?? 0)
+  }
+  const vehiculeList = Object.entries(vehiculeStats)
+    .map(([k, v]) => ({ label: vehiculeLabels[k] ?? k, ...v }))
+    .sort((a, b) => b.count - a.count)
+  const maxVehCount = Math.max(...vehiculeList.map(v => v.count), 1)
+
+  // ── Revenus entreprise vs particulier ──
+  const caEntreprise = terminées
+    .filter(c => (c as any).clients?.type_compte === 'entreprise')
+    .reduce((s, c) => s + Number(c.prix_final ?? c.prix_estime ?? 0), 0)
+  const caParticulier = terminées
+    .filter(c => (c as any).clients?.type_compte !== 'entreprise')
+    .reduce((s, c) => s + Number(c.prix_final ?? c.prix_estime ?? 0), 0)
 
   // ── Aggrégation par mois ──
   const months: { key: string; label: string; count: number; ca: number; annulees: number }[] = []
@@ -275,6 +322,97 @@ export default async function StatsPage() {
             </div>
           </div>
         </div>
+
+        {/* ── KPIs ligne 2 ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+          {[
+            {
+              label: 'Nouveaux clients ce mois',
+              value: String(nouveauxClients),
+              mono: true,
+              sub: `${(clientsRes.data ?? []).length} clients total`,
+            },
+            {
+              label: 'Note moyenne chauffeurs',
+              value: noteMoyenneGlobale !== null ? `★ ${noteMoyenneGlobale.toFixed(1)}` : '—',
+              mono: false,
+              gold: noteMoyenneGlobale !== null,
+              sub: `${chauffeursAvecNote.length} chauffeur${chauffeursAvecNote.length > 1 ? 's' : ''} noté${chauffeursAvecNote.length > 1 ? 's' : ''}`,
+            },
+            {
+              label: 'CA entreprises (6 mois)',
+              value: `${caEntreprise.toFixed(0)} €`,
+              mono: true,
+              gold: true,
+              sub: caTotal > 0 ? `${Math.round(caEntreprise / caTotal * 100)} % du CA` : undefined,
+            },
+            {
+              label: 'CA particuliers (6 mois)',
+              value: `${caParticulier.toFixed(0)} €`,
+              mono: true,
+              sub: caTotal > 0 ? `${Math.round(caParticulier / caTotal * 100)} % du CA` : undefined,
+            },
+          ].map((kpi, i) => (
+            <div key={i} style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 12, padding: '18px 20px',
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 10 }}>
+                {kpi.label}
+              </div>
+              <div style={{
+                fontFamily: kpi.mono ? 'var(--font-jetbrains), monospace' : undefined,
+                fontSize: 26, fontWeight: 600,
+                color: kpi.gold ? 'var(--gold)' : 'var(--t1)',
+              }}>
+                {kpi.value}
+              </div>
+              {kpi.sub && (
+                <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 4 }}>{kpi.sub}</div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Répartition par véhicule ── */}
+        {vehiculeList.length > 0 && (
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--gb)',
+            borderRadius: 14, padding: '22px 24px',
+          }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16 }}>
+              Répartition par type de véhicule
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {vehiculeList.map((v, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{v.label}</span>
+                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                      <span style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                        {v.count} course{v.count > 1 ? 's' : ''}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace', minWidth: 60, textAlign: 'right' }}>
+                        {v.ca.toFixed(0)} €
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ height: 5, background: 'var(--elevated)', borderRadius: 3 }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${(v.count / maxVehCount) * 100}%`,
+                      borderRadius: 3,
+                      background: i === 0
+                        ? 'linear-gradient(90deg,var(--gold),rgba(201,168,76,.5))'
+                        : `rgba(201,168,76,${0.35 - i * 0.08})`,
+                      transition: 'width .4s',
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Top chauffeurs + Top clients ── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
