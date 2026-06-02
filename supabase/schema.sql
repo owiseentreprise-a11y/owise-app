@@ -69,6 +69,7 @@ CREATE TABLE chauffeurs (
   disponible               BOOLEAN DEFAULT false,
   lat                      NUMERIC,
   lng                      NUMERIC,
+  fcm_token                TEXT,
   created_at               TIMESTAMPTZ DEFAULT now()
 );
 
