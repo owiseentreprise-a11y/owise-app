@@ -452,6 +452,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     return calculerPrixKm(distanceKm, vehicule, date, params, tarifs)
   }, [zoneDepart, zoneArrivee, useForfait, distanceKm, vehicule, date, grille, params])
 
+  // Prix total : aller × 2 si aller-retour activé
+  const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
+
   function handleStep1() {
     if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
@@ -468,7 +471,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   function handlePayer() {
     if (!nom.trim() || !prenom.trim())        return setStep2Error('Nom et prénom requis.')
     if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
-    if (prix === null) return setStep2Error('Erreur de tarification.')
+    if (prixTotal === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
     startTransition(async () => {
       const result = await createReservationCheckout({
@@ -477,7 +480,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         date_prevue:     date,
         type_vehicule:   vehicule,
         nb_passagers:    passagers,
-        prix:            Math.round(prix!),
+        prix:            Math.round(prixTotal!),
         nom, prenom, email, telephone,
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
@@ -779,7 +782,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             </div>
 
             {/* Prix estimé */}
-            {(prix !== null || loadingRoute) && depart.codePostal && arrivee.codePostal && (
+            {(prix !== null || loadingRoute) && (depart.codePostal || zoneDepart) && (arrivee.codePostal || zoneArrivee) && (
               <div style={{
                 background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05))',
                 border: '1px solid rgba(201,168,76,.25)',
@@ -788,19 +791,26 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                 marginBottom: 20,
               }}>
                 <div>
-                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499' }}>Prix estimé</div>
+                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499' }}>
+                    {allerRetour ? 'Prix aller-retour' : 'Prix estimé'}
+                  </div>
                   <div style={{ fontSize: 10, color: '#3F3F5A', marginTop: 3 }}>
                     {useForfait && zoneDepart && zoneArrivee
-                      ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                      ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
                       : distanceKm !== null
-                        ? `${distanceKm} km · ${labelVehicule}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                        ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
                         : 'Calcul de l\'itinéraire…'
                     }
                   </div>
                 </div>
-                {prix !== null ? (
-                  <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: '#C9A84C' }}>
-                    {Math.round(prix)} €
+                {prixTotal !== null ? (
+                  <div style={{ textAlign: 'right' }}>
+                    {allerRetour && prix !== null && (
+                      <div style={{ fontSize: 10, color: '#848499', marginBottom: 2 }}>{Math.round(prix)} € × 2</div>
+                    )}
+                    <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: '#C9A84C' }}>
+                      {Math.round(prixTotal)} €
+                    </div>
                   </div>
                 ) : (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
@@ -863,10 +873,15 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                     <div style={{ fontSize: 12, color: '#09091A' }}>{distanceKm} km</div>
                   </div>
                 )}
-                {prix !== null && (
+                {prixTotal !== null && (
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>Total</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{Math.round(prix)} €</div>
+                    <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+                      {allerRetour ? 'Total aller-retour' : 'Total'}
+                    </div>
+                    {allerRetour && prix !== null && (
+                      <div style={{ fontSize: 10, color: '#848499' }}>{Math.round(prix)} € × 2</div>
+                    )}
+                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{Math.round(prixTotal)} €</div>
                   </div>
                 )}
               </div>
@@ -916,7 +931,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
-                  Payer {prix !== null ? `${Math.round(prix)} €` : ''} — Paiement sécurisé
+                  Payer {prixTotal !== null ? `${Math.round(prixTotal)} €` : ''} — Paiement sécurisé
                 </>
               )}
             </button>
