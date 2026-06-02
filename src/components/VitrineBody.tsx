@@ -137,9 +137,13 @@ export default function VitrineBody() {
   /* ── scroll reveal + countup ────────────────────────────── */
   useEffect(() => {
     const revealObs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
-    }, { threshold: 0.1 })
-    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target) } })
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
+    document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => revealObs.observe(el))
+    // fallback : rend tout visible après 2s si observer bloqué
+    const fallback = setTimeout(() => {
+      document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => el.classList.add('visible'))
+    }, 2000)
 
     const countObs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -164,7 +168,7 @@ export default function VitrineBody() {
     }, { threshold: 0.3 })
     document.querySelectorAll('[data-target]').forEach(el => countObs.observe(el))
 
-    return () => { revealObs.disconnect(); countObs.disconnect() }
+    return () => { revealObs.disconnect(); countObs.disconnect(); clearTimeout(fallback) }
   }, [])
 
   /* ── Parallax souris hero ───────────────────────────────── */
@@ -189,14 +193,6 @@ export default function VitrineBody() {
     return () => hero.removeEventListener('mousemove', onMove)
   }, [])
 
-  /* ── Reveal directionnels ────────────────────────────────── */
-  useEffect(() => {
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
-    }, { threshold: 0.1 })
-    document.querySelectorAll('.reveal-left,.reveal-right,.reveal-scale').forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
 
   /* ── 3D tilt ─────────────────────────────────────────────── */
   useEffect(() => {
