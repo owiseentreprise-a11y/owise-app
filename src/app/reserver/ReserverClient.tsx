@@ -358,7 +358,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
       const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower || l.label.toLowerCase() === lower))
       if (lieu) {
         const cpMatch = lieu.sublabel.match(/\b(\d{5})\b/)
-        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '' })
+        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '', lat: lieu.lat, lng: lieu.lng })
         return
       }
       try {
