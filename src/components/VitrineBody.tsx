@@ -542,7 +542,7 @@ export default function VitrineBody() {
               <button className="btn-secondary" onClick={()=>scrollTo('#vehicules')}>Nos véhicules</button>
             </div>
             <div className="hero-trust">
-              {[['4.9 ★','#C9A84C','Note moyenne'],['24/7','#74C0C8','Disponible'],['100%','#5B8FD4','Prix fixe garanti'],['Certifiés','#7B82D6','Formation professionnelle']].map(([v,c,l],i)=>(
+              {[['4.9 ★','#C9A84C','Note moyenne'],['24/7','#74C0C8','Disponible'],['100%','#5B8FD4','Prix fixe garanti'],['Certifiés','#7B82D6','Professionnels']].map(([v,c,l],i)=>(
                 <span key={i} style={{display:'contents'}}>
                   {i>0&&<div className="trust-sep"/>}
                   <div className="trust-item">
