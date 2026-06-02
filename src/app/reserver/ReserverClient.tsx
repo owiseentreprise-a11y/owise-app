@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
-import { searchLieux } from '@/lib/lieux'
+import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -371,6 +371,14 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   useEffect(() => {
     async function resolve(label: string, setter: (v: AdresseVal) => void) {
       if (label.length < 3) return
+      // Lieux connus : extraction du code postal depuis le sublabel (ex: "75010 Paris")
+      const lower = label.toLowerCase()
+      const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower || l.label.toLowerCase() === lower))
+      if (lieu) {
+        const cpMatch = lieu.sublabel.match(/\b(\d{5})\b/)
+        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '' })
+        return
+      }
       try {
         const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(label)}&limit=1&autocomplete=0`)
         const json = await res.json()
@@ -448,8 +456,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
     if (!date)                 return setStep1Error('Date et heure requises.')
-    if (!depart.codePostal)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
-    if (!arrivee.codePostal)   return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
+    // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
+    if (!depart.codePostal && !zoneDepart)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
+    if (!arrivee.codePostal && !zoneArrivee)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
     if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
     setStep(2)

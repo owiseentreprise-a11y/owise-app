@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { searchLieux } from '@/lib/lieux'
 
@@ -163,6 +164,8 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
 }
 
 export default function VitrineBody() {
+  const router = useRouter()
+
   /* ── state ─────────────────────────────────────────────── */
   const [navScrolled,     setNavScrolled]     = useState(false)
   const [menuOpen,        setMenuOpen]         = useState(false)
@@ -613,9 +616,13 @@ export default function VitrineBody() {
                   </div>
                 )}
                 <button className="btn-book" onClick={()=>{
-                  setForm(f=>({...f,origin:bcDepart,dest:bcArrivee,date:bcDate,time:bcTime}))
-                  setPaxN(bcPax)
-                  scrollTo('#devis')
+                  const p = new URLSearchParams()
+                  if (bcDepart)  p.set('depart',  bcDepart)
+                  if (bcArrivee) p.set('arrivee', bcArrivee)
+                  if (bcDate)    p.set('date',    bcDate)
+                  if (bcTime)    p.set('time',    bcTime)
+                  p.set('pax', String(bcPax))
+                  router.push('/reserver?' + p.toString())
                 }}>
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
                   Confirmer la réservation
