@@ -449,12 +449,12 @@ export default function DemanderCourseClient({
                 <div style={{ fontSize: 10, color: 'var(--t2)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {(departAero || departGare) && (
                     <span style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.2)', color: '#3DB87A' }}>
-                      ● Prise en charge à {isAero ? 'l'aéroport' : 'la gare'}
+                      ● Prise en charge à {isAero ? "l'aéroport" : "la gare"}
                     </span>
                   )}
                   {(arriveeAero || arriveeGare) && (
                     <span style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: '#D95454' }}>
-                      ● Dépôt à {isAero ? 'l'aéroport' : 'la gare'}
+                      ● Dépôt à {isAero ? "l'aéroport" : "la gare"}
                     </span>
                   )}
                 </div>
@@ -480,7 +480,7 @@ export default function DemanderCourseClient({
 
                 <div>
                   <label style={labelStyle}>
-                    Heure {departAero || departGare ? 'd'arrivée' : 'de départ'} du {typeTransport}
+                    Heure {departAero || departGare ? "d'arrivée" : "de départ"} du {typeTransport}
                     <span style={{ color: 'var(--t3)', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 6 }}>
                       (pour que le chauffeur anticipe)
                     </span>

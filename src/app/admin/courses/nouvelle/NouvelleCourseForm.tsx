@@ -474,7 +474,7 @@ export default function NouvelleCourseForm({
               </div>
               <div>
                 <label style={lbl}>
-                  Heure {(depAero || depGare) ? 'd'arrivée' : 'de départ'} du {type}
+                  Heure {(depAero || depGare) ? "d'arrivée" : "de départ"} du {type}
                   <span style={{ color: 'var(--t3)', textTransform: 'none', letterSpacing: 0, fontWeight: 400, marginLeft: 6 }}>
                     (pour anticiper la prise en charge)
                   </span>
