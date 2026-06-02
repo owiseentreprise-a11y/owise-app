@@ -164,7 +164,7 @@ function AddressInput({
 }: {
   value: AdresseVal
   placeholder: string
-  icon: string
+  icon: React.ReactNode
   onSelect: (val: AdresseVal) => void
 }) {
   const [query, setQuery]             = useState(value.label)
@@ -234,7 +234,7 @@ function AddressInput({
   return (
     <div ref={wrapRef} style={{ position: 'relative' }}>
       <div style={{ position: 'relative' }}>
-        <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 16, pointerEvents: 'none', zIndex: 1 }}>
+        <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1, display: 'flex', alignItems: 'center' }}>
           {icon}
         </span>
         {loading && (
@@ -616,7 +616,12 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               {/* Départ */}
               <div>
                 <FieldLabel>Adresse de départ</FieldLabel>
-                <AddressInput value={depart} placeholder="15 Rue de la Paix, 75001 Paris" icon="📍" onSelect={setDepart} />
+                <AddressInput value={depart} placeholder="15 Rue de la Paix, 75001 Paris" icon={
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7" stroke="#3DB87A" strokeWidth="1.5" fill="rgba(61,184,122,.12)"/>
+                    <circle cx="8" cy="8" r="3.5" fill="#3DB87A"/>
+                  </svg>
+                } onSelect={setDepart} />
                 {depart.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneDepart
@@ -632,7 +637,12 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               {/* Arrivée */}
               <div>
                 <FieldLabel>Adresse d'arrivée</FieldLabel>
-                <AddressInput value={arrivee} placeholder="Aéroport CDG, Terminal 2, 95700 Roissy" icon="🏁" onSelect={setArrivee} />
+                <AddressInput value={arrivee} placeholder="Aéroport CDG, Terminal 2, 95700 Roissy" icon={
+                  <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+                    <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="#C9A84C"/>
+                    <circle cx="8" cy="6" r="2.2" fill="#fff"/>
+                  </svg>
+                } onSelect={setArrivee} />
                 {arrivee.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneArrivee
