@@ -930,17 +930,17 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
       <p class="hero-sub">Chauffeurs professionnels certifiés, véhicules haut de gamme, ponctualité garantie. Pour vos déplacements d'affaires, transferts aéroport et événements — Paris, Île-de-France et l'Oise.</p>
       <div class="hero-actions">
         <a href="/reserver" class="btn-primary">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
           Réserver maintenant
         </a>
-        <a href="#vehicules" class="btn-secondary" onclick="scrollTo('#vehicules');return false">
-          Nos véhicules
+        <a href="#devis" onclick="scrollTo('#devis');return false" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(0,0,0,.45);text-decoration:none;padding:10px 4px;font-family:'DM Sans',sans-serif;transition:color .15s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(0,0,0,.45)'">
+          Obtenir un devis gratuit →
         </a>
       </div>
       <div class="hero-trust">
         <div class="trust-item">
           <span class="trust-val" style="color:#C9A84C">4.9 ★</span>
-          <span class="trust-lbl">Note moyenne</span>
+          <span class="trust-lbl">Note clients</span>
         </div>
         <div class="trust-sep"></div>
         <div class="trust-item">
@@ -954,9 +954,15 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
         </div>
         <div class="trust-sep"></div>
         <div class="trust-item">
-          <span class="trust-val" style="color:#7B82D6">6+</span>
-          <span class="trust-lbl">Chauffeurs certifiés</span>
+          <span class="trust-val" style="color:#3DB87A">&lt; 2 min</span>
+          <span class="trust-lbl">Confirmation</span>
         </div>
+      </div>
+
+      <!-- Indicateur disponibilité temps réel -->
+      <div style="display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:6px 14px;border-radius:20px;background:rgba(61,184,122,.08);border:1px solid rgba(61,184,122,.2)">
+        <span style="width:7px;height:7px;border-radius:50%;background:#3DB87A;box-shadow:0 0 8px #3DB87A;animation:waPulse 2s ease-in-out infinite;display:inline-block"></span>
+        <span style="font-size:11px;color:#3DB87A;font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.04em">Disponible maintenant — chauffeur dans votre zone</span>
       </div>
     </div>
 
@@ -1158,6 +1164,87 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
   </div>
 </section>
 
+<!-- COMMENT ÇA MARCHE — avant la flotte -->
+<section class="process-section" id="comment-top" style="background:var(--surface)">
+  <div class="section-header reveal" style="max-width:900px;margin:0 auto 60px">
+    <div class="section-tag">Simple & rapide</div>
+    <h2 class="section-title">Réservez en<br><em class="chrome-gold-slow">3 minutes chrono</em></h2>
+  </div>
+  <div class="process-steps">
+    <div class="process-step reveal">
+      <div class="process-num chrome-gold-static">01</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div class="process-step-title">Saisissez votre trajet</div>
+      <div class="process-step-desc">Départ, destination, date et heure. Notre calculateur affiche votre tarif fixe en quelques secondes — aucune surprise possible.</div>
+    </div>
+    <div class="process-step reveal rd1">
+      <div class="process-num chrome-gold-static">02</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="process-step-title">Confirmation immédiate</div>
+      <div class="process-step-desc">Vous recevez un email de confirmation en moins de 5 minutes avec tous les détails : chauffeur, véhicule, tarif garanti.</div>
+    </div>
+    <div class="process-step reveal rd2">
+      <div class="process-num chrome-gold-static">03</div>
+      <div class="process-icon">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
+      </div>
+      <div class="process-step-title">Votre chauffeur arrive</div>
+      <div class="process-step-desc">Le jour J, votre chauffeur est en avance. Pour les aéroports, il suit votre vol en temps réel et attend même en cas de retard.</div>
+    </div>
+  </div>
+</section>
+
+<!-- AÉROPORTS — section dédiée -->
+<section style="padding:80px 52px;border-top:1px solid rgba(0,0,0,.07)" id="aeroports">
+  <div class="section-header reveal" style="max-width:900px;margin:0 auto 50px">
+    <div class="section-tag">Transferts aéroport</div>
+    <h2 class="section-title">Paris et ses aéroports<br><em class="chrome-gold-slow">au tarif fixe garanti</em></h2>
+    <p style="font-size:15px;color:#6B6B6B;max-width:520px;margin:18px auto 0;line-height:1.7">Panneau nominatif à l'arrivée, suivi de vol en temps réel, 60 min d'attente offertes. Votre chauffeur est là même si le vol est retardé.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:860px;margin:0 auto 40px">
+    <div class="reveal rd1" style="background:var(--surface);border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:28px 24px;text-align:center">
+      <div style="font-size:28px;margin-bottom:12px">✈</div>
+      <div style="font-size:16px;font-weight:600;color:#0A0A0A;margin-bottom:4px">CDG · Roissy</div>
+      <div style="font-size:12px;color:#6B6B6B;margin-bottom:16px">Terminal 1, 2, 3</div>
+      <div style="font-size:30px;font-weight:300;font-style:italic;font-family:'Plus Jakarta Sans',sans-serif;color:#C9A84C">dès 65 €</div>
+      <div style="font-size:10px;color:#9B9B9B;margin-top:4px;letter-spacing:.06em;text-transform:uppercase">Tarif fixe · Berline</div>
+    </div>
+    <div class="reveal rd2" style="background:var(--surface);border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:28px 24px;text-align:center;position:relative">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#C9A84C;color:#09091A;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;border-radius:10px">Le + réservé</div>
+      <div style="font-size:28px;margin-bottom:12px">✈</div>
+      <div style="font-size:16px;font-weight:600;color:#0A0A0A;margin-bottom:4px">Orly</div>
+      <div style="font-size:12px;color:#6B6B6B;margin-bottom:16px">Terminal 1, 2, 3, 4</div>
+      <div style="font-size:30px;font-weight:300;font-style:italic;font-family:'Plus Jakarta Sans',sans-serif;color:#C9A84C">dès 45 €</div>
+      <div style="font-size:10px;color:#9B9B9B;margin-top:4px;letter-spacing:.06em;text-transform:uppercase">Tarif fixe · Berline</div>
+    </div>
+    <div class="reveal rd3" style="background:var(--surface);border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:28px 24px;text-align:center">
+      <div style="font-size:28px;margin-bottom:12px">✈</div>
+      <div style="font-size:16px;font-weight:600;color:#0A0A0A;margin-bottom:4px">Beauvais · BVA</div>
+      <div style="font-size:12px;color:#6B6B6B;margin-bottom:16px">Aéroport de Beauvais-Tillé</div>
+      <div style="font-size:30px;font-weight:300;font-style:italic;font-family:'Plus Jakarta Sans',sans-serif;color:#C9A84C">dès 85 €</div>
+      <div style="font-size:10px;color:#9B9B9B;margin-top:4px;letter-spacing:.06em;text-transform:uppercase">Tarif fixe · Berline</div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;max-width:700px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555">
+      <span style="color:#C9A84C">✓</span> Panneau nominatif inclus
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555">
+      <span style="color:#C9A84C">✓</span> Suivi de vol en temps réel
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555">
+      <span style="color:#C9A84C">✓</span> 60 min d'attente offertes
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555">
+      <span style="color:#C9A84C">✓</span> Aucun supplément retard
+    </div>
+  </div>
+</section>
+
 <!-- VEHICLES -->
 <section class="vehicles-section" id="vehicules">
   <div class="section-header reveal">
@@ -1237,45 +1324,20 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
   </div>
 </section>
 
-<!-- COMMENT ÇA MARCHE -->
-<section class="process-section" id="comment">
-  <div class="section-header reveal" style="max-width:900px;margin:0 auto 60px">
-    <div class="section-tag">Simple & rapide</div>
-    <h2 class="section-title">Comment ça marche</h2>
-  </div>
-  <div class="process-steps">
-    <div class="process-step reveal">
-      <div class="process-num chrome-gold-static">01</div>
-      <div class="process-icon">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      </div>
-      <div class="process-step-title">Renseignez votre trajet</div>
-      <div class="process-step-desc">Indiquez votre départ, votre destination et l'heure de prise en charge. Notre estimateur calcule le tarif en quelques secondes.</div>
-    </div>
-    <div class="process-step reveal rd1">
-      <div class="process-num chrome-gold-static">02</div>
-      <div class="process-icon">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </div>
-      <div class="process-step-title">Confirmez la réservation</div>
-      <div class="process-step-desc">Renseignez vos coordonnées et validez. Confirmation immédiate par e-mail avec tous les détails de votre course.</div>
-    </div>
-    <div class="process-step reveal rd2">
-      <div class="process-num chrome-gold-static">03</div>
-      <div class="process-icon">
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
-      </div>
-      <div class="process-step-title">Votre chauffeur arrive</div>
-      <div class="process-step-desc">Le jour J, votre chauffeur est ponctuel et vous attend. Tarif fixe, aucune mauvaise surprise en fin de course.</div>
-    </div>
-  </div>
-</section>
 
 <!-- TESTIMONIALS -->
 <section class="testimonials-section">
   <div class="section-header reveal">
     <div class="section-tag">Ils nous font confiance</div>
     <h2 class="section-title">Ce que disent<br><em class="chrome-gold-slow">nos clients</em></h2>
+    <!-- Badge note globale -->
+    <div style="display:inline-flex;align-items:center;gap:12px;margin-top:20px;padding:10px 20px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,.08);box-shadow:0 2px 12px rgba(0,0,0,.06)">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#0A0A0A">4,9 / 5 <span style="color:#FBBC05">★★★★★</span></div>
+        <div style="font-size:10px;color:#6B6B6B;letter-spacing:.04em">Basé sur nos avis clients</div>
+      </div>
+    </div>
   </div>
   <div class="testimonials-grid">
     <div class="testimonial-card reveal rd1">
@@ -1289,6 +1351,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
         <div>
           <div class="t-name">Sophie M.</div>
           <div class="t-role">Directrice Marketing · Groupe Beaumont</div>
+          <div style="font-size:10px;color:#9B9B9B;margin-top:2px">Mai 2025 · Transfert CDG</div>
         </div>
       </div>
     </div>
@@ -1303,6 +1366,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
         <div>
           <div class="t-name">Thomas R.</div>
           <div class="t-role">Entrepreneur · Paris</div>
+          <div style="font-size:10px;color:#9B9B9B;margin-top:2px">Avril 2025 · Paris → CDG</div>
         </div>
       </div>
     </div>
@@ -1317,6 +1381,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
         <div>
           <div class="t-name">Isabelle C.</div>
           <div class="t-role">DRH · Groupe Legrand</div>
+          <div style="font-size:10px;color:#9B9B9B;margin-top:2px">Mars 2025 · Compte entreprise</div>
         </div>
       </div>
     </div>
@@ -1672,7 +1737,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
         </div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#0A0A0A;margin-bottom:10px">Demande envoyée !</div>
         <p style="font-size:13px;color:var(--t2);line-height:1.7;max-width:340px;margin:0 auto 24px">
-          Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong> pour confirmer votre réservation.
+          Votre demande est enregistrée. Vous recevrez une confirmation par email <strong>sous 5 minutes</strong> avec le détail de votre course et les coordonnées de votre chauffeur.
         </p>
         <div id="devisConfirmRef" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);background:rgba(0,0,0,.04);border-radius:6px;padding:8px 14px;display:inline-block;margin-bottom:28px"></div>
         <br>
