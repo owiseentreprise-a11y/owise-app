@@ -6,7 +6,10 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient }   from '@/lib/supabase/admin'
 import { envoyerBienvenueChauffeur } from '@/lib/email'
 
-export async function createChauffeur(formData: FormData): Promise<void> {
+export async function createChauffeur(
+  _prev: { error?: string } | null,
+  formData: FormData,
+): Promise<{ error?: string } | null> {
   await requireAdminClient()
   const admin = createAdminClient()
 
@@ -21,6 +24,10 @@ export async function createChauffeur(formData: FormData): Promise<void> {
   const vehicule_modele          = (formData.get('vehicule_modele') as string) || null
   const vehicule_immatriculation = (formData.get('vehicule_immatriculation') as string) || null
 
+  if (!email?.trim() || !password || !nom || !prenom) {
+    return { error: 'Tous les champs obligatoires doivent être remplis.' }
+  }
+
   // 1. Créer le compte Auth avec le bon rôle
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email:         email.trim(),
@@ -32,7 +39,11 @@ export async function createChauffeur(formData: FormData): Promise<void> {
     },
     user_metadata: { prenom, nom },
   })
-  if (authError) throw new Error(authError.message)
+  if (authError) {
+    if (authError.message.toLowerCase().includes('already exists'))
+      return { error: `Un compte existe déjà avec l'adresse ${email.trim()}. Utilisez un autre email.` }
+    return { error: authError.message }
+  }
 
   const userId = authData.user.id
 
@@ -42,7 +53,7 @@ export async function createChauffeur(formData: FormData): Promise<void> {
   })
   if (profileError) {
     await admin.auth.admin.deleteUser(userId)
-    throw new Error(profileError.message)
+    return { error: profileError.message }
   }
 
   // 3. Enregistrement chauffeur
@@ -59,7 +70,7 @@ export async function createChauffeur(formData: FormData): Promise<void> {
   })
   if (chauffeurError) {
     await admin.auth.admin.deleteUser(userId)
-    throw new Error(chauffeurError.message)
+    return { error: chauffeurError.message }
   }
 
   // Email de bienvenue (non bloquant)

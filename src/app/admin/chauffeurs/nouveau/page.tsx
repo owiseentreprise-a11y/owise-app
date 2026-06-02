@@ -1,26 +1,31 @@
+'use client'
+
+import { useActionState } from 'react'
 import { createChauffeur } from './actions'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
 
-export default function NouveauChauffeurPage() {
-  const inputStyle = {
-    background: 'var(--elevated)', border: '1px solid var(--t3)',
-    borderRadius: 8, padding: '10px 14px',
-    fontSize: 13, color: 'var(--t1)',
-    width: '100%', boxSizing: 'border-box' as const,
-    outline: 'none',
-  }
+const inputStyle = {
+  background: 'var(--elevated)', border: '1px solid var(--t3)',
+  borderRadius: 8, padding: '10px 14px',
+  fontSize: 13, color: 'var(--t1)',
+  width: '100%', boxSizing: 'border-box' as const,
+  outline: 'none',
+}
 
-  const labelStyle = {
-    fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase' as const,
-    color: 'var(--t3)', fontWeight: 500, marginBottom: 6, display: 'block',
-  }
+const labelStyle = {
+  fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase' as const,
+  color: 'var(--t3)', fontWeight: 500, marginBottom: 6, display: 'block',
+}
+
+export default function NouveauChauffeurPage() {
+  const [state, formAction, pending] = useActionState(createChauffeur, null)
 
   return (
     <>
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'var(--surface)', 
+        background: 'var(--surface)',
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,
@@ -39,13 +44,21 @@ export default function NouveauChauffeurPage() {
       </div>
 
       <div style={{ padding: '32px', maxWidth: 720 }}>
-        <form action={createChauffeur} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Erreur */}
+          {state?.error && (
+            <div style={{
+              padding: '12px 16px', borderRadius: 10,
+              background: 'rgba(217,84,84,.12)', border: '1px solid rgba(217,84,84,.25)',
+              color: '#D95454', fontSize: 13, fontWeight: 500,
+            }}>
+              ⚠️ {state.error}
+            </div>
+          )}
 
           {/* Compte */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 12, padding: 24,
-          }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: 24 }}>
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 18, fontWeight: 500 }}>
               Compte
             </div>
@@ -62,10 +75,7 @@ export default function NouveauChauffeurPage() {
           </div>
 
           {/* Identité */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 12, padding: 24,
-          }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: 24 }}>
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 18, fontWeight: 500 }}>
               Informations personnelles
             </div>
@@ -86,10 +96,7 @@ export default function NouveauChauffeurPage() {
           </div>
 
           {/* Véhicule */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 12, padding: 24,
-          }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: 24 }}>
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 18, fontWeight: 500 }}>
               Véhicule
             </div>
@@ -127,10 +134,7 @@ export default function NouveauChauffeurPage() {
           </div>
 
           {/* Contrat */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 12, padding: 24,
-          }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: 24 }}>
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 18, fontWeight: 500 }}>
               Contrat
             </div>
@@ -147,17 +151,21 @@ export default function NouveauChauffeurPage() {
           </div>
 
           {/* Submit */}
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <button
               type="submit"
+              disabled={pending}
               style={{
                 padding: '12px 28px', borderRadius: 10,
-                background: 'var(--gold)', color: 'var(--base)',
-                fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+                background: pending ? 'var(--elevated)' : 'var(--gold)',
+                color: pending ? 'var(--t2)' : 'var(--base)',
+                fontSize: 13, fontWeight: 600, border: 'none',
+                cursor: pending ? 'wait' : 'pointer',
                 fontFamily: 'var(--font-dm-sans), sans-serif',
+                transition: 'background .15s',
               }}
             >
-              Créer le compte chauffeur
+              {pending ? 'Création en cours…' : 'Créer le compte chauffeur'}
             </button>
             <a
               href="/admin/chauffeurs"
