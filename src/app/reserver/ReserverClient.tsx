@@ -4,6 +4,7 @@ import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
+import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -156,11 +157,7 @@ async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number
 
 // ── AddressInput ──────────────────────────────────────────────────────────────
 
-type Suggestion = {
-  label: string; postcode?: string; city?: string
-  lat?: number; lng?: number
-  sublabel?: string; isLieu?: boolean
-}
+type Suggestion = AddressSuggestion & { postcode?: string; city?: string }
 
 function AddressInput({
   value, placeholder, icon, onSelect,
@@ -191,23 +188,10 @@ function AddressInput({
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setSuggestions([]); setOpen(false); return }
     setLoading(true)
-    const lieux = searchLieux(q)
     try {
-      const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`)
-      const json = await res.json()
-      const api: Suggestion[] = (json.features ?? []).map((f: any) => ({
-        label:    f.properties.label,
-        postcode: f.properties.postcode ?? '',
-        city:     f.properties.city ?? '',
-        lng:      f.geometry.coordinates[0],
-        lat:      f.geometry.coordinates[1],
-      }))
-      const all = [...lieux, ...api].slice(0, 7)
+      const all = await searchAddresses(q)
       setSuggestions(all)
       setOpen(all.length > 0)
-    } catch {
-      setSuggestions(lieux)
-      setOpen(lieux.length > 0)
     } finally {
       setLoading(false)
     }
@@ -222,12 +206,19 @@ function AddressInput({
     timerRef.current = setTimeout(() => search(q), 280)
   }
 
-  function pick(s: Suggestion) {
+  async function pick(s: Suggestion) {
     setQuery(s.label)
     setSuggestions([])
     setOpen(false)
     setFocused(-1)
-    onSelect({ label: s.label, codePostal: s.postcode ?? '', lat: s.lat, lng: s.lng })
+    // Adresse sélectionnée — récupérer lat/lng si c'est un lieu Google
+    if (s.isGoogle && s.placeId) {
+      onSelect({ label: s.label, codePostal: '' })
+      const details = await fetchPlaceDetails(s.placeId)
+      if (details) onSelect({ label: details.label || s.label, codePostal: details.codePostal, lat: details.lat, lng: details.lng })
+    } else {
+      onSelect({ label: s.label, codePostal: s.postcode ?? '' })
+    }
   }
 
   function handleKey(e: React.KeyboardEvent) {
@@ -299,16 +290,7 @@ function AddressInput({
               onMouseEnter={() => setFocused(i)}
               onMouseLeave={() => setFocused(-1)}
             >
-              {s.isLieu ? (
-                <span style={{ fontSize: 14, flexShrink: 0 }}>
-                  {s.label.toLowerCase().includes('aéroport') || s.label.toLowerCase().includes('aeroport') ? '✈️' : s.label.toLowerCase().includes('gare') ? '🚆' : '📍'}
-                </span>
-              ) : (
-                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#848499" strokeWidth={2} style={{ flexShrink: 0 }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-              )}
+              <span style={{ fontSize: 14, flexShrink: 0 }}>{getSuggestionIcon(s)}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, color: '#09091A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
                 {(s.sublabel || s.postcode) && (

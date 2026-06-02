@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { searchLieux } from '@/lib/lieux'
+import { searchAddresses, getSuggestionIcon } from '@/lib/addressSearch'
 import { soumettreDevis } from '@/app/vitrine/actions'
 
 /* ── vehicles ─────────────────────────────────────────── */
@@ -48,7 +48,7 @@ const VEH_DISPLAY = [
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
-type VtSugg = { label: string; sublabel?: string; isLieu?: boolean }
+import type { AddressSuggestion as VtSugg } from '@/lib/addressSearch'
 
 function VtAddressInput({ value, onChange, placeholder, className, style }: {
   value: string
@@ -73,19 +73,8 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setSugg([]); setOpen(false); return }
-    const lieux = searchLieux(q)
-    try {
-      const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)
-      const json = await res.json()
-      const api: VtSugg[] = (json.features ?? []).map((f: any) => ({
-        label:    f.properties.label,
-        sublabel: f.properties.context,
-      }))
-      const all = [...lieux, ...api].slice(0, 7)
-      setSugg(all); setOpen(all.length > 0)
-    } catch {
-      setSugg(lieux); setOpen(lieux.length > 0)
-    }
+    const all = await searchAddresses(q)
+    setSugg(all); setOpen(all.length > 0)
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -107,12 +96,7 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
     if (e.key === 'Escape') { setOpen(false); setFocused(-1) }
   }
 
-  function getIcon(label: string) {
-    const l = label.toLowerCase()
-    if (l.includes('aéroport') || l.includes('aeroport')) return '✈️'
-    if (l.includes('gare')) return '🚆'
-    return '📍'
-  }
+
 
   return (
     <div ref={wrapRef} style={{ position: 'relative', width: '100%' }}>
@@ -150,7 +134,7 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
               }}
             >
               <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>
-                {s.isLieu ? getIcon(s.label) : '📍'}
+                {getSuggestionIcon(s)}
               </span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: s.isLieu ? 500 : 400, color: '#0A0A0A' }}>{s.label}</div>

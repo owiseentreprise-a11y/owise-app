@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useTransition, useMemo, useCallback } from 'react'
 import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
+import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -123,29 +124,10 @@ function AddressInput({
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setSug([]); setOpen(false); return }
-    const lieux = searchLieux(q)
-    try {
-      const r = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5`)
-      const j = await r.json()
-      // Merge landmarks + API results; landmarks are flagged with __isLieu
-      const api = (j.features ?? []).map((f: any) => ({ ...f, __isLieu: false }))
-      const lieuFeatures = lieux.map(l => ({
-        __isLieu: true,
-        properties: { label: l.label, postcode: '', city: l.sublabel },
-        geometry: { coordinates: [0, 0] },
-      }))
-      setSug([...lieuFeatures, ...api].slice(0, 7))
-      setOpen(lieux.length > 0 || (j.features ?? []).length > 0)
-      setIdx(-1)
-    } catch {
-      const lieuFeatures = lieux.map(l => ({
-        __isLieu: true,
-        properties: { label: l.label, postcode: '', city: l.sublabel },
-        geometry: { coordinates: [0, 0] },
-      }))
-      setSug(lieuFeatures)
-      setOpen(lieuFeatures.length > 0)
-    }
+    const results = await searchAddresses(q)
+    setSug(results)
+    setOpen(results.length > 0)
+    setIdx(-1)
   }, [])
 
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -156,13 +138,16 @@ function AddressInput({
     timerRef.current = setTimeout(() => search(v), 280)
   }
 
-  function pick(f: any) {
-    const label = f.properties.label
-    const cp    = f.properties.postcode ?? ''
-    const [lng, lat] = f.__isLieu ? [undefined, undefined] : f.geometry.coordinates
-    setQuery(label)
-    onChange({ label, codePostal: cp, lat, lng })
+  async function pick(s: any) {
+    setQuery(s.label)
     setSug([]); setOpen(false); setIdx(-1)
+    if (s.isGoogle && s.placeId) {
+      onChange({ label: s.label, codePostal: '' })
+      const details = await fetchPlaceDetails(s.placeId)
+      if (details) onChange({ label: details.label || s.label, codePostal: details.codePostal, lat: details.lat, lng: details.lng })
+    } else {
+      onChange({ label: s.label, codePostal: '' })
+    }
   }
 
   function handleKey(e: React.KeyboardEvent) {
@@ -202,26 +187,18 @@ function AddressInput({
           borderRadius: 8, marginTop: 4, overflow: 'hidden',
           boxShadow: '0 8px 24px rgba(0,0,0,.4)',
         }}>
-          {suggestions.map((f, i) => (
-            <div key={i} onMouseDown={() => pick(f)} style={{
+          {suggestions.map((s, i) => (
+            <div key={i} onMouseDown={() => pick(s)} style={{
               display: 'flex', alignItems: 'flex-start', gap: 6,
               padding: '9px 14px', fontSize: 12, color: 'var(--t1)', cursor: 'pointer',
               background: i === idx ? 'rgba(201,168,76,.12)' : 'transparent',
               borderBottom: i < suggestions.length - 1 ? '1px solid rgba(201,168,76,.06)' : undefined,
             }}>
-              {f.__isLieu ? (
-                <span style={{ marginRight: 8, fontSize: 13 }}>
-                  {f.properties.label.toLowerCase().includes('aéroport') || f.properties.label.toLowerCase().includes('aeroport') ? '✈️' : f.properties.label.toLowerCase().includes('gare') ? '🚆' : '📍'}
-                </span>
-              ) : (
-                <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, marginRight: 8 }}>
-                  {f.properties.postcode}
-                </span>
-              )}
+              <span style={{ marginRight: 8, fontSize: 13 }}>{getSuggestionIcon(s)}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span>{f.properties.label}</span>
-                {f.__isLieu && f.properties.city && (
-                  <span style={{ display: 'block', fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{f.properties.city}</span>
+                <span>{s.label}</span>
+                {s.sublabel && (
+                  <span style={{ display: 'block', fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{s.sublabel}</span>
                 )}
               </span>
             </div>

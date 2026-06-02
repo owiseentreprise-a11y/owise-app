@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { searchLieux } from '@/lib/lieux'
+import { searchAddresses, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 
-type Suggestion = { label: string; sublabel?: string; isLieu?: boolean }
+type Suggestion = AddressSuggestion & { sublabel?: string }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface Props {
@@ -41,25 +41,9 @@ export default function AddressInput({ name, placeholder, value = '', onChange, 
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setSugg([]); setOpen(false); return }
-
-    // Lieux connus en premier
-    const lieux = searchLieux(q)
-
-    // API adresse pour compléter
-    try {
-      const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)
-      const json = await res.json()
-      const api: Suggestion[] = (json.features ?? []).map((f: any) => ({
-        label: f.properties.label,
-        sublabel: f.properties.context,
-      }))
-      const all = [...lieux, ...api].slice(0, 7)
-      setSugg(all)
-      setOpen(all.length > 0)
-    } catch {
-      setSugg(lieux)
-      setOpen(lieux.length > 0)
-    }
+    const all = await searchAddresses(q)
+    setSugg(all)
+    setOpen(all.length > 0)
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -129,7 +113,7 @@ export default function AddressInput({ name, placeholder, value = '', onChange, 
               onMouseLeave={() => setFocused(-1)}
             >
               <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>
-                {s.isLieu ? '✈️' : '📍'}
+                {getSuggestionIcon(s)}
               </span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: s.isLieu ? 500 : 400, color: '#09091A' }}>{s.label}</div>
