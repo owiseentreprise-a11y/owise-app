@@ -70,8 +70,8 @@ export default async function EspaceClientPage({
     ? baseQuery.eq('collaborateur_id', user.id)
     : baseQuery.eq('client_id', user.id)
 
-  // Factures (uniquement pour les clients entreprise, jamais pour les collabs)
-  const facturesQuery = isEntreprise
+  // Factures — uniquement clients entreprise, jamais collaborateurs
+  const facturesQuery = isEntreprise && !isCollab
     ? supabase
         .from('factures')
         .select('id, numero, date_emission, date_echeance, montant_ht, montant_tva, montant_ttc, statut')
@@ -151,8 +151,8 @@ export default async function EspaceClientPage({
         <CollaborateursManager collaborateurs={collaborateurs} />
       )}
 
-      {/* Factures — uniquement pour les clients entreprise */}
-      {isEntreprise && (
+      {/* Factures — uniquement clients entreprise, jamais collaborateurs */}
+      {isEntreprise && !isCollab && (
         <div>
           <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
             Mes factures

@@ -89,6 +89,18 @@ export interface FactureRow {
   created_at: string
 }
 
+export interface CollaborateurRow {
+  id: string
+  client_id: string
+  nom: string | null
+  prenom: string | null
+  tel: string | null
+  email: string | null
+  poste: string | null
+  adresse: string | null
+  created_at: string
+}
+
 export interface DocumentChauffeurRow {
   id: string
   chauffeur_id: string
@@ -118,6 +130,8 @@ export type Course = CourseRow & {
 export type Facture = FactureRow & {
   clients?: ClientRow & { profiles: ProfileRow }
 }
+
+export type Collaborateur = CollaborateurRow
 
 export type DocumentChauffeur = DocumentChauffeurRow
 
@@ -163,6 +177,12 @@ export type Database = {
         Row: DocumentChauffeurRow
         Insert: Omit<DocumentChauffeurRow, 'id' | 'created_at'>
         Update: Partial<Omit<DocumentChauffeurRow, 'id' | 'created_at'>>
+        Relationships: Rel
+      }
+      collaborateurs: {
+        Row: CollaborateurRow
+        Insert: Omit<CollaborateurRow, 'id' | 'created_at'>
+        Update: Partial<Omit<CollaborateurRow, 'id' | 'created_at'>>
         Relationships: Rel
       }
     }
