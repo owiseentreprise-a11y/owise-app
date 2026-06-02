@@ -38,10 +38,10 @@ const SERVICES = [
 
 /* ── vehicles display ──────────────────────────────────── */
 const VEH_DISPLAY = [
-  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'], price:'45 €', bg:'#C8D8EE', badge:null,      img:'/brand_assets/vehicle-berline.jpg.png',          alt:'Berline VTC Owise' },
-  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire', img:'/brand_assets/vehicle-berline-premium.jpg.png', alt:'Berline Premium VTC Owise' },
-  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'], price:'75 €', bg:'#D8D4CA', badge:null,      img:'/brand_assets/vehicle-van7.jpg.png',             alt:'Van 7 places VTC Owise' },
-  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, img:'/brand_assets/vehicle-grand-van.jpg.png',        alt:'Grand Van 8 places VTC Owise' },
+  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'45 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.jpg.png',          alt:'Berline VTC Owise' },
+  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.jpg.png', alt:'Berline Premium VTC Owise' },
+  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.jpg.png',             alt:'Van 7 places VTC Owise' },
+  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.jpg.png',        alt:'Grand Van 8 places VTC Owise' },
 ]
 
 export default function VitrineBody() {
@@ -441,6 +441,7 @@ export default function VitrineBody() {
 
           {/* booking card */}
           <div className="hero-right">
+            <div className="booking-card-wrap">
             <div className="booking-card">
               <div className="bc-header">
                 <span className="bc-title">Estimation rapide</span>
@@ -510,6 +511,7 @@ export default function VitrineBody() {
                 </p>
               </div>
             </div>
+            </div>{/* /booking-card-wrap */}
           </div>
         </div>
 
@@ -574,7 +576,7 @@ export default function VitrineBody() {
         </div>
         <div className="vehicles-grid">
           {VEH_DISPLAY.map((v,i)=>(
-            <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}`} style={v.badge?{borderColor:'rgba(255,255,255,.22)'}:{}}>
+            <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}${v.dark?' vc-dark':''}`} style={v.badge?{borderColor:'rgba(255,255,255,.22)'}:{}}>
               <div className="vc-visual" style={{background:v.bg}}>
                 {v.badge && <span className="vc-badge" style={{position:'absolute',top:12,right:12,zIndex:5,color:'rgba(255,255,255,.82)',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.14)',backdropFilter:'blur(4px)'}}>{v.badge}</span>}
                 <img src={v.img} alt={v.alt} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',display:'block'}}/>

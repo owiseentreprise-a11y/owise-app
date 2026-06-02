@@ -539,15 +539,17 @@ nav.scrolled{
   box-shadow:0 1px 0 rgba(0,0,0,.06),0 4px 32px rgba(0,0,0,.04)!important;
 }
 
-/* ── Animated gradient border sur booking card ─────────── */
-.hero-right::before{
-  content:'';position:absolute;inset:-1.5px;border-radius:21px;z-index:-1;
-  background:linear-gradient(135deg,rgba(201,168,76,.5),rgba(91,143,212,.3),rgba(116,192,200,.3),rgba(201,168,76,.5));
+/* ── Gradient border wrapper (booking card) ────────────── */
+.booking-card-wrap{
+  border-radius:22px;
+  padding:2px;
+  background:linear-gradient(135deg,#C9A84C,#5B8FD4,#74C0C8,#C9A84C);
   background-size:300% 300%;
-  animation:gradBorder 6s ease infinite;
-  filter:blur(1px);
+  animation:gradBorder 5s ease infinite,floatCard 7s ease-in-out .5s infinite;
+  box-shadow:0 32px 88px rgba(0,0,0,.16),0 0 48px rgba(201,168,76,.18);
 }
-.hero-right{position:relative;z-index:0}
+/* supprime l'ancien float qui était sur .booking-card seul */
+.booking-card{animation:none!important}
 
 /* ── Service cards — sweep lumière au hover ────────────── */
 .service-card{position:relative;overflow:hidden}
@@ -618,6 +620,18 @@ nav.scrolled{
 
 /* ── Scroll progress bar gradient ─────────────────────── */
 .scroll-progress{background:linear-gradient(90deg,#C9A84C,#DDB95A,#C9A84C)!important;background-size:200%!important;animation:shimmerBtn 2s linear infinite}
+
+/* ── Cartes véhicules à fond sombre — texte blanc ─────── */
+.vehicle-card.vc-dark .vc-name{color:rgba(255,255,255,.92)!important}
+.vehicle-card.vc-dark .vc-cap{color:rgba(255,255,255,.55)!important}
+.vehicle-card.vc-dark .vc-feat{color:rgba(255,255,255,.6)!important}
+.vehicle-card.vc-dark .vc-feat-dot{background:rgba(61,200,130,.9)!important}
+.vehicle-card.vc-dark .vc-from{color:rgba(255,255,255,.55)!important}
+.vehicle-card.vc-dark .vc-amount{color:#DDB95A!important;-webkit-text-fill-color:#DDB95A!important}
+.vehicle-card.vc-dark .vc-unit{color:rgba(255,255,255,.55)!important}
+.vehicle-card.vc-dark .vc-price{border-top-color:rgba(255,255,255,.1)!important}
+.vehicle-card.vc-dark .vc-badge{color:rgba(255,255,255,.8)!important}
+.vehicle-card.vc-dark:hover{border-color:rgba(201,168,76,.35)!important}
 
 /* ── Reveal variantes directionnelles ─────────────────── */
 .reveal-left{opacity:0;transform:translateX(-32px);transition:opacity .8s ease,transform .8s cubic-bezier(.22,1,.36,1)}
