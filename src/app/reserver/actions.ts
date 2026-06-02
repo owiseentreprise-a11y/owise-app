@@ -24,6 +24,9 @@ export async function createReservationCheckout(data: {
   zone_arrivee_id: string
   aller_retour?: boolean
   date_retour?: string
+  num_vol_train?: string
+  terminal?: string
+  heure_arrivee_vol?: string
 }): Promise<{ error?: string } | void> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey

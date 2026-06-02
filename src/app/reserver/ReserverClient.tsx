@@ -381,8 +381,11 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   const [prenom,    setPrenom]    = useState(profil?.prenom    ?? '')
   const [email,     setEmail]     = useState(profil?.email     ?? '')
   const [telephone, setTelephone] = useState(profil?.telephone ?? '')
-  const [allerRetour, setAllerRetour] = useState(false)
-  const [dateRetour,  setDateRetour]  = useState('')
+  const [allerRetour,  setAllerRetour]  = useState(false)
+  const [dateRetour,   setDateRetour]   = useState('')
+  const [numVolTrain,  setNumVolTrain]  = useState('')
+  const [terminal,     setTerminal]     = useState('')
+  const [heureArrivee, setHeureArrivee] = useState('')
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)
@@ -453,6 +456,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         zone_arrivee_id: zoneArrivee?.id ?? '',
         aller_retour:    allerRetour,
         date_retour:     allerRetour ? dateRetour : '',
+        num_vol_train:   numVolTrain || undefined,
+        terminal:        terminal || undefined,
+        heure_arrivee_vol: heureArrivee || undefined,
       })
       if (result?.error) setStep2Error(`Erreur Stripe: ${result.error}`)
     })
@@ -469,51 +475,105 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
   const labelVehicule = VEHICULES.find(v => v.value === vehicule)?.label ?? vehicule
 
+  // Détection aéroport / gare (zones + fallback labels)
+  const reAero = /aéroport|aeroport|cdg|orly|roissy|beauvais|le bourget/i
+  const reGare = /\bgare\b/i
+  const isAeroDepart  = zoneDepart?.type  === 'aeroport' || reAero.test(depart.label)
+  const isAeroArrivee = zoneArrivee?.type === 'aeroport' || reAero.test(arrivee.label)
+  const isGareDepart  = zoneDepart?.type  === 'gare'     || reGare.test(depart.label)
+  const isGareArrivee = zoneArrivee?.type === 'gare'     || reGare.test(arrivee.label)
+  const showVolInfo   = isAeroDepart || isAeroArrivee || isGareDepart || isGareArrivee
+  const isAero        = isAeroDepart || isAeroArrivee
+  const typeVol       = isAero ? 'vol' : 'train'
+
   // Badge de tarification
   const pricingBadge = useForfait
     ? { label: 'Forfait zone', color: '#4A8ED0' }
     : { label: 'Tarif au km', color: '#C9A84C' }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#0A0A0A' }}>
+    <div style={{ minHeight: '100vh', background: '#09091A', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#EDE8DF' }}>
       <style>{`
-        .res-input:focus { border-color: rgba(201,168,76,.6) !important; border-radius: 10px !important; }
-        .res-input::placeholder { color: rgba(10,10,10,.45); }
+        .res-input { background: rgba(255,255,255,.06) !important; border: 1px solid rgba(201,168,76,.15) !important; color: #EDE8DF !important; }
+        .res-input:focus { border-color: rgba(201,168,76,.5) !important; background: rgba(255,255,255,.08) !important; outline: none !important; }
+        .res-input::placeholder { color: rgba(237,232,223,.3) !important; }
         .veh-card { cursor: pointer; transition: border-color .15s, background .15s; }
-        .veh-card:hover { background: rgba(201,168,76,.06) !important; }
-        .veh-card.active { border-color: rgba(201,168,76,.5) !important; background: rgba(201,168,76,.08) !important; }
+        .veh-card:hover { background: rgba(201,168,76,.06) !important; border-color: rgba(201,168,76,.3) !important; }
+        .veh-card.active { border-color: rgba(201,168,76,.5) !important; background: rgba(201,168,76,.1) !important; }
         .pas-btn:hover { background: rgba(201,168,76,.15) !important; }
-        .pay-btn:hover:not(:disabled) { background: #DDB95A !important; transform: translateY(-1px); }
+        .pay-btn:hover:not(:disabled) { background: #DDB95A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(201,168,76,.4) !important; }
         .back-btn:hover { color: #C9A84C !important; }
         @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
       `}</style>
 
       {/* Header */}
-      <div style={{ borderBottom: '1px solid rgba(0,0,0,.08)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 7, background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#fff' }}>O</div>
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 500, letterSpacing: '.08em', color: '#0A0A0A' }}>OWISE</span>
+      <div style={{
+        borderBottom: '1px solid rgba(201,168,76,.1)',
+        padding: '16px 28px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: '#111128',
+        boxShadow: '0 1px 0 rgba(201,168,76,.08)',
+      }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+          <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
+          <div>
+            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#C9A84C', lineHeight: 1 }}>OWISE</div>
+            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#848499', fontWeight: 400 }}>Transport de prestige</div>
+          </div>
         </a>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {/* Étapes */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {[1, 2].map(s => (
-            <div key={s} style={{ width: s === step ? 24 : 8, height: 8, borderRadius: 4, background: s === step ? '#C9A84C' : s < step ? 'rgba(201,168,76,.4)' : 'rgba(132,132,153,.25)', transition: 'all .3s' }} />
+            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: '50%',
+                background: s <= step ? '#C9A84C' : 'rgba(201,168,76,.12)',
+                border: `1px solid ${s <= step ? '#C9A84C' : 'rgba(201,168,76,.2)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 9, fontWeight: 700,
+                color: s <= step ? '#09091A' : '#848499',
+                transition: 'all .3s',
+              }}>
+                {s < step ? '✓' : s}
+              </div>
+              <span style={{ fontSize: 10, color: s <= step ? '#C9A84C' : '#848499', display: s === 2 ? 'none' : undefined }}>
+                {s === 1 ? 'Trajet' : ''}
+              </span>
+              {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(201,168,76,.2)' }} />}
+            </div>
           ))}
+          <div style={{ fontSize: 10, color: step === 2 ? '#C9A84C' : '#848499', marginLeft: 2 }}>Paiement</div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 20px 80px' }}>
-        <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,#C9A84C,transparent)', marginBottom: 32, borderRadius: 1 }} />
+      <div style={{ maxWidth: 580, margin: '0 auto', padding: '40px 20px 100px' }}>
 
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <div>
-            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 500, color: '#09091A', margin: '0 0 6px' }}>
-              Réservez votre course
-            </h1>
-            <p style={{ fontSize: 13, color: '#848499', margin: '0 0 32px' }}>Service VTC premium — Paris & Île-de-France</p>
+            {/* Titre */}
+            <div style={{ marginBottom: 32, textAlign: 'center' }}>
+              <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: '#C9A84C', fontWeight: 500, marginBottom: 10 }}>
+                Réservation en ligne
+              </div>
+              <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: '#EDE8DF', margin: '0 0 8px', lineHeight: 1.15 }}>
+                Réservez votre course
+              </h1>
+              <p style={{ fontSize: 13, color: '#848499', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
+            </div>
 
-            {/* Adresses */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+            {/* ── Carte Trajet ── */}
+            <div style={{
+              background: '#111128', borderRadius: 14,
+              border: '1px solid rgba(201,168,76,.12)',
+              boxShadow: '0 4px 24px rgba(0,0,0,.4), 0 0 0 1px rgba(201,168,76,.04)',
+              padding: '20px', marginBottom: 16,
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#848499', marginBottom: 16, fontWeight: 500 }}>
+                Itinéraire
+              </div>
+              {/* Adresses */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
               {/* Départ */}
               <div>
                 <FieldLabel>Adresse de départ</FieldLabel>
@@ -548,12 +608,12 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
               {/* Badge mode de tarification */}
               {depart.codePostal && arrivee.codePostal && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 4 }}>
                   <span style={{
                     fontSize: 10, padding: '3px 10px', borderRadius: 10, fontWeight: 500,
                     color: pricingBadge.color,
-                    background: `${pricingBadge.color}18`,
-                    border: `1px solid ${pricingBadge.color}30`,
+                    background: `${pricingBadge.color}14`,
+                    border: `1px solid ${pricingBadge.color}28`,
                     letterSpacing: '.08em', textTransform: 'uppercase',
                   }}>
                     {pricingBadge.label}
@@ -568,95 +628,125 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   )}
                 </div>
               )}
-            </div>
+              </div>{/* fin .gap-14 adresses */}
 
-            {/* Date */}
-            <div style={{ marginBottom: 16 }}>
-              <FieldLabel>Date et heure de prise en charge</FieldLabel>
-              <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark' }}
-                value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
-            </div>
+              {/* Date */}
+              <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
+                <FieldLabel>Date et heure de prise en charge</FieldLabel>
+                <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(201,168,76,.15)', color: '#EDE8DF' }}
+                  value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
+              </div>
 
-            {/* Aller-Retour */}
-            <div style={{ marginBottom: 24 }}>
-              <button type="button"
-                onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13,
-                  border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'rgba(10,10,10,.12)'}`,
-                  background: allerRetour ? 'rgba(201,168,76,.08)' : 'rgba(255,255,255,.5)',
-                  color: allerRetour ? '#C9A84C' : '#848499',
-                  fontWeight: allerRetour ? 600 : 400,
-                  transition: 'all .15s',
-                }}>
-                <span style={{ fontSize: 16 }}>↩</span>
-                Aller-Retour
-                <span style={{
-                  fontSize: 9, padding: '2px 6px', borderRadius: 4, fontWeight: 700, letterSpacing: '.04em',
-                  background: allerRetour ? 'rgba(201,168,76,.2)' : 'rgba(0,0,0,.06)',
-                  color: allerRetour ? '#C9A84C' : '#848499',
-                }}>
-                  {allerRetour ? 'ON' : 'OFF'}
-                </span>
-              </button>
+              {/* Aller-Retour */}
+              <div style={{ marginTop: 12 }}>
+                <button type="button"
+                  onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    padding: '7px 13px', borderRadius: 8, cursor: 'pointer',
+                    fontFamily: 'inherit', fontSize: 12,
+                    border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'rgba(201,168,76,.15)'}`,
+                    background: allerRetour ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.04)',
+                    color: allerRetour ? '#C9A84C' : '#848499',
+                    fontWeight: allerRetour ? 600 : 400, transition: 'all .15s',
+                  }}>
+                  <span style={{ fontSize: 14 }}>↩</span>
+                  Aller-Retour
+                  <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, fontWeight: 700, letterSpacing: '.04em', background: allerRetour ? 'rgba(201,168,76,.25)' : 'rgba(255,255,255,.06)', color: allerRetour ? '#C9A84C' : '#848499' }}>
+                    {allerRetour ? 'ON' : 'OFF'}
+                  </span>
+                </button>
 
-              {allerRetour && (
-                <div style={{
-                  marginTop: 12, padding: '14px 16px', borderRadius: 10,
-                  background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.2)',
-                }}>
-                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499', marginBottom: 8 }}>
-                    Date et heure du retour
+                {allerRetour && (
+                  <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)' }}>
+                    <FieldLabel>Date et heure du retour</FieldLabel>
+                    <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(201,168,76,.15)', color: '#EDE8DF', marginBottom: 10 }}
+                      value={dateRetour} min={date || new Date().toISOString().slice(0, 16)}
+                      onChange={e => setDateRetour(e.target.value)} />
+                    {(depart.label || arrivee.label) && (
+                      <div style={{ fontSize: 11, color: '#848499', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
+                        <span>{arrivee.label || '…'}</span>
+                        <span>→</span>
+                        <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
+                        <span>{depart.label || '…'}</span>
+                        <span style={{ fontSize: 10, opacity: .6 }}>(adresses inversées)</span>
+                      </div>
+                    )}
                   </div>
-                  <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', marginBottom: 10 }}
-                    value={dateRetour} min={date || new Date().toISOString().slice(0, 16)}
-                    onChange={e => setDateRetour(e.target.value)} />
-                  {(depart.label || arrivee.label) && (
-                    <div style={{ fontSize: 11, color: '#848499', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
-                      <span>{arrivee.label || '…'}</span>
-                      <span>→</span>
-                      <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
-                      <span>{depart.label || '…'}</span>
-                      <span style={{ fontSize: 10, color: '#848499', opacity: .7 }}>(adresses inversées)</span>
-                    </div>
-                  )}
-                </div>
               )}
-            </div>
+            </div>{/* fin carte trajet */}
 
-            {/* Véhicule */}
-            <div style={{ marginBottom: 24 }}>
-              <FieldLabel>Type de véhicule</FieldLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* ── Carte Vol / Train — apparaît si aéroport ou gare détecté ── */}
+            {showVolInfo && (
+              <div style={{
+                background: '#111128', borderRadius: 14,
+                border: `1px solid ${isAero ? 'rgba(77,142,212,.25)' : 'rgba(61,184,122,.25)'}`,
+                boxShadow: `0 4px 24px rgba(0,0,0,.4), 0 0 0 1px ${isAero ? 'rgba(77,142,212,.05)' : 'rgba(61,184,122,.05)'}`,
+                padding: '20px', marginBottom: 16,
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? '#4D8ED4' : '#3DB87A' }}>
+                  {isAero ? '✈ Informations de vol' : '🚄 Informations train'}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <FieldLabel>N° de {typeVol}</FieldLabel>
+                    <input className="res-input" value={numVolTrain}
+                      placeholder={isAero ? 'AF1234, EZY8521…' : 'TGV 6423…'}
+                      onChange={e => setNumVolTrain(e.target.value)}
+                      style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
+                  </div>
+                  <div>
+                    <FieldLabel>{isAero ? 'Terminal' : 'Voie / Quai'}</FieldLabel>
+                    <input className="res-input" value={terminal}
+                      placeholder={isAero ? '2E, T1…' : 'Voie 6…'}
+                      onChange={e => setTerminal(e.target.value)}
+                      style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF' }} />
+                  </div>
+                </div>
+                <div>
+                  <FieldLabel>Heure {(isAeroDepart || isGareDepart) ? "d'arrivée" : "de départ"} du {typeVol}</FieldLabel>
+                  <input className="res-input" type="time" value={heureArrivee}
+                    onChange={e => setHeureArrivee(e.target.value)}
+                    style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF', width: '50%' }} />
+                </div>
+              </div>
+            )}
+
+            {/* ── Carte Véhicule + Passagers ── */}
+            <div style={{
+              background: '#111128', borderRadius: 14,
+              border: '1px solid rgba(201,168,76,.12)',
+              boxShadow: '0 4px 24px rgba(0,0,0,.4)',
+              padding: '20px', marginBottom: 16,
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#848499', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
                 {VEHICULES.map(v => (
                   <div key={v.value} className={`veh-card${vehicule === v.value ? ' active' : ''}`}
                     onClick={() => setVehicule(v.value)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(201,168,76,.15)', background: 'rgba(255,255,255,.02)' }}>
-                    <span style={{ fontSize: 20 }}>{v.icon}</span>
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', borderRadius: 10, border: `1px solid ${vehicule === v.value ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'}`, background: vehicule === v.value ? 'rgba(201,168,76,.08)' : 'rgba(255,255,255,.02)', cursor: 'pointer' }}>
+                    <span style={{ fontSize: 22 }}>{v.icon}</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#09091A' }}>{v.label}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#EDE8DF' }}>{v.label}</div>
                       <div style={{ fontSize: 11, color: '#848499' }}>{v.places}</div>
                     </div>
                     {vehicule === v.value && (
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#09091A', fontWeight: 700 }}>✓</div>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#09091A', fontWeight: 700 }}>✓</div>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Passagers */}
-            <div style={{ marginBottom: 28 }}>
-              <FieldLabel>Nombre de passagers</FieldLabel>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
-                  style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
-                <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 600, color: '#09091A', minWidth: 20, textAlign: 'center' }}>{passagers}</span>
-                <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'van' ? 7 : 4, p + 1))}
-                  style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
+              <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16 }}>
+                <FieldLabel>Nombre de passagers</FieldLabel>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
+                  <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: '#EDE8DF', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
+                  <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'van' ? 7 : 4, p + 1))}
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
+                </div>
               </div>
             </div>
 
