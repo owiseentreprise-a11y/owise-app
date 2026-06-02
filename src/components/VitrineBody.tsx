@@ -253,26 +253,35 @@ export default function VitrineBody() {
 
     const countObs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        const el = entry.target as HTMLElement
-        if (!entry.isIntersecting || el.dataset.counted) return
-        el.dataset.counted = '1'
-        const target  = parseFloat(el.dataset.target||'0')
-        const suffix  = el.dataset.suffix || ''
-        const isFloat = el.dataset.float === '1'
-        const dur = 1800
-        const start = performance.now()
-        const tick = (now: number) => {
-          const p = Math.min((now - start) / dur, 1)
-          const ease = 1 - Math.pow(1 - p, 3)
-          const v = target * ease
-          el.textContent = (isFloat ? v.toFixed(1) : Math.round(v)) + (p >= 1 ? suffix : '')
-          if (p < 1) requestAnimationFrame(tick)
-          else el.textContent = (isFloat ? target.toFixed(1) : target) + suffix
-        }
-        requestAnimationFrame(tick)
+        if (!entry.isIntersecting) return
+        const allStats = Array.from(document.querySelectorAll('[data-target]')) as HTMLElement[]
+        allStats.forEach((el, idx) => {
+          if (el.dataset.counted) return
+          el.dataset.counted = '1'
+          const target  = parseFloat(el.dataset.target || '0')
+          const suffix  = el.dataset.suffix || ''
+          const isFloat = el.dataset.float === '1'
+          const delay   = idx * 120
+          const dur     = 2000
+          setTimeout(() => {
+            const start = performance.now()
+            const tick = (now: number) => {
+              const p    = Math.min((now - start) / dur, 1)
+              // ease out quart — démarre vite, ralentit à la fin
+              const ease = 1 - Math.pow(1 - p, 4)
+              const v    = target * ease
+              el.textContent = (isFloat ? v.toFixed(1) : Math.round(v)) + suffix
+              if (p < 1) requestAnimationFrame(tick)
+              else el.textContent = (isFloat ? target.toFixed(1) : String(target)) + suffix
+            }
+            requestAnimationFrame(tick)
+          }, delay)
+        })
+        countObs.disconnect()
       })
-    }, { threshold: 0.3 })
-    document.querySelectorAll('[data-target]').forEach(el => countObs.observe(el))
+    }, { threshold: 0.2 })
+    const firstStat = document.querySelector('[data-target]')
+    if (firstStat) countObs.observe(firstStat)
 
     return () => { revealObs.disconnect(); countObs.disconnect(); clearTimeout(fallback) }
   }, [])
