@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { STATUT_COURSE_COLOR, STATUT_COURSE_LABEL } from '@/lib/types'
+import DispatchRapideButton from '../courses/DispatchRapideButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,18 +33,32 @@ export default async function PlanningPage() {
   const from = new Date(now); from.setHours(0, 0, 0, 0)
   const to   = new Date(now); to.setDate(now.getDate() + 90); to.setHours(23, 59, 59, 999)
 
-  const { data: courses } = await supabase
-    .from('courses')
-    .select(`
-      id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes,
-      clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone)),
-      chauffeurs(profiles(prenom, nom)),
-      collaborateurs(prenom, nom, tel)
-    `)
-    .gte('date_prevue', from.toISOString())
-    .lte('date_prevue', to.toISOString())
-    .not('statut', 'eq', 'annulee')
-    .order('date_prevue', { ascending: true })
+  const [coursesRes, chauffeursRes] = await Promise.all([
+    supabase
+      .from('courses')
+      .select(`
+        id, statut, chauffeur_id, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes,
+        clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone)),
+        chauffeurs(profiles(prenom, nom)),
+        collaborateurs(prenom, nom, tel)
+      `)
+      .gte('date_prevue', from.toISOString())
+      .lte('date_prevue', to.toISOString())
+      .not('statut', 'eq', 'annulee')
+      .order('date_prevue', { ascending: true }),
+    supabase
+      .from('chauffeurs')
+      .select('id, statut, profiles(prenom, nom)')
+      .order('statut'),
+  ])
+
+  const { data: courses } = coursesRes
+  const chauffeursRaw = chauffeursRes.data ?? []
+  const chauffeursList = chauffeursRaw.map((c: any) => ({
+    id: c.id,
+    statut: c.statut,
+    profiles: c.profiles ?? null,
+  }))
 
   const list = courses ?? []
   const todayKey = dateKey(from)
@@ -248,7 +263,7 @@ export default async function PlanningPage() {
                             href={`/admin/courses/${course.id}`}
                             style={{
                               display: 'grid',
-                              gridTemplateColumns: '60px 1fr 160px 140px 40px 80px',
+                              gridTemplateColumns: '60px 1fr 160px 156px 40px 80px',
                               padding: '11px 16px',
                               background: 'var(--surface)',
                               border: `1px solid ${isToday ? 'rgba(201,168,76,.1)' : 'var(--gb)'}`,
@@ -292,12 +307,20 @@ export default async function PlanningPage() {
                               )}
                             </div>
 
-                            {/* Chauffeur */}
-                            <div style={{ fontSize: 11 }}>
-                              {chauffeurNom
-                                ? <span style={{ color: 'var(--t2)' }}>{chauffeurNom}</span>
-                                : <span style={{ color: 'var(--amb)', fontWeight: 500 }}>Non assigné</span>
-                              }
+                            {/* Chauffeur — dispatch inline */}
+                            <div onClick={e => e.preventDefault()}>
+                              {course.statut === 'terminee' || course.statut === 'annulee' ? (
+                                <span style={{ fontSize: 11, color: 'var(--t2)' }}>
+                                  {chauffeurNom ?? '—'}
+                                </span>
+                              ) : (
+                                <DispatchRapideButton
+                                  courseId={course.id}
+                                  chauffeurs={chauffeursList}
+                                  currentChauffeurId={(course as any).chauffeur_id ?? null}
+                                  currentChauffeurNom={chauffeurNom}
+                                />
+                              )}
                             </div>
 
                             {/* Passagers */}
