@@ -279,9 +279,9 @@ function AddressInput({
       {open && suggestions.length > 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-          background: '#111128', border: '1px solid rgba(201,168,76,.25)',
+          background: '#FFFFFF', border: '1px solid rgba(201,168,76,.25)',
           borderTop: 'none', borderRadius: '0 0 10px 10px',
-          overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,.5)',
+          overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,.08)',
         }}>
           {suggestions.map((s, i) => (
             <button
@@ -293,7 +293,7 @@ function AddressInput({
                 width: '100%', padding: '11px 16px',
                 background: i === focused ? 'rgba(201,168,76,.1)' : 'transparent',
                 border: 'none', cursor: 'pointer', textAlign: 'left',
-                borderBottom: i < suggestions.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
+                borderBottom: i < suggestions.length - 1 ? '1px solid rgba(0,0,0,.05)' : 'none',
                 transition: 'background .1s',
               }}
               onMouseEnter={() => setFocused(i)}
@@ -310,9 +310,9 @@ function AddressInput({
                 </svg>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: '#EDE8DF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: '#09091A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
                 {(s.sublabel || s.postcode) && (
-                  <div style={{ fontSize: 10, color: '#848499', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 1 }}>
                     {s.sublabel ?? `${s.postcode} ${s.city}`}
                   </div>
                 )}
@@ -335,7 +335,7 @@ const VEHICULES = [
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: '#848499', marginBottom: 7, fontWeight: 500 }}>
+    <div style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 7, fontWeight: 500 }}>
       {children}
     </div>
   )
@@ -522,33 +522,33 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     : { label: 'Tarif au km', color: '#C9A84C' }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09091A', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#EDE8DF' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#09091A' }}>
       <style>{`
-        .res-input { background: rgba(255,255,255,.06) !important; border: 1px solid rgba(201,168,76,.15) !important; color: #EDE8DF !important; }
-        .res-input:focus { border-color: rgba(201,168,76,.5) !important; background: rgba(255,255,255,.08) !important; outline: none !important; }
-        .res-input::placeholder { color: rgba(237,232,223,.3) !important; }
+        .res-input { background: #FFFFFF !important; border: 1px solid rgba(0,0,0,.12) !important; color: #09091A !important; }
+        .res-input:focus { border-color: rgba(201,168,76,.6) !important; background: #FFFFFF !important; outline: none !important; box-shadow: 0 0 0 3px rgba(201,168,76,.1) !important; }
+        .res-input::placeholder { color: rgba(9,9,26,.35) !important; }
         .veh-card { cursor: pointer; transition: border-color .15s, background .15s; }
-        .veh-card:hover { background: rgba(201,168,76,.06) !important; border-color: rgba(201,168,76,.3) !important; }
-        .veh-card.active { border-color: rgba(201,168,76,.5) !important; background: rgba(201,168,76,.1) !important; }
-        .pas-btn:hover { background: rgba(201,168,76,.15) !important; }
-        .pay-btn:hover:not(:disabled) { background: #DDB95A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(201,168,76,.4) !important; }
-        .back-btn:hover { color: #C9A84C !important; }
+        .veh-card:hover { background: rgba(201,168,76,.05) !important; border-color: rgba(201,168,76,.4) !important; }
+        .veh-card.active { border-color: #C9A84C !important; background: rgba(201,168,76,.08) !important; }
+        .pas-btn:hover { background: rgba(0,0,0,.06) !important; }
+        .pay-btn:hover:not(:disabled) { background: #09091A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.15) !important; }
+        .back-btn:hover { color: #09091A !important; }
         @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
       `}</style>
 
       {/* Header */}
       <div style={{
-        borderBottom: '1px solid rgba(201,168,76,.1)',
+        borderBottom: '1px solid rgba(0,0,0,.08)',
         padding: '16px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: '#111128',
-        boxShadow: '0 1px 0 rgba(201,168,76,.08)',
+        background: '#FFFFFF',
+        boxShadow: '0 1px 8px rgba(0,0,0,.04)',
       }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
           <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           <div>
-            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#C9A84C', lineHeight: 1 }}>OWISE</div>
-            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#848499', fontWeight: 400 }}>Transport de prestige</div>
+            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#09091A', lineHeight: 1 }}>OWISE</div>
+            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#9B9B9B', fontWeight: 400 }}>Transport de prestige</div>
           </div>
         </a>
         {/* Étapes */}
@@ -557,22 +557,22 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: '50%',
-                background: s <= step ? '#C9A84C' : 'rgba(201,168,76,.12)',
-                border: `1px solid ${s <= step ? '#C9A84C' : 'rgba(201,168,76,.2)'}`,
+                background: s <= step ? '#09091A' : 'rgba(0,0,0,.06)',
+                border: `1px solid ${s <= step ? '#09091A' : 'rgba(0,0,0,.12)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 9, fontWeight: 700,
-                color: s <= step ? '#09091A' : '#848499',
+                color: s <= step ? '#FFFFFF' : '#9B9B9B',
                 transition: 'all .3s',
               }}>
                 {s < step ? '✓' : s}
               </div>
-              <span style={{ fontSize: 10, color: s <= step ? '#C9A84C' : '#848499', display: s === 2 ? 'none' : undefined }}>
+              <span style={{ fontSize: 10, color: s <= step ? '#09091A' : '#9B9B9B', display: s === 2 ? 'none' : undefined }}>
                 {s === 1 ? 'Trajet' : ''}
               </span>
-              {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(201,168,76,.2)' }} />}
+              {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(0,0,0,.1)' }} />}
             </div>
           ))}
-          <div style={{ fontSize: 10, color: step === 2 ? '#C9A84C' : '#848499', marginLeft: 2 }}>Paiement</div>
+          <div style={{ fontSize: 10, color: step === 2 ? '#09091A' : '#9B9B9B', marginLeft: 2 }}>Paiement</div>
         </div>
       </div>
 
@@ -586,20 +586,20 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: '#C9A84C', fontWeight: 500, marginBottom: 10 }}>
                 Réservation en ligne
               </div>
-              <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: '#EDE8DF', margin: '0 0 8px', lineHeight: 1.15 }}>
+              <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: '#09091A', margin: '0 0 8px', lineHeight: 1.15 }}>
                 Réservez votre course
               </h1>
-              <p style={{ fontSize: 13, color: '#848499', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
+              <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
             </div>
 
             {/* ── Carte Trajet ── */}
             <div style={{
-              background: '#111128', borderRadius: 14,
-              border: '1px solid rgba(201,168,76,.12)',
-              boxShadow: '0 4px 24px rgba(0,0,0,.4), 0 0 0 1px rgba(201,168,76,.04)',
+              background: '#FFFFFF', borderRadius: 14,
+              border: '1px solid rgba(0,0,0,.08)',
+              boxShadow: '0 2px 16px rgba(0,0,0,.06)',
               padding: '20px', marginBottom: 16,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#848499', marginBottom: 16, fontWeight: 500 }}>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 16, fontWeight: 500 }}>
                 Itinéraire
               </div>
               {/* Adresses */}
@@ -613,8 +613,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                     {zoneDepart
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneDepart.nom}</span>
                       : depart.codePostal
-                        ? <span style={{ color: '#848499' }}>Tarif calculé au km</span>
-                        : <span style={{ color: '#848499' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
+                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
@@ -629,8 +629,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                     {zoneArrivee
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneArrivee.nom}</span>
                       : arrivee.codePostal
-                        ? <span style={{ color: '#848499' }}>Tarif calculé au km</span>
-                        : <span style={{ color: '#848499' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
+                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
@@ -649,7 +649,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                     {pricingBadge.label}
                   </span>
                   {!useForfait && distanceKm !== null && (
-                    <span style={{ fontSize: 11, color: '#848499' }}>{distanceKm} km</span>
+                    <span style={{ fontSize: 11, color: '#6B6B6B' }}>{distanceKm} km</span>
                   )}
                   {!useForfait && loadingRoute && (
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#848499" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
@@ -663,7 +663,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               {/* Date */}
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
                 <FieldLabel>Date et heure de prise en charge</FieldLabel>
-                <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(201,168,76,.15)', color: '#EDE8DF' }}
+                <input className="res-input" type="datetime-local" style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A' }}
                   value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
               </div>
 
@@ -682,7 +682,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   }}>
                   <span style={{ fontSize: 14 }}>↩</span>
                   Aller-Retour
-                  <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, fontWeight: 700, letterSpacing: '.04em', background: allerRetour ? 'rgba(201,168,76,.25)' : 'rgba(255,255,255,.06)', color: allerRetour ? '#C9A84C' : '#848499' }}>
+                  <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, fontWeight: 700, letterSpacing: '.04em', background: allerRetour ? 'rgba(201,168,76,.15)' : 'rgba(0,0,0,.06)', color: allerRetour ? '#C9A84C' : '#9B9B9B' }}>
                     {allerRetour ? 'ON' : 'OFF'}
                   </span>
                 </button>
@@ -690,11 +690,11 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                 {allerRetour && (
                   <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)' }}>
                     <FieldLabel>Date et heure du retour</FieldLabel>
-                    <input className="res-input" type="datetime-local" style={{ ...baseInput, colorScheme: 'dark', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(201,168,76,.15)', color: '#EDE8DF', marginBottom: 10 }}
+                    <input className="res-input" type="datetime-local" style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A', marginBottom: 10 }}
                       value={dateRetour} min={date || new Date().toISOString().slice(0, 16)}
                       onChange={e => setDateRetour(e.target.value)} />
                     {(depart.label || arrivee.label) && (
-                      <div style={{ fontSize: 11, color: '#848499', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
                         <span>{arrivee.label || '…'}</span>
                         <span>→</span>
@@ -711,9 +711,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             {/* ── Carte Vol / Train — apparaît si aéroport ou gare détecté ── */}
             {showVolInfo && (
               <div style={{
-                background: '#111128', borderRadius: 14,
+                background: '#FFFFFF', borderRadius: 14,
                 border: `1px solid ${isAero ? 'rgba(77,142,212,.25)' : 'rgba(61,184,122,.25)'}`,
-                boxShadow: `0 4px 24px rgba(0,0,0,.4), 0 0 0 1px ${isAero ? 'rgba(77,142,212,.05)' : 'rgba(61,184,122,.05)'}`,
+                boxShadow: `0 2px 12px rgba(0,0,0,.06)`,
                 padding: '20px', marginBottom: 16,
               }}>
                 <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? '#4D8ED4' : '#3DB87A' }}>
@@ -725,42 +725,42 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                     <input className="res-input" value={numVolTrain}
                       placeholder={isAero ? 'AF1234, EZY8521…' : 'TGV 6423…'}
                       onChange={e => setNumVolTrain(e.target.value)}
-                      style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
+                      style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
                   </div>
                   <div>
                     <FieldLabel>{isAero ? 'Terminal' : 'Voie / Quai'}</FieldLabel>
                     <input className="res-input" value={terminal}
                       placeholder={isAero ? '2E, T1…' : 'Voie 6…'}
                       onChange={e => setTerminal(e.target.value)}
-                      style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF' }} />
+                      style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A' }} />
                   </div>
                 </div>
                 <div>
                   <FieldLabel>Heure {(isAeroDepart || isGareDepart) ? "d'arrivée" : "de départ"} du {typeVol}</FieldLabel>
                   <input className="res-input" type="time" value={heureArrivee}
                     onChange={e => setHeureArrivee(e.target.value)}
-                    style={{ ...baseInput, background: 'rgba(255,255,255,.05)', border: `1px solid ${isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'}`, color: '#EDE8DF', width: '50%' }} />
+                    style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A', width: '50%' }} />
                 </div>
               </div>
             )}
 
             {/* ── Carte Véhicule + Passagers ── */}
             <div style={{
-              background: '#111128', borderRadius: 14,
-              border: '1px solid rgba(201,168,76,.12)',
-              boxShadow: '0 4px 24px rgba(0,0,0,.4)',
+              background: '#FFFFFF', borderRadius: 14,
+              border: '1px solid rgba(0,0,0,.08)',
+              boxShadow: '0 2px 12px rgba(0,0,0,.06)',
               padding: '20px', marginBottom: 16,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#848499', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
                 {VEHICULES.map(v => (
                   <div key={v.value} className={`veh-card${vehicule === v.value ? ' active' : ''}`}
                     onClick={() => setVehicule(v.value)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', borderRadius: 10, border: `1px solid ${vehicule === v.value ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'}`, background: vehicule === v.value ? 'rgba(201,168,76,.08)' : 'rgba(255,255,255,.02)', cursor: 'pointer' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', borderRadius: 10, border: `1px solid ${vehicule === v.value ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'}`, background: vehicule === v.value ? 'rgba(201,168,76,.08)' : '#FFFFFF', cursor: 'pointer' }}>
                     <span style={{ fontSize: 22 }}>{v.icon}</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: '#EDE8DF' }}>{v.label}</div>
-                      <div style={{ fontSize: 11, color: '#848499' }}>{v.places}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: '#09091A' }}>{v.label}</div>
+                      <div style={{ fontSize: 11, color: '#6B6B6B' }}>{v.places}</div>
                     </div>
                     {vehicule === v.value && (
                       <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#09091A', fontWeight: 700 }}>✓</div>
@@ -774,7 +774,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
                     style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
-                  <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: '#EDE8DF', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
+                  <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: '#09091A', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'van' ? 7 : 4, p + 1))}
                     style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
                 </div>
@@ -791,10 +791,10 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                 marginBottom: 20,
               }}>
                 <div>
-                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6B6B6B' }}>
                     {allerRetour ? 'Prix aller-retour' : 'Prix estimé'}
                   </div>
-                  <div style={{ fontSize: 10, color: '#3F3F5A', marginTop: 3 }}>
+                  <div style={{ fontSize: 10, color: '#9B9B9B', marginTop: 3 }}>
                     {useForfait && zoneDepart && zoneArrivee
                       ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
                       : distanceKm !== null
@@ -806,7 +806,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                 {prixTotal !== null ? (
                   <div style={{ textAlign: 'right' }}>
                     {allerRetour && prix !== null && (
-                      <div style={{ fontSize: 10, color: '#848499', marginBottom: 2 }}>{Math.round(prix)} € × 2</div>
+                      <div style={{ fontSize: 10, color: '#6B6B6B', marginBottom: 2 }}>{Math.round(prix)} € × 2</div>
                     )}
                     <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: '#C9A84C' }}>
                       {Math.round(prixTotal)} €
@@ -827,7 +827,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             )}
 
             <button type="button" onClick={handleStep1} className="pay-btn"
-              style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C9A84C', color: '#09091A', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s' }}>
+              style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s' }}>
               Continuer →
             </button>
           </div>
@@ -837,7 +837,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         {step === 2 && (
           <div>
             <button className="back-btn" type="button" onClick={() => setStep(1)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#848499', marginBottom: 24, padding: 0, transition: 'color .15s' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#6B6B6B', marginBottom: 24, padding: 0, transition: 'color .15s' }}>
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
               </svg>
@@ -847,39 +847,39 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 500, color: '#09091A', margin: '0 0 6px' }}>
               Vos informations
             </h1>
-            <p style={{ fontSize: 13, color: '#848499', margin: '0 0 28px' }}>Un email de confirmation vous sera envoyé après le paiement.</p>
+            <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 28px' }}>Un email de confirmation vous sera envoyé après le paiement.</p>
 
             {/* Récap */}
-            <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 10, padding: '14px 18px', marginBottom: 28 }}>
-              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#848499', marginBottom: 10 }}>Récapitulatif</div>
+            <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, padding: '14px 18px', marginBottom: 28 }}>
+              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 10 }}>Récapitulatif</div>
               <div style={{ fontSize: 13, color: '#09091A', marginBottom: 4 }}>
-                <span style={{ color: '#848499', fontSize: 11 }}>Départ · </span>{depart.label}
+                <span style={{ color: '#6B6B6B', fontSize: 11 }}>Départ · </span>{depart.label}
               </div>
               <div style={{ fontSize: 13, color: '#09091A', marginBottom: 10 }}>
-                <span style={{ color: '#848499', fontSize: 11 }}>Arrivée · </span>{arrivee.label}
+                <span style={{ color: '#6B6B6B', fontSize: 11 }}>Arrivée · </span>{arrivee.label}
               </div>
               <div style={{ display: 'flex', gap: 20, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.06)', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>Date</div>
+                  <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Date</div>
                   <div style={{ fontSize: 12, color: '#09091A' }}>{fmtDate(date)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
+                  <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
                   <div style={{ fontSize: 12, color: '#09091A' }}>{labelVehicule}</div>
                 </div>
                 {!useForfait && distanceKm && (
                   <div>
-                    <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
+                    <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
                     <div style={{ fontSize: 12, color: '#09091A' }}>{distanceKm} km</div>
                   </div>
                 )}
                 {prixTotal !== null && (
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#3F3F5A', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+                    <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>
                       {allerRetour ? 'Total aller-retour' : 'Total'}
                     </div>
                     {allerRetour && prix !== null && (
-                      <div style={{ fontSize: 10, color: '#848499' }}>{Math.round(prix)} € × 2</div>
+                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{Math.round(prix)} € × 2</div>
                     )}
                     <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{Math.round(prixTotal)} €</div>
                   </div>
@@ -918,7 +918,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             )}
 
             <button type="button" onClick={handlePayer} disabled={pending} className="pay-btn"
-              style={{ width: '100%', padding: '16px', borderRadius: 10, background: pending ? 'rgba(201,168,76,.4)' : '#C9A84C', color: '#09091A', fontSize: 14, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              style={{ width: '100%', padding: '16px', borderRadius: 10, background: pending ? 'rgba(9,9,26,.5)' : '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               {pending ? (
                 <>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
@@ -936,7 +936,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               )}
             </button>
 
-            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: '#3F3F5A' }}>
+            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: '#9B9B9B' }}>
               Paiement sécurisé par Stripe · SSL/TLS · Aucune donnée bancaire stockée
             </div>
           </div>
