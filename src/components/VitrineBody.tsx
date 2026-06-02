@@ -167,6 +167,37 @@ export default function VitrineBody() {
     return () => { revealObs.disconnect(); countObs.disconnect() }
   }, [])
 
+  /* ── Parallax souris hero ───────────────────────────────── */
+  useEffect(() => {
+    const hero = document.getElementById('hero')
+    if (!hero) return
+    const orb1 = hero.querySelector<HTMLElement>('.orb-1')
+    const orb2 = hero.querySelector<HTMLElement>('.orb-2')
+    const orb3 = hero.querySelector<HTMLElement>('.orb-3')
+    const rings = hero.querySelector<HTMLElement>('.hero-rings')
+    const onMove = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2
+      const cy = window.innerHeight / 2
+      const dx = (e.clientX - cx) / cx
+      const dy = (e.clientY - cy) / cy
+      if (orb1)  orb1.style.transform  = `translate(${dx * -28}px, ${dy * -20}px) scale(1.12)`
+      if (orb2)  orb2.style.transform  = `translate(${dx *  22}px, ${dy *  18}px)`
+      if (orb3)  orb3.style.transform  = `translate(${dx * -14}px, ${dy *  10}px) scale(1.09)`
+      if (rings) rings.style.transform = `translateY(-52%) rotate(${dx * 4}deg)`
+    }
+    hero.addEventListener('mousemove', onMove)
+    return () => hero.removeEventListener('mousemove', onMove)
+  }, [])
+
+  /* ── Reveal directionnels ────────────────────────────────── */
+  useEffect(() => {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
+    }, { threshold: 0.1 })
+    document.querySelectorAll('.reveal-left,.reveal-right,.reveal-scale').forEach(el => obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
+
   /* ── 3D tilt ─────────────────────────────────────────────── */
   useEffect(() => {
     document.querySelectorAll<HTMLElement>('.tilt-card').forEach(card => {
@@ -578,7 +609,7 @@ export default function VitrineBody() {
             { num:'02', title:'Confirmez la réservation', desc:"Renseignez vos coordonnées et validez. Confirmation immédiate par e-mail avec tous les détails de votre course.", icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> },
             { num:'03', title:'Votre chauffeur arrive', desc:"Le jour J, votre chauffeur est ponctuel et vous attend. Tarif fixe, aucune mauvaise surprise en fin de course.", icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z"/></svg> },
           ].map((s,i)=>(
-            <div key={i} className={`process-step reveal${i>0?' rd'+i:''}`}>
+            <div key={i} className={`process-step reveal${i===0?' reveal-left':i===2?' reveal-right':''}${i>0?' rd'+i:''}`}>
               <div className="process-num chrome-gold-static">{s.num}</div>
               <div className="process-icon">{s.icon}</div>
               <div className="process-step-title">{s.title}</div>
@@ -615,7 +646,7 @@ export default function VitrineBody() {
 
       {/* ENTERPRISE CTA */}
       <section className="enterprise-section">
-        <div className="enterprise-inner reveal">
+        <div className="enterprise-inner reveal reveal-scale">
           <div>
             <div className="ent-label">Comptes entreprises</div>
             <h2 className="ent-title">Vous gérez les<br/>déplacements de votre<br/><em className="chrome-gold-slow">équipe ?</em></h2>
@@ -643,7 +674,7 @@ export default function VitrineBody() {
           <h2 className="section-title">Paris, IDF & Oise<br/><em className="chrome-gold-slow">et tous les aéroports</em></h2>
         </div>
         <div className="zones-grid">
-          <div className="zones-map-wrap reveal">
+          <div className="zones-map-wrap reveal reveal-left">
             <div className="zones-map-grid"/>
             <svg style={{position:'absolute',inset:0,width:'100%',height:'100%'}} viewBox="0 0 400 360" fill="none">
               <ellipse cx="200" cy="180" rx="150" ry="105" stroke="rgba(0,0,0,.08)" strokeWidth="8" fill="none"/>
@@ -667,7 +698,7 @@ export default function VitrineBody() {
             </svg>
             <div className="zones-vignette"/>
           </div>
-          <div className="zones-list reveal rd1">
+          <div className="zones-list reveal reveal-right rd1">
             {[
               { color:'var(--gold)', name:'Paris intramuros', desc:'Tous les arrondissements', tag:'Couverture totale' },
               { color:'var(--green)', name:'Île-de-France', desc:'Versailles, Boulogne, Saint-Denis…', tag:'+15 à 45 min' },

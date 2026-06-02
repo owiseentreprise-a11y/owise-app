@@ -463,3 +463,164 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes ab-pulse{0%,100%{box-shadow:0 0 0 0 rgba(61,184,122,.5)}50%{box-shadow:0 0 0 5px rgba(61,184,122,0)}}
+
+/* ══════════════════════════════════════════════════════════
+   ANIMATIONS PREMIUM — flottement · shimmer · glass · glow
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ─────────────────────────────────────────── */
+@keyframes floatCard{
+  0%,100%{transform:translateY(0) rotate(.2deg)}
+  33%{transform:translateY(-11px) rotate(-.1deg)}
+  66%{transform:translateY(-6px) rotate(.3deg)}
+}
+@keyframes shimmerBtn{
+  0%{background-position:-200% center}
+  100%{background-position:200% center}
+}
+@keyframes btnSweep{
+  0%{left:-80%}50%,100%{left:140%}
+}
+@keyframes cardSweep{
+  from{left:-80%}to{left:140%}
+}
+@keyframes glowBreath{
+  0%,100%{box-shadow:0 20px 60px rgba(0,0,0,.09),0 0 0 0 rgba(201,168,76,0)}
+  50%{box-shadow:0 28px 72px rgba(0,0,0,.12),0 0 32px 4px rgba(201,168,76,.12)}
+}
+@keyframes iconBreath{
+  0%,100%{transform:scale(1);box-shadow:none}
+  50%{transform:scale(1.08);box-shadow:0 0 16px rgba(0,0,0,.08)}
+}
+@keyframes gradBorder{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+@keyframes orbEnhanced1{to{transform:translate(-60px,80px) scale(1.12) rotate(6deg)}}
+@keyframes orbEnhanced2{to{transform:translate(55px,-70px) scale(1.06) rotate(-4deg)}}
+@keyframes orbEnhanced3{to{transform:translate(-40px,60px) scale(1.09) rotate(3deg)}}
+@keyframes floatParticle{
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  10%{opacity:.7}
+  85%{opacity:.5}
+  100%{transform:translateY(-80px) translateX(12px);opacity:0}
+}
+
+/* ── Orbs plus dynamiques ──────────────────────────────── */
+.orb-1{animation:orbEnhanced1 22s ease-in-out infinite alternate!important}
+.orb-2{animation:orbEnhanced2 28s ease-in-out infinite alternate!important}
+.orb-3{animation:orbEnhanced3 20s ease-in-out infinite alternate!important}
+
+/* ── Booking card — flottement après entrée ────────────── */
+.booking-card{animation:floatCard 7s ease-in-out 1.5s infinite,glowBreath 4s ease-in-out 1.5s infinite}
+
+/* ── Bouton primaire — shimmer doré ────────────────────── */
+.btn-primary{
+  background:linear-gradient(110deg,#B8922A 0%,#C9A84C 25%,#DDB95A 40%,#EDD070 50%,#DDB95A 60%,#C9A84C 75%,#B8922A 100%)!important;
+  background-size:250% auto!important;
+  animation:shimmerBtn 2.8s linear infinite;
+}
+
+/* ── Nav CTA — sweep lumineux ──────────────────────────── */
+nav .nav-cta{position:relative;overflow:hidden}
+nav .nav-cta::after{
+  content:'';position:absolute;top:0;left:-80%;
+  width:55%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+  transform:skewX(-12deg);pointer-events:none;
+  animation:btnSweep 3s ease-in-out infinite;
+}
+
+/* ── Nav scrolled — glass morphism renforcé ────────────── */
+nav.scrolled{
+  background:rgba(255,255,255,.82)!important;
+  backdrop-filter:blur(24px) saturate(190%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(190%)!important;
+  box-shadow:0 1px 0 rgba(0,0,0,.06),0 4px 32px rgba(0,0,0,.04)!important;
+}
+
+/* ── Animated gradient border sur booking card ─────────── */
+.hero-right::before{
+  content:'';position:absolute;inset:-1.5px;border-radius:21px;z-index:-1;
+  background:linear-gradient(135deg,rgba(201,168,76,.5),rgba(91,143,212,.3),rgba(116,192,200,.3),rgba(201,168,76,.5));
+  background-size:300% 300%;
+  animation:gradBorder 6s ease infinite;
+  filter:blur(1px);
+}
+.hero-right{position:relative;z-index:0}
+
+/* ── Service cards — sweep lumière au hover ────────────── */
+.service-card{position:relative;overflow:hidden}
+.service-card::before{
+  content:'';position:absolute;top:0;left:-80%;
+  width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
+  transform:skewX(-10deg);pointer-events:none;opacity:0;
+}
+.service-card:hover::before{opacity:1;animation:cardSweep .65s ease forwards}
+.service-card:hover{
+  box-shadow:0 18px 52px rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.06)!important;
+  transform:translateY(-4px)!important;
+}
+
+/* ── Vehicle cards — glow doré ─────────────────────────── */
+.vehicle-card:hover{
+  box-shadow:0 20px 56px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06),0 0 28px rgba(201,168,76,.1)!important;
+  border-color:rgba(201,168,76,.22)!important;
+}
+
+/* ── Process icons — souffle ───────────────────────────── */
+.process-icon{animation:iconBreath 3.5s ease-in-out infinite}
+.process-step:nth-child(2) .process-icon{animation-delay:.8s}
+.process-step:nth-child(3) .process-icon{animation-delay:1.6s}
+
+/* ── Testimonials — lift élégant ───────────────────────── */
+.testimonial-card:hover{transform:translateY(-7px)!important;box-shadow:0 24px 56px rgba(0,0,0,.11)!important}
+.testimonial-card:hover .t-avatar{box-shadow:0 0 0 3px rgba(201,168,76,.3),0 6px 20px rgba(0,0,0,.15)!important}
+
+/* ── Zone items — glow ─────────────────────────────────── */
+.zone-item:hover{background:rgba(255,255,255,.98)!important;box-shadow:0 4px 20px rgba(0,0,0,.07);transform:translateX(4px)}
+.zone-item{transition:border-color .15s,background .15s,transform .2s,box-shadow .2s}
+
+/* ── FAQ items — glow ouverture ────────────────────────── */
+.faq-item.open{box-shadow:0 8px 32px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.09)!important}
+
+/* ── Btn-book (booking widget) ─────────────────────────── */
+.btn-book{position:relative;overflow:hidden}
+.btn-book::after{
+  content:'';position:absolute;top:0;left:-80%;
+  width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  pointer-events:none;
+  animation:btnSweep 2.5s ease-in-out infinite;
+}
+
+/* ── Marquee vitesse + glow ────────────────────────────── */
+.marquee-section{background:linear-gradient(90deg,var(--surface),rgba(247,247,247,.95),var(--surface))}
+
+/* ── Stats — gradient animé sur les chiffres ───────────── */
+.stat-num{
+  background:linear-gradient(90deg,#0A0A0A 0%,#444 40%,#888 50%,#444 60%,#0A0A0A 100%)!important;
+  background-size:250% auto!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  animation:shimmerBtn 4s linear infinite;
+}
+
+/* ── Devis card — ombre ────────────────────────────────── */
+.devis-card{box-shadow:0 12px 60px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.06)!important;transition:box-shadow .3s}
+.devis-card:hover{box-shadow:0 20px 80px rgba(0,0,0,.13),0 4px 16px rgba(0,0,0,.07)!important}
+
+/* ── Float CTA & WA button — enhanced ─────────────────── */
+.float-cta-btn:hover{transform:translateY(-3px)!important;box-shadow:0 16px 40px rgba(0,0,0,.3)!important}
+.wa-btn:hover{transform:translateY(-3px)!important}
+
+/* ── Scroll progress bar gradient ─────────────────────── */
+.scroll-progress{background:linear-gradient(90deg,#C9A84C,#DDB95A,#C9A84C)!important;background-size:200%!important;animation:shimmerBtn 2s linear infinite}
+
+/* ── Reveal variantes directionnelles ─────────────────── */
+.reveal-left{opacity:0;transform:translateX(-32px);transition:opacity .8s ease,transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal-right{opacity:0;transform:translateX(32px);transition:opacity .8s ease,transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal-scale{opacity:0;transform:scale(.93);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+.reveal-left.visible,.reveal-right.visible,.reveal-scale.visible{opacity:1;transform:none}
