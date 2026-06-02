@@ -406,13 +406,11 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart.codePostal,  depart.label])
   const zoneArrivee = useMemo(() => detectZone(arrivee.codePostal, activeZones, arrivee.label), [arrivee.codePostal, arrivee.label])
 
-  // Zones pouvant déclencher un forfait
-  const mightBeForfait = useMemo(() => {
-    const depIsAirport = zoneDepart?.type === 'aeroport'
-    const arrIsAirport = zoneArrivee?.type === 'aeroport'
-    if (depIsAirport || arrIsAirport) return true
-    return !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee)))
-  }, [zoneDepart, zoneArrivee])
+  // Forfait possible uniquement si les DEUX zones sont connues et au moins une est forfait
+  const mightBeForfait = useMemo(() =>
+    !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee))),
+    [zoneDepart, zoneArrivee]
+  )
 
   // Prix forfait — null si montant = 0 (non configuré) ou zones inconnues
   const forfaitPrix = useMemo(() => {
