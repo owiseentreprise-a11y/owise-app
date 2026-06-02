@@ -674,7 +674,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                       </div>
                     )}
                   </div>
-              )}
+                )}
+              </div>{/* fin aller-retour wrapper */}
             </div>{/* fin carte trajet */}
 
             {/* ── Carte Vol / Train — apparaît si aéroport ou gare détecté ── */}
