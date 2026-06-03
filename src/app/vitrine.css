@@ -165,8 +165,9 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 /* SERVICES */
 .services-section{padding:60px 52px 80px;border-bottom:1px solid rgba(0,0,0,.07)}
 .services-inner{max-width:1280px;margin:0 auto}
-.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.service-card{background:var(--surface);border-radius:18px;padding:32px 28px 28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:190px;overflow:hidden;cursor:pointer;transition:box-shadow .22s,transform .18s}
+.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.service-card{background:var(--surface);border-radius:18px;padding:32px 28px 28px 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:220px;overflow:hidden;cursor:pointer;transition:box-shadow .22s,transform .18s}
+.service-card:nth-child(5),.service-card:nth-child(6){grid-column:span 2}
 .service-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(-3px)}
 .sc-dark{background:rgba(29,29,43,0.82);backdrop-filter:blur(12px)}
 .sc-teal{background:rgba(116,192,200,0.78);backdrop-filter:blur(12px)}
@@ -191,7 +192,7 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .service-card:hover .sc-img{transform:translateY(-12px) scale(1.1)}
 .sc-btn-arrow{display:inline-block;transition:transform .2s cubic-bezier(.22,1,.36,1);margin-left:5px;opacity:.7}
 .sc-btn:hover .sc-btn-arrow{transform:translateX(5px);opacity:1}
-@media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr)}.service-card:nth-child(5),.service-card:nth-child(6){grid-column:span 1}}
 @media(max-width:600px){.services-grid{grid-template-columns:1fr}}
 
 /* VEHICLES */
