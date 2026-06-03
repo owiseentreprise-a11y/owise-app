@@ -3,7 +3,21 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { searchAddresses, getSuggestionIcon } from '@/lib/addressSearch'
+import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
+import { LIEUX_CONNUS } from '@/lib/lieux'
+
+type BcAddr = { label: string; lat?: number; lng?: number }
+
+async function fetchOsrmDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
+  if (!dep.lat || !dep.lng || !arr.lat || !arr.lng) return null
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${dep.lng},${dep.lat};${arr.lng},${arr.lat}?overview=false`
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    const json = await res.json()
+    if (json.code !== 'Ok' || !json.routes?.[0]) return null
+    return Math.round(json.routes[0].distance / 100) / 10
+  } catch { return null }
+}
 import { soumettreDevis } from '@/app/vitrine/actions'
 
 /* ── vehicles ─────────────────────────────────────────── */
@@ -50,9 +64,9 @@ const VEH_DISPLAY = [
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
 import type { AddressSuggestion as VtSugg } from '@/lib/addressSearch'
 
-function VtAddressInput({ value, onChange, placeholder, className, style }: {
+function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   value: string
-  onChange: (v: string) => void
+  onSelect: (v: BcAddr) => void
   placeholder?: string
   className?: string
   style?: React.CSSProperties
@@ -78,21 +92,33 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    onChange(e.target.value)
+    onSelect({ label: e.target.value })
     setFocused(-1)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => search(e.target.value), 250)
   }
 
-  function pick(label: string) {
-    onChange(label); setSugg([]); setOpen(false); setFocused(-1)
+  async function pick(s: VtSugg) {
+    setSugg([]); setOpen(false); setFocused(-1)
+    if (s.isLieu) {
+      const lieu = LIEUX_CONNUS.find(l => l.label === s.label)
+      onSelect({ label: s.label, lat: lieu?.lat, lng: lieu?.lng })
+      return
+    }
+    if (s.isGoogle && s.placeId) {
+      onSelect({ label: s.label })
+      const det = await fetchPlaceDetails(s.placeId)
+      if (det) onSelect({ label: det.label || s.label, lat: det.lat, lng: det.lng })
+      return
+    }
+    onSelect({ label: s.label })
   }
 
   function handleKey(e: React.KeyboardEvent) {
     if (!open) return
     if (e.key === 'ArrowDown') { e.preventDefault(); setFocused(f => Math.min(f + 1, sugg.length - 1)) }
     if (e.key === 'ArrowUp')   { e.preventDefault(); setFocused(f => Math.max(f - 1, 0)) }
-    if (e.key === 'Enter' && focused >= 0) { e.preventDefault(); pick(sugg[focused].label) }
+    if (e.key === 'Enter' && focused >= 0) { e.preventDefault(); pick(sugg[focused]) }
     if (e.key === 'Escape') { setOpen(false); setFocused(-1) }
   }
 
@@ -121,7 +147,7 @@ function VtAddressInput({ value, onChange, placeholder, className, style }: {
           {sugg.map((s, i) => (
             <button
               key={i} type="button"
-              onMouseDown={() => pick(s.label)}
+              onMouseDown={() => pick(s)}
               onMouseEnter={() => setFocused(i)}
               onMouseLeave={() => setFocused(-1)}
               style={{
@@ -165,10 +191,12 @@ export default function VitrineBody() {
   const [bcPax,      setBcPax]      = useState(1)
   const [bcEtape,    setBcEtape]    = useState(false)
   const [bcPrice,    setBcPrice]    = useState<number|null>(null)
-  const [bcDepart,   setBcDepart]   = useState('')
-  const [bcArrivee,  setBcArrivee]  = useState('')
+  const [bcLoading,  setBcLoading]  = useState(false)
+  const [bcDepart,   setBcDepart]   = useState<BcAddr>({ label: '' })
+  const [bcArrivee,  setBcArrivee]  = useState<BcAddr>({ label: '' })
   const [bcDate,     setBcDate]     = useState('')
   const [bcTime,     setBcTime]     = useState('09:00')
+  const [bcTarifs,   setBcTarifs]   = useState<any[]>([])
 
   /* devis form */
   const [step,         setStep]        = useState(1)
@@ -228,6 +256,12 @@ export default function VitrineBody() {
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  /* ── tarifs pour le widget estimation ──────────────────── */
+  useEffect(() => {
+    createClient().from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe')
+      .then(({ data }) => { if (data) setBcTarifs(data) })
   }, [])
 
   /* ── cookie banner ──────────────────────────────────────── */
@@ -348,12 +382,38 @@ export default function VitrineBody() {
     return base + maj + suppTotal
   }
 
-  function bcEstimate(): number {
-    const v   = getVehicle(bcPax)
-    const h   = parseInt((bcTime || '09:00').split(':')[0])
-    let base  = v.base
-    const dest = bcArrivee.toLowerCase()
-    if (/aéroport|cdg|orly|roissy|beauvais|bva/i.test(dest)) base += 25
+  async function bcEstimate(): Promise<number> {
+    const v    = getVehicle(bcPax)
+    const h    = parseInt((bcTime || '09:00').split(':')[0])
+    const dest = bcArrivee.label.toLowerCase()
+    const dep  = bcDepart.label.toLowerCase()
+
+    // 1. Forfait aéroport depuis tarifs Supabase
+    const tarif = bcTarifs.find(t => t.vehicule === v.name)
+    if (tarif) {
+      let fixe = 0
+      if (/cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(dep)) fixe = Number(tarif.cdg_fixe)
+      else if (/orly/i.test(dest) || /orly/i.test(dep)) fixe = Number(tarif.orly_fixe)
+      else if (/beauvais/i.test(dest) || /beauvais/i.test(dep)) fixe = Number(tarif.beauvais_fixe)
+      if (fixe > 0) {
+        if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
+        return fixe
+      }
+    }
+
+    // 2. Tarif km via OSRM si coordonnées disponibles
+    if (bcDepart.lat && bcArrivee.lat && tarif) {
+      const distKm = await fetchOsrmDist(bcDepart, bcArrivee)
+      if (distKm !== null) {
+        let prix = Number(tarif.prise_en_charge) + distKm * Number(tarif.prix_km)
+        if (h >= 22 || h < 6) prix = Math.round(prix * 1.2)
+        return Math.round(prix)
+      }
+    }
+
+    // 3. Fallback base price
+    let base = v.base
+    if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
     else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
     if (h >= 22 || h < 6) base = Math.round(base * 1.2)
     return base
@@ -567,7 +627,7 @@ export default function VitrineBody() {
                   <div className="route-connector"/>
                   <div className="binput-row" style={{marginBottom:8}}>
                     <span className="binput-dot s"/>
-                    <VtAddressInput className="binput" placeholder="Adresse de départ…" value={bcDepart} onChange={setBcDepart}/>
+                    <VtAddressInput className="binput" placeholder="Adresse de départ…" value={bcDepart.label} onSelect={setBcDepart}/>
                   </div>
                   {bcEtape && (
                     <div className="binput-row" style={{marginBottom:8}}>
@@ -577,7 +637,7 @@ export default function VitrineBody() {
                   )}
                   <div className="binput-row">
                     <span className="binput-dot e"/>
-                    <VtAddressInput className="binput" placeholder="Destination, aéroport, gare…" value={bcArrivee} onChange={setBcArrivee}/>
+                    <VtAddressInput className="binput" placeholder="Destination, aéroport, gare…" value={bcArrivee.label} onSelect={setBcArrivee}/>
                   </div>
                 </div>
                 <button onClick={()=>setBcEtape(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:'2px 0 6px',transition:'color .15s'}}>
@@ -602,9 +662,9 @@ export default function VitrineBody() {
                     ))}
                   </div>
                 </div>
-                <button className="btn-estimate" onClick={()=>setBcPrice(bcEstimate())}>
+                <button className="btn-estimate" disabled={bcLoading} onClick={async ()=>{ setBcLoading(true); setBcPrice(null); const p=await bcEstimate(); setBcPrice(p); setBcLoading(false) }}>
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                  Calculer mon estimation
+                  {bcLoading ? 'Calcul en cours…' : 'Calculer mon estimation'}
                 </button>
                 {bcPrice !== null && (
                   <div className="bc-price show">
@@ -615,8 +675,8 @@ export default function VitrineBody() {
                 )}
                 <button className="btn-book" onClick={()=>{
                   const p = new URLSearchParams()
-                  if (bcDepart)  p.set('depart',  bcDepart)
-                  if (bcArrivee) p.set('arrivee', bcArrivee)
+                  if (bcDepart.label)  p.set('depart',  bcDepart.label)
+                  if (bcArrivee.label) p.set('arrivee', bcArrivee.label)
                   if (bcDate)    p.set('date',    bcDate)
                   if (bcTime)    p.set('time',    bcTime)
                   p.set('pax', String(bcPax))
@@ -908,7 +968,7 @@ export default function VitrineBody() {
                     <div className="route-dot o"/>
                     <div className="field" style={{flex:1}}>
                       <label>Prise en charge</label>
-                      <VtAddressInput placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onChange={v=>setForm(f=>({...f,origin:v}))}/>
+                      <VtAddressInput placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onSelect={v=>setForm(f=>({...f,origin:v.label}))}/>
                     </div>
                   </div>
                   <div className="route-sep"/>
@@ -925,7 +985,7 @@ export default function VitrineBody() {
                     <div className="route-dot d"/>
                     <div className="field" style={{flex:1}}>
                       <label>Destination</label>
-                      <VtAddressInput placeholder="Destination, aéroport, gare…" value={form.dest} onChange={v=>setForm(f=>({...f,dest:v}))}/>
+                      <VtAddressInput placeholder="Destination, aéroport, gare…" value={form.dest} onSelect={v=>setForm(f=>({...f,dest:v.label}))}/>
                     </div>
                   </div>
                 </div>
