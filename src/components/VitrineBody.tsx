@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
 
@@ -174,7 +173,9 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   )
 }
 
-export default function VitrineBody() {
+type TarifRow = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
+
+export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: TarifRow[] }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -196,7 +197,6 @@ export default function VitrineBody() {
   const [bcArrivee,  setBcArrivee]  = useState<BcAddr>({ label: '' })
   const [bcDate,     setBcDate]     = useState('')
   const [bcTime,     setBcTime]     = useState('09:00')
-  const [bcTarifs,   setBcTarifs]   = useState<any[]>([])
 
   /* devis form */
   const [step,         setStep]        = useState(1)
@@ -258,11 +258,7 @@ export default function VitrineBody() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* ── tarifs pour le widget estimation ──────────────────── */
-  useEffect(() => {
-    createClient().from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe')
-      .then(({ data }) => { if (data) setBcTarifs(data) })
-  }, [])
+  const bcTarifs = tarifsProp
 
   /* ── cookie banner ──────────────────────────────────────── */
   useEffect(() => {
@@ -401,9 +397,20 @@ export default function VitrineBody() {
       }
     }
 
-    // 2. Tarif km via OSRM si coordonnées disponibles
-    if (bcDepart.lat && bcArrivee.lat && tarif) {
-      const distKm = await fetchOsrmDist(bcDepart, bcArrivee)
+    // 2. Tarif km via OSRM — géocode si pas de coordonnées
+    const geocode = async (addr: BcAddr): Promise<BcAddr> => {
+      if (addr.lat) return addr
+      try {
+        const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addr.label)}&limit=1&autocomplete=0`)
+        const json = await res.json()
+        const f    = json.features?.[0]
+        if (f) return { label: addr.label, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0] }
+      } catch {}
+      return addr
+    }
+    if (tarif && bcDepart.label && bcArrivee.label) {
+      const [dep, arr] = await Promise.all([geocode(bcDepart), geocode(bcArrivee)])
+      const distKm = await fetchOsrmDist(dep, arr)
       if (distKm !== null) {
         let prix = Number(tarif.prise_en_charge) + distKm * Number(tarif.prix_km)
         if (h >= 22 || h < 6) prix = Math.round(prix * 1.2)

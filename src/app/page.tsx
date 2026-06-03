@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
 
@@ -82,14 +83,19 @@ const jsonLd = {
   sameAs: ['https://owise.fr'],
 }
 
-export default function VitrinePage() {
+export default async function VitrinePage() {
+  const admin = createAdminClient()
+  const { data: tarifs } = await admin
+    .from('tarifs')
+    .select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe')
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <VitrineBody />
+      <VitrineBody tarifs={tarifs ?? []} />
     </>
   )
 }
