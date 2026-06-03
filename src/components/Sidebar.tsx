@@ -12,6 +12,7 @@ const navItems = [
       { href: '/admin',               label: 'Dashboard',    icon: 'grid'      },
       { href: '/admin/planning',      label: 'Planning',     icon: 'calendar'  },
       { href: '/admin/courses',       label: 'Courses',      icon: 'map'       },
+      { href: '/admin/devis',         label: 'Devis',        icon: 'inbox'     },
       { href: '/admin/chauffeurs',    label: 'Chauffeurs',   icon: 'users'     },
       { href: '/admin/facturation',   label: 'Facturation',  icon: 'file'      },
       { href: '/admin/stats',         label: 'Statistiques', icon: 'bar'       },
@@ -39,6 +40,7 @@ const ICONS: Record<string, React.ReactNode> = {
   bar:       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>,
   truck:     <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 .001M13 16H9m4 0h2m3-5l1.5 2.5M13 5h4l3 6H13V5z"/></svg>,
   tag:       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>,
+  inbox:     <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>,
 }
 
 function NavItem({ item, isActive }: { item: { href: string; label: string; icon: string }; isActive: boolean }) {
