@@ -371,29 +371,31 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
     const v   = getVehicle(p)
     const h   = parseInt((f.time || '09:00').split(':')[0])
     const suppTotal = Object.values(sup).reduce((a,b)=>a+b,0)
+    // Détection aéroport/gare depuis label OU destType (même logique que le widget)
+    const dest = (f.dest || '').toLowerCase()
+    const orig = (f.origin || '').toLowerCase()
+    const isCDG      = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(orig) || f.destType === 'airport'
+    const isOrly     = /orly/i.test(dest) || /orly/i.test(orig)
+    const isBeauvais = /beauvais/i.test(dest) || /beauvais/i.test(orig)
+    const isGare     = /\bgare\b|gare du nord|gare de lyon|montparnasse|saint-lazare/i.test(dest) || f.destType === 'gare'
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
     if (tarif) {
       let base = 0
-      const dest = f.dest.toLowerCase()
-      if (f.destType === 'airport') {
-        if (/orly/i.test(dest))     base = Number(tarif.orly_fixe)
-        else if (/beauvais/i.test(dest)) base = Number(tarif.beauvais_fixe)
-        else                        base = Number(tarif.cdg_fixe)
-        if (!base) base = Number(tarif.prise_en_charge) + 30
-      } else if (f.destType === 'gare') {
-        base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
-      } else {
-        base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
-      }
+      if (isOrly)          base = Number(tarif.orly_fixe)
+      else if (isBeauvais) base = Number(tarif.beauvais_fixe)
+      else if (isCDG)      base = Number(tarif.cdg_fixe)
+      else if (isGare)     base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
+      else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
+      if (!base)           base = Number(tarif.prise_en_charge) + 30
       if (etapeOpen) base += 10
       const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
       return Math.round(base + maj + suppTotal)
     }
     // fallback hardcodé
     let base = v.base
-    if (f.destType === 'airport') base += 25
-    if (f.destType === 'gare')    base += 12
-    if (etapeOpen)                base += 10
+    if (isCDG || isOrly || isBeauvais) base += 25
+    else if (isGare)                   base += 12
+    if (etapeOpen)                     base += 10
     const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
     return base + maj + suppTotal
   }
@@ -1117,7 +1119,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
                   <div className="est-price"><span className="est-cur">€</span><span>{currentEst}</span> <span className="est-ttc">TTC</span></div>
                   <div className="est-details">
                     <span>{currentVeh.name}</span> · <span>
-                      {form.destType==='airport'?'Avec supplément aéroport':form.destType==='gare'?'Avec supplément gare':etapeOpen?'Avec étape intermédiaire':'Course standard'}
+                      {/cdg|roissy|charles de gaulle|orly|beauvais/i.test(form.dest+form.origin)||form.destType==='airport'?'Transfert aéroport':/\bgare\b/i.test(form.dest+form.origin)||form.destType==='gare'?'Transfert gare':etapeOpen?'Avec étape':'Course standard'}
                     </span>
                   </div>
                 </div>
