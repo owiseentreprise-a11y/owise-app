@@ -370,11 +370,30 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
     const sup = overrideSuppls ?? suppls
     const v   = getVehicle(p)
     const h   = parseInt((f.time || '09:00').split(':')[0])
-    let base  = v.base
+    const suppTotal = Object.values(sup).reduce((a,b)=>a+b,0)
+    const tarif = bcTarifs.find(t => t.vehicule === v.name)
+    if (tarif) {
+      let base = 0
+      const dest = f.dest.toLowerCase()
+      if (f.destType === 'airport') {
+        if (/orly/i.test(dest))     base = Number(tarif.orly_fixe)
+        else if (/beauvais/i.test(dest)) base = Number(tarif.beauvais_fixe)
+        else                        base = Number(tarif.cdg_fixe)
+        if (!base) base = Number(tarif.prise_en_charge) + 30
+      } else if (f.destType === 'gare') {
+        base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
+      } else {
+        base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
+      }
+      if (etapeOpen) base += 10
+      const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
+      return Math.round(base + maj + suppTotal)
+    }
+    // fallback hardcodé
+    let base = v.base
     if (f.destType === 'airport') base += 25
     if (f.destType === 'gare')    base += 12
     if (etapeOpen)                base += 10
-    const suppTotal = Object.values(sup).reduce((a,b)=>a+b,0)
     const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
     return base + maj + suppTotal
   }
@@ -457,9 +476,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
       })
       fbLead({ content_category: 'devis', content_name: v.name })
       fbContact()
-      setConfirmRef(ref)
-      setSubmitted(true)
-      setStep(4)
+      const params = new URLSearchParams()
+      if (form.origin) params.set('depart',  form.origin)
+      if (form.dest)   params.set('arrivee', form.dest)
+      if (form.date)   params.set('date',    form.date)
+      if (form.time)   params.set('time',    form.time)
+      params.set('pax', String(pax))
+      router.push('/reserver?' + params.toString())
     } catch {
       setSubmitErr('Erreur lors de l\'envoi. Réessayez ou contactez-nous par WhatsApp.')
     } finally {
