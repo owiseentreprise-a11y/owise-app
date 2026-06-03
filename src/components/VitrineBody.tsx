@@ -18,6 +18,7 @@ async function fetchOsrmDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
   } catch { return null }
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
+import { fbLead, fbContact } from '@/lib/pixel'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -454,6 +455,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
         supplements: supList.length ? supList : null,
         dest_type:   form.destType,
       })
+      fbLead({ content_category: 'devis', content_name: v.name })
+      fbContact()
       setConfirmRef(ref)
       setSubmitted(true)
       setStep(4)

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
+import { fbInitCheckout } from '@/lib/pixel'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -473,6 +474,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     if (!arrivee.codePostal && !zoneArrivee)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
     if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
+    fbInitCheckout({ value: prixTotal ?? undefined, currency: 'EUR', content_category: 'VTC', num_items: 1 })
     setStep(2)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

@@ -1,7 +1,10 @@
 import Link from 'next/link'
+import PurchaseEvent from './PurchaseEvent'
 
 export default function PaiementMerciPage() {
   return (
+    <div>
+      <PurchaseEvent />
     <div style={{
       minHeight: '100vh',
       background: '#F8F6F1',
@@ -129,6 +132,7 @@ export default function PaiementMerciPage() {
           </span>
         </div>
       </div>
+    </div>
     </div>
   )
 }
