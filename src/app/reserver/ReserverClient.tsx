@@ -469,6 +469,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
     if (!date)                 return setStep1Error('Date et heure requises.')
+    if (new Date(date) < new Date()) return setStep1Error('La date de prise en charge doit être dans le futur.')
     // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
     if (!depart.codePostal && !zoneDepart)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
     if (!arrivee.codePostal && !zoneArrivee)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
