@@ -61,6 +61,8 @@ export interface CourseRow {
   client_id: string | null
   chauffeur_id: string | null
   sous_traitant_id: string | null
+  collaborateur_id: string | null
+  facture_id: string | null
   statut: StatutCourse
   adresse_depart: string
   adresse_arrivee: string
@@ -71,6 +73,11 @@ export interface CourseRow {
   prix_final: number | null
   type_vehicule: TypeVehicule
   nb_passagers: number
+  num_vol_train: string | null
+  terminal: string | null
+  heure_arrivee_vol: string | null
+  aller_retour: boolean | null
+  date_retour: string | null
   notes: string | null
   note_client: number | null
   created_at: string
