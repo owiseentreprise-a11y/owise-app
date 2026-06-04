@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Chauffeur } from '@/lib/types'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
 
@@ -14,7 +14,7 @@ const statutBadge = (statut: string) => {
 }
 
 export default async function ChauffeursPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: chauffeurs } = await supabase
     .from('chauffeurs')

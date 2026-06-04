@@ -164,7 +164,30 @@ async function handleNewReservation(meta: Record<string, string>) {
 
   const refCourse = course.id.slice(-6).toUpperCase()
 
-  // 3. Emails
+  // 3. Créer la facture liée au paiement
+  try {
+    const year     = new Date().getFullYear()
+    const ts       = Date.now().toString(36).toUpperCase().slice(-5)
+    const numero   = `OW-${year}-${ts}`
+    const prixTtc  = prix
+    const prixHt   = Math.round((prixTtc / 1.2) * 100) / 100
+    const prixTva  = Math.round((prixTtc - prixHt) * 100) / 100
+    const echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
+    await supabase.from('factures').insert({
+      client_id:     userId,
+      numero,
+      statut:        'payee',
+      montant_ht:    prixHt,
+      montant_tva:   prixTva,
+      montant_ttc:   prixTtc,
+      date_emission: new Date().toISOString().slice(0, 10),
+      date_echeance: echeance,
+    })
+  } catch (err) {
+    console.error('[webhook] facture creation error', err)
+  }
+
+  // 4. Emails
   await Promise.all([
     envoyerConfirmationClient({
       clientEmail: email,

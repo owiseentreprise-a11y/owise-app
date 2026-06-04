@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,7 +7,7 @@ function monthLabel(year: number, month: number) {
 }
 
 export default async function StatsPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const now = new Date()
   // 6 mois glissants (mois courant inclus)

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_COLOR, STATUT_COURSE_LABEL } from '@/lib/types'
 import DispatchRapideButton from '../courses/DispatchRapideButton'
 
@@ -27,7 +27,7 @@ function formatMonthLabel(mk: string) {
 }
 
 export default async function PlanningPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const now = new Date()
   const from = new Date(now); from.setHours(0, 0, 0, 0)

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
 import DashboardRefresh from './DashboardRefresh'
@@ -12,7 +12,7 @@ const STATUT_CHAUFFEUR_STYLE: Record<string, { color: string; bg: string; label:
 }
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const now    = new Date()
   const today  = now.toISOString().split('T')[0]

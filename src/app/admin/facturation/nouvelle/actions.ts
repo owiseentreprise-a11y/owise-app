@@ -36,9 +36,11 @@ export async function creerFacture(formData: FormData): Promise<void> {
     .insert({
       client_id,
       numero,
-      statut: 'en_attente',
+      statut:        'en_attente',
       montant_ht,
+      montant_tva:   Math.round((montant_ttc - montant_ht) * 100) / 100,
       montant_ttc,
+      date_emission: new Date().toISOString().slice(0, 10),
       date_echeance: echeance.toISOString(),
     })
     .select('id')

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import NouvelleFactureForm from './NouvelleFactureForm'
 
 export const dynamic = 'force-dynamic'
 
 export default async function NouvelleFacturePage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [clientsRes, coursesRes, parametresRes] = await Promise.all([
     supabase

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 import FactureActions from './FactureActions'
 
@@ -17,7 +17,7 @@ export default async function FactureDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [factureRes, coursesRes, parametresRes] = await Promise.all([
     supabase

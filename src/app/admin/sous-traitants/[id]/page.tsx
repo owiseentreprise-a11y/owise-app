@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { modifierSousTraitantAction, genererFactureSTAction, marquerFactureSTPayeeAction, creerCompteSTAction, supprimerCompteSTAction } from '../actions'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 
@@ -14,7 +14,7 @@ export default async function SousTraitantDetailPage({
 }) {
   const { id } = await params
   const sp = await searchParams
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [stRes, coursesRes, facturesRes] = await Promise.all([
     supabase.from('sous_traitants').select('*').eq('id', id).single(),

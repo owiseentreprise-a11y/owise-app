@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SousTraitantsPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: sousTraitants } = await supabase
     .from('sous_traitants')

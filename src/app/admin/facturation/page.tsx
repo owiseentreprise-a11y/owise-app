@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Facture } from '@/lib/types'
 
 export const revalidate = 0
@@ -13,7 +13,7 @@ const statutBadge = (statut: string) => {
 }
 
 export default async function FacturationPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: factures } = await supabase
     .from('factures')

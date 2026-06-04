@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import ParametresForm from './ParametresForm'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ParametresPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data } = await supabase
     .from('parametres')

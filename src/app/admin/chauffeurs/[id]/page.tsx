@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getUserEmail }  from '@/lib/supabase/admin'
 import {
   TYPE_VEHICULE_LABEL,
@@ -26,7 +26,7 @@ export default async function ChauffeurDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [chauffeurRes, docsRes, coursesRes, email] = await Promise.all([
     supabase
