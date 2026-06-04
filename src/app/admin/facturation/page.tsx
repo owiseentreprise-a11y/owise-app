@@ -126,71 +126,72 @@ export default async function FacturationPage() {
             const client = (facture as any).clients
             const p = client?.profiles
             const isEntreprise = client?.type_compte === 'entreprise'
+            // Infos du devis converti (stockées dans notes JSON)
+            let nd: any = null
+            try { if ((facture as any).notes) nd = JSON.parse((facture as any).notes) } catch {}
             const nomClient = isEntreprise
               ? (client?.entreprise_nom ?? '—')
-              : `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim() || '—'
-            const emission = new Date(facture.date_emission)
-            const echeance = facture.date_echeance ? new Date(facture.date_echeance) : null
-            const s = statutBadge(facture.statut)
-
+              : `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim()
+              || nd?.societe || nd?.nom || '—'
+            const emission  = new Date(facture.date_emission)
+            const echeance  = facture.date_echeance ? new Date(facture.date_echeance) : null
+            const s         = statutBadge(facture.statut)
             const isOverdue = echeance && echeance < new Date() && facture.statut !== 'payee'
 
             return (
-              <a
-                key={facture.id}
-                href={`/admin/facturation/${facture.id}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '120px 1fr 130px 120px 120px 100px',
-                  padding: '13px 20px',
-                  borderBottom: '1px solid rgba(201,168,76,.04)',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{
-                  fontFamily: 'var(--font-jetbrains), monospace',
-                  fontSize: 11, fontWeight: 500, color: 'var(--gold)',
-                  letterSpacing: '.06em',
-                }}>
+              <a key={facture.id} href={`/admin/facturation/${facture.id}`} style={{
+                display: 'grid',
+                gridTemplateColumns: '120px 1fr 130px 120px 120px 100px',
+                padding: '13px 20px',
+                borderBottom: '1px solid rgba(201,168,76,.04)',
+                alignItems: 'center', textDecoration: 'none', cursor: 'pointer',
+              }}>
+                {/* N° */}
+                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, fontWeight: 500, color: 'var(--gold)', letterSpacing: '.06em' }}>
                   {facture.numero}
                 </div>
 
-                <div style={{ fontSize: 12, color: 'var(--t1)' }}>{nomClient}</div>
+                {/* Client + trajet */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{nomClient}</div>
+                  {nd?.depart && (
+                    <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 2, display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ color: 'var(--grn)', fontSize: 8 }}>●</span>
+                      <span>{nd.depart.split(',')[0]}</span>
+                      <span style={{ color: 'var(--t3)' }}>→</span>
+                      <span style={{ color: 'var(--gold)', fontSize: 8 }}>●</span>
+                      <span>{nd.arrivee?.split(',')[0]}</span>
+                    </div>
+                  )}
+                  {(nd?.vehicule || nd?.tel) && (
+                    <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 1, display: 'flex', gap: 8 }}>
+                      {nd.vehicule && <span>{nd.vehicule}{nd.pax ? ` · ${nd.pax} pax` : ''}</span>}
+                      {nd.date_course && <span>{new Date(nd.date_course).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}{nd.heure ? ` ${nd.heure}` : ''}</span>}
+                      {nd.tel && <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{nd.tel}</span>}
+                    </div>
+                  )}
+                </div>
 
-                <div style={{
-                  fontFamily: 'var(--font-jetbrains), monospace',
-                  fontSize: 11, color: 'var(--t2)',
-                }}>
+                {/* Émission */}
+                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, color: 'var(--t2)' }}>
                   {emission.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                 </div>
 
-                <div style={{
-                  fontFamily: 'var(--font-jetbrains), monospace',
-                  fontSize: 11,
-                  color: isOverdue ? 'var(--red)' : 'var(--t2)',
-                }}>
-                  {echeance
-                    ? echeance.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
-                    : '—'}
+                {/* Échéance */}
+                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, color: isOverdue ? 'var(--red)' : 'var(--t2)' }}>
+                  {echeance ? echeance.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—'}
                 </div>
 
-                <div style={{
-                  textAlign: 'right',
-                  fontFamily: 'var(--font-jetbrains), monospace',
-                  fontSize: 14, color: 'var(--t1)',
-                }}>
+                {/* Montant */}
+                <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 14, color: 'var(--t1)' }}>
                   {facture.montant_ttc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €
                 </div>
 
+                {/* Statut */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <span style={{
-                    fontSize: 9.5, padding: '3px 9px', borderRadius: 4, fontWeight: 500,
-                    border: '1px solid',
-                    color: s.color, background: s.bg,
-                    borderColor: `${s.color}30`,
-                  }}>{s.label}</span>
+                  <span style={{ fontSize: 9.5, padding: '3px 9px', borderRadius: 4, fontWeight: 500, border: '1px solid', color: s.color, background: s.bg, borderColor: `${s.color}30` }}>
+                    {s.label}
+                  </span>
                 </div>
               </a>
             )

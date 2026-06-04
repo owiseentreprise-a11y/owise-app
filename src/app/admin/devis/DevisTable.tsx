@@ -32,9 +32,11 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
     startTransition(async () => {
       try {
         const num = await convertirEnFacture({
-          id: d.id, nom: d.nom, email: d.email, price: d.price,
+          id: d.id, nom: d.nom, tel: d.tel, email: d.email,
+          societe: d.societe, price: d.price,
           origin: d.origin, destination: d.destination,
-          date_course: d.date_course, vehicle: d.vehicle,
+          date_course: d.date_course, heure: d.heure,
+          vehicle: d.vehicle, pax: d.pax,
         })
         setSuccess(num)
         setConfirm(null)

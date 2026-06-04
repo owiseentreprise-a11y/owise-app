@@ -12,17 +12,20 @@ export async function supprimerDevis(id: string) {
 export async function convertirEnFacture(devis: {
   id: string
   nom: string | null
+  tel: string | null
   email: string | null
+  societe: string | null
   price: number | null
   origin: string | null
   destination: string | null
   date_course: string | null
+  heure: string | null
   vehicle: string | null
+  pax: number | null
 }) {
   if (!devis.price) throw new Error('Prix manquant — impossible de créer une facture.')
   const supabase = createAdminClient()
 
-  // Générer un numéro de facture unique
   const year  = new Date().getFullYear()
   const ts    = Date.now().toString(36).toUpperCase().slice(-4)
   const numero = `F-${year}-${ts}`
@@ -34,6 +37,20 @@ export async function convertirEnFacture(devis: {
   const date_emission = new Date().toISOString().slice(0, 10)
   const date_echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
 
+  // Stocker toutes les infos du devis dans notes (JSON)
+  const notes = JSON.stringify({
+    nom:         devis.nom,
+    tel:         devis.tel,
+    email:       devis.email,
+    societe:     devis.societe,
+    depart:      devis.origin,
+    arrivee:     devis.destination,
+    vehicule:    devis.vehicle,
+    pax:         devis.pax,
+    date_course: devis.date_course,
+    heure:       devis.heure,
+  })
+
   const { error } = await supabase.from('factures').insert({
     numero,
     statut:       'en_attente',
@@ -42,6 +59,7 @@ export async function convertirEnFacture(devis: {
     montant_ttc,
     date_emission,
     date_echeance,
+    notes,
     client_id:    null,
   })
 
