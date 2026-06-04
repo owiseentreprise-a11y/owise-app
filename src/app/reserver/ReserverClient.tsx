@@ -703,23 +703,53 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               </div>
 
               {/* Aller-Retour */}
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 16 }}>
                 <button type="button"
                   onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    padding: '7px 13px', borderRadius: 8, cursor: 'pointer',
-                    fontFamily: 'inherit', fontSize: 12,
-                    border: `1px solid ${allerRetour ? 'rgba(201,168,76,.5)' : 'rgba(201,168,76,.15)'}`,
-                    background: allerRetour ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.04)',
-                    color: allerRetour ? '#C9A84C' : '#848499',
-                    fontWeight: allerRetour ? 600 : 400, transition: 'all .15s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    border: `1.5px solid ${allerRetour ? '#C9A84C' : 'rgba(201,168,76,.25)'}`,
+                    background: allerRetour ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.03)',
+                    transition: 'all .15s',
+                    boxShadow: allerRetour ? '0 0 0 3px rgba(201,168,76,.1)' : 'none',
                   }}>
-                  <span style={{ fontSize: 14 }}>↩</span>
-                  Aller-Retour
-                  <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, fontWeight: 700, letterSpacing: '.04em', background: allerRetour ? 'rgba(201,168,76,.15)' : 'rgba(0,0,0,.06)', color: allerRetour ? '#C9A84C' : '#9B9B9B' }}>
-                    {allerRetour ? 'ON' : 'OFF'}
-                  </span>
+                  {/* Gauche */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                      background: allerRetour ? 'rgba(201,168,76,.15)' : 'rgba(0,0,0,.05)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background .15s',
+                    }}>
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={allerRetour ? '#C9A84C' : '#9B9B9B'} strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: allerRetour ? '#C9A84C' : '#09091A' }}>
+                        Ajouter un retour
+                      </div>
+                      <div style={{ fontSize: 11, color: '#9B9B9B', marginTop: 1 }}>
+                        {allerRetour ? 'Prix aller × 2 — même tarif garanti' : 'Économisez avec un trajet retour inclus'}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Toggle switch */}
+                  <div style={{
+                    width: 44, height: 24, borderRadius: 12, flexShrink: 0,
+                    background: allerRetour ? '#C9A84C' : 'rgba(0,0,0,.12)',
+                    position: 'relative', transition: 'background .2s',
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, borderRadius: '50%',
+                      width: 18, height: 18, background: '#fff',
+                      left: allerRetour ? 23 : 3,
+                      transition: 'left .2s',
+                      boxShadow: '0 1px 4px rgba(0,0,0,.2)',
+                    }}/>
+                  </div>
                 </button>
 
                 {allerRetour && (
