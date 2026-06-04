@@ -232,11 +232,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [confirmRef, setConfirmRef] = useState('')
 
   /* ── refs ──────────────────────────────────────────────── */
-  const cursorRef  = useRef<HTMLDivElement>(null)
-  const ringRef    = useRef<HTMLDivElement>(null)
-  const mxRef      = useRef(0); const myRef = useRef(0)
-  const rxRef      = useRef(0); const ryRef = useRef(0)
-  const rafRef     = useRef<number>(0)
+  const cursorRef    = useRef<HTMLDivElement>(null)
+  const ringRef      = useRef<HTMLDivElement>(null)
+  const mxRef        = useRef(0); const myRef = useRef(0)
+  const rxRef        = useRef(0); const ryRef = useRef(0)
+  const rafRef       = useRef<number>(0)
+  const autoEstTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* ── cursor ────────────────────────────────────────────── */
   useEffect(() => {
@@ -332,6 +333,23 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
     return () => { revealObs.disconnect(); countObs.disconnect(); clearTimeout(fallback) }
   }, [])
+
+  /* ── Auto-estimation — se déclenche dès que les 2 adresses sont saisies ── */
+  useEffect(() => {
+    const dep = bcDepart.label.trim()
+    const arr = bcArrivee.label.trim()
+    if (dep.length < 3 || arr.length < 3) return
+    if (autoEstTimer.current) clearTimeout(autoEstTimer.current)
+    autoEstTimer.current = setTimeout(async () => {
+      setBcLoading(true)
+      setBcPrice(null)
+      const p = await bcEstimate()
+      setBcPrice(p)
+      setBcLoading(false)
+    }, 900)
+    return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime])
 
   /* ── Parallax souris hero ───────────────────────────────── */
   useEffect(() => {
@@ -709,10 +727,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     ))}
                   </div>
                 </div>
-                <button className="btn-estimate" disabled={bcLoading} onClick={async ()=>{ setBcLoading(true); setBcPrice(null); const p=await bcEstimate(); setBcPrice(p); setBcLoading(false) }}>
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                  {bcLoading ? 'Calcul en cours…' : 'Calculer mon estimation'}
-                </button>
+                {bcLoading && (
+                  <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',background:'rgba(201,168,76,.06)',borderRadius:10,border:'1px solid rgba(201,168,76,.15)'}}>
+                    <svg style={{animation:'spin 1s linear infinite',flexShrink:0}} width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span style={{fontSize:12,color:'#C9A84C',fontWeight:500}}>Calcul du tarif en cours…</span>
+                  </div>
+                )}
+                {!bcLoading && bcPrice === null && bcDepart.label.length < 3 && (
+                  <div style={{fontSize:11,color:'var(--t2)',textAlign:'center',padding:'8px 0',letterSpacing:'.04em'}}>
+                    Saisissez vos adresses pour voir le prix instantanément
+                  </div>
+                )}
                 {bcPrice !== null && (
                   <div className="bc-price show">
                     <div className="bc-price-label">Estimation TTC</div>
@@ -732,9 +757,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
                   Confirmer la réservation
                 </button>
-                <p style={{fontSize:10,color:'var(--t3)',textAlign:'center',lineHeight:1.6,marginTop:-4}}>
-                  Estimation indicative · Tarif définitif confirmé à la réservation
-                </p>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14,marginTop:4,flexWrap:'wrap'}}>
+                  <span style={{display:'flex',alignItems:'center',gap:4,fontSize:10,color:'var(--t2)'}}>
+                    <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Paiement sécurisé Stripe
+                  </span>
+                  <span style={{width:1,height:10,background:'var(--t3)',flexShrink:0}}/>
+                  <span style={{fontSize:10,color:'var(--t2)'}}>✓ VTC certifié</span>
+                  <span style={{width:1,height:10,background:'var(--t3)',flexShrink:0}}/>
+                  <span style={{fontSize:10,color:'var(--t2)'}}>✓ Annulation gratuite</span>
+                </div>
+                {bcPrice !== null && (
+                  <button onClick={async()=>{setBcLoading(true);setBcPrice(null);const p=await bcEstimate();setBcPrice(p);setBcLoading(false)}} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
+                    ↺ Recalculer
+                  </button>
+                )}
               </div>
             </div>
           </div>{/* /hero-booking-wrap */}

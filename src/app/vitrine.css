@@ -129,6 +129,7 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .btn-book:hover{background:#333333;transform:translateY(-1px)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 .chrome-gold{display:inline-block;color:#C9A84C;font-weight:800}
 .chrome-gold-slow{display:inline;font-style:normal;color:#C9A84C;font-weight:700}
@@ -686,7 +687,7 @@ nav.scrolled{
 /* Lexus photo overlay — ajouter /brand_assets/hero-lexus.jpg */
 .hero-photo-overlay{
   position:absolute;inset:0;
-  background:url('/brand_assets/hero-car.jpg') center 40% / cover no-repeat,
+  background:url('/brand_assets/hero-car.webp') center 40% / cover no-repeat,
              linear-gradient(135deg,#09091A 0%,#14142B 50%,#0A0A1E 100%);
   opacity:0.52;
   filter:saturate(0.75) brightness(0.82);
