@@ -627,11 +627,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {/* HERO */}
       <section className="hero" id="hero">
         <div className="hero-bg">
+          <div className="hero-photo-overlay"/>
+          <div className="hero-vignette"/>
           <span className="orb orb-1"/>
           <span className="orb orb-2"/>
           <span className="orb orb-3"/>
-          <div className="hero-grid-lines"/>
-          <div className="hero-fade-bottom"/>
           <div className="hero-rings">
             <svg width="700" height="700" viewBox="0 0 700 700" fill="none">
               <circle cx="350" cy="350" r="340" stroke="rgba(91,143,212,.1)" strokeWidth="1"/>
@@ -654,41 +654,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           </div>
         </div>
 
-        <div className="hero-inner">
-          <div className="hero-left">
-            <div className="hero-tag">
-              <span className="hero-tag-dot"/>
-              Transport VTC de Prestige · Paris · IDF · Oise · Aéroports
-            </div>
-            <h1 className="hero-title">
-              <span className="line">Voyagez avec</span>
-              <span className="line"><strong className="chrome-gold">l&apos;excellence</strong></span>
-              <span className="line">où que vous alliez</span>
-            </h1>
-            <p className="hero-sub">Chauffeurs professionnels certifiés, véhicules haut de gamme, ponctualité garantie. Pour vos déplacements d&apos;affaires, transferts aéroport et événements — Paris, Île-de-France et l&apos;Oise.</p>
-            <div className="hero-actions">
-              <button className="btn-primary" onClick={()=>scrollTo('#devis')}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
-                Réserver maintenant
-              </button>
-              <button className="btn-secondary" onClick={()=>scrollTo('#vehicules')}>Nos véhicules</button>
-            </div>
-            <div className="hero-trust">
-              {[['4.9 ★','#C9A84C','Note moyenne'],['24/7','#74C0C8','Disponible'],['100%','#5B8FD4','Prix fixe garanti'],['Certifiés','#7B82D6','Professionnels']].map(([v,c,l],i)=>(
-                <span key={i} style={{display:'contents'}}>
-                  {i>0&&<div className="trust-sep"/>}
-                  <div className="trust-item">
-                    <span className="trust-val" style={{color:c}}>{v}</span>
-                    <span className="trust-lbl">{l}</span>
-                  </div>
-                </span>
-              ))}
-            </div>
+        <div className="hero-center">
+          <div className="hero-live-badge">
+            <span className="live-dot"/>
+            Disponible maintenant · Paris, IDF &amp; Oise
           </div>
-
-          {/* booking card */}
-          <div className="hero-right">
-            <div className="booking-card-wrap">
+          <h1 className="hero-headline">
+            Votre chauffeur privé,<br/>
+            <em className="hero-em">où vous le souhaitez.</em>
+          </h1>
+          <div className="hero-booking-wrap">
             <div className="booking-card">
               <div className="bc-header">
                 <span className="bc-title">Estimation rapide</span>
@@ -762,9 +737,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 </p>
               </div>
             </div>
-            </div>{/* /booking-card-wrap */}
+          </div>{/* /hero-booking-wrap */}
+          <div className="hero-trust-bar">
+            <div className="htb-item">★ 4.9 · 500+ courses</div>
+            <div className="htb-sep"/>
+            <div className="htb-item">Prix fixe garanti</div>
+            <div className="htb-sep"/>
+            <div className="htb-item">Disponible 24h/24</div>
+            <div className="htb-sep"/>
+            <div className="htb-item">Annulation gratuite</div>
           </div>
-        </div>
+        </div>{/* /hero-center */}
 
         <div className="scroll-hint">
           <div className="scroll-line"/>
