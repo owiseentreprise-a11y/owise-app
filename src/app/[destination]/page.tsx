@@ -14,6 +14,7 @@ const DESTINATIONS: Record<string, {
   intro: string
   prix: string
   duree: string
+  zones?: { nom: string; cp: string; km: number }[]
   faq: { q: string; a: string }[]
 }> = {
   'vtc-aeroport-cdg': {
@@ -52,19 +53,46 @@ const DESTINATIONS: Record<string, {
   },
   'vtc-creil': {
     slug: 'vtc-creil',
-    title: 'VTC Creil — Chantilly — Senlis',
-    metaTitle: 'VTC Creil, Chantilly, Senlis → CDG Orly Paris | Owise',
-    metaDesc: 'Chauffeur VTC depuis Creil, Chantilly, Senlis et l\'Oise Sud vers CDG, Orly et Paris. Tarif forfaitaire garanti. Disponible 24h/24. Réservez en ligne.',
-    keywords: ['vtc creil','chauffeur privé creil cdg','vtc chantilly','vtc senlis aeroport','vtc oise cdg'],
-    h1: 'VTC depuis Creil, Chantilly & Senlis',
-    intro: 'Votre chauffeur VTC depuis Creil, Chantilly, Senlis, Nogent-sur-Oise et toute l\'Oise Sud vers CDG, Orly ou Paris. Tarif fixe, réservation en 30 secondes.',
+    title: 'VTC Creil & Oise Sud',
+    metaTitle: 'VTC Creil, Senlis, Gouvieux, Saint-Maximin → CDG Orly Paris | Owise',
+    metaDesc: 'Chauffeur VTC depuis Creil, Senlis, Gouvieux, Saint-Maximin, Chantilly, Lamorlaye, Nogent-sur-Oise et toute l\'Oise Sud. Tarif fixe vers CDG, Orly et Paris. 24h/24.',
+    keywords: [
+      'vtc creil','vtc senlis','vtc gouvieux','vtc saint-maximin','vtc lamorlaye',
+      'vtc chantilly cdg','vtc nogent-sur-oise','chauffeur privé creil cdg',
+      'vtc oise cdg','vtc creil orly','taxi creil aéroport','chauffeur privé oise',
+      'vtc montataire','vtc saint-leu-esserent','vtc pont-sainte-maxence',
+      'vtc verneuil-en-halatte','vtc liancourt','vtc rantigny',
+    ],
+    h1: 'VTC Creil, Senlis, Gouvieux & Oise Sud',
+    intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers CDG, Orly, Beauvais et Paris. Disponible 24h/24.',
     prix: 'dès 65€ vers CDG',
     duree: '35–50 min vers CDG',
+    zones: [
+      { nom: 'Creil', cp: '60100', km: 0 },
+      { nom: 'Nogent-sur-Oise', cp: '60180', km: 2.1 },
+      { nom: 'Montataire', cp: '60160', km: 2.9 },
+      { nom: 'Saint-Maximin', cp: '60740', km: 3.6 },
+      { nom: 'Villers-Saint-Paul', cp: '60870', km: 3.9 },
+      { nom: 'Apremont', cp: '60300', km: 4.1 },
+      { nom: 'Verneuil-en-Halatte', cp: '60550', km: 5.1 },
+      { nom: 'Laigneville', cp: '60290', km: 5.1 },
+      { nom: 'Saint-Leu-d\'Esserent', cp: '60340', km: 5.8 },
+      { nom: 'Liancourt', cp: '60140', km: 8.0 },
+      { nom: 'Gouvieux', cp: '60270', km: 8.4 },
+      { nom: 'Chantilly', cp: '60500', km: 8.7 },
+      { nom: 'Fleurines', cp: '60700', km: 8.9 },
+      { nom: 'Rantigny', cp: '60290', km: 8.9 },
+      { nom: 'Senlis', cp: '60300', km: 10.0 },
+      { nom: 'Lamorlaye', cp: '60260', km: 11.2 },
+      { nom: 'Pont-Sainte-Maxence', cp: '60700', km: 12.0 },
+    ],
     faq: [
-      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est à partir de 75€ en berline. Le prix est fixe et garanti, quelle que soit la durée du trajet ou les conditions de circulation.' },
-      { q: 'Desservez-vous Chantilly et Senlis ?', a: 'Oui. Nous couvrons toute l\'Oise Sud : Creil, Chantilly, Senlis, Nogent-sur-Oise, Pont-Sainte-Maxence, Lamorlaye, Gouvieux et toutes les communes alentour.' },
-      { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs très matinaux (avant 6h), le supplément nuit (+20%) s\'applique automatiquement.' },
-      { q: 'Proposez-vous des courses Creil → Orly ?', a: 'Oui. Le forfait Creil → Orly est d\'environ 100€ en berline. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis l\'Oise.' },
+      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est à partir de 75€ en berline, prix fixe garanti. Depuis Senlis, Gouvieux ou Chantilly, comptez également entre 70€ et 80€. Obtenez votre prix exact avec notre estimateur.' },
+      { q: 'Desservez-vous Senlis, Gouvieux et Saint-Maximin ?', a: 'Oui. Nous couvrons toutes les communes dans un rayon de 10 km autour de Creil : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Verneuil-en-Halatte, Saint-Leu-d\'Esserent, Liancourt, Rantigny, Fleurines et plus encore.' },
+      { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
+      { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux, le forfait CDG est d\'environ 75€ en berline. Le prix est identique dans un rayon de 10-12 km autour de Creil — même tarif, même qualité de service.' },
+      { q: 'Proposez-vous des courses vers Orly depuis l\'Oise ?', a: 'Oui. Depuis Creil et ses environs, le forfait Orly est d\'environ 100€ en berline. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis toute l\'Oise Sud.' },
+      { q: 'Couvrez-vous Pont-Sainte-Maxence et Verneuil-en-Halatte ?', a: 'Oui, ces communes sont dans notre zone de desserte. Pont-Sainte-Maxence, Verneuil-en-Halatte, Liancourt et toutes les localités de l\'Oise Sud sont couvertes avec le même niveau de service premium.' },
     ],
   },
   'vtc-chantilly': {
@@ -175,6 +203,26 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
             </div>
           ))}
         </div>
+
+        {/* Grille zones desservies */}
+        {dest.zones && dest.zones.length > 0 && (
+          <>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 16 }}>
+              Communes desservies
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8, marginBottom: 48 }}>
+              {dest.zones.map((z, i) => (
+                <div key={i} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>{z.nom}</div>
+                    <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{z.cp}</div>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, fontFamily: 'monospace' }}>{z.km === 0 ? 'centre' : `${z.km} km`}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* FAQ */}
         <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 24 }}>
