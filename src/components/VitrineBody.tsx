@@ -5,7 +5,23 @@ import { useRouter } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
 
-type BcAddr = { label: string; lat?: number; lng?: number }
+type BcAddr  = { label: string; lat?: number; lng?: number; cp?: string }
+type ZoneMin = { id: string; code: string; type: string; prefixes_postaux: string[] }
+
+function detectZoneMin(cp: string, label: string, zones: ZoneMin[]): ZoneMin | null {
+  const l = label.toLowerCase()
+  if (/charles de gaulle|roissy|\bcdg\b/i.test(l)) return zones.find(z => z.code === 'CDG') ?? null
+  if (/\borly\b/i.test(l))     return zones.find(z => z.code === 'ORY') ?? null
+  if (/\bbeauvais\b/i.test(l)) return zones.find(z => z.code === 'BVA') ?? null
+  if (/\bgare\b/i.test(l))     return zones.find(z => z.type === 'gare') ?? null
+  if (/\bparis\b/i.test(l))    return zones.find(z => z.code === 'Z1')  ?? null
+  if (!cp) return null
+  const sorted = [...zones].sort((a, b) =>
+    Math.max(0, ...b.prefixes_postaux.map(p => p.trim().length)) -
+    Math.max(0, ...a.prefixes_postaux.map(p => p.trim().length))
+  )
+  return sorted.find(z => z.prefixes_postaux.some(p => p.trim() && cp.startsWith(p.trim()))) ?? null
+}
 
 async function fetchOsrmDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
   if (!dep.lat || !dep.lng || !arr.lat || !arr.lng) return null
@@ -176,7 +192,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 
 type TarifRow = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
 
-export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: TarifRow[] }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[] }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -406,17 +422,38 @@ export default function VitrineBody({ tarifs: tarifsProp = [] }: { tarifs?: Tari
     const dest = bcArrivee.label.toLowerCase()
     const dep  = bcDepart.label.toLowerCase()
 
-    // 1. Forfait aéroport depuis tarifs Supabase
+    // 1. Forfait aéroport — uniquement si les DEUX adresses ont une zone connue
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
-    if (tarif) {
-      let fixe = 0
-      if (/cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(dep)) fixe = Number(tarif.cdg_fixe)
-      else if (/orly/i.test(dest) || /orly/i.test(dep)) fixe = Number(tarif.orly_fixe)
-      else if (/beauvais/i.test(dest) || /beauvais/i.test(dep)) fixe = Number(tarif.beauvais_fixe)
-      if (fixe > 0) {
-        if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
-        return fixe
+    const isCDGAddr  = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(dep)
+    const isOrlyAddr = /\borly\b/i.test(dest) || /\borly\b/i.test(dep)
+    const isBVAAddr  = /\bbeauvais\b/i.test(dest) || /\bbeauvais\b/i.test(dep)
+    if (tarif && (isCDGAddr || isOrlyAddr || isBVAAddr)) {
+      // Vérifier que l'autre adresse (non-aéroport) est dans une zone connue
+      const geocode = async (addr: BcAddr): Promise<BcAddr> => {
+        if (addr.lat) return addr
+        try {
+          const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addr.label)}&limit=1&autocomplete=0`)
+          const json = await res.json()
+          const f    = json.features?.[0]
+          if (f) return { label: addr.label, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], cp: f.properties.postcode }
+        } catch {}
+        return addr
       }
+      const airportIsArr = /cdg|roissy|charles de gaulle|orly|beauvais/i.test(bcArrivee.label)
+      const otherRaw = airportIsArr ? bcDepart : bcArrivee
+      const other    = await geocode(otherRaw)
+      const otherZone = detectZoneMin(other.cp ?? '', other.label, zonesProp)
+      if (otherZone) {
+        let fixe = 0
+        if (isCDGAddr)       fixe = Number(tarif.cdg_fixe)
+        else if (isOrlyAddr) fixe = Number(tarif.orly_fixe)
+        else                 fixe = Number(tarif.beauvais_fixe)
+        if (fixe > 0) {
+          if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
+          return fixe
+        }
+      }
+      // Pas de zone connue → on passe au calcul km
     }
 
     // 2. Tarif km via OSRM — géocode si pas de coordonnées
