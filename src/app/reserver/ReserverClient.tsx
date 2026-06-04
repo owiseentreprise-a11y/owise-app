@@ -419,6 +419,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)
+  const datePast = !!date && new Date(date) < new Date()
 
   // Distance OSRM (pour mode km)
   const [distanceKm,   setDistanceKm]   = useState<number | null>(null)
@@ -685,8 +686,20 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               {/* Date */}
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
                 <FieldLabel>Date et heure de prise en charge</FieldLabel>
-                <input className="res-input" type="datetime-local" style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A' }}
+                <input className="res-input" type="datetime-local"
+                  style={{ ...baseInput, background: '#FFFFFF', color: '#09091A',
+                    border: `1px solid ${datePast ? '#D95454' : 'rgba(0,0,0,.12)'}`,
+                    boxShadow: datePast ? '0 0 0 3px rgba(217,84,84,.1)' : 'none',
+                  }}
                   value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
+                {datePast && (
+                  <div style={{ marginTop: 6, fontSize: 11, color: '#D95454', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                    Cette date est déjà passée — choisissez une date future.
+                  </div>
+                )}
               </div>
 
               {/* Aller-Retour */}
