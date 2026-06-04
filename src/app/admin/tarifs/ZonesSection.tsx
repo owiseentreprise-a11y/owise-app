@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateZone, deleteZone, addZone } from './actions'
+import { updateZone, deleteZone, addZone, toggleZoneActive } from './actions'
 
 type Zone = {
   id: string
   code: string
   nom: string
   type: string
+  active?: boolean
   prefixes_postaux: string[]
 }
 
@@ -164,13 +165,17 @@ function ZoneRow({ zone }: { zone: Zone }) {
     )
   }
 
+  const isActive = zone.active !== false
+
   return (
     <div className="zone-row" style={{
       display: 'grid', gridTemplateColumns: '80px 1fr 110px 1fr auto',
       alignItems: 'center', gap: 14, padding: '10px 12px',
       borderBottom: '1px solid rgba(201,168,76,.05)', borderRadius: 6,
+      opacity: isActive ? 1 : 0.45,
+      transition: 'opacity .2s',
     }}>
-      <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, fontWeight: 600, color: 'var(--gold)' }}>
+      <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, fontWeight: 600, color: isActive ? 'var(--gold)' : 'var(--t3)' }}>
         {zone.code}
       </div>
       <div style={{ fontSize: 12, color: 'var(--t1)' }}>{zone.nom}</div>
@@ -184,7 +189,26 @@ function ZoneRow({ zone }: { zone: Zone }) {
       <div style={{ fontSize: 10, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {(zone.prefixes_postaux as string[]).join(', ') || '—'}
       </div>
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {/* Toggle actif/inactif */}
+        <button
+          onClick={() => startTransition(() => toggleZoneActive(zone.id, !isActive))}
+          title={isActive ? 'Désactiver' : 'Activer'}
+          disabled={pending}
+          style={{
+            width: 42, height: 24, borderRadius: 12, cursor: 'pointer', border: 'none',
+            background: isActive ? 'rgba(61,184,122,.25)' : 'rgba(132,132,153,.18)',
+            position: 'relative', transition: 'background .2s', flexShrink: 0,
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: isActive ? 20 : 3,
+            width: 18, height: 18, borderRadius: '50%',
+            background: isActive ? '#3DB87A' : 'var(--t3)',
+            transition: 'left .2s, background .2s',
+            display: 'block',
+          }}/>
+        </button>
         <button
           onClick={() => setEditing(true)}
           title="Modifier"

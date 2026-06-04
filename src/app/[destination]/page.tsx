@@ -271,7 +271,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: zones }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-    admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS'),
+    admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
   ])
 
   const jsonLd = {

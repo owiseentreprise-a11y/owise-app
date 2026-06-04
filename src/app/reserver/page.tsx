@@ -10,7 +10,7 @@ export default async function ReserverPage() {
 
   const [{ data: { user } }, zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
     supabase.auth.getUser(),
-    admin.from('zones').select('*').order('ordre'),
+    admin.from('zones').select('*').eq('active', true).order('ordre'),
     admin.from('grilles_tarifaires').select('*'),
     admin.from('parametres').select('*').eq('id', true).single(),
     admin.from('tarifs').select('*'),

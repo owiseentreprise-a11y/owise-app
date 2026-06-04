@@ -69,6 +69,13 @@ export async function updateZone(
   revalidatePath('/admin/tarifs')
 }
 
+export async function toggleZoneActive(id: string, active: boolean): Promise<void> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  await supabase.from('zones').update({ active }).eq('id', id)
+  revalidatePath('/admin/tarifs')
+}
+
 export async function deleteZone(id: string): Promise<void> {
   await requireAdminClient()
   const supabase = createAdminClient()
