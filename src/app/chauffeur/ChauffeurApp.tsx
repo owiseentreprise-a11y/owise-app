@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur } from '@/lib/types'
 import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
 import { useFcmRegistration } from './useFcmRegistration'
+import { soundNouvelleCourse, soundConfirmation, soundTerminee, resumeAudioCtx } from '@/lib/sound'
 
 const ETAPES: { statut: StatutCourse; label: string; action: string; color: string }[] = [
   { statut: 'acceptee',        label: 'Course acceptée',  action: 'Départ vers le client', color: 'var(--blu)' },
@@ -69,12 +70,25 @@ export default function ChauffeurApp({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  useFcmRegistration()  // Demande permission + enregistre token FCM au montage
+  useFcmRegistration()
   const [dispo, setDispo] = useState<StatutChauffeur>(profile?.chauffeurs?.statut ?? 'hors_ligne')
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [soundEnabled, setSoundEnabled] = useState(true)
 
-  // Realtime : refresh immédiat à chaque changement de course assignée
+  // Refs pour détecter les changements et déclencher les sons
+  const prevPendingId  = useRef<string | null>(null)
+  const prevActiveId   = useRef<string | null>(null)
+  const prevStatut     = useRef<StatutCourse | null>(null)
+
+  // Réveille le contexte audio dès la première interaction
+  useEffect(() => {
+    const handler = () => resumeAudioCtx()
+    document.addEventListener('click', handler, { once: true })
+    document.addEventListener('touchstart', handler, { once: true })
+  }, [])
+
+  // Realtime : refresh + sons sur changements de courses
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
@@ -87,14 +101,36 @@ export default function ChauffeurApp({
       }, () => router.refresh())
       .subscribe()
 
-    // Fallback polling 60s si la WebSocket tombe
     const fallback = setInterval(() => router.refresh(), 60_000)
-
-    return () => {
-      supabase.removeChannel(channel)
-      clearInterval(fallback)
-    }
+    return () => { supabase.removeChannel(channel); clearInterval(fallback) }
   }, [userId, router])
+
+  // Détection des changements → sons
+  useEffect(() => {
+    const pendingId = courses.find(c => c.statut === 'en_attente')?.id ?? null
+    const active    = courses.find(c => ['en_route','prise_en_charge','acceptee'].includes(c.statut)) ?? null
+
+    // Nouvelle course en attente → son urgent
+    if (pendingId && pendingId !== prevPendingId.current) {
+      if (soundEnabled) soundNouvelleCourse()
+    }
+    prevPendingId.current = pendingId
+
+    // Changement de statut course active → son de confirmation ou terminée
+    if (active) {
+      if (active.id !== prevActiveId.current || active.statut !== prevStatut.current) {
+        if (prevActiveId.current !== null && soundEnabled) {
+          if (active.statut === 'terminee') soundTerminee()
+          else soundConfirmation()
+        }
+      }
+      prevActiveId.current = active.id
+      prevStatut.current   = active.statut
+    } else {
+      prevActiveId.current = null
+      prevStatut.current   = null
+    }
+  }, [courses, soundEnabled])
 
   // Séparer course entrante (en_attente) des courses actives
   const todayStr = new Date().toDateString()
@@ -211,6 +247,31 @@ export default function ChauffeurApp({
 
           {/* Actions droite */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Bouton son */}
+            <button
+              onClick={() => { resumeAudioCtx(); setSoundEnabled(v => !v) }}
+              title={soundEnabled ? 'Couper le son' : 'Activer le son'}
+              style={{
+                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                background: soundEnabled ? 'rgba(201,168,76,.12)' : 'var(--elevated)',
+                border: `1px solid ${soundEnabled ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
+                color: soundEnabled ? 'var(--gold)' : 'var(--t3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+            >
+              {soundEnabled ? (
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+                </svg>
+              ) : (
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              )}
+            </button>
             <button
               onClick={toggleDispo}
               disabled={dispo === 'en_course'}
