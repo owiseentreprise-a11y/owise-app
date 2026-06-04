@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
-import DashboardRefresh from './DashboardRefresh'
+import AdminRealtime from './AdminRealtime'
 
 export const dynamic = 'force-dynamic'
 
@@ -97,7 +97,7 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <DashboardRefresh intervalMs={30000} />
+      <AdminRealtime intervalMs={30000} />
 
       {/* Topbar */}
       <div style={{

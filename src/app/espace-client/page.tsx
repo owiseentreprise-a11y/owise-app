@@ -3,6 +3,7 @@ import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import DemanderCourseClient from './DemanderCourseClient'
 import CollaborateursManager from './CollaborateursManager'
 import NotationCourse from './NotationCourse'
+import ClientRealtime from './ClientRealtime'
 
 export const dynamic = 'force-dynamic'
 
@@ -105,6 +106,7 @@ export default async function EspaceClientPage({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <ClientRealtime userId={user.id} />
 
       {/* Demande de course */}
       <DemanderCourseClient
