@@ -29,7 +29,7 @@ export async function convertirEnFacture(devis: {
 
   const montant_ttc = Number(devis.price)
   const montant_ht  = Math.round((montant_ttc / 1.2) * 100) / 100
-  const montant_tva = Math.round((montant_ttc - montant_ht) * 100) / 100
+  const tva = Math.round((montant_ttc - montant_ht) * 100) / 100
 
   const date_emission = new Date().toISOString().slice(0, 10)
   const date_echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
@@ -38,7 +38,7 @@ export async function convertirEnFacture(devis: {
     numero,
     statut:       'en_attente',
     montant_ht,
-    montant_tva,
+    tva,
     montant_ttc,
     date_emission,
     date_echeance,

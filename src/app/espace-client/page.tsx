@@ -75,7 +75,7 @@ export default async function EspaceClientPage({
   const facturesQuery = isEntreprise && !isCollab
     ? supabase
         .from('factures')
-        .select('id, numero, date_emission, date_echeance, montant_ht, montant_tva, montant_ttc, statut')
+        .select('id, numero, date_emission, date_echeance, montant_ht, tva, montant_ttc, statut')
         .eq('client_id', user.id)
         .order('date_emission', { ascending: false })
         .limit(20)

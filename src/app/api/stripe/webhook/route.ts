@@ -178,7 +178,7 @@ async function handleNewReservation(meta: Record<string, string>) {
       numero,
       statut:        'payee',
       montant_ht:    prixHt,
-      montant_tva:   prixTva,
+      tva:   prixTva,
       montant_ttc:   prixTtc,
       date_emission: new Date().toISOString().slice(0, 10),
       date_echeance: echeance,

@@ -257,7 +257,7 @@ export default async function ClientFacturePage({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: 'var(--t2)' }}>TVA</span>
               <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t2)' }}>
-                {Number(facture.montant_tva).toFixed(2)} €
+                {Number(facture.tva).toFixed(2)} €
               </span>
             </div>
             <div style={{ height: 1, background: 'rgba(201,168,76,.12)', margin: '4px 0' }} />
