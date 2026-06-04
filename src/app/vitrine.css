@@ -686,10 +686,10 @@ nav.scrolled{
 /* Lexus photo overlay — ajouter /brand_assets/hero-lexus.jpg */
 .hero-photo-overlay{
   position:absolute;inset:0;
-  background:url('/brand_assets/hero-car.jpg') center 55% / cover no-repeat,
+  background:url('/brand_assets/hero-car.jpg') center 40% / cover no-repeat,
              linear-gradient(135deg,#09091A 0%,#14142B 50%,#0A0A1E 100%);
-  opacity:0.38;
-  filter:saturate(0.55) brightness(0.75);
+  opacity:0.52;
+  filter:saturate(0.75) brightness(0.82);
 }
 
 /* Vignette cinématique */
