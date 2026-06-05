@@ -1078,29 +1078,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <h2 className="section-title">Paris, IDF & Oise<br/><em className="chrome-gold-slow">et tous les aéroports</em></h2>
         </div>
         <div className="zones-grid">
-          <div className="zones-map-wrap reveal reveal-left">
-            <div className="zones-map-grid"/>
-            <svg style={{position:'absolute',inset:0,width:'100%',height:'100%'}} viewBox="0 0 400 360" fill="none">
-              <ellipse cx="200" cy="180" rx="150" ry="105" stroke="rgba(0,0,0,.08)" strokeWidth="8" fill="none"/>
-              <ellipse cx="200" cy="180" rx="95" ry="68" stroke="rgba(0,0,0,.12)" strokeWidth="3" fill="none"/>
-              <ellipse cx="200" cy="180" rx="44" ry="32" fill="rgba(0,0,0,.05)" stroke="rgba(0,0,0,.2)" strokeWidth="1.5"/>
-              <text x="200" y="184" fontFamily="DM Sans" fontSize="9" fill="rgba(0,0,0,.65)" textAnchor="middle" letterSpacing="2">PARIS</text>
-              <circle cx="148" cy="108" r="6" fill="rgba(74,142,208,.85)"/>
-              <text x="148" y="96" fontFamily="DM Sans" fontSize="8" fill="rgba(74,142,208,.75)" textAnchor="middle">CDG</text>
-              <circle cx="188" cy="272" r="6" fill="rgba(74,142,208,.85)"/>
-              <text x="188" y="286" fontFamily="DM Sans" fontSize="8" fill="rgba(74,142,208,.75)" textAnchor="middle">Orly</text>
-              <circle cx="68" cy="60" r="5" fill="rgba(74,142,208,.7)"/>
-              <text x="68" y="50" fontFamily="DM Sans" fontSize="7" fill="rgba(74,142,208,.65)" textAnchor="middle">BVA</text>
-              <circle cx="78" cy="188" r="5" fill="rgba(60,196,124,.7)"/>
-              <text x="54" y="191" fontFamily="DM Sans" fontSize="7" fill="rgba(60,196,124,.6)" textAnchor="middle">Versailles</text>
-              <circle cx="338" cy="82" r="5" fill="rgba(232,160,48,.75)"/>
-              <text x="356" y="85" fontFamily="DM Sans" fontSize="7" fill="rgba(232,160,48,.65)" textAnchor="middle">Oise</text>
-              <path d="M200,180 L148,108" stroke="rgba(0,0,0,.1)" strokeWidth="1" strokeDasharray="4,4"/>
-              <path d="M200,180 L188,272" stroke="rgba(0,0,0,.1)" strokeWidth="1" strokeDasharray="4,4"/>
-              <path d="M200,180 L338,82" stroke="rgba(0,0,0,.07)" strokeWidth="1" strokeDasharray="4,4"/>
-              <path d="M200,180 L68,60" stroke="rgba(0,0,0,.07)" strokeWidth="1" strokeDasharray="4,4"/>
-            </svg>
-            <div className="zones-vignette"/>
+          <div className="zones-map-wrap reveal reveal-left" style={{overflow:'hidden',borderRadius:16,boxShadow:'0 12px 40px rgba(0,0,0,.12)'}}>
+            <iframe
+              title="Zone de service Owise VTC — Paris, IDF & Oise"
+              src="https://maps.google.com/maps?width=100%25&height=400&hl=fr&q=Cr%C3%A9il,+Oise,+France&ie=UTF8&t=&z=9&iwloc=B&output=embed"
+              style={{width:'100%',height:'100%',border:0,display:'block',filter:'grayscale(0.2) contrast(1.05)'}}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
           <div className="zones-list reveal reveal-right rd1">
             {[

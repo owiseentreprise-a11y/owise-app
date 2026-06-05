@@ -27,6 +27,7 @@ export async function createReservationCheckout(data: {
   num_vol_train?: string
   terminal?: string
   heure_arrivee_vol?: string
+  code_parrainage?: string
 }): Promise<{ error?: string } | void> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
@@ -64,6 +65,9 @@ export async function createReservationCheckout(data: {
   if (data.aller_retour && data.date_retour) {
     params.set('metadata[aller_retour]', 'true')
     params.set('metadata[date_retour]', data.date_retour)
+  }
+  if (data.code_parrainage) {
+    params.set('metadata[code_parrainage]', data.code_parrainage)
   }
 
   // Créer le retour immédiatement en_attente si aller-retour demandé

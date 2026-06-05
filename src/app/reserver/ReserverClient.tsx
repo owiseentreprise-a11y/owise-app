@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
+import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout } from '@/lib/pixel'
@@ -419,6 +420,12 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)
+
+  // Code parrainage
+  const [codeParrain,  setCodeParrain]  = useState('')
+  const [codeValide,   setCodeValide]   = useState(false)
+  const [codeLoading,  setCodeLoading]  = useState(false)
+  const [codeMsg,      setCodeMsg]      = useState('')
   const datePast = !!date && new Date(date) < new Date()
 
   // Distance OSRM (pour mode km)
@@ -466,6 +473,19 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   // Prix total : aller × 2 si aller-retour activé
   const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
 
+  // Prix avec réduction parrainage -10%
+  const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
+
+  async function checkCodeParrain(code: string) {
+    const c = code.toUpperCase().trim()
+    if (c.length < 6) { setCodeValide(false); setCodeMsg(''); return }
+    setCodeLoading(true)
+    const { valid } = await validerCodeParrainage(c)
+    setCodeValide(valid)
+    setCodeMsg(valid ? '✓ Code valide — -10% appliqué !' : 'Code invalide ou expiré')
+    setCodeLoading(false)
+  }
+
   function handleStep1() {
     if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
@@ -484,7 +504,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   function handlePayer() {
     if (!nom.trim() || !prenom.trim())        return setStep2Error('Nom et prénom requis.')
     if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
-    if (prixTotal === null) return setStep2Error('Erreur de tarification.')
+    if (prixFinal === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
     startTransition(async () => {
       const result = await createReservationCheckout({
@@ -493,7 +513,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         date_prevue:     date,
         type_vehicule:   vehicule,
         nb_passagers:    passagers,
-        prix:            Math.round(prixTotal!),
+        prix:            Math.round(prixFinal!),
         nom, prenom, email, telephone,
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
@@ -502,6 +522,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         num_vol_train:   numVolTrain || undefined,
         terminal:        terminal || undefined,
         heure_arrivee_vol: heureArrivee || undefined,
+        code_parrainage: codeValide ? codeParrain.toUpperCase().trim() : undefined,
       })
       if (result?.error) setStep2Error(`Erreur Stripe: ${result.error}`)
     })
@@ -1014,7 +1035,42 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               </div>
             ))}
 
-            <div style={{ marginBottom: 28 }} />
+            {/* Code parrainage */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#6B6B6B', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+                Code parrain <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel — -10%)</span>
+              </label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="res-input"
+                  style={{ ...baseInput, flex: 1, textTransform: 'uppercase', letterSpacing: '.1em', fontFamily: 'monospace', fontSize: 15 }}
+                  placeholder="OWR-XXXXXX"
+                  value={codeParrain}
+                  onChange={e => { setCodeParrain(e.target.value); setCodeValide(false); setCodeMsg('') }}
+                  onBlur={e => checkCodeParrain(e.target.value)}
+                  maxLength={10}
+                />
+                <button
+                  type="button"
+                  onClick={() => checkCodeParrain(codeParrain)}
+                  disabled={codeLoading}
+                  style={{ padding: '0 16px', borderRadius: 8, border: '1px solid rgba(0,0,0,.12)', background: '#F7F7F7', fontSize: 12, color: '#09091A', cursor: 'pointer', flexShrink: 0 }}
+                >
+                  {codeLoading ? '…' : 'Vérifier'}
+                </button>
+              </div>
+              {codeMsg && (
+                <div style={{ marginTop: 6, fontSize: 12, color: codeValide ? '#3DB87A' : '#D95454', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {codeMsg}
+                  {codeValide && prixTotal !== null && (
+                    <span style={{ marginLeft: 8, fontFamily: 'monospace', fontWeight: 700 }}>
+                      <span style={{ textDecoration: 'line-through', color: '#9B9B9B', marginRight: 6 }}>{Math.round(prixTotal)} €</span>
+                      <span style={{ color: '#C9A84C' }}>{Math.round(prixFinal ?? prixTotal)} €</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {step2Error && (
               <div style={{ color: '#D95454', fontSize: 12, marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)' }}>
@@ -1036,7 +1092,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
-                  Payer {prixTotal !== null ? `${Math.round(prixTotal)} €` : ''} — Paiement sécurisé
+                  Payer {prixFinal !== null ? `${Math.round(prixFinal)} €` : ''} — Paiement sécurisé
                 </>
               )}
             </button>

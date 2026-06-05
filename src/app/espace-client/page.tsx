@@ -4,6 +4,8 @@ import DemanderCourseClient from './DemanderCourseClient'
 import CollaborateursManager from './CollaborateursManager'
 import NotationCourse from './NotationCourse'
 import ClientRealtime from './ClientRealtime'
+import ParrainageWidget from './ParrainageWidget'
+import { getOrCreateParrainageCode, getParrainageStats } from './actions-parrainage'
 
 export const dynamic = 'force-dynamic'
 
@@ -104,6 +106,12 @@ export default async function EspaceClientPage({
   const enCours = list.filter(c => ['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
   const historique = list.filter(c => !['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
 
+  // Parrainage — créer le code si nécessaire + stats
+  const [parrainageCode, parrainageStats] = await Promise.all([
+    getOrCreateParrainageCode(),
+    getParrainageStats(),
+  ])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       <ClientRealtime userId={user.id} />
@@ -152,6 +160,16 @@ export default async function EspaceClientPage({
       {/* Mon équipe — uniquement pour les comptes entreprise (pas les collabs) */}
       {isEntreprise && !isCollab && (
         <CollaborateursManager collaborateurs={collaborateurs} />
+      )}
+
+      {/* Programme de parrainage — tous les clients */}
+      {!isCollab && (
+        <ParrainageWidget
+          code={parrainageStats.code ?? parrainageCode.code}
+          nbFilleuls={parrainageStats.nbFilleuls}
+          credits={parrainageStats.credits}
+          totalDispo={parrainageStats.totalDispo}
+        />
       )}
 
       {/* Factures — uniquement clients entreprise, jamais collaborateurs */}

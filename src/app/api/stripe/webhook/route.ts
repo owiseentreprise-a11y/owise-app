@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
+import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -187,7 +188,12 @@ async function handleNewReservation(meta: Record<string, string>) {
     console.error('[webhook] facture creation error', err)
   }
 
-  // 4. Emails
+  // 4. Parrainage — créditer le parrain si un code a été utilisé
+  if (meta.code_parrainage) {
+    await enregistrerParrainage(meta.code_parrainage, email).catch(() => {})
+  }
+
+  // 5. Emails
   await Promise.all([
     envoyerConfirmationClient({
       clientEmail: email,
