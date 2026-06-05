@@ -205,6 +205,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [analyticsOn,     setAnalyticsOn]      = useState(true)
   const [cookieDone,      setCookieDone]       = useState(false)
 
+  /* exit intent */
+  const [exitVisible, setExitVisible] = useState(false)
+
   /* booking widget */
   const [bcPax,      setBcPax]      = useState(1)
   const [bcEtape,    setBcEtape]    = useState(false)
@@ -332,6 +335,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     if (firstStat) countObs.observe(firstStat)
 
     return () => { revealObs.disconnect(); countObs.disconnect(); clearTimeout(fallback) }
+  }, [])
+
+  /* ── Exit intent — souris quitte le haut de la page ───────────────────── */
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('ow_exit_seen')) return
+    let triggered = false
+    const onMouseOut = (e: MouseEvent) => {
+      if (triggered) return
+      if (e.clientY <= 10 && e.relatedTarget === null) {
+        triggered = true
+        setExitVisible(true)
+        localStorage.setItem('ow_exit_seen', '1')
+      }
+    }
+    document.addEventListener('mouseout', onMouseOut)
+    return () => document.removeEventListener('mouseout', onMouseOut)
   }, [])
 
   /* ── Auto-estimation — se déclenche dès que les 2 adresses sont saisies ── */
@@ -571,6 +590,91 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {/* custom cursor */}
       <div className="cursor" ref={cursorRef} />
       <div className="cursor-ring" ref={ringRef} />
+
+      {/* ── Exit intent popup ────────────────────────────────── */}
+      {exitVisible && (
+        <div style={{
+          position:'fixed',inset:0,zIndex:9000,
+          background:'rgba(9,9,26,.75)',backdropFilter:'blur(8px)',
+          display:'flex',alignItems:'center',justifyContent:'center',
+          padding:'20px',
+          animation:'fadeIn .3s ease',
+        }} onClick={()=>setExitVisible(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{
+            background:'#111128',border:'1px solid rgba(201,168,76,.2)',
+            borderRadius:20,padding:'40px 36px',maxWidth:440,width:'100%',
+            boxShadow:'0 40px 100px rgba(0,0,0,.6)',
+            position:'relative',textAlign:'center',
+          }}>
+            <button onClick={()=>setExitVisible(false)} style={{
+              position:'absolute',top:14,right:14,width:28,height:28,
+              borderRadius:8,background:'rgba(255,255,255,.06)',border:'none',
+              color:'rgba(237,232,223,.5)',cursor:'pointer',fontSize:16,
+              display:'flex',alignItems:'center',justifyContent:'center',
+            }}>✕</button>
+
+            {/* Badge */}
+            <div style={{
+              display:'inline-flex',alignItems:'center',gap:6,
+              background:'rgba(201,168,76,.1)',border:'1px solid rgba(201,168,76,.25)',
+              borderRadius:20,padding:'5px 14px',fontSize:10,color:'#C9A84C',
+              letterSpacing:'.1em',textTransform:'uppercase',marginBottom:20,
+            }}>
+              <span style={{width:5,height:5,borderRadius:'50%',background:'#C9A84C',flexShrink:0}}/>
+              Offre exclusive
+            </div>
+
+            <h3 style={{
+              fontFamily:"'Cormorant Garamond',serif",fontSize:32,fontWeight:500,
+              color:'#EDE8DF',lineHeight:1.1,marginBottom:12,
+            }}>
+              Avant de partir…
+            </h3>
+            <p style={{fontSize:13,color:'rgba(237,232,223,.6)',lineHeight:1.7,marginBottom:28}}>
+              Obtenez votre tarif en 30 secondes.<br/>
+              Notre équipe vous répond <strong style={{color:'#EDE8DF'}}>immédiatement sur WhatsApp</strong> pour tout trajet Paris · IDF · Oise.
+            </p>
+
+            {/* CTA WhatsApp */}
+            <a
+              href="https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20un%20devis%20VTC"
+              target="_blank" rel="noopener"
+              onClick={()=>setExitVisible(false)}
+              style={{
+                display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+                background:'#25D366',color:'#fff',borderRadius:12,
+                padding:'14px 24px',fontSize:14,fontWeight:700,
+                textDecoration:'none',marginBottom:12,
+                transition:'transform .15s,box-shadow .15s',
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(37,211,102,.35)'}}
+              onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow=''}}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
+              Demander un devis sur WhatsApp
+            </a>
+
+            {/* Ou réserver directement */}
+            <button
+              onClick={()=>{ setExitVisible(false); document.querySelector('.hero-booking-wrap')?.scrollIntoView({behavior:'smooth'}) }}
+              style={{
+                background:'none',border:'1px solid rgba(201,168,76,.2)',
+                borderRadius:10,padding:'11px 20px',color:'rgba(237,232,223,.6)',
+                fontSize:12,cursor:'pointer',width:'100%',
+                transition:'border-color .15s,color .15s',
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(201,168,76,.5)';e.currentTarget.style.color='#C9A84C'}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(201,168,76,.2)';e.currentTarget.style.color='rgba(237,232,223,.6)'}}
+            >
+              Voir les tarifs →
+            </button>
+
+            <p style={{fontSize:10,color:'rgba(237,232,223,.25)',marginTop:16,letterSpacing:'.04em'}}>
+              Disponible 24h/24 · Tarif fixe garanti · Sans engagement
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* scroll progress */}
       <div className="scroll-progress" id="scrollProgress" />
