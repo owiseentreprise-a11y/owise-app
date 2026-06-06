@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function updateTarifVehicule(
   id: string,
-  data: { prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
+  data: { prise_en_charge: number; prix_km: number }
 ): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()

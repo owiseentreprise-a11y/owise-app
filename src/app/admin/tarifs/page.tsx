@@ -51,7 +51,7 @@ export default async function TarifsPage() {
             Tarifs de base par véhicule
           </div>
           <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 20 }}>
-            Prix fixe garanti · Tarif fixe = Prise en charge + Distance × Prix/km · Forfaits aéroport indépendants
+            Formule appliquée partout : Prise en charge + Distance (km) × Prix/km · Suppléments nuit/weekend ci-dessous
           </div>
           <TarifsVehicules tarifs={tarifs} />
         </div>

@@ -8,9 +8,6 @@ type Tarif = {
   vehicule: string
   prise_en_charge: number
   prix_km: number
-  cdg_fixe: number
-  orly_fixe: number
-  beauvais_fixe: number
 }
 
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -56,9 +53,6 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
       const res = await updateTarifVehicule(tarif.id, {
         prise_en_charge: data.prise_en_charge,
         prix_km:         data.prix_km,
-        cdg_fixe:        data.cdg_fixe,
-        orly_fixe:       data.orly_fixe,
-        beauvais_fixe:   data.beauvais_fixe,
       })
       if (res.error) setError(res.error)
       else setSaved(true)
@@ -76,44 +70,28 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
         <span style={{ fontSize: 22 }}>{ICONS[tarif.vehicule] ?? '🚗'}</span>
         <div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)' }}>{tarif.vehicule}</div>
-          <div style={{ fontSize: 10, color: 'var(--t3)' }}>Tarif au km + forfaits aéroport</div>
+          <div style={{ fontSize: 10, color: 'var(--t3)' }}>Prix = prise en charge + distance × prix/km</div>
         </div>
       </div>
 
-      {/* Tarif au km */}
+      {/* Champs */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <NumField label="Prise en charge" value={data.prise_en_charge}
+        <NumField label="Prise en charge (€)" value={data.prise_en_charge}
           onChange={v => setData(d => ({ ...d, prise_en_charge: v }))} />
-        <NumField label="Prix / km" value={data.prix_km}
+        <NumField label="Prix / km (€)" value={data.prix_km}
           onChange={v => setData(d => ({ ...d, prix_km: v }))} />
       </div>
 
-      {/* Séparateur */}
-      <div style={{ height: 1, background: 'var(--gb)' }} />
-
-      {/* Forfaits aéroport */}
-      <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)' }}>
-        Forfaits aéroport (fixe)
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-        <NumField label="CDG fixe" value={data.cdg_fixe}
-          onChange={v => setData(d => ({ ...d, cdg_fixe: v }))} />
-        <NumField label="Orly fixe" value={data.orly_fixe}
-          onChange={v => setData(d => ({ ...d, orly_fixe: v }))} />
-        <NumField label="Beauvais fixe" value={data.beauvais_fixe}
-          onChange={v => setData(d => ({ ...d, beauvais_fixe: v }))} />
-      </div>
-
-      {/* Estimation */}
+      {/* Simulation */}
       <div style={{
         background: 'var(--surface)', border: '1px solid var(--gb)',
-        borderRadius: 8, padding: '8px 12px',
-        fontSize: 10, color: 'var(--t2)',
-        fontFamily: 'var(--font-jetbrains), monospace',
+        borderRadius: 8, padding: '10px 14px', fontSize: 10, color: 'var(--t2)',
+        fontFamily: 'var(--font-jetbrains), monospace', display: 'flex', gap: 16, flexWrap: 'wrap',
       }}>
-        Ex. Paris → CDG : <strong style={{ color: 'var(--gold)' }}>{data.cdg_fixe} €</strong>
-        &nbsp;·&nbsp;
-        Paris → Versailles (~22km) : <strong style={{ color: 'var(--gold)' }}>{(data.prise_en_charge + 22 * data.prix_km).toFixed(0)} €</strong>
+        <span>CDG → Paris (~32km) : <strong style={{ color: 'var(--gold)' }}>{(data.prise_en_charge + 32 * data.prix_km).toFixed(0)} €</strong></span>
+        <span>Orly → Paris (~22km) : <strong style={{ color: 'var(--gold)' }}>{(data.prise_en_charge + 22 * data.prix_km).toFixed(0)} €</strong></span>
+        <span>Creil → CDG (~35km) : <strong style={{ color: 'var(--gold)' }}>{(data.prise_en_charge + 35 * data.prix_km).toFixed(0)} €</strong></span>
+        <span>Compiègne → CDG (~80km) : <strong style={{ color: 'var(--gold)' }}>{(data.prise_en_charge + 80 * data.prix_km).toFixed(0)} €</strong></span>
       </div>
 
       {/* Feedback */}
