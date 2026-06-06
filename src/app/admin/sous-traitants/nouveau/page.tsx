@@ -1,4 +1,5 @@
 import { creerSousTraitantAction } from '../actions'
+import SubmitButton from '../../components/SubmitButton'
 
 export default async function NouveauSousTraitantPage({
   searchParams,
@@ -105,14 +106,7 @@ export default async function NouveauSousTraitantPage({
           </div>
 
           <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-            <button type="submit" style={{
-              background: 'var(--gold)', color: 'var(--base)', border: 'none',
-              borderRadius: 9, padding: '12px 24px',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              fontFamily: 'var(--font-dm-sans), sans-serif',
-            }}>
-              Créer le sous-traitant
-            </button>
+            <SubmitButton label="Créer le sous-traitant" pendingLabel="Création…" />
             <a href="/admin/sous-traitants" style={{
               display: 'flex', alignItems: 'center',
               padding: '12px 20px', borderRadius: 9,

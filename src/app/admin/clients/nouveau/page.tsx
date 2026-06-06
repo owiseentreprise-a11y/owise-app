@@ -1,4 +1,5 @@
 import { createClientAccount } from './actions'
+import SubmitButton from '../../components/SubmitButton'
 
 export default function NouveauClientPage() {
   const inputStyle = {
@@ -115,17 +116,7 @@ export default function NouveauClientPage() {
 
           {/* Submit */}
           <div style={{ display: 'flex', gap: 12 }}>
-            <button
-              type="submit"
-              style={{
-                padding: '12px 28px', borderRadius: 10,
-                background: 'var(--gold)', color: 'var(--base)',
-                fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-              }}
-            >
-              Créer le compte client
-            </button>
+            <SubmitButton label="Créer le compte client" pendingLabel="Création…" style={{ padding: '12px 28px', borderRadius: 10 }} />
             <a
               href="/admin/clients"
               style={{
