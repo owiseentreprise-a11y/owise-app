@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
 import AdminRealtime from './AdminRealtime'
+import PanierCourses from './PanierCourses'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,6 +95,13 @@ export default async function AdminDashboard() {
 
   const chauffeursDisponibles = chauffeurs.filter(c => c.statut === 'disponible')
   const dateLabel = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  // Format chauffeurs for DispatchRapideButton (profiles may be array or object)
+  const chauffeursForDispatch = chauffeurs.map((c: any) => ({
+    id: c.id,
+    statut: c.statut,
+    profiles: Array.isArray(c.profiles) ? (c.profiles[0] ?? null) : (c.profiles ?? null),
+  }))
 
   return (
     <>
@@ -195,6 +203,9 @@ export default async function AdminDashboard() {
 
         </div>
 
+        {/* Panier courses sans chauffeur */}
+        <PanierCourses courses={nonAssignees} chauffeurs={chauffeursForDispatch} />
+
         {/* Demandes collaborateur */}
         {demandesCollaborateur.length > 0 && (
           <div style={{
@@ -255,33 +266,6 @@ export default async function AdminDashboard() {
           </div>
         )}
 
-        {/* Alert dispatch courses sans chauffeur (hors demandes collab) */}
-        {nonAssignees.filter((c: any) => !c.collaborateur_id).length > 0 && (
-          <div style={{
-            background: 'rgba(232,160,48,.06)', border: '1px solid rgba(232,160,48,.2)',
-            borderRadius: 12, padding: '14px 20px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 16 }}>⚠</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--amb)' }}>
-                  {nonAssignees.filter((c: any) => !c.collaborateur_id).length} course{nonAssignees.filter((c: any) => !c.collaborateur_id).length > 1 ? 's' : ''} en attente sans chauffeur
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 2 }}>
-                  {nonAssignees.filter((c: any) => !c.collaborateur_id).map(c => c.adresse_depart.split(',')[0]).join(' · ')}
-                </div>
-              </div>
-            </div>
-            <a href="/admin/courses" style={{
-              padding: '8px 16px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-              background: 'rgba(232,160,48,.15)', border: '1px solid rgba(232,160,48,.3)',
-              color: 'var(--amb)', textDecoration: 'none',
-            }}>
-              Dispatcher →
-            </a>
-          </div>
-        )}
 
         {/* Factures en retard */}
         {facturesRetard.length > 0 && (
