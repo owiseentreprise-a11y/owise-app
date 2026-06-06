@@ -1,9 +1,11 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function supprimerDevis(id: string) {
+  await requireAdminClient()
   const supabase = createAdminClient()
   await supabase.from('devis').delete().eq('id', id)
   revalidatePath('/admin/devis')
@@ -23,6 +25,7 @@ export async function convertirEnFacture(devis: {
   vehicle: string | null
   pax: number | null
 }) {
+  await requireAdminClient()
   if (!devis.price) throw new Error('Prix manquant — impossible de créer une facture.')
   const supabase = createAdminClient()
 

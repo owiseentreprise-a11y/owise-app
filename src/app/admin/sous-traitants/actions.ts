@@ -126,6 +126,7 @@ export async function creerCompteSTAction(formData: FormData) {
 }
 
 export async function supprimerCompteSTAction(formData: FormData) {
+  await requireAdminClient()
   const supabase  = createAdminClient()
   const authAdmin = getAuthAdminClient()
   const sous_traitant_id = formData.get('sous_traitant_id') as string
@@ -139,6 +140,7 @@ export async function supprimerCompteSTAction(formData: FormData) {
 }
 
 export async function genererFactureSTAction(formData: FormData) {
+  await requireAdminClient()
   const supabase = createAdminClient()
   const sous_traitant_id = formData.get('sous_traitant_id') as string
   const mode = (formData.get('mode_paiement') as string) || 'mensuel'
@@ -194,6 +196,7 @@ export async function genererFactureSTAction(formData: FormData) {
 }
 
 export async function marquerFactureSTPayeeAction(formData: FormData) {
+  await requireAdminClient()
   const supabase = createAdminClient()
   const facture_id      = formData.get('facture_id') as string
   const sous_traitant_id = formData.get('sous_traitant_id') as string
