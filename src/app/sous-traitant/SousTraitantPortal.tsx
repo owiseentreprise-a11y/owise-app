@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { progresserCourseSTAction } from './actions'
+import { progresserCourseSTAction, accepterCourseSTAction, refuserCourseSTAction, updateProfilSTAction } from './actions'
 import { TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 
 const ETAPES = [
@@ -34,16 +34,23 @@ function getClientTel(course: any): string | null {
 }
 
 export default function SousTraitantPortal({
-  userId, stId, stNom, modePaiement, courses, planning, historique, factures,
+  userId, stId, stNom, stTelephone, modePaiement, courses, planning, historique, factures,
 }: {
-  userId: string; stId: string; stNom: string; modePaiement: string
+  userId: string; stId: string; stNom: string; stTelephone: string; modePaiement: string
   courses: any[]; planning: any[]; historique: any[]; factures: any[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'courses' | 'factures'>('courses')
+  const [activeTab, setActiveTab] = useState<'courses' | 'factures' | 'profil'>('courses')
+
+  // Profil état
+  const [profilNom,        setProfilNom]        = useState(stNom)
+  const [profilTel,        setProfilTel]        = useState(stTelephone)
+  const [profilMode,       setProfilMode]       = useState(modePaiement)
+  const [profilSaving,     setProfilSaving]     = useState(false)
+  const [profilMsg,        setProfilMsg]        = useState('')
 
   // Realtime refresh
   useEffect(() => {
@@ -142,7 +149,7 @@ export default function SousTraitantPortal({
 
         {/* Tabs */}
         <div style={{ display: 'flex', borderTop: '1px solid rgba(0,0,0,.06)', padding: '0 20px' }}>
-          {([['courses', 'Courses'], ['factures', 'Facturation']] as const).map(([tab, label]) => (
+          {([['courses', 'Courses'], ['factures', 'Facturation'], ['profil', 'Profil']] as const).map(([tab, label]) => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontWeight: activeTab === tab ? 600 : 400,
@@ -438,6 +445,35 @@ export default function SousTraitantPortal({
                               {c.notes}
                             </div>
                           )}
+                          {/* Accepter / Refuser si en_attente */}
+                          {c.statut === 'en_attente' && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
+                              <button
+                                disabled={pending}
+                                onClick={() => startTransition(() => accepterCourseSTAction(c.id).then(() => router.refresh()))}
+                                style={{
+                                  padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                                  background: 'rgba(61,184,122,.12)', color: 'var(--grn)',
+                                  fontSize: 13, fontWeight: 700, opacity: pending ? .6 : 1,
+                                  fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
+                                }}
+                              >
+                                ✓ Accepter
+                              </button>
+                              <button
+                                disabled={pending}
+                                onClick={() => startTransition(() => refuserCourseSTAction(c.id).then(() => router.refresh()))}
+                                style={{
+                                  padding: '11px', borderRadius: 10, border: '1px solid rgba(217,84,84,.2)', cursor: 'pointer',
+                                  background: 'rgba(217,84,84,.06)', color: 'var(--red)',
+                                  fontSize: 13, fontWeight: 600, opacity: pending ? .6 : 1,
+                                  fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
+                                }}
+                              >
+                                ✕ Refuser
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )
                     })()}
@@ -534,6 +570,119 @@ export default function SousTraitantPortal({
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── TAB PROFIL ── */}
+        {activeTab === 'profil' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* Infos personnelles */}
+            <div style={{ background: '#FFFFFF', border: '1px solid rgba(201,168,76,.18)', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(201,168,76,.08)' }}>
+                <span style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 600 }}>Informations</span>
+              </div>
+              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { label: 'Nom / Société', val: profilNom, set: setProfilNom, ph: 'Transport Dupont' },
+                  { label: 'Téléphone', val: profilTel, set: setProfilTel, ph: '+33 6 00 00 00 00' },
+                ].map(f => (
+                  <div key={f.label}>
+                    <div style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 5 }}>{f.label}</div>
+                    <input
+                      value={f.val} onChange={e => f.set(e.target.value)}
+                      placeholder={f.ph}
+                      style={{
+                        width: '100%', padding: '10px 13px', borderRadius: 9, fontSize: 13,
+                        background: 'var(--elevated)', border: '1px solid var(--gb)', color: 'var(--t1)',
+                        outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
+                      }}
+                    />
+                  </div>
+                ))}
+
+                {/* Mode de paiement */}
+                <div>
+                  <div style={{ fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 5 }}>Mode de paiement</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[
+                      { val: 'immediat',    label: 'Immédiat' },
+                      { val: 'hebdomadaire', label: 'Hebdo' },
+                      { val: 'mensuel',     label: 'Mensuel' },
+                    ].map(opt => (
+                      <button key={opt.val} onClick={() => setProfilMode(opt.val)} style={{
+                        padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 12,
+                        fontFamily: 'inherit', fontWeight: profilMode === opt.val ? 700 : 400,
+                        background: profilMode === opt.val ? 'rgba(201,168,76,.12)' : 'var(--elevated)',
+                        border: profilMode === opt.val ? '1px solid rgba(201,168,76,.35)' : '1px solid var(--gb)',
+                        color: profilMode === opt.val ? 'var(--gold)' : 'var(--t2)',
+                      }}>{opt.label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {profilMsg && (
+                  <div style={{ fontSize: 12, color: profilMsg.startsWith('✓') ? 'var(--grn)' : 'var(--red)', padding: '8px 12px', borderRadius: 8, background: profilMsg.startsWith('✓') ? 'rgba(61,184,122,.08)' : 'rgba(217,84,84,.08)' }}>
+                    {profilMsg}
+                  </div>
+                )}
+
+                <button
+                  disabled={profilSaving}
+                  onClick={async () => {
+                    setProfilSaving(true); setProfilMsg('')
+                    const { error } = await updateProfilSTAction(stId, { nom: profilNom, telephone: profilTel, mode_paiement: profilMode })
+                    setProfilMsg(error ? `Erreur : ${error}` : '✓ Profil mis à jour')
+                    setProfilSaving(false)
+                  }}
+                  style={{
+                    width: '100%', padding: '13px', borderRadius: 12, border: 'none',
+                    background: profilSaving ? 'var(--elevated)' : 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
+                    color: profilSaving ? 'var(--t3)' : '#fff', fontSize: 13, fontWeight: 700,
+                    cursor: profilSaving ? 'wait' : 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  {profilSaving ? 'Enregistrement…' : 'Enregistrer'}
+                </button>
+              </div>
+            </div>
+
+            {/* Documents */}
+            <div style={{ background: '#FFFFFF', border: '1px solid rgba(201,168,76,.18)', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(201,168,76,.08)' }}>
+                <span style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 600 }}>Documents légaux</span>
+              </div>
+              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { label: 'Carte VTC', desc: 'Carte professionnelle VTC en cours de validité' },
+                  { label: 'Assurance RC Pro', desc: 'Assurance responsabilité civile professionnelle' },
+                  { label: 'Visite médicale', desc: 'Certificat médical en cours de validité' },
+                  { label: 'Permis de conduire', desc: 'Permis B (ou D) en cours de validité' },
+                ].map(doc => (
+                  <div key={doc.label} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 14px', background: 'var(--elevated)', borderRadius: 10,
+                    border: '1px solid var(--gb)',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>{doc.label}</div>
+                      <div style={{ fontSize: 10, color: 'var(--t3)' }}>{doc.desc}</div>
+                    </div>
+                    <div style={{
+                      fontSize: 9, padding: '3px 9px', borderRadius: 6, fontWeight: 600,
+                      color: 'var(--amb)', background: 'rgba(232,160,48,.1)', border: '1px solid rgba(232,160,48,.2)',
+                    }}>
+                      À transmettre
+                    </div>
+                  </div>
+                ))}
+                <div style={{ fontSize: 11, color: 'var(--t3)', textAlign: 'center', marginTop: 4 }}>
+                  Envoyez vos documents par WhatsApp :{' '}
+                  <a href="https://wa.me/33619106356" style={{ color: 'var(--gold)', textDecoration: 'none' }}>+33 6 19 10 63 56</a>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 

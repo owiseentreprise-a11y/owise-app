@@ -15,7 +15,7 @@ export default async function SousTraitantPage() {
   // Récupérer la fiche sous-traitant liée à ce user
   const { data: st } = await admin
     .from('sous_traitants')
-    .select('id, nom, mode_paiement')
+    .select('id, nom, telephone, mode_paiement')
     .eq('user_id', user.id)
     .single()
 
@@ -63,6 +63,7 @@ export default async function SousTraitantPage() {
       userId={user.id}
       stId={st.id}
       stNom={st.nom}
+      stTelephone={(st as any).telephone ?? ''}
       modePaiement={(st as any).mode_paiement ?? 'mensuel'}
       courses={coursesRes.data ?? []}
       planning={planningRes.data ?? []}
