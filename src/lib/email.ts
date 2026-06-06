@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'OWISE <noreply@owise.fr>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
+const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL ?? 'https://g.page/r/CjTmBFxmQWBREAE/review'
 
 async function send(to: string, subject: string, html: string) {
   if (!resend) return
@@ -389,13 +390,68 @@ export async function envoyerRecuClient(params: {
       <div style="font-size:32px;font-weight:700;color:#C9A84C;font-family:'Courier New',monospace;">${prixFinal.toFixed(2)} €</div>
     </div>
 
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:20px;margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
+      <div style="font-size:15px;font-weight:600;color:#09091A;margin-bottom:6px;">Votre avis compte pour nous</div>
+      <div style="font-size:13px;color:#848499;margin-bottom:16px;">Votre trajet s'est bien passé ? Laissez un avis Google — cela prend 30 secondes et aide d'autres voyageurs à nous trouver.</div>
+      <a href="${GOOGLE_REVIEW_URL}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.02em;">
+        Laisser un avis Google →
+      </a>
+    </div>
+
     <p style="margin:0;font-size:12px;color:#848499;text-align:center;">À bientôt sur OWISE — <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
   `)
 
   await send(clientEmail, `Reçu course #${refCourse} – ${prixFinal.toFixed(2)} €`, html)
 }
 
-// ── 5. Lien de paiement facture ──────────────────────────────────────────────
+// ── 5. Demande d'avis Google (clients entreprise — pas de reçu auto) ─────────
+
+export async function envoyerDemandeAvis(params: {
+  clientEmail: string
+  clientPrenom: string
+  adresseDepart: string
+  adresseArrivee: string
+  datePrevue: string
+  refCourse: string
+}) {
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, refCourse } = params
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Merci pour votre confiance</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Votre course #${refCourse} vient de se terminer, ${clientPrenom}.</p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+      </table>
+    </div>
+
+    <div style="background:#09091A;border-radius:10px;padding:24px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:10px;">⭐⭐⭐⭐⭐</div>
+      <div style="font-size:16px;font-weight:600;color:#EDE8DF;margin-bottom:6px;">Votre avis nous aide à grandir</div>
+      <div style="font-size:13px;color:#848499;margin-bottom:18px;">
+        Avez-vous été satisfait de votre chauffeur ?<br>
+        Laissez un avis Google — c'est rapide et ça fait vraiment la différence.
+      </div>
+      <a href="${GOOGLE_REVIEW_URL}"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Laisser un avis Google →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Merci d'utiliser OWISE — <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a>
+    </p>
+  `)
+
+  await send(clientEmail, `Merci pour votre course #${refCourse} – Votre avis compte !`, html)
+}
+
+// ── 6. Lien de paiement facture ──────────────────────────────────────────────
 
 export async function envoyerLienPaiementClient(params: {
   clientEmail: string

@@ -7,6 +7,7 @@ import {
   envoyerChauffeurAssigne,
   envoyerRefusChauffeur,
   envoyerRecuClient,
+  envoyerDemandeAvis,
   envoyerNouvelleFacture,
 } from '@/lib/email'
 
@@ -133,7 +134,7 @@ export async function progresserCourseAction(
     if (course?.client_id) {
       const clientEmail = await getUserEmail(course.client_id)
 
-      // Reçu pour clients particuliers (pas de facture auto)
+      // Reçu pour clients particuliers (inclut demande d'avis Google)
       if (clientEmail && course.prix_final && !isEntreprise) {
         await envoyerRecuClient({
           clientEmail, clientPrenom,
@@ -144,6 +145,17 @@ export async function progresserCourseAction(
           chauffeurNom: chauffeurProfile
             ? `${chauffeurProfile.prenom ?? ''} ${chauffeurProfile.nom ?? ''}`.trim()
             : undefined,
+          refCourse: courseId.slice(-6).toUpperCase(),
+        })
+      }
+
+      // Demande d'avis Google pour les entreprises (pas de reçu auto)
+      if (clientEmail && isEntreprise) {
+        await envoyerDemandeAvis({
+          clientEmail, clientPrenom,
+          adresseDepart: course.adresse_depart,
+          adresseArrivee: course.adresse_arrivee,
+          datePrevue: course.date_prevue,
           refCourse: courseId.slice(-6).toUpperCase(),
         })
       }
