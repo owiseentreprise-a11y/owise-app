@@ -682,9 +682,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {/* mobile menu */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <div className="mm-links">
-          {['#vehicules','#comment','#zones','#faq','#contact'].map((h,i) => (
+          {['#vehicules','#tarifs','#comment','#zones','#faq','#contact'].map((h,i) => (
             <a key={i} href={h} className="mm-link" onClick={()=>setMenuOpen(false)}>
-              {h==='#vehicules'?'Véhicules':h==='#comment'?'Comment ça marche':h==='#zones'?'Zones':h==='#faq'?'FAQ':'Contact'}
+              {h==='#vehicules'?'Véhicules':h==='#tarifs'?'Tarifs':h==='#comment'?'Comment ça marche':h==='#zones'?'Zones':h==='#faq'?'FAQ':'Contact'}
             </a>
           ))}
         </div>
@@ -733,7 +733,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           </div>
         </a>
         <div className="nav-links">
-          {[['#vehicules','Véhicules'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
+          {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
         </div>
@@ -1045,6 +1045,162 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── TARIFS ───────────────────────────────────────────── */}
+      <section id="tarifs" style={{ background:'#09091A', padding:'80px 24px' }}>
+        <div style={{ maxWidth:960, margin:'0 auto' }}>
+          {/* Header */}
+          <div className="reveal" style={{ textAlign:'center', marginBottom:48 }}>
+            <div className="section-tag">Tarification</div>
+            <h2 className="section-title" style={{ marginBottom:12 }}>
+              Prix fixe garanti<br/><em className="chrome-gold-slow">zéro surprise à l'arrivée</em>
+            </h2>
+            <p style={{ fontSize:15, color:'#848499', maxWidth:520, margin:'0 auto' }}>
+              Le prix affiché est celui que vous payez. Pas de majoration, pas de frais cachés — quelles que soient les conditions de trafic.
+            </p>
+          </div>
+
+          {/* Table */}
+          {bcTarifs.length > 0 && (() => {
+            const berline = bcTarifs.find(t => t.vehicule === 'Berline')
+            const premium = bcTarifs.find(t => t.vehicule === 'Berline Premium')
+            const van     = bcTarifs.find(t => t.vehicule === 'Van 7 places')
+
+            const rows = [
+              {
+                icon: '✈', label: 'CDG / Roissy',
+                sub: 'Aéroport Charles de Gaulle',
+                berline: berline?.cdg_fixe, premium: premium?.cdg_fixe, van: van?.cdg_fixe,
+                isFixed: true,
+              },
+              {
+                icon: '✈', label: 'Orly',
+                sub: 'Aéroport d\'Orly',
+                berline: berline?.orly_fixe, premium: premium?.orly_fixe, van: van?.orly_fixe,
+                isFixed: true,
+              },
+              {
+                icon: '✈', label: 'Beauvais-Tillé',
+                sub: 'Aéroport de Beauvais',
+                berline: berline?.beauvais_fixe, premium: premium?.beauvais_fixe, van: van?.beauvais_fixe,
+                isFixed: true,
+              },
+              {
+                icon: '🚉', label: 'Gares parisiennes',
+                sub: 'Nord, Lyon, Montparnasse…',
+                berline: berline ? Math.round(Number(berline.prise_en_charge) + 10 * Number(berline.prix_km)) : null,
+                premium: premium ? Math.round(Number(premium.prise_en_charge) + 10 * Number(premium.prix_km)) : null,
+                van:     van     ? Math.round(Number(van.prise_en_charge)     + 10 * Number(van.prix_km))     : null,
+                isFixed: false,
+              },
+            ]
+
+            return (
+              <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(201,168,76,.15)' }}>
+                {/* En-têtes colonnes */}
+                <div style={{
+                  display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
+                  background:'rgba(201,168,76,.06)',
+                  borderBottom:'1px solid rgba(201,168,76,.12)',
+                  padding:'14px 24px',
+                }}>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#848499' }}>Destination</div>
+                  {[
+                    { label:'Berline', emoji:'🚘' },
+                    { label:'Premium', emoji:'⭐' },
+                    { label:'Van 7 pl.', emoji:'🚐' },
+                  ].map(v => (
+                    <div key={v.label} style={{ textAlign:'center' }}>
+                      <div style={{ fontSize:11, fontWeight:600, color:'#EDE8DF' }}>{v.emoji} {v.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Lignes */}
+                {rows.map((r, i) => (
+                  <div key={i} style={{
+                    display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
+                    padding:'18px 24px', alignItems:'center',
+                    borderBottom: i < rows.length-1 ? '1px solid rgba(201,168,76,.07)' : 'none',
+                    background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.015)',
+                  }}>
+                    <div>
+                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        <span style={{ fontSize:18 }}>{r.icon}</span>
+                        <span style={{ fontSize:14, fontWeight:600, color:'#EDE8DF' }}>{r.label}</span>
+                      </div>
+                      <div style={{ fontSize:11, color:'#848499', marginTop:2, paddingLeft:26 }}>{r.sub}</div>
+                    </div>
+                    {[r.berline, r.premium, r.van].map((prix, j) => (
+                      <div key={j} style={{ textAlign:'center' }}>
+                        {prix != null ? (
+                          <div>
+                            <span style={{
+                              fontFamily:"'Courier New',monospace",
+                              fontSize:20, fontWeight:700, color:'#C9A84C',
+                            }}>{Math.round(Number(prix))}</span>
+                            <span style={{ fontSize:12, color:'#848499', marginLeft:2 }}>€</span>
+                            {!r.isFixed && <div style={{ fontSize:9, color:'#848499', letterSpacing:'.06em', textTransform:'uppercase' }}>dès</div>}
+                          </div>
+                        ) : <span style={{ color:'#3F3F5A' }}>—</span>}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                {/* Ligne tarif km */}
+                <div style={{
+                  display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
+                  padding:'18px 24px', alignItems:'center',
+                  background:'rgba(201,168,76,.04)',
+                  borderTop:'1px solid rgba(201,168,76,.12)',
+                }}>
+                  <div>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span style={{ fontSize:18 }}>📍</span>
+                      <span style={{ fontSize:14, fontWeight:600, color:'#EDE8DF' }}>Autre destination</span>
+                    </div>
+                    <div style={{ fontSize:11, color:'#848499', marginTop:2, paddingLeft:26 }}>Tarif calculé selon la distance réelle</div>
+                  </div>
+                  {[berline, premium, van].map((t, j) => (
+                    <div key={j} style={{ textAlign:'center' }}>
+                      {t ? (
+                        <div>
+                          <span style={{ fontFamily:"'Courier New',monospace", fontSize:16, fontWeight:700, color:'#C9A84C' }}>
+                            {Number(t.prix_km).toFixed(2)}
+                          </span>
+                          <span style={{ fontSize:11, color:'#848499' }}>€/km</span>
+                          <div style={{ fontSize:9, color:'#3F3F5A', marginTop:1 }}>
+                            + {Number(t.prise_en_charge).toFixed(0)}€ prise en charge
+                          </div>
+                        </div>
+                      ) : <span style={{ color:'#3F3F5A' }}>—</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Notes + CTA */}
+          <div className="reveal" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:24, flexWrap:'wrap', gap:16 }}>
+            <div style={{ fontSize:12, color:'#848499', display:'flex', flexDirection:'column', gap:4 }}>
+              <span>⏰ Majoration nuit +20% (22h – 6h) · 🧳 Bagages inclus · ✈ Suivi vol en temps réel</span>
+              <span>💳 Paiement sécurisé par carte en ligne · 📞 Réservation aussi par WhatsApp</span>
+            </div>
+            <button
+              onClick={() => scrollTo('#devis')}
+              style={{
+                background:'#C9A84C', color:'#09091A', border:'none', borderRadius:10,
+                padding:'13px 28px', fontSize:14, fontWeight:700, cursor:'pointer',
+                fontFamily:'DM Sans, sans-serif', whiteSpace:'nowrap',
+              }}
+            >
+              Obtenir mon prix →
+            </button>
+          </div>
         </div>
       </section>
 
