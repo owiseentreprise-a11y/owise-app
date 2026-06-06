@@ -20,20 +20,29 @@ export async function supprimerChauffeurAction(id: string): Promise<{ error?: st
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  // Vérifier pas de course active liée
-  const { data: coursesActives } = await supabase
+  // Bloquer si le chauffeur est physiquement avec un client (client dans la voiture ou en route)
+  const { data: coursesEnCours } = await supabase
     .from('courses')
     .select('id')
     .eq('chauffeur_id', id)
-    .in('statut', ['en_attente', 'acceptee', 'en_route', 'prise_en_charge'])
+    .in('statut', ['en_route', 'prise_en_charge'])
     .limit(1)
 
-  if (coursesActives && coursesActives.length > 0) {
-    return { error: 'Ce chauffeur a des courses actives. Désactivez-le d\'abord.' }
+  if (coursesEnCours && coursesEnCours.length > 0) {
+    return { error: 'Le chauffeur est en course en ce moment. Impossible de le supprimer.' }
   }
+
+  // Libérer les courses en attente ou acceptées → retour dans le panier
+  await supabase
+    .from('courses')
+    .update({ chauffeur_id: null, statut: 'en_attente' })
+    .eq('chauffeur_id', id)
+    .in('statut', ['en_attente', 'acceptee'])
 
   const { error } = await supabase.from('chauffeurs').delete().eq('id', id)
   if (error) return { error: error.message }
+
   revalidatePath('/admin/chauffeurs')
+  revalidatePath('/admin')
   return {}
 }
