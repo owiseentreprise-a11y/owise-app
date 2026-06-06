@@ -1227,38 +1227,215 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
       </section>
 
-      {/* ZONES */}
-      <section className="zones-section" id="zones">
-        <div className="reveal" style={{marginBottom:52}}>
-          <div className="section-tag">Zones desservies</div>
-          <h2 className="section-title">Paris, IDF & Oise<br/><em className="chrome-gold-slow">et tous les aéroports</em></h2>
-        </div>
-        <div className="zones-grid">
-          <div className="zones-map-wrap reveal reveal-left" style={{overflow:'hidden',borderRadius:16,boxShadow:'0 12px 40px rgba(0,0,0,.12)'}}>
-            <iframe
-              title="Zone de service Owise VTC — Paris, IDF & Oise"
-              src="https://maps.google.com/maps?width=100%25&height=400&hl=fr&q=Cr%C3%A9il,+Oise,+France&ie=UTF8&t=&z=9&iwloc=B&output=embed"
-              style={{width:'100%',height:'100%',border:0,display:'block',filter:'grayscale(0.2) contrast(1.05)'}}
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+      {/* ZONES — Destinations avec prix réels */}
+      <section id="zones" style={{ background:'#F8F6F1', padding:'80px 24px' }}>
+        <div style={{ maxWidth:1080, margin:'0 auto' }}>
+
+          {/* Header */}
+          <div className="reveal" style={{ textAlign:'center', marginBottom:52 }}>
+            <div className="section-tag">Nos destinations</div>
+            <h2 className="section-title">
+              Partout où vous en<br/><em className="chrome-gold-slow">avez besoin</em>
+            </h2>
+            <p style={{ fontSize:15, color:'#6B6B6B', maxWidth:500, margin:'12px auto 0' }}>
+              Disponible 24h/24 — Réservez en ligne ou par WhatsApp
+            </p>
           </div>
-          <div className="zones-list reveal reveal-right rd1">
-            {[
-              { color:'var(--gold)', name:'Paris intramuros', desc:'Tous les arrondissements', tag:'Couverture totale' },
-              { color:'var(--green)', name:'Île-de-France', desc:'Versailles, Boulogne, Saint-Denis…', tag:'+15 à 45 min' },
-              { color:'var(--blue)', name:'Aéroports CDG & Orly', desc:'Tous terminaux, toutes compagnies', tag:'Tarif fixe' },
-              { color:'var(--blue)', opacity:.7, name:'Beauvais (BVA)', desc:'Aéroport Paris-Beauvais', tag:'Tarif fixe' },
-              { color:'var(--amber)', name:'Oise', desc:'Compiègne, Senlis, Chantilly…', tag:'Sur devis' },
-            ].map((z,i)=>(
-              <div key={i} className="zone-item">
-                <div className="zone-dot" style={{background:z.color,opacity:(z as any).opacity}}/>
-                <div className="zone-info"><div className="zone-name">{z.name}</div><div className="zone-desc">{z.desc}</div></div>
-                <span className="zone-tag">{z.tag}</span>
+
+          {/* Grid de cartes */}
+          {(() => {
+            const b = bcTarifs.find(t => t.vehicule === 'Berline')
+            const destinations = [
+              {
+                emoji: '✈',
+                color: '#4D8ED4',
+                name: 'CDG / Roissy',
+                villes: ['Terminal 1', 'Terminal 2', 'Terminal 3'],
+                prix: b ? `${Number(b.cdg_fixe).toFixed(0)} €` : null,
+                prixLabel: 'Prix fixe berline',
+                tag: 'Tarif fixe garanti',
+                tagColor: '#4D8ED4',
+                dest: 'Aéroport Charles de Gaulle',
+                cta: 'Réserver',
+                href: '#devis',
+              },
+              {
+                emoji: '✈',
+                color: '#3DB87A',
+                name: 'Orly',
+                villes: ['Terminal 1', 'Terminal 2', 'Terminal 3 & 4'],
+                prix: b ? `${Number(b.orly_fixe).toFixed(0)} €` : null,
+                prixLabel: 'Prix fixe berline',
+                tag: 'Tarif fixe garanti',
+                tagColor: '#3DB87A',
+                dest: 'Aéroport d\'Orly',
+                cta: 'Réserver',
+                href: '#devis',
+              },
+              {
+                emoji: '✈',
+                color: '#848499',
+                name: 'Beauvais (BVA)',
+                villes: ['Ryanair', 'Wizz Air', 'easyJet'],
+                prix: b ? `${Number(b.beauvais_fixe).toFixed(0)} €` : null,
+                prixLabel: 'Prix fixe berline',
+                tag: 'Tarif fixe garanti',
+                tagColor: '#848499',
+                dest: 'Aéroport Paris-Beauvais',
+                cta: 'Réserver',
+                href: '#devis',
+              },
+              {
+                emoji: '🏙',
+                color: '#C9A84C',
+                name: 'Paris & IDF',
+                villes: ['Tous arrondissements', 'Versailles', 'Boulogne, Saint-Denis…'],
+                prix: b ? `${Number(b.prix_km).toFixed(2)} €/km` : null,
+                prixLabel: `+ ${b ? Number(b.prise_en_charge).toFixed(0) : '20'} € prise en charge`,
+                tag: 'Tarif au kilomètre',
+                tagColor: '#C9A84C',
+                dest: 'Paris et Île-de-France',
+                cta: 'Estimer mon prix',
+                href: '#devis',
+              },
+              {
+                emoji: '🚉',
+                color: '#E8A030',
+                name: 'Gares parisiennes',
+                villes: ['Gare du Nord', 'Gare de Lyon', 'Montparnasse, Saint-Lazare…'],
+                prix: b ? `dès ${Math.round(Number(b.prise_en_charge) + 8 * Number(b.prix_km))} €` : null,
+                prixLabel: 'selon la distance',
+                tag: 'Tarif calculé',
+                tagColor: '#E8A030',
+                dest: 'Toutes gares de Paris',
+                cta: 'Estimer mon prix',
+                href: '#devis',
+              },
+              {
+                emoji: '🌿',
+                color: '#C9A84C',
+                name: 'Oise',
+                villes: ['Chantilly', 'Creil', 'Compiègne, Senlis…'],
+                prix: null,
+                prixLabel: 'Devis personnalisé',
+                tag: 'Sur devis',
+                tagColor: '#C9A84C',
+                dest: 'Oise (60)',
+                cta: 'Demander un devis',
+                href: 'https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20l\'Oise',
+                external: true,
+              },
+            ]
+
+            return (
+              <div style={{
+                display:'grid',
+                gridTemplateColumns:'repeat(3,1fr)',
+                gap:16,
+              }}>
+                {destinations.map((d, i) => (
+                  <div key={i} className="reveal" style={{
+                    background:'#fff',
+                    borderRadius:16,
+                    border:'1px solid rgba(0,0,0,.07)',
+                    overflow:'hidden',
+                    boxShadow:'0 2px 20px rgba(0,0,0,.06)',
+                    display:'flex',
+                    flexDirection:'column',
+                  }}>
+                    {/* Bandeau couleur */}
+                    <div style={{ height:4, background:d.color, flexShrink:0 }}/>
+
+                    <div style={{ padding:'20px 22px', flex:1, display:'flex', flexDirection:'column', gap:12 }}>
+                      {/* Header */}
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                          <span style={{ fontSize:22 }}>{d.emoji}</span>
+                          <div>
+                            <div style={{ fontSize:15, fontWeight:700, color:'#0A0A0A', lineHeight:1.2 }}>{d.name}</div>
+                            <div style={{ fontSize:10, color:'#848499', marginTop:1 }}>{d.dest}</div>
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize:9, padding:'3px 8px', borderRadius:20, fontWeight:600,
+                          background:`${d.tagColor}15`, color:d.tagColor,
+                          border:`1px solid ${d.tagColor}30`,
+                          whiteSpace:'nowrap',
+                        }}>{d.tag}</span>
+                      </div>
+
+                      {/* Villes clés */}
+                      <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                        {d.villes.map((v, j) => (
+                          <div key={j} style={{ display:'flex', alignItems:'center', gap:6 }}>
+                            <div style={{ width:4, height:4, borderRadius:'50%', background:d.color, flexShrink:0 }}/>
+                            <span style={{ fontSize:12, color:'#555', lineHeight:1.3 }}>{v}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Prix */}
+                      <div style={{
+                        marginTop:'auto',
+                        paddingTop:12,
+                        borderTop:'1px solid rgba(0,0,0,.06)',
+                        display:'flex',
+                        alignItems:'flex-end',
+                        justifyContent:'space-between',
+                      }}>
+                        <div>
+                          {d.prix ? (
+                            <div style={{ fontFamily:"'Courier New',monospace", fontSize:22, fontWeight:700, color:'#C9A84C', lineHeight:1 }}>
+                              {d.prix}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize:14, fontWeight:600, color:'#C9A84C' }}>Sur devis</div>
+                          )}
+                          <div style={{ fontSize:10, color:'#848499', marginTop:2 }}>{d.prixLabel}</div>
+                        </div>
+                        {d.external ? (
+                          <a href={d.href} target="_blank" rel="noopener" style={{
+                            padding:'9px 16px', borderRadius:8, fontSize:12, fontWeight:600,
+                            background:'#25D366', color:'#fff', textDecoration:'none',
+                            display:'flex', alignItems:'center', gap:6,
+                          }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            {d.cta}
+                          </a>
+                        ) : (
+                          <button onClick={() => scrollTo(d.href)} style={{
+                            padding:'9px 16px', borderRadius:8, fontSize:12, fontWeight:600,
+                            background:'#09091A', color:'#C9A84C', border:'none', cursor:'pointer',
+                            fontFamily:'DM Sans, sans-serif',
+                          }}>
+                            {d.cta} →
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )
+          })()}
+
+          {/* Disponibilité 24h/24 */}
+          <div className="reveal" style={{
+            marginTop:32, padding:'18px 28px', borderRadius:12,
+            background:'#09091A', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12,
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{ width:8, height:8, borderRadius:'50%', background:'#3DB87A', boxShadow:'0 0 0 3px rgba(61,184,122,.2)' }}/>
+              <span style={{ fontSize:14, color:'#EDE8DF', fontWeight:500 }}>Disponible 24h/24, 7j/7 — Réponse en moins de 2 minutes</span>
+            </div>
+            <a href="https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20réserver%20un%20VTC"
+               target="_blank" rel="noopener"
+               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, textDecoration:'none' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Réserver par WhatsApp
+            </a>
           </div>
+
         </div>
       </section>
 
