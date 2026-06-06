@@ -69,7 +69,7 @@ function isForfaitZone(z: Zone) {
 function appliquerSupplements(prix: number, dateHeure: string, params: any): number {
   if (!dateHeure) return prix
   const d = new Date(dateHeure), h = d.getHours(), j = d.getDay()
-  if (h >= 20 || h < 6)   prix *= 1 + (params?.supplement_nuit    ?? 0) / 100
+  if (h >= 22 || h < 6)   prix *= 1 + (params?.supplement_nuit    ?? 0) / 100
   if (j === 0 || j === 6)  prix *= 1 + (params?.supplement_weekend ?? 0) / 100
   return prix
 }
