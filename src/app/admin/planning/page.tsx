@@ -308,7 +308,7 @@ export default async function PlanningPage() {
                             </div>
 
                             {/* Chauffeur — dispatch inline */}
-                            <div onClick={e => e.preventDefault()}>
+                            <div>
                               {course.statut === 'terminee' || course.statut === 'annulee' ? (
                                 <span style={{ fontSize: 11, color: 'var(--t2)' }}>
                                   {chauffeurNom ?? '—'}
