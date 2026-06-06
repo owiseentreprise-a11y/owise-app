@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
 
-type BcAddr  = { label: string; lat?: number; lng?: number; cp?: string }
-type ZoneMin = { id: string; code: string; type: string; prefixes_postaux: string[] }
+type BcAddr    = { label: string; lat?: number; lng?: number; cp?: string }
+type ZoneMin   = { id: string; code: string; type: string; prefixes_postaux: string[] }
+type GrilleMin = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 
 function detectZoneMin(cp: string, label: string, zones: ZoneMin[]): ZoneMin | null {
   const l = label.toLowerCase()
@@ -192,7 +193,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 
 type TarifRow = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[] }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[] }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -424,74 +425,27 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const v   = getVehicle(p)
     const h   = parseInt((f.time || '09:00').split(':')[0])
     const suppTotal = Object.values(sup).reduce((a,b)=>a+b,0)
-    // Détection aéroport/gare depuis label OU destType (même logique que le widget)
     const dest = (f.dest || '').toLowerCase()
     const orig = (f.origin || '').toLowerCase()
-    const isCDG      = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(orig) || f.destType === 'airport'
-    const isOrly     = /orly/i.test(dest) || /orly/i.test(orig)
-    const isBeauvais = /beauvais/i.test(dest) || /beauvais/i.test(orig)
-    const isGare     = /\bgare\b|gare du nord|gare de lyon|montparnasse|saint-lazare/i.test(dest) || f.destType === 'gare'
+    const isCDG      = /cdg|roissy|charles de gaulle/i.test(dest+orig) || f.destType === 'airport'
+    const isOrly     = /orly/i.test(dest+orig)
+    const isBeauvais = /beauvais/i.test(dest+orig)
+    const isGare     = /\bgare\b/i.test(dest+orig) || f.destType === 'gare'
+    // Distances typiques estimées (km)
+    const kmEst = isCDG ? 32 : isOrly ? 22 : isBeauvais ? 80 : isGare ? 15 : 20
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
-    if (tarif) {
-      let base = 0
-      if (isOrly)          base = Number(tarif.orly_fixe)
-      else if (isBeauvais) base = Number(tarif.beauvais_fixe)
-      else if (isCDG)      base = Number(tarif.cdg_fixe)
-      else if (isGare)     base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
-      else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
-      if (!base)           base = Number(tarif.prise_en_charge) + 30
-      if (etapeOpen) base += 10
-      const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
-      return Math.round(base + maj + suppTotal)
-    }
-    // fallback hardcodé
-    let base = v.base
-    if (isCDG || isOrly || isBeauvais) base += 25
-    else if (isGare)                   base += 12
-    if (etapeOpen)                     base += 10
+    let base = tarif
+      ? Number(tarif.prise_en_charge) + kmEst * Number(tarif.prix_km)
+      : v.base + (isCDG || isOrly || isBeauvais ? 25 : isGare ? 12 : 0)
+    if (etapeOpen) base += 10
     const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
-    return base + maj + suppTotal
+    return Math.round(base + maj + suppTotal)
   }
 
   async function bcEstimate(): Promise<number> {
     const v    = getVehicle(bcPax)
     const h    = parseInt((bcTime || '09:00').split(':')[0])
-    const dest = bcArrivee.label.toLowerCase()
-    const dep  = bcDepart.label.toLowerCase()
-
-    // 1. Forfait aéroport — uniquement si les DEUX adresses ont une zone connue
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
-    const isCDGAddr  = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(dep)
-    const isOrlyAddr = /\borly\b/i.test(dest) || /\borly\b/i.test(dep)
-    const isBVAAddr  = /\bbeauvais\b/i.test(dest) || /\bbeauvais\b/i.test(dep)
-    if (tarif && (isCDGAddr || isOrlyAddr || isBVAAddr)) {
-      // Vérifier que l'autre adresse (non-aéroport) est dans une zone connue
-      const geocode = async (addr: BcAddr): Promise<BcAddr> => {
-        if (addr.lat) return addr
-        try {
-          const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addr.label)}&limit=1&autocomplete=0`)
-          const json = await res.json()
-          const f    = json.features?.[0]
-          if (f) return { label: addr.label, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], cp: f.properties.postcode }
-        } catch {}
-        return addr
-      }
-      const airportIsArr = /cdg|roissy|charles de gaulle|orly|beauvais/i.test(bcArrivee.label)
-      const otherRaw = airportIsArr ? bcDepart : bcArrivee
-      const other    = await geocode(otherRaw)
-      const otherZone = detectZoneMin(other.cp ?? '', other.label, zonesProp)
-      if (otherZone) {
-        let fixe = 0
-        if (isCDGAddr)       fixe = Number(tarif.cdg_fixe)
-        else if (isOrlyAddr) fixe = Number(tarif.orly_fixe)
-        else                 fixe = Number(tarif.beauvais_fixe)
-        if (fixe > 0) {
-          if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
-          return fixe
-        }
-      }
-      // Pas de zone connue → on passe au calcul km
-    }
 
     // 2. Tarif km via OSRM — géocode si pas de coordonnées
     const geocode = async (addr: BcAddr): Promise<BcAddr> => {
@@ -516,8 +470,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
     // 3. Fallback base price
     let base = v.base
-    if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
-    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
+    const lDep = bcDepart.label.toLowerCase()
+    const lArr = bcArrivee.label.toLowerCase()
+    if (/aéroport|cdg|orly|roissy|beauvais/i.test(lDep + lArr)) base += 25
+    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(lDep + lArr)) base += 12
     if (h >= 22 || h < 6) base = Math.round(base * 1.2)
     return base
   }

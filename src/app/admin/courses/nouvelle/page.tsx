@@ -8,15 +8,14 @@ export default async function NouvelleCourse() {
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, paramsRes] = await Promise.all([
+  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, paramsRes, tarifsRes] = await Promise.all([
     supabase.from('clients').select('id, entreprise_nom, type_compte, profiles(prenom, nom)'),
     supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom)')
       .in('statut', ['disponible', 'hors_ligne']),
     supabase.from('collaborateurs').select('id, client_id, poste, profiles(prenom, nom)'),
     supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
-    supabase.from('zones').select('*').order('ordre'),
-    supabase.from('grilles_tarifaires').select('*'),
     supabase.from('parametres').select('*').eq('id', true).single(),
+    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km'),
   ])
 
   const now = new Date()
@@ -52,9 +51,8 @@ export default async function NouvelleCourse() {
           collabs={collabsRes.data as any ?? []}
           chauffeurs={chauffeursRes.data as any ?? []}
           sousTraitants={sousTraitantsRes.data as any ?? []}
-          zones={zonesRes.data as any ?? []}
-          grille={grilleRes.data as any ?? []}
           params={paramsRes.data as any}
+          tarifs={tarifsRes.data as any ?? []}
           defaultDatetime={defaultDatetime}
         />
       </div>

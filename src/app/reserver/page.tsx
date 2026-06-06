@@ -8,10 +8,8 @@ export default async function ReserverPage() {
   const admin    = createAdminClient()
   const supabase = await createClient()
 
-  const [{ data: { user } }, zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
+  const [{ data: { user } }, paramsRes, tarifsRes] = await Promise.all([
     supabase.auth.getUser(),
-    admin.from('zones').select('*').eq('active', true).order('ordre'),
-    admin.from('grilles_tarifaires').select('*'),
     admin.from('parametres').select('*').eq('id', true).single(),
     admin.from('tarifs').select('*'),
   ])
@@ -35,8 +33,6 @@ export default async function ReserverPage() {
 
   return (
     <ReserverClient
-      zones={zonesRes.data ?? []}
-      grille={grilleRes.data ?? []}
       params={paramsRes.data}
       tarifs={tarifsRes.data ?? []}
       profil={profil}

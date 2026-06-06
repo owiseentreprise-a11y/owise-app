@@ -7,8 +7,7 @@ import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/add
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Zone   = { id: string; nom: string; code: string; type: string; prefixes_postaux: string[] }
-type Grille = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
+type TarifVehicule = { vehicule: string; prise_en_charge: number; prix_km: number }
 type AdresseVal = { label: string; codePostal: string; lat?: number; lng?: number }
 
 type ClientOption = {
@@ -37,33 +36,12 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 7,
 }
 
-// ── Tarif helpers (miroir de ReserverClient) ──────────────────────────────────
+// ── Tarif helpers ─────────────────────────────────────────────────────────────
 
-function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Zone | null {
-  if (addressLabel) {
-    const lower = addressLabel.toLowerCase()
-    if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
-      const z = zones.find(z => z.type === 'gare')
-      if (z) return z
-    }
-    if (/\bparis\b/.test(lower)) {
-      const z = zones.find(z => z.code === 'Z1')
-      if (z) return z
-    }
-  }
-  if (!codePostal) return null
-  const sorted = [...zones].sort((a, b) => {
-    const maxA = Math.max(0, ...(a.prefixes_postaux as string[]).map(p => p.trim().length))
-    const maxB = Math.max(0, ...(b.prefixes_postaux as string[]).map(p => p.trim().length))
-    return maxB - maxA
-  })
-  return sorted.find(z =>
-    (z.prefixes_postaux as string[]).some(p => p.trim() && codePostal.startsWith(p.trim()))
-  ) ?? null
-}
-
-function isForfaitZone(z: Zone) {
-  return z.type === 'aeroport' || z.type === 'gare' || z.code === 'Z1'
+const VEHICULE_NOM: Record<string, string> = {
+  berline:         'Berline',
+  berline_premium: 'Berline Premium',
+  van:             'Van 7 places',
 }
 
 function appliquerSupplements(prix: number, dateHeure: string, params: any): number {
@@ -74,24 +52,11 @@ function appliquerSupplements(prix: number, dateHeure: string, params: any): num
   return prix
 }
 
-function calculerPrixForfait(depId: string, arrId: string, vehicule: string, dateHeure: string, grille: Grille[], params: any): number | null {
-  const cell = grille.find(g => g.zone_depart_id === depId && g.zone_arrivee_id === arrId)
-  if (!cell || !cell.prix_berline) return null
-  let coef = 1
-  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-  let prix = cell.prix_berline * coef
-  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-  return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
-}
-
-function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any): number | null {
-  const base = params?.tarif_base_particulier ?? 15
-  const tarif = params?.tarif_km_particulier ?? 2
-  let coef = 1
-  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-  let prix = (base + km * tarif) * coef
+function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any, tarifs: TarifVehicule[]): number | null {
+  const tarif   = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
+  const base    = tarif ? Number(tarif.prise_en_charge) : (params?.tarif_base_particulier ?? 15)
+  const prixKm  = tarif ? Number(tarif.prix_km)         : (params?.tarif_km_particulier   ?? 2)
+  let prix = base + km * prixKm
   if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
 }
@@ -213,12 +178,12 @@ function AddressInput({
 
 export default function NouvelleCourseForm({
   clients, collabs, chauffeurs, sousTraitants,
-  zones, grille, params,
+  params, tarifs,
   defaultDatetime,
 }: {
   clients: ClientOption[]; collabs: CollabOption[]
   chauffeurs: ChauffeurOption[]; sousTraitants: SousTraitantOption[]
-  zones: Zone[]; grille: Grille[]; params: any
+  params: any; tarifs: TarifVehicule[]
   defaultDatetime: string
 }) {
   const [pending, startTransition] = useTransition()
@@ -238,26 +203,18 @@ export default function NouvelleCourseForm({
   const [terminal, setTerminal]       = useState('')
   const [heureArrivee, setHeureArrivee] = useState('')
 
-  const activeZones = useMemo(() => zones.filter(z => z.code !== 'HORS'), [zones])
-  const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart,  activeZones])
-  const zoneArrivee = useMemo(() => detectZone(arrivee.codePostal, activeZones, arrivee.label), [arrivee, activeZones])
-
-  const useForfait = !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee)))
-
   const prixAuto = useMemo(() => {
-    if (!zoneDepart || !zoneArrivee) return null
-    if (useForfait) return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, dateHeure, grille, params)
-    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, dateHeure, params)
-    return null
-  }, [zoneDepart, zoneArrivee, useForfait, vehicule, dateHeure, distanceKm, grille, params])
+    if (!distanceKm) return null
+    return calculerPrixKm(distanceKm, vehicule, dateHeure, params, tarifs)
+  }, [distanceKm, vehicule, dateHeure, params, tarifs])
 
-  // Fetch OSRM distance when in km mode
+  // Charger la distance OSRM dès que les deux adresses ont des coordonnées
   useEffect(() => {
-    if (useForfait || !depart.lat || !arrivee.lat) { setDistanceKm(null); return }
+    if (!depart.lat || !arrivee.lat) { setDistanceKm(null); return }
     let alive = true
     fetchDistanceKm(depart, arrivee).then(d => { if (alive) setDistanceKm(d) })
     return () => { alive = false }
-  }, [useForfait, depart.lat, depart.lng, arrivee.lat, arrivee.lng])
+  }, [depart.lat, depart.lng, arrivee.lat, arrivee.lng])
 
   const prixFinal = prixManuel !== '' ? parseFloat(prixManuel) : prixAuto
 
@@ -350,21 +307,11 @@ export default function NouvelleCourseForm({
             />
           </div>
 
-          {/* Zones détectées */}
-          {(zoneDepart || zoneArrivee) && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-              {zoneDepart && (
-                <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)', color: 'var(--gold)' }}>
-                  Départ : {zoneDepart.nom}
-                </div>
-              )}
-              {zoneArrivee && (
-                <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)', color: 'var(--gold)' }}>
-                  Arrivée : {zoneArrivee.nom}
-                </div>
-              )}
-              <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: useForfait ? 'rgba(77,142,212,.12)' : 'rgba(201,168,76,.08)', border: `1px solid ${useForfait ? 'rgba(77,142,212,.25)' : 'rgba(201,168,76,.15)'}`, color: useForfait ? 'var(--blue)' : 'var(--t2)' }}>
-                {useForfait ? 'Forfait zone' : distanceKm ? `${distanceKm} km` : 'Tarif au km'}
+          {/* Distance calculée */}
+          {distanceKm && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.15)', color: 'var(--t2)' }}>
+                {distanceKm} km · tarif au km
               </div>
             </div>
           )}
@@ -440,21 +387,12 @@ export default function NouvelleCourseForm({
           )}
         </div>
 
-        {/* Infos vol / train — affichage conditionnel selon les zones */}
+        {/* Infos vol / train — détection par libellé */}
         {(() => {
-          const aeroTypes = ['aeroport']
-          const gareTypes = ['gare']
-          const depAero  = aeroTypes.includes(zoneDepart?.type  ?? '')
-          const arrAero  = aeroTypes.includes(zoneArrivee?.type ?? '')
-          const depGare  = gareTypes.includes(zoneDepart?.type  ?? '')
-          const arrGare  = gareTypes.includes(zoneArrivee?.type ?? '')
-          const showInfo = depAero || arrAero || depGare || arrGare
-          if (!showInfo && !depart.label && !arrivee.label) return null
-          // Fallback label-based detection si zones non encore détectées
           const labelAero = /aéroport|aeroport|cdg|orly|roissy|beauvais/i
           const labelGare = /\bgare\b/i
-          const isAero = depAero || arrAero || labelAero.test(depart.label) || labelAero.test(arrivee.label)
-          const isGare = !isAero && (depGare || arrGare || labelGare.test(depart.label) || labelGare.test(arrivee.label))
+          const isAero = labelAero.test(depart.label) || labelAero.test(arrivee.label)
+          const isGare = !isAero && (labelGare.test(depart.label) || labelGare.test(arrivee.label))
           if (!isAero && !isGare) return null
           const type = isAero ? 'vol' : 'train'
           const color = isAero ? '#4D8ED4' : '#3DB87A'
@@ -480,7 +418,7 @@ export default function NouvelleCourseForm({
               </div>
               <div>
                 <label style={lbl}>
-                  Heure {(depAero || depGare) ? "d'arrivée" : "de départ"} du {type}
+                  Heure d'arrivée du {type}
                   <span style={{ color: 'var(--t3)', textTransform: 'none', letterSpacing: 0, fontWeight: 400, marginLeft: 6 }}>
                     (pour anticiper la prise en charge)
                   </span>
@@ -509,7 +447,7 @@ export default function NouvelleCourseForm({
             Prix estimé (€)
             {prixAuto !== null && (
               <span style={{ marginLeft: 8, color: 'var(--gold)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
-                — calculé : {prixAuto} €{useForfait ? ' (forfait)' : distanceKm ? ` (${distanceKm} km)` : ''}
+                — calculé : {prixAuto} €{distanceKm ? ` (${distanceKm} km)` : ''}
               </span>
             )}
           </label>
