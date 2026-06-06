@@ -92,9 +92,36 @@ export default async function SousTraitantDetailPage({
         {sp.error && (
           <div style={{
             background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.25)',
-            borderRadius: 9, padding: '11px 14px', fontSize: 13, color: '#e88080',
+            borderRadius: 9, padding: '12px 16px', fontSize: 13, color: '#e88080',
+            lineHeight: 1.6,
           }}>
-            Erreur lors de la mise à jour.
+            {sp.error === 'compte-existant' || sp.error === 'email-deja-utilise' ? (
+              <>
+                <strong>Email déjà utilisé par un autre compte.</strong><br/>
+                <span style={{ fontSize: 12, color: 'var(--t2)' }}>
+                  Si c'est un auto-entrepreneur avec la même adresse, utilisez une variante :<br/>
+                  • Gmail : ajoutez <code style={{ background: 'var(--elevated)', padding: '1px 5px', borderRadius: 4 }}>+st</code> → <em>jean.dupont+st@gmail.com</em> (même boîte, email différent)<br/>
+                  • Autre : créez une adresse pro dédiée (ex: <em>vtc@societe.fr</em>)
+                </span>
+              </>
+            ) : sp.error === 'email-autre-st' ? (
+              <>
+                <strong>Cet email est déjà lié à un autre sous-traitant.</strong><br/>
+                <span style={{ fontSize: 12, color: 'var(--t2)' }}>Utilisez un email différent.</span>
+              </>
+            ) : sp.error === 'champs-requis' ? (
+              'Email et mot de passe requis.'
+            ) : (
+              'Erreur lors de la mise à jour. Réessayez.'
+            )}
+          </div>
+        )}
+        {sp.success === 'compte-cree' && (
+          <div style={{
+            background: 'rgba(60,196,124,.1)', border: '1px solid rgba(60,196,124,.25)',
+            borderRadius: 9, padding: '11px 14px', fontSize: 13, color: 'var(--grn)',
+          }}>
+            ✓ Compte de connexion créé. Le sous-traitant peut se connecter sur owise.fr/sous-traitant-login
           </div>
         )}
 

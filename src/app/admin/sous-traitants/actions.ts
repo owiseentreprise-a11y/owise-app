@@ -66,7 +66,7 @@ export async function creerCompteSTAction(formData: FormData) {
 
   if (!email || !password) redirect(`/admin/sous-traitants/${sous_traitant_id}?error=champs-requis`)
 
-  // Créer l'utilisateur auth
+  // Tenter de créer l'utilisateur auth
   const { data: authData, error: authError } = await authAdmin.auth.admin.createUser({
     email,
     password,
@@ -74,13 +74,43 @@ export async function creerCompteSTAction(formData: FormData) {
     app_metadata: { role: 'sous_traitant' },
   })
 
-  if (authError || !authData.user) {
-    redirect(`/admin/sous-traitants/${sous_traitant_id}?error=compte-existant`)
+  let userId: string
+
+  if (authError || !authData?.user) {
+    // Email déjà utilisé → chercher l'utilisateur existant
+    const { data: usersData } = await authAdmin.auth.admin.listUsers()
+    const existing = usersData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+
+    if (!existing) {
+      redirect(`/admin/sous-traitants/${sous_traitant_id}?error=creation-echouee`)
+    }
+
+    // Vérifier que ce compte n'est pas déjà lié à un AUTRE sous-traitant
+    const { data: dejaLie } = await supabase
+      .from('sous_traitants')
+      .select('id, nom')
+      .eq('user_id', existing.id)
+      .neq('id', sous_traitant_id)
+      .single()
+
+    if (dejaLie) {
+      redirect(`/admin/sous-traitants/${sous_traitant_id}?error=email-autre-st`)
+    }
+
+    // Compte existant libre → mettre à jour le rôle + mot de passe + lier
+    await authAdmin.auth.admin.updateUserById(existing.id, {
+      password,
+      app_metadata: { role: 'sous_traitant' },
+    })
+
+    userId = existing.id
+  } else {
+    userId = authData.user.id
   }
 
-  // Créer le profil
+  // Créer/mettre à jour le profil
   await supabase.from('profiles').upsert({
-    id:     authData.user.id,
+    id:     userId,
     role:   'sous_traitant',
     nom:    '',
     prenom: '',
@@ -88,7 +118,7 @@ export async function creerCompteSTAction(formData: FormData) {
 
   // Lier au sous-traitant
   await supabase.from('sous_traitants')
-    .update({ user_id: authData.user.id })
+    .update({ user_id: userId })
     .eq('id', sous_traitant_id)
 
   revalidatePath(`/admin/sous-traitants/${sous_traitant_id}`)
