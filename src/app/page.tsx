@@ -100,9 +100,9 @@ const jsonLd = {
     '@type': 'OfferCatalog',
     name: 'Services VTC Owise',
     itemListElement: [
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris CDG depuis 69€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris Orly depuis 59€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise CDG', description: 'Creil → CDG depuis 69€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris CDG depuis 85€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris Orly depuis 75€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise CDG', description: 'Creil → CDG depuis 80€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Compte entreprise VTC', description: 'Facturation mensuelle, multi-collaborateurs' } },
     ],
   },

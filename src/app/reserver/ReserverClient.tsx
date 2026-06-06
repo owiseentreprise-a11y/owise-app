@@ -10,10 +10,106 @@ import { fbInitCheckout } from '@/lib/pixel'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+type Zone         = { id: string; nom: string; code: string; type: string; prefixes_postaux: string[] }
+type Grille       = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 type TarifVehicule = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
 type AdresseVal   = { label: string; codePostal: string; lat?: number; lng?: number }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Zone | null {
+  if (addressLabel) {
+    const lower = addressLabel.toLowerCase()
+    // Aéroports en priorité absolue (avant le test "paris")
+    if (lower.includes('charles de gaulle') || lower.includes('roissy') || /\bcdg\b/.test(lower)) {
+      const z = zones.find(z => z.code === 'CDG')
+      if (z) return z
+    }
+    if (lower.includes('orly')) {
+      const z = zones.find(z => z.code === 'ORY')
+      if (z) return z
+    }
+    if (lower.includes('beauvais')) {
+      const z = zones.find(z => z.code === 'BVA')
+      if (z) return z
+    }
+    // "gare" dans l'adresse → zone gare (Gare du Nord, Gare de Lyon…)
+    if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
+      const gareZone = zones.find(z => z.type === 'gare')
+      if (gareZone) return gareZone
+    }
+    // "paris" dans l'adresse → Paris intramuros (Z1)
+    if (/\bparis\b/.test(lower)) {
+      const parisZone = zones.find(z => z.code === 'Z1')
+      if (parisZone) return parisZone
+    }
+  }
+  if (!codePostal) return null
+  // Sort by prefix length descending so more specific prefixes win (e.g. "60550" > "60")
+  const sorted = [...zones].sort((a, b) => {
+    const maxA = Math.max(0, ...(a.prefixes_postaux as string[]).map(p => p.trim().length))
+    const maxB = Math.max(0, ...(b.prefixes_postaux as string[]).map(p => p.trim().length))
+    return maxB - maxA
+  })
+  return sorted.find(z =>
+    (z.prefixes_postaux as string[]).some(p => p.trim() && codePostal.startsWith(p.trim()))
+  ) ?? null
+}
+
+/** Forfait si l'une des zones est un aéroport, une gare, ou Paris intramuros (Z1) */
+function isForfaitZone(zone: Zone): boolean {
+  return zone.type === 'aeroport' || zone.type === 'gare' || zone.code === 'Z1'
+}
+
+// Codes de zone aéroport → colonne dans tarifs
+const AIRPORT_COL: Record<string, keyof TarifVehicule> = {
+  CDG: 'cdg_fixe',
+  ORY: 'orly_fixe',
+  BVA: 'beauvais_fixe',
+}
+
+function calculerPrixForfait(
+  zoneDepId: string,
+  zoneArrId: string,
+  vehicule: string,
+  dateHeure: string,
+  grille: Grille[],
+  params: any,
+  tarifs: TarifVehicule[],
+  zones: Zone[],
+): number | null {
+  // Priorité : si une zone est un aéroport, utiliser les tarifs par véhicule
+  const zDep = zones.find(z => z.id === zoneDepId)
+  const zArr = zones.find(z => z.id === zoneArrId)
+  const airportZone = [zDep, zArr].find(z => z?.type === 'aeroport' && AIRPORT_COL[z.code])
+
+  if (airportZone) {
+    const tarif = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
+    const col   = AIRPORT_COL[airportZone.code]
+    if (tarif && col) {
+      const prix_base = Number(tarif[col])
+      if (prix_base > 0) {
+        let prix = prix_base
+        if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
+        prix = appliquerSupplements(prix, dateHeure, params)
+        return Math.round(prix * 100) / 100
+      }
+    }
+  }
+
+  // Fallback : matrice zone-à-zone
+  const cell = grille.find(g => g.zone_depart_id === zoneDepId && g.zone_arrivee_id === zoneArrId)
+  if (!cell || !cell.prix_berline) return null
+
+  let coef = 1
+  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
+  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
+
+  let prix = cell.prix_berline * coef
+  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
+  prix = appliquerSupplements(prix, dateHeure, params)
+  return Math.round(prix * 100) / 100
+}
 
 const VEHICULE_NOM: Record<string, string> = {
   berline:         'Berline',
@@ -262,7 +358,9 @@ const baseInput: React.CSSProperties = {
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
 
-export default function ReserverClient({ params, tarifs, profil }: {
+export default function ReserverClient({ zones, grille, params, tarifs, profil }: {
+  zones: Zone[]
+  grille: Grille[]
   params: any
   tarifs: TarifVehicule[]
   profil?: Profil | null
@@ -334,9 +432,28 @@ export default function ReserverClient({ params, tarifs, profil }: {
   const [distanceKm,   setDistanceKm]   = useState<number | null>(null)
   const [loadingRoute, setLoadingRoute] = useState(false)
 
-  // Charger la distance OSRM dès que les deux adresses ont des coordonnées
+  const activeZones = zones.filter(z => z.code !== 'HORS')
+  const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart.codePostal,  depart.label])
+  const zoneArrivee = useMemo(() => detectZone(arrivee.codePostal, activeZones, arrivee.label), [arrivee.codePostal, arrivee.label])
+
+  // Forfait uniquement si les DEUX zones sont connues et au moins une est forfait
+  const mightBeForfait = useMemo(() =>
+    !!(zoneDepart && zoneArrivee && (isForfaitZone(zoneDepart) || isForfaitZone(zoneArrivee))),
+    [zoneDepart, zoneArrivee]
+  )
+
+  // Prix forfait — null si montant = 0 (non configuré) ou zones inconnues
+  const forfaitPrix = useMemo(() => {
+    if (!mightBeForfait) return null
+    return calculerPrixForfait(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, params, tarifs, activeZones)
+  }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, params, tarifs, activeZones])
+
+  // Forfait actif uniquement si le montant est configuré (> 0) — sinon fallback km
+  const useForfait = forfaitPrix !== null
+
+  // Charger la distance OSRM uniquement si pas de forfait disponible
   useEffect(() => {
-    if (!depart.lat || !arrivee.lat) {
+    if (useForfait || !depart.lat || !arrivee.lat) {
       setDistanceKm(null)
       return
     }
@@ -345,12 +462,13 @@ export default function ReserverClient({ params, tarifs, profil }: {
       setDistanceKm(d)
       setLoadingRoute(false)
     })
-  }, [depart.lat, depart.lng, arrivee.lat, arrivee.lng])
+  }, [useForfait, depart.lat, depart.lng, arrivee.lat, arrivee.lng])
 
   const prix = useMemo(() => {
+    if (useForfait) return forfaitPrix
     if (distanceKm === null) return null
     return calculerPrixKm(distanceKm, vehicule, date, params, tarifs)
-  }, [distanceKm, vehicule, date, params, tarifs])
+  }, [useForfait, forfaitPrix, distanceKm, vehicule, date, params, tarifs])
 
   // Prix total : aller × 2 si aller-retour activé
   const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
@@ -373,8 +491,9 @@ export default function ReserverClient({ params, tarifs, profil }: {
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
     if (!date)                 return setStep1Error('Date et heure requises.')
     if (new Date(date) < new Date()) return setStep1Error('La date de prise en charge doit être dans le futur.')
-    if (!depart.lat)  return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
-    if (!arrivee.lat) return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
+    // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
+    if (!depart.codePostal && !zoneDepart)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
+    if (!arrivee.codePostal && !zoneArrivee)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
     if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
     fbInitCheckout({ value: prixTotal ?? undefined, currency: 'EUR', content_category: 'VTC', num_items: 1 })
@@ -396,8 +515,8 @@ export default function ReserverClient({ params, tarifs, profil }: {
         nb_passagers:    passagers,
         prix:            Math.round(prixFinal!),
         nom, prenom, email, telephone,
-        zone_depart_id:  '',
-        zone_arrivee_id: '',
+        zone_depart_id:  zoneDepart?.id ?? '',
+        zone_arrivee_id: zoneArrivee?.id ?? '',
         aller_retour:    allerRetour,
         date_retour:     allerRetour ? dateRetour : '',
         num_vol_train:   numVolTrain || undefined,
@@ -420,16 +539,21 @@ export default function ReserverClient({ params, tarifs, profil }: {
 
   const labelVehicule = VEHICULES.find(v => v.value === vehicule)?.label ?? vehicule
 
-  // Détection aéroport / gare (labels uniquement — pour les champs vol/train)
+  // Détection aéroport / gare (zones + fallback labels)
   const reAero = /aéroport|aeroport|cdg|orly|roissy|beauvais|le bourget/i
   const reGare = /\bgare\b/i
-  const isAeroDepart  = reAero.test(depart.label)
-  const isAeroArrivee = reAero.test(arrivee.label)
-  const isGareDepart  = reGare.test(depart.label)
-  const isGareArrivee = reGare.test(arrivee.label)
+  const isAeroDepart  = zoneDepart?.type  === 'aeroport' || reAero.test(depart.label)
+  const isAeroArrivee = zoneArrivee?.type === 'aeroport' || reAero.test(arrivee.label)
+  const isGareDepart  = zoneDepart?.type  === 'gare'     || reGare.test(depart.label)
+  const isGareArrivee = zoneArrivee?.type === 'gare'     || reGare.test(arrivee.label)
   const showVolInfo   = isAeroDepart || isAeroArrivee || isGareDepart || isGareArrivee
   const isAero        = isAeroDepart || isAeroArrivee
   const typeVol       = isAero ? 'vol' : 'train'
+
+  // Badge de tarification
+  const pricingBadge = useForfait
+    ? { label: 'Forfait zone', color: '#4A8ED0' }
+    : { label: 'Tarif au km', color: '#C9A84C' }
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#09091A' }}>
@@ -525,9 +649,11 @@ export default function ReserverClient({ params, tarifs, profil }: {
                 } onSelect={setDepart} />
                 {depart.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
-                    {depart.lat
-                      ? <span style={{ color: '#3DB87A' }}>✓ Adresse validée · tarif au km</span>
-                      : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste pour calculer le prix</span>
+                    {zoneDepart
+                      ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneDepart.nom}</span>
+                      : depart.codePostal
+                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
+                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
@@ -544,29 +670,32 @@ export default function ReserverClient({ params, tarifs, profil }: {
                 } onSelect={setArrivee} />
                 {arrivee.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
-                    {arrivee.lat
-                      ? <span style={{ color: '#3DB87A' }}>✓ Adresse validée · tarif au km</span>
-                      : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste pour calculer le prix</span>
+                    {zoneArrivee
+                      ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneArrivee.nom}</span>
+                      : arrivee.codePostal
+                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
+                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
               </div>
 
-              {/* Badge tarification + distance */}
-              {depart.lat && arrivee.lat && (
+              {/* Badge mode de tarification */}
+              {depart.codePostal && arrivee.codePostal && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 4 }}>
                   <span style={{
                     fontSize: 10, padding: '3px 10px', borderRadius: 10, fontWeight: 500,
-                    color: '#C9A84C', background: 'rgba(201,168,76,.08)',
-                    border: '1px solid rgba(201,168,76,.16)',
+                    color: pricingBadge.color,
+                    background: `${pricingBadge.color}14`,
+                    border: `1px solid ${pricingBadge.color}28`,
                     letterSpacing: '.08em', textTransform: 'uppercase',
                   }}>
-                    Tarif au km
+                    {pricingBadge.label}
                   </span>
-                  {distanceKm !== null && (
+                  {!useForfait && distanceKm !== null && (
                     <span style={{ fontSize: 11, color: '#6B6B6B' }}>{distanceKm} km</span>
                   )}
-                  {loadingRoute && (
+                  {!useForfait && loadingRoute && (
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#848499" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                     </svg>
@@ -779,7 +908,7 @@ export default function ReserverClient({ params, tarifs, profil }: {
             </div>
 
             {/* Prix estimé */}
-            {(prix !== null || loadingRoute) && depart.lat && arrivee.lat && (
+            {(prix !== null || loadingRoute) && (depart.codePostal || zoneDepart) && (arrivee.codePostal || zoneArrivee) && (
               <div style={{
                 background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05))',
                 border: '1px solid rgba(201,168,76,.25)',
@@ -792,9 +921,11 @@ export default function ReserverClient({ params, tarifs, profil }: {
                     {allerRetour ? 'Prix aller-retour' : 'Prix estimé'}
                   </div>
                   <div style={{ fontSize: 10, color: '#9B9B9B', marginTop: 3 }}>
-                    {distanceKm !== null
-                      ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
-                      : 'Calcul de l\'itinéraire…'
+                    {useForfait && zoneDepart && zoneArrivee
+                      ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                      : distanceKm !== null
+                        ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                        : 'Calcul de l\'itinéraire…'
                     }
                   </div>
                 </div>
@@ -862,7 +993,7 @@ export default function ReserverClient({ params, tarifs, profil }: {
                   <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
                   <div style={{ fontSize: 12, color: '#09091A' }}>{labelVehicule}</div>
                 </div>
-                {distanceKm && (
+                {!useForfait && distanceKm && (
                   <div>
                     <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
                     <div style={{ fontSize: 12, color: '#09091A' }}>{distanceKm} km</div>
