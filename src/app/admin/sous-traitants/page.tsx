@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import DeleteSTButton from './DeleteSTButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,7 +65,7 @@ export default async function SousTraitantsPage() {
             {/* Header */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 160px 160px 120px 80px',
+              gridTemplateColumns: '1fr 160px 160px 120px 80px 180px',
               padding: '8px 16px',
               fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase',
               color: 'var(--t3)', fontWeight: 500,
@@ -73,38 +74,39 @@ export default async function SousTraitantsPage() {
               <span>Contact</span>
               <span>Téléphone</span>
               <span>SIRET</span>
-              <span style={{ textAlign: 'right' }}>Statut</span>
+              <span>Statut</span>
+              <span style={{ textAlign: 'right' }}>Actions</span>
             </div>
 
             {list.map(st => (
-              <a
+              <div
                 key={st.id}
-                href={`/admin/sous-traitants/${st.id}`}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 160px 160px 120px 80px',
+                  gridTemplateColumns: '1fr 160px 160px 120px 80px 180px',
                   padding: '14px 16px',
                   background: 'var(--surface)',
                   border: '1px solid var(--gb)',
                   borderRadius: 9,
                   alignItems: 'center', gap: 14,
-                  textDecoration: 'none',
+                  position: 'relative',
                 }}
               >
-                <div>
+                <a href={`/admin/sous-traitants/${st.id}`} style={{ position: 'absolute', inset: 0, zIndex: 1 }} aria-label="Voir le sous-traitant" />
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{st.nom}</div>
                   {st.email && (
                     <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 2 }}>{st.email}</div>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--t2)' }}>{st.contact_nom ?? '—'}</div>
-                <div style={{ fontSize: 12, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                <div style={{ position: 'relative', zIndex: 2, fontSize: 12, color: 'var(--t2)' }}>{st.contact_nom ?? '—'}</div>
+                <div style={{ position: 'relative', zIndex: 2, fontSize: 12, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                   {st.telephone ?? '—'}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                <div style={{ position: 'relative', zIndex: 2, fontSize: 11, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                   {st.siret ?? '—'}
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <span style={{
                     fontSize: 9, padding: '3px 8px', borderRadius: 4, fontWeight: 500,
                     color:       st.actif ? 'var(--grn)' : 'var(--t3)',
@@ -114,7 +116,10 @@ export default async function SousTraitantsPage() {
                     {st.actif ? 'Actif' : 'Inactif'}
                   </span>
                 </div>
-              </a>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                  <DeleteSTButton id={st.id} nom={st.nom} actif={st.actif} />
+                </div>
+              </div>
             ))}
           </div>
         )}

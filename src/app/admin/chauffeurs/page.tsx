@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Chauffeur } from '@/lib/types'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
+import DeleteChauffeurButton from './DeleteChauffeurButton'
 
 export const revalidate = 0
 
@@ -66,7 +67,7 @@ export default async function ChauffeursPage() {
           {/* Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 160px 180px 80px 80px 120px',
+            gridTemplateColumns: '1fr 160px 180px 80px 80px 100px 180px',
             padding: '10px 20px',
             fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase',
             color: 'var(--t3)', fontWeight: 500,
@@ -78,6 +79,7 @@ export default async function ChauffeursPage() {
             <div style={{ textAlign: 'center' }}>Courses</div>
             <div style={{ textAlign: 'center' }}>Note</div>
             <div style={{ textAlign: 'right' }}>Statut</div>
+            <div style={{ textAlign: 'right' }}>Actions</div>
           </div>
 
           {list.length === 0 ? (
@@ -97,7 +99,7 @@ export default async function ChauffeursPage() {
                 style={{
                   position: 'relative',
                   display: 'grid',
-                  gridTemplateColumns: '1fr 160px 180px 80px 80px 120px',
+                  gridTemplateColumns: '1fr 160px 180px 80px 80px 100px 180px',
                   padding: '13px 20px',
                   borderBottom: '1px solid rgba(201,168,76,.04)',
                   alignItems: 'center',
@@ -175,6 +177,15 @@ export default async function ChauffeursPage() {
                   }}>
                     {s.label}
                   </span>
+                </div>
+
+                {/* Actions */}
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                  <DeleteChauffeurButton
+                    id={c.id}
+                    nom={`${prenom} ${nom}`.trim()}
+                    statut={c.statut}
+                  />
                 </div>
               </div>
             )

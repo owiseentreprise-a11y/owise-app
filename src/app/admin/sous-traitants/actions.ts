@@ -176,3 +176,30 @@ export async function marquerFactureSTPayeeAction(formData: FormData) {
   revalidatePath(`/admin/sous-traitants/${sous_traitant_id}`)
   redirect(`/admin/sous-traitants/${sous_traitant_id}`)
 }
+
+export async function toggleActifSTAction(id: string, actif: boolean): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('sous_traitants').update({ actif }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/sous-traitants')
+  return {}
+}
+
+export async function supprimerSTAction(id: string): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  const { data: coursesActives } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('sous_traitant_id', id)
+    .in('statut', ['en_attente', 'acceptee', 'en_route', 'prise_en_charge'])
+    .limit(1)
+  if (coursesActives && coursesActives.length > 0) {
+    return { error: 'Ce sous-traitant a des courses actives. Désactivez-le d\'abord.' }
+  }
+  const { error } = await supabase.from('sous_traitants').delete().eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/sous-traitants')
+  return {}
+}
