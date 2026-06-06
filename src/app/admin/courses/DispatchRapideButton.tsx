@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { assignerChauffeur } from './[id]/actions'
 
 type Chauffeur = {
@@ -20,6 +21,7 @@ export default function DispatchRapideButton({
   currentChauffeurId: string | null
   currentChauffeurNom: string | null
 }) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
   const [pos, setPos] = useState({ top: 0, right: 0 })
@@ -37,7 +39,10 @@ export default function DispatchRapideButton({
   function handleSelect(e: React.MouseEvent, chauffeurId: string | null) {
     e.stopPropagation()
     setOpen(false)
-    startTransition(() => assignerChauffeur(courseId, chauffeurId))
+    startTransition(async () => {
+      await assignerChauffeur(courseId, chauffeurId)
+      router.refresh()
+    })
   }
 
   useEffect(() => {
