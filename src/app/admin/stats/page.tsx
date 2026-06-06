@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import StatsClient from './StatsClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -6,20 +7,30 @@ function monthLabel(year: number, month: number) {
   return new Date(year, month - 1, 1).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })
 }
 
+// Détection géographique d'une adresse
+function detectGeo(adresse: string): string {
+  const a = adresse.toLowerCase()
+  if (/charles de gaulle|roissy|\bcdg\b/.test(a)) return 'CDG'
+  if (/\borly\b/.test(a))                          return 'Orly'
+  if (/beauvais/.test(a))                           return 'Beauvais'
+  if (/\bparis\b|75\d{3}/.test(a))                 return 'Paris'
+  if (/\b60\d{3}\b/.test(a))                       return 'Oise'
+  if (/gare/.test(a))                               return 'Gare'
+  return 'Autre'
+}
+
 export default async function StatsPage() {
   const supabase = createAdminClient()
-
   const now = new Date()
-  // 6 mois glissants (mois courant inclus)
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [coursesRes, chauffeursRes, clientsRes, newClientsRes, notesRes] = await Promise.all([
+  const [coursesRes, chauffeursRes, clientsRes, newClientsRes] = await Promise.all([
     supabase
       .from('courses')
-      .select('statut, date_prevue, prix_final, prix_estime, type_vehicule, chauffeur_id, client_id, chauffeurs(profiles(prenom, nom)), clients(type_compte, entreprise_nom, profiles(prenom, nom))')
-      .gte('date_prevue', sixMonthsAgo.toISOString())
+      .select('statut, date_prevue, prix_final, prix_estime, type_vehicule, chauffeur_id, client_id, adresse_depart, adresse_arrivee, chauffeurs(profiles(prenom, nom)), clients(type_compte, entreprise_nom, profiles(prenom, nom))')
+      .gte('date_prevue', twelveMonthsAgo.toISOString())
       .order('date_prevue', { ascending: true }),
     supabase
       .from('chauffeurs')
@@ -29,524 +40,140 @@ export default async function StatsPage() {
       .from('clients')
       .select('id, type_compte, entreprise_nom, created_at, profiles(prenom, nom)')
       .order('created_at'),
-    // Nouveaux clients ce mois
     supabase
       .from('clients')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', currentMonthStart.toISOString()),
-    // Courses avec note ce mois
-    supabase
-      .from('courses')
-      .select('note_client', { count: 'exact' })
-      .eq('statut', 'terminee')
-      .not('note_client', 'is', null),
   ])
 
-  const courses    = coursesRes.data ?? []
-  const terminées  = courses.filter(c => c.statut === 'terminee')
-  const annulées   = courses.filter(c => c.statut === 'annulee')
-  const nouveauxClients = newClientsRes.count ?? 0
+  const courses   = coursesRes.data ?? []
+  const terminées = courses.filter(c => c.statut === 'terminee')
+  const annulées  = courses.filter(c => c.statut === 'annulee')
 
-  // ── Taux de notation moyen ──
-  const chauffeursAvecNote = (chauffeursRes.data ?? []).filter(c => c.note_moyenne && c.note_moyenne > 0)
-  const noteMoyenneGlobale = chauffeursAvecNote.length > 0
-    ? chauffeursAvecNote.reduce((s, c) => s + Number(c.note_moyenne), 0) / chauffeursAvecNote.length
-    : null
-
-  // ── Répartition par type de véhicule ──
-  const vehiculeLabels: Record<string, string> = {
-    berline:         'Berline',
-    berline_premium: 'Berline Premium',
-    van_7:           'Van 7 pl.',
-    grand_van_8:     'Grand Van',
-  }
-  const vehiculeStats: Record<string, { count: number; ca: number }> = {}
-  for (const c of terminées) {
-    const k = (c as any).type_vehicule ?? 'berline'
-    if (!vehiculeStats[k]) vehiculeStats[k] = { count: 0, ca: 0 }
-    vehiculeStats[k].count++
-    vehiculeStats[k].ca += Number(c.prix_final ?? c.prix_estime ?? 0)
-  }
-  const vehiculeList = Object.entries(vehiculeStats)
-    .map(([k, v]) => ({ label: vehiculeLabels[k] ?? k, ...v }))
-    .sort((a, b) => b.count - a.count)
-  const maxVehCount = Math.max(...vehiculeList.map(v => v.count), 1)
-
-  // ── Revenus entreprise vs particulier ──
-  const caEntreprise = terminées
-    .filter(c => (c as any).clients?.type_compte === 'entreprise')
-    .reduce((s, c) => s + Number(c.prix_final ?? c.prix_estime ?? 0), 0)
-  const caParticulier = terminées
-    .filter(c => (c as any).clients?.type_compte !== 'entreprise')
-    .reduce((s, c) => s + Number(c.prix_final ?? c.prix_estime ?? 0), 0)
-
-  // ── Aggrégation par mois ──
-  const months: { key: string; label: string; count: number; ca: number; annulees: number }[] = []
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const y = d.getFullYear()
-    const m = d.getMonth() + 1
+  // ── Agrégation 12 mois ──
+  const months12 = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)
+    const y = d.getFullYear(); const m = d.getMonth() + 1
     const key = `${y}-${String(m).padStart(2, '0')}`
-    const label = monthLabel(y, m)
-    const monthCourses = terminées.filter(c => c.date_prevue.startsWith(key))
-    const ca = monthCourses.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
-    const ann = annulées.filter(c => c.date_prevue.startsWith(key)).length
-    months.push({ key, label, count: monthCourses.length, ca, annulees: ann })
-  }
-
-  const maxCA = Math.max(...months.map(m => m.ca), 1)
-  const maxCount = Math.max(...months.map(m => m.count), 1)
+    const mTerm = terminées.filter(c => c.date_prevue.startsWith(key))
+    const mAnn  = annulées.filter(c => c.date_prevue.startsWith(key))
+    const ca    = mTerm.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+    return {
+      key, label: monthLabel(y, m),
+      count: mTerm.length, ca,
+      annulees: mAnn.length,
+      panierMoyen: mTerm.length > 0 ? ca / mTerm.length : 0,
+    }
+  })
 
   // ── Top chauffeurs ──
-  const chauffeurStats: Record<string, { nom: string; count: number; ca: number }> = {}
+  const chStats: Record<string, { nom: string; count: number; ca: number }> = {}
   for (const c of terminées) {
     if (!c.chauffeur_id) continue
     const ch = (c as any).chauffeurs
     const nom = ch?.profiles ? `${ch.profiles.prenom} ${ch.profiles.nom}` : 'Inconnu'
-    if (!chauffeurStats[c.chauffeur_id]) chauffeurStats[c.chauffeur_id] = { nom, count: 0, ca: 0 }
-    chauffeurStats[c.chauffeur_id].count++
-    chauffeurStats[c.chauffeur_id].ca += c.prix_final ?? c.prix_estime ?? 0
+    if (!chStats[c.chauffeur_id]) chStats[c.chauffeur_id] = { nom, count: 0, ca: 0 }
+    chStats[c.chauffeur_id].count++
+    chStats[c.chauffeur_id].ca += c.prix_final ?? c.prix_estime ?? 0
   }
-  const topChauffeurs = Object.values(chauffeurStats)
-    .sort((a, b) => b.ca - a.ca)
-    .slice(0, 6)
+  const topChauffeurs = Object.values(chStats).sort((a, b) => b.ca - a.ca).slice(0, 6)
 
   // ── Top clients ──
-  const clientStats: Record<string, { nom: string; count: number; ca: number }> = {}
+  const clStats: Record<string, { nom: string; count: number; ca: number }> = {}
   for (const c of terminées) {
     if (!c.client_id) continue
     const cl = (c as any).clients
     const nom = cl?.type_compte === 'entreprise'
       ? (cl.entreprise_nom ?? 'Entreprise')
       : cl?.profiles ? `${cl.profiles.prenom} ${cl.profiles.nom}` : 'Inconnu'
-    if (!clientStats[c.client_id]) clientStats[c.client_id] = { nom, count: 0, ca: 0 }
-    clientStats[c.client_id].count++
-    clientStats[c.client_id].ca += c.prix_final ?? c.prix_estime ?? 0
+    if (!clStats[c.client_id]) clStats[c.client_id] = { nom, count: 0, ca: 0 }
+    clStats[c.client_id].count++
+    clStats[c.client_id].ca += c.prix_final ?? c.prix_estime ?? 0
   }
-  const topClients = Object.values(clientStats)
-    .sort((a, b) => b.ca - a.ca)
-    .slice(0, 6)
+  const topClients = Object.values(clStats).sort((a, b) => b.ca - a.ca).slice(0, 6)
 
-  // ── KPIs globaux ──
-  const caTotal = terminées.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
-  const caCurrentMonth = months[months.length - 1].ca
-  const caPrevMonth = months[months.length - 2].ca
-  const caEvo = caPrevMonth > 0 ? ((caCurrentMonth - caPrevMonth) / caPrevMonth * 100) : null
-
-  const txCompletion = courses.length > 0
-    ? Math.round(terminées.length / courses.filter(c => c.statut !== 'annulee' || true).length * 100)
-    : 0
-
-  const coursesThisMonth = months[months.length - 1].count
-  const coursesPrevMonth = months[months.length - 2].count
-  const countEvo = coursesPrevMonth > 0 ? ((coursesThisMonth - coursesPrevMonth) / coursesPrevMonth * 100) : null
-
-  function evoLabel(evo: number | null) {
-    if (evo === null) return null
-    const sign = evo >= 0 ? '+' : ''
-    return { text: `${sign}${evo.toFixed(0)}%`, pos: evo >= 0 }
+  // ── Répartition véhicule ──
+  const vehiculeLabels: Record<string, string> = {
+    berline: 'Berline', berline_premium: 'Berline Premium',
+    van: 'Van 7 pl.', van_7: 'Van 7 pl.', grand_van_8: 'Grand Van',
   }
+  const vStats: Record<string, { count: number; ca: number }> = {}
+  for (const c of terminées) {
+    const k = (c as any).type_vehicule ?? 'berline'
+    if (!vStats[k]) vStats[k] = { count: 0, ca: 0 }
+    vStats[k].count++
+    vStats[k].ca += c.prix_final ?? c.prix_estime ?? 0
+  }
+  const vehiculeList = Object.entries(vStats)
+    .map(([k, v]) => ({ label: vehiculeLabels[k] ?? k, ...v }))
+    .sort((a, b) => b.count - a.count)
 
-  const caEvoLabel = evoLabel(caEvo)
-  const countEvoLabel = evoLabel(countEvo)
+  // ── Répartition géographique ──
+  const geoStats: Record<string, { count: number; ca: number }> = {}
+  for (const c of terminées) {
+    const geo = detectGeo((c as any).adresse_arrivee ?? '') !== 'Autre'
+      ? detectGeo((c as any).adresse_arrivee ?? '')
+      : detectGeo((c as any).adresse_depart ?? '')
+    if (!geoStats[geo]) geoStats[geo] = { count: 0, ca: 0 }
+    geoStats[geo].count++
+    geoStats[geo].ca += c.prix_final ?? c.prix_estime ?? 0
+  }
+  const GEO_ORDER = ['CDG', 'Orly', 'Paris', 'Oise', 'Gare', 'Beauvais', 'Autre']
+  const geoData = GEO_ORDER
+    .filter(k => geoStats[k]?.count > 0)
+    .map(k => ({ label: k, ...geoStats[k] }))
+
+  // ── Heures de pointe ──
+  const heuresCtr: Record<number, number> = {}
+  for (const c of terminées) {
+    const h = new Date(c.date_prevue).getHours()
+    heuresCtr[h] = (heuresCtr[h] ?? 0) + 1
+  }
+  const heuresData = Object.entries(heuresCtr).map(([h, count]) => ({ heure: Number(h), count }))
+
+  // ── Notes ──
+  const chauffeursAvecNote = (chauffeursRes.data ?? []).filter(c => c.note_moyenne && c.note_moyenne > 0)
+  const noteGlobale = chauffeursAvecNote.length > 0
+    ? chauffeursAvecNote.reduce((s, c) => s + Number(c.note_moyenne), 0) / chauffeursAvecNote.length
+    : null
+
+  // ── CA entreprise vs particulier (12m) ──
+  const caEntreprise12 = terminées
+    .filter(c => (c as any).clients?.type_compte === 'entreprise')
+    .reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  const caParticulier12 = terminées
+    .filter(c => (c as any).clients?.type_compte !== 'entreprise')
+    .reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
 
   return (
     <>
-      {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'var(--surface)', 
+        background: 'var(--surface)',
         borderBottom: '1px solid rgba(201,168,76,.08)',
         padding: '0 32px', height: 60,
-        display: 'flex', alignItems: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Statistiques</div>
-        <div style={{ marginLeft: 12, fontSize: 10, color: 'var(--t3)' }}>6 derniers mois</div>
+        <div style={{ fontSize: 10, color: 'var(--t3)' }}>
+          {terminées.length} courses terminées · {courses.length} total (12 mois)
+        </div>
       </div>
 
-      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-        {/* ── KPIs ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
-          {[
-            {
-              label: 'CA ce mois',
-              value: `${caCurrentMonth.toFixed(0)} €`,
-              evo: caEvoLabel,
-              mono: true,
-              gold: true,
-            },
-            {
-              label: 'Courses ce mois',
-              value: String(coursesThisMonth),
-              evo: countEvoLabel,
-              mono: true,
-            },
-            {
-              label: 'CA 6 mois',
-              value: `${caTotal.toFixed(0)} €`,
-              mono: true,
-              gold: true,
-            },
-            {
-              label: 'Taux de complétion',
-              value: `${Math.round(terminées.length / Math.max(courses.length, 1) * 100)} %`,
-              mono: true,
-              sub: `${terminées.length} / ${courses.length} courses`,
-            },
-          ].map((kpi, i) => (
-            <div key={i} style={{
-              background: 'var(--surface)', border: '1px solid var(--gb)',
-              borderRadius: 12, padding: '18px 20px',
-            }}>
-              <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 10 }}>
-                {kpi.label}
-              </div>
-              <div style={{
-                fontFamily: kpi.mono ? 'var(--font-jetbrains), monospace' : undefined,
-                fontSize: 26, fontWeight: 600,
-                color: kpi.gold ? 'var(--gold)' : 'var(--t1)',
-                letterSpacing: kpi.mono ? '-.02em' : undefined,
-              }}>
-                {kpi.value}
-              </div>
-              {kpi.evo && (
-                <div style={{ fontSize: 10, color: kpi.evo.pos ? 'var(--grn)' : 'var(--red)', marginTop: 4 }}>
-                  {kpi.evo.text} vs mois précédent
-                </div>
-              )}
-              {kpi.sub && (
-                <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 4 }}>
-                  {kpi.sub}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* ── Graphiques ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-          {/* Chiffre d'affaires */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 14, padding: '22px 24px',
-          }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 20 }}>
-              Chiffre d'affaires mensuel
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
-              {months.map(m => {
-                const h = maxCA > 0 ? Math.max((m.ca / maxCA) * 100, m.ca > 0 ? 4 : 0) : 0
-                const isLast = m.key === months[months.length - 1].key
-                return (
-                  <div key={m.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                    <div style={{ fontSize: 9, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                      {m.ca > 0 ? `${Math.round(m.ca)}` : ''}
-                    </div>
-                    <div style={{ width: '100%', position: 'relative', flex: 1, display: 'flex', alignItems: 'flex-end' }}>
-                      <div style={{
-                        width: '100%',
-                        height: `${h}%`,
-                        minHeight: m.ca > 0 ? 4 : 0,
-                        borderRadius: '4px 4px 2px 2px',
-                        background: isLast
-                          ? 'linear-gradient(180deg,var(--gold),rgba(201,168,76,.4))'
-                          : 'linear-gradient(180deg,rgba(201,168,76,.35),rgba(201,168,76,.12))',
-                        transition: 'height .3s',
-                      }} />
-                    </div>
-                    <div style={{ fontSize: 9, color: isLast ? 'var(--gold)' : 'var(--t3)', textAlign: 'center' }}>
-                      {m.label}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Nombre de courses */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 14, padding: '22px 24px',
-          }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 20 }}>
-              Volume mensuel
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
-              {months.map(m => {
-                const h = maxCount > 0 ? Math.max((m.count / maxCount) * 100, m.count > 0 ? 4 : 0) : 0
-                const isLast = m.key === months[months.length - 1].key
-                return (
-                  <div key={m.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                    <div style={{ fontSize: 9, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                      {m.count > 0 ? m.count : ''}
-                    </div>
-                    <div style={{ width: '100%', position: 'relative', flex: 1, display: 'flex', alignItems: 'flex-end' }}>
-                      <div style={{ width: '100%', display: 'flex', gap: 2, alignItems: 'flex-end', height: '100%' }}>
-                        <div style={{
-                          flex: 1,
-                          height: `${h}%`,
-                          minHeight: m.count > 0 ? 4 : 0,
-                          borderRadius: '3px 3px 2px 2px',
-                          background: isLast
-                            ? 'linear-gradient(180deg,var(--blu),rgba(74,142,208,.3))'
-                            : 'linear-gradient(180deg,rgba(74,142,208,.45),rgba(74,142,208,.12))',
-                        }} />
-                        {m.annulees > 0 && (
-                          <div style={{
-                            flex: 1,
-                            height: `${Math.max((m.annulees / maxCount) * 100, 4)}%`,
-                            borderRadius: '3px 3px 2px 2px',
-                            background: 'rgba(217,80,80,.35)',
-                          }} />
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 9, color: isLast ? 'var(--blu)' : 'var(--t3)', textAlign: 'center' }}>
-                      {m.label}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', gap: 14, marginTop: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(74,142,208,.7)' }} />
-                <span style={{ fontSize: 9, color: 'var(--t3)' }}>Terminées</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(217,80,80,.5)' }} />
-                <span style={{ fontSize: 9, color: 'var(--t3)' }}>Annulées</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── KPIs ligne 2 ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
-          {[
-            {
-              label: 'Nouveaux clients ce mois',
-              value: String(nouveauxClients),
-              mono: true,
-              sub: `${(clientsRes.data ?? []).length} clients total`,
-            },
-            {
-              label: 'Note moyenne chauffeurs',
-              value: noteMoyenneGlobale !== null ? `★ ${noteMoyenneGlobale.toFixed(1)}` : '—',
-              mono: false,
-              gold: noteMoyenneGlobale !== null,
-              sub: `${chauffeursAvecNote.length} chauffeur${chauffeursAvecNote.length > 1 ? 's' : ''} noté${chauffeursAvecNote.length > 1 ? 's' : ''}`,
-            },
-            {
-              label: 'CA entreprises (6 mois)',
-              value: `${caEntreprise.toFixed(0)} €`,
-              mono: true,
-              gold: true,
-              sub: caTotal > 0 ? `${Math.round(caEntreprise / caTotal * 100)} % du CA` : undefined,
-            },
-            {
-              label: 'CA particuliers (6 mois)',
-              value: `${caParticulier.toFixed(0)} €`,
-              mono: true,
-              sub: caTotal > 0 ? `${Math.round(caParticulier / caTotal * 100)} % du CA` : undefined,
-            },
-          ].map((kpi, i) => (
-            <div key={i} style={{
-              background: 'var(--surface)', border: '1px solid var(--gb)',
-              borderRadius: 12, padding: '18px 20px',
-            }}>
-              <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 10 }}>
-                {kpi.label}
-              </div>
-              <div style={{
-                fontFamily: kpi.mono ? 'var(--font-jetbrains), monospace' : undefined,
-                fontSize: 26, fontWeight: 600,
-                color: kpi.gold ? 'var(--gold)' : 'var(--t1)',
-              }}>
-                {kpi.value}
-              </div>
-              {kpi.sub && (
-                <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 4 }}>{kpi.sub}</div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* ── Répartition par véhicule ── */}
-        {vehiculeList.length > 0 && (
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 14, padding: '22px 24px',
-          }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16 }}>
-              Répartition par type de véhicule
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {vehiculeList.map((v, i) => (
-                <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{v.label}</span>
-                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                      <span style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                        {v.count} course{v.count > 1 ? 's' : ''}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace', minWidth: 60, textAlign: 'right' }}>
-                        {v.ca.toFixed(0)} €
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ height: 5, background: 'var(--elevated)', borderRadius: 3 }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${(v.count / maxVehCount) * 100}%`,
-                      borderRadius: 3,
-                      background: i === 0
-                        ? 'linear-gradient(90deg,var(--gold),rgba(201,168,76,.5))'
-                        : `rgba(201,168,76,${0.35 - i * 0.08})`,
-                      transition: 'width .4s',
-                    }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Top chauffeurs + Top clients ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-          {/* Top chauffeurs */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 14, overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid rgba(201,168,76,.07)',
-              fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase',
-              color: 'var(--t2)', fontWeight: 500,
-            }}>
-              Top chauffeurs
-            </div>
-            {topChauffeurs.length === 0 ? (
-              <div style={{ padding: '32px', textAlign: 'center', fontSize: 12, color: 'var(--t3)' }}>
-                Aucune donnée
-              </div>
-            ) : (
-              <div>
-                {topChauffeurs.map((ch, i) => {
-                  const pct = topChauffeurs[0].ca > 0 ? (ch.ca / topChauffeurs[0].ca * 100) : 0
-                  return (
-                    <div key={i} style={{
-                      padding: '12px 20px',
-                      borderBottom: i < topChauffeurs.length - 1 ? '1px solid rgba(201,168,76,.04)' : 'none',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{
-                            width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                            background: i === 0 ? 'linear-gradient(135deg,var(--gold),#8B6A1A)' : 'var(--elevated)',
-                            border: i === 0 ? 'none' : '1px solid var(--t3)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 9, fontWeight: 700,
-                            color: i === 0 ? 'var(--base)' : 'var(--t3)',
-                          }}>
-                            {i + 1}
-                          </div>
-                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{ch.nom}</span>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{
-                            fontFamily: 'var(--font-jetbrains), monospace',
-                            fontSize: 13, fontWeight: 600, color: 'var(--gold)',
-                          }}>
-                            {ch.ca.toFixed(0)} €
-                          </div>
-                          <div style={{ fontSize: 9, color: 'var(--t3)' }}>{ch.count} courses</div>
-                        </div>
-                      </div>
-                      <div style={{ height: 3, background: 'var(--elevated)', borderRadius: 2 }}>
-                        <div style={{
-                          height: '100%', width: `${pct}%`,
-                          background: i === 0 ? 'var(--gold)' : 'rgba(201,168,76,.35)',
-                          borderRadius: 2, transition: 'width .4s',
-                        }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Top clients */}
-          <div style={{
-            background: 'var(--surface)', border: '1px solid var(--gb)',
-            borderRadius: 14, overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid rgba(201,168,76,.07)',
-              fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase',
-              color: 'var(--t2)', fontWeight: 500,
-            }}>
-              Top clients
-            </div>
-            {topClients.length === 0 ? (
-              <div style={{ padding: '32px', textAlign: 'center', fontSize: 12, color: 'var(--t3)' }}>
-                Aucune donnée
-              </div>
-            ) : (
-              <div>
-                {topClients.map((cl, i) => {
-                  const pct = topClients[0].ca > 0 ? (cl.ca / topClients[0].ca * 100) : 0
-                  return (
-                    <div key={i} style={{
-                      padding: '12px 20px',
-                      borderBottom: i < topClients.length - 1 ? '1px solid rgba(201,168,76,.04)' : 'none',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{
-                            width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                            background: i === 0 ? 'linear-gradient(135deg,var(--gold),#8B6A1A)' : 'var(--elevated)',
-                            border: i === 0 ? 'none' : '1px solid var(--t3)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 9, fontWeight: 700,
-                            color: i === 0 ? 'var(--base)' : 'var(--t3)',
-                          }}>
-                            {i + 1}
-                          </div>
-                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{cl.nom}</span>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{
-                            fontFamily: 'var(--font-jetbrains), monospace',
-                            fontSize: 13, fontWeight: 600, color: 'var(--gold)',
-                          }}>
-                            {cl.ca.toFixed(0)} €
-                          </div>
-                          <div style={{ fontSize: 9, color: 'var(--t3)' }}>{cl.count} courses</div>
-                        </div>
-                      </div>
-                      <div style={{ height: 3, background: 'var(--elevated)', borderRadius: 2 }}>
-                        <div style={{
-                          height: '100%', width: `${pct}%`,
-                          background: i === 0 ? 'var(--gold)' : 'rgba(201,168,76,.35)',
-                          borderRadius: 2, transition: 'width .4s',
-                        }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-      </div>
+      <StatsClient
+        months12={months12}
+        topChauffeurs={topChauffeurs}
+        topClients={topClients}
+        vehiculeList={vehiculeList}
+        geoData={geoData}
+        heuresData={heuresData}
+        noteGlobale={noteGlobale}
+        nbChauffeursNotes={chauffeursAvecNote.length}
+        nbClientsTotal={(clientsRes.data ?? []).length}
+        nouveauxClientsActuel={newClientsRes.count ?? 0}
+        caEntreprise12={caEntreprise12}
+        caParticulier12={caParticulier12}
+      />
     </>
   )
 }
