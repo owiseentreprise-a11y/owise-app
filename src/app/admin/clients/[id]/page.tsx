@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getUserEmail }  from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
-import ClientEditActions from './ClientEditActions'
+import ClientEditActions, { DeleteClientButton } from './ClientEditActions'
 import CollaborateursSection from './CollaborateursSection'
 import { togglePayerAbord } from './actions'
 
@@ -318,6 +318,8 @@ export default async function ClientDetailPage({
               collaborateurs={collaborateurs}
             />
           )}
+
+          <DeleteClientButton clientId={id} nomAffiche={nomAffiche} />
         </div>
       </div>
     </>

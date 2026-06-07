@@ -171,3 +171,31 @@ export async function updateTarifClient(
   }).eq('id', id)
   revalidatePath(`/admin/clients/${id}`)
 }
+
+export async function supprimerClient(id: string): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const admin = createAdminClient()
+
+  // Détacher les courses sans les supprimer (historique conservé)
+  await admin.from('courses').update({ client_id: null, collaborateur_id: null }).eq('client_id', id)
+
+  // Supprimer les comptes auth des collaborateurs
+  const { data: collabs } = await admin.from('collaborateurs').select('id').eq('client_id', id)
+  if (collabs?.length) {
+    await Promise.all(collabs.map(c => admin.auth.admin.deleteUser(c.id).catch(() => {})))
+    await admin.from('collaborateurs').delete().eq('client_id', id)
+  }
+
+  // Supprimer les factures liées
+  await admin.from('factures').delete().eq('client_id', id)
+
+  // Supprimer le client
+  const { error } = await admin.from('clients').delete().eq('id', id)
+  if (error) return { error: error.message }
+
+  // Supprimer l'utilisateur auth (cascade profile)
+  await admin.auth.admin.deleteUser(id).catch(() => {})
+
+  revalidatePath('/admin/clients')
+  return {}
+}

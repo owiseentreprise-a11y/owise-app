@@ -182,7 +182,7 @@ export default async function ClientsPage({
         }}>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 120px 1fr 130px',
+            gridTemplateColumns: '1fr 120px 180px 110px',
             padding: '10px 20px',
             fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase',
             color: 'var(--t3)', fontWeight: 500,
@@ -190,7 +190,7 @@ export default async function ClientsPage({
           }}>
             <div>Client</div>
             <div>Type</div>
-            <div>Adresse facturation</div>
+            <div>Contact</div>
             <div style={{ textAlign: 'right' }}>Membre depuis</div>
           </div>
 
@@ -201,12 +201,16 @@ export default async function ClientsPage({
           ) : list.map((client: any) => {
             const p = client.profiles
             const isEntreprise = client.type_compte === 'entreprise'
+            const prenom = client.prenom || p?.prenom || ''
+            const nom    = client.nom    || p?.nom    || ''
+            const tel    = client.tel    || p?.telephone || ''
+            const email  = client.email  || ''
             const nomAffiche = isEntreprise
               ? (client.entreprise_nom ?? '—')
-              : `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim() || '—'
+              : `${prenom} ${nom}`.trim() || '—'
             const initials = isEntreprise
               ? (client.entreprise_nom?.[0] ?? 'E').toUpperCase()
-              : `${p?.prenom?.[0] ?? ''}${p?.nom?.[0] ?? ''}`.toUpperCase()
+              : `${prenom[0] ?? ''}${nom[0] ?? ''}`.toUpperCase()
 
             return (
               <a
@@ -215,16 +219,17 @@ export default async function ClientsPage({
                 className="client-row"
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 120px 1fr 130px',
-                  padding: '13px 20px',
+                  gridTemplateColumns: '1fr 120px 180px 110px',
+                  padding: '12px 20px',
                   borderBottom: '1px solid rgba(201,168,76,.04)',
                   alignItems: 'center',
                   textDecoration: 'none',
                 }}
               >
+                {/* Identité */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
-                    width: 32, height: 32, borderRadius: isEntreprise ? 6 : '50%', flexShrink: 0,
+                    width: 34, height: 34, borderRadius: isEntreprise ? 7 : '50%', flexShrink: 0,
                     background: isEntreprise
                       ? 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.06))'
                       : 'var(--elevated)',
@@ -233,13 +238,16 @@ export default async function ClientsPage({
                     fontFamily: isEntreprise ? 'var(--font-cormorant), serif' : 'var(--font-dm-sans), sans-serif',
                     fontSize: isEntreprise ? 13 : 11, fontWeight: 600,
                     color: isEntreprise ? 'var(--gold)' : 'var(--t2)',
-                  }}>{initials}</div>
+                  }}>{initials || '?'}</div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{nomAffiche}</div>
-                    <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{p?.telephone ?? '—'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', lineHeight: 1.3 }}>{nomAffiche}</div>
+                    {isEntreprise && client.adresse_facturation && (
+                      <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 1 }}>{client.adresse_facturation}</div>
+                    )}
                   </div>
                 </div>
 
+                {/* Type */}
                 <div>
                   <span style={{
                     fontSize: 9.5, padding: '3px 9px', borderRadius: 20, fontWeight: 500,
@@ -251,10 +259,29 @@ export default async function ClientsPage({
                   </span>
                 </div>
 
-                <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-                  {client.adresse_facturation ?? '—'}
+                {/* Contact */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {tel ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="var(--t3)" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                      </svg>
+                      <span style={{ fontSize: 11, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>{tel}</span>
+                    </div>
+                  ) : null}
+                  {email ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="var(--t3)" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                      </svg>
+                      <span style={{ fontSize: 11, color: 'var(--t2)' }}>{email}</span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 11, color: 'var(--t3)' }}>—</span>
+                  )}
                 </div>
 
+                {/* Date */}
                 <div style={{
                   textAlign: 'right',
                   fontFamily: 'var(--font-jetbrains), monospace',

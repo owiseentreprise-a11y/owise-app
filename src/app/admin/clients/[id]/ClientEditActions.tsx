@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateProfile, updateCompte, updateTarifClient, updateEmail, updateFacturationMode } from './actions'
+import { updateProfile, updateCompte, updateTarifClient, updateEmail, updateFacturationMode, supprimerClient } from './actions'
 
 interface Props {
   clientId: string
@@ -135,6 +135,160 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </div>
       {children}
     </div>
+  )
+}
+
+export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string; nomAffiche: string }) {
+  const [open, setOpen]       = useState(false)
+  const [confirm, setConfirm] = useState('')
+  const [pending, start]      = useTransition()
+  const [error, setError]     = useState<string | null>(null)
+  const router                = useRouter()
+
+  function handleDelete() {
+    start(async () => {
+      const res = await supprimerClient(clientId)
+      if (res?.error) { setError(res.error); return }
+      router.push('/admin/clients')
+    })
+  }
+
+  function close() { setOpen(false); setConfirm(''); setError(null) }
+
+  return (
+    <>
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid rgba(217,84,84,.2)',
+        borderRadius: 12, padding: 16,
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 500, marginBottom: 8 }}>
+          Zone dangereuse
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--t2)', marginBottom: 12, lineHeight: 1.5 }}>
+          Supprime définitivement ce compte. Les courses associées sont conservées sans lien client.
+        </p>
+        <button
+          onClick={() => setOpen(true)}
+          style={{
+            width: '100%', padding: '8px 0', borderRadius: 8,
+            background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.25)',
+            color: 'var(--red)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontFamily: 'var(--font-dm-sans), sans-serif',
+            transition: 'background .15s',
+          }}
+        >
+          Supprimer ce client
+        </button>
+      </div>
+
+      {open && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) close() }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 300,
+            background: 'rgba(9,9,26,.8)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid rgba(217,84,84,.3)',
+            borderRadius: 16, padding: 28,
+            maxWidth: 400, width: '100%',
+            boxShadow: '0 24px 64px rgba(0,0,0,.6)',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--red)" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)' }}>Supprimer ce client</div>
+                <div style={{ fontSize: 11, color: 'var(--t2)' }}>Action irréversible</div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: 13, color: 'var(--t2)', lineHeight: 1.6, marginBottom: 18 }}>
+              Vous allez supprimer{' '}
+              <strong style={{ color: 'var(--t1)' }}>{nomAffiche}</strong>{' '}
+              et tous ses collaborateurs. Les courses sont conservées.
+            </p>
+
+            {/* Confirmation text input */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 6 }}>
+                Tapez{' '}
+                <span style={{ color: 'var(--red)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                  {nomAffiche}
+                </span>{' '}
+                pour confirmer
+              </div>
+              <input
+                autoFocus
+                value={confirm}
+                onChange={e => setConfirm(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && confirm === nomAffiche) handleDelete() }}
+                placeholder={nomAffiche}
+                style={{
+                  width: '100%', boxSizing: 'border-box' as const,
+                  background: 'var(--elevated)',
+                  border: `1px solid ${confirm === nomAffiche ? 'rgba(217,84,84,.5)' : 'var(--t3)'}`,
+                  borderRadius: 8, padding: '9px 12px',
+                  fontSize: 13, color: 'var(--t1)',
+                  outline: 'none', fontFamily: 'var(--font-dm-sans), sans-serif',
+                  transition: 'border-color .15s',
+                }}
+              />
+            </div>
+
+            {error && (
+              <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 12, padding: '8px 12px', background: 'rgba(217,84,84,.08)', borderRadius: 6 }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={close}
+                style={{
+                  flex: 1, padding: '9px 0', borderRadius: 8,
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  color: 'var(--t2)', fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={confirm !== nomAffiche || pending}
+                style={{
+                  flex: 1, padding: '9px 0', borderRadius: 8,
+                  background: confirm === nomAffiche ? 'var(--red)' : 'rgba(217,84,84,.15)',
+                  border: '1px solid rgba(217,84,84,.35)',
+                  color: confirm === nomAffiche ? '#fff' : 'rgba(217,84,84,.4)',
+                  fontSize: 12, fontWeight: 600,
+                  cursor: confirm === nomAffiche && !pending ? 'pointer' : 'not-allowed',
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                  transition: 'all .15s',
+                  opacity: pending ? .7 : 1,
+                }}
+              >
+                {pending ? 'Suppression…' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
