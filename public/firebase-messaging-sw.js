@@ -8,7 +8,10 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 // (voir ChauffeurApp.tsx)
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'FIREBASE_CONFIG') {
-    firebase.initializeApp(event.data.config)
+    // Évite "Firebase App already exists" si le SW est déjà actif
+    if (!firebase.apps.length) {
+      firebase.initializeApp(event.data.config)
+    }
     const messaging = firebase.messaging()
 
     messaging.onBackgroundMessage((payload) => {
