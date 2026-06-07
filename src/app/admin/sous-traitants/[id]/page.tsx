@@ -16,23 +16,28 @@ export default async function SousTraitantDetailPage({
   const sp = await searchParams
   const supabase = createAdminClient()
 
-  const [stRes, coursesRes, facturesRes] = await Promise.all([
+  const [stRes, coursesRes, facturesRes, chauffeursRes] = await Promise.all([
     supabase.from('sous_traitants').select('*').eq('id', id).single(),
     supabase.from('courses')
-      .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_sous_traitant, clients(type_compte, entreprise_nom, profiles(prenom, nom))')
+      .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_sous_traitant, facture_st_id, clients(type_compte, entreprise_nom, profiles(prenom, nom))')
       .eq('sous_traitant_id', id)
       .order('date_prevue', { ascending: false })
       .limit(50),
     supabase.from('factures_sous_traitants')
       .select('*')
       .eq('sous_traitant_id', id)
-      .order('periode', { ascending: false }),
+      .order('created_at', { ascending: false }),
+    supabase.from('chauffeurs')
+      .select('id, statut, vehicule_marque, vehicule_modele, vehicule_immatriculation, type_vehicule, profiles(prenom, nom, telephone)')
+      .eq('sous_traitant_id', id)
+      .order('created_at', { ascending: true }),
   ])
 
   if (!stRes.data) notFound()
-  const st       = stRes.data
-  const courses  = coursesRes.data ?? []
-  const factures = facturesRes.data ?? []
+  const st        = stRes.data
+  const courses   = coursesRes.data ?? []
+  const factures  = facturesRes.data ?? []
+  const chauffeurs = chauffeursRes.data ?? []
 
   const inputStyle = {
     background: 'var(--elevated)', border: '1px solid rgba(201,168,76,.18)',
@@ -402,6 +407,98 @@ export default async function SousTraitantDetailPage({
           </div>
         </div>
 
+        {/* ── CHAUFFEURS RATTACHÉS ── */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 14, overflow: 'hidden' }}>
+          <div style={{
+            padding: '16px 24px', borderBottom: '1px solid rgba(201,168,76,.07)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>Chauffeurs rattachés</span>
+              <span style={{
+                fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10,
+                color: 'var(--t3)', background: 'var(--elevated)',
+                border: '1px solid var(--gb)', borderRadius: 5, padding: '1px 7px',
+              }}>{chauffeurs.length}</span>
+            </div>
+            <a href={`/admin/chauffeurs/nouveau`} style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px', borderRadius: 7,
+              background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
+              color: 'var(--gold)', fontSize: 11, fontWeight: 500, textDecoration: 'none',
+            }}>
+              <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Ajouter un chauffeur
+            </a>
+          </div>
+
+          {chauffeurs.length === 0 ? (
+            <div style={{ padding: '28px 24px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
+              Aucun chauffeur rattaché à cette société.<br/>
+              <span style={{ fontSize: 11, marginTop: 4, display: 'block' }}>
+                Créez un chauffeur avec type "Sous-traitant" et sélectionnez {st.nom}.
+              </span>
+            </div>
+          ) : (
+            <div>
+              {(chauffeurs as any[]).map((c, i) => {
+                const nom = c.profiles ? `${c.profiles.prenom} ${c.profiles.nom}` : '—'
+                const tel = c.profiles?.telephone ?? null
+                const veh = [c.vehicule_marque, c.vehicule_modele].filter(Boolean).join(' ')
+                const immat = c.vehicule_immatriculation ?? null
+                const isDisponible = c.statut === 'disponible'
+                return (
+                  <a
+                    key={c.id}
+                    href={`/admin/chauffeurs/${c.id}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '13px 24px', textDecoration: 'none',
+                      borderBottom: i < chauffeurs.length - 1 ? '1px solid rgba(201,168,76,.04)' : 'none',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: 'var(--elevated)', border: '1px solid var(--t3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, fontWeight: 600, color: 'var(--t2)',
+                        fontFamily: 'var(--font-dm-sans), sans-serif',
+                      }}>
+                        {nom.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>{nom}</div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          {veh && <span style={{ fontSize: 10, color: 'var(--t2)' }}>{veh}</span>}
+                          {immat && (
+                            <span style={{
+                              fontSize: 9, fontFamily: 'var(--font-jetbrains), monospace',
+                              color: 'var(--t3)', background: 'var(--elevated)',
+                              border: '1px solid var(--t3)', borderRadius: 4, padding: '1px 6px',
+                            }}>{immat}</span>
+                          )}
+                          {tel && <span style={{ fontSize: 10, color: 'var(--gold)', fontFamily: 'var(--font-jetbrains), monospace' }}>{tel}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                      color: isDisponible ? 'var(--grn)' : 'var(--t3)',
+                      background: isDisponible ? 'rgba(61,184,122,.1)' : 'var(--elevated)',
+                      border: isDisponible ? '1px solid rgba(61,184,122,.2)' : '1px solid var(--t3)',
+                    }}>
+                      {isDisponible ? 'Disponible' : c.statut === 'en_course' ? 'En course' : 'Hors ligne'}
+                    </span>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
         {/* ── FACTURATION SORTANTE ── */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 14, padding: '24px' }}>
         {(() => {
@@ -449,58 +546,102 @@ export default async function SousTraitantDetailPage({
             Aucune facture générée
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {factures.map((f: any) => (
-              <div key={f.id} style={{
-                display: 'grid', gridTemplateColumns: '1fr auto auto',
-                alignItems: 'center', gap: 16,
-                padding: '12px 16px',
-                background: 'var(--elevated)', borderRadius: 10,
-                border: `1px solid ${f.statut === 'payee' ? 'rgba(61,184,122,.2)' : 'rgba(232,160,48,.2)'}`,
-              }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
-                    {f.periode}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {factures.map((f: any) => {
+              const coursesDeLaFacture = courses.filter((c: any) => (c as any).facture_st_id === f.id)
+              return (
+                <div key={f.id} style={{
+                  background: 'var(--elevated)', borderRadius: 10,
+                  border: `1px solid ${f.statut === 'payee' ? 'rgba(61,184,122,.2)' : 'rgba(232,160,48,.2)'}`,
+                  overflow: 'hidden',
+                }}>
+                  {/* En-tête facture */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: '1fr auto auto',
+                    alignItems: 'center', gap: 16,
+                    padding: '12px 16px',
+                    borderBottom: coursesDeLaFacture.length > 0 ? '1px solid rgba(201,168,76,.07)' : 'none',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t1)', marginBottom: 2 }}>
+                        {f.periode}
+                      </div>
+                      {f.notes && <div style={{ fontSize: 10, color: 'var(--t3)' }}>{f.notes}</div>}
+                      {f.date_paiement && (
+                        <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: 2 }}>
+                          Payée le {new Date(f.date_paiement).toLocaleDateString('fr-FR')}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 700, color: 'var(--t1)' }}>
+                      {Number(f.montant_ht).toFixed(2)} €
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        fontSize: 9, padding: '3px 9px', borderRadius: 4, fontWeight: 600,
+                        color:      f.statut === 'payee' ? 'var(--grn)' : 'var(--amb)',
+                        background: f.statut === 'payee' ? 'rgba(61,184,122,.1)' : 'rgba(232,160,48,.1)',
+                        border:     f.statut === 'payee' ? '1px solid rgba(61,184,122,.25)' : '1px solid rgba(232,160,48,.25)',
+                      }}>
+                        {f.statut === 'payee' ? 'Payée' : 'En attente'}
+                      </span>
+                      {f.statut === 'en_attente' && (
+                        <form action={marquerFactureSTPayeeAction} style={{ display: 'inline' }}>
+                          <input type="hidden" name="facture_id" value={f.id} />
+                          <input type="hidden" name="sous_traitant_id" value={st.id} />
+                          <button type="submit" style={{
+                            padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500,
+                            background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)',
+                            color: 'var(--grn)', cursor: 'pointer',
+                            fontFamily: 'var(--font-dm-sans), sans-serif',
+                          }}>
+                            Marquer payée
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   </div>
-                  {f.notes && <div style={{ fontSize: 10, color: 'var(--t3)' }}>{f.notes}</div>}
-                  {f.date_paiement && (
-                    <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: 2 }}>
-                      Payée le {new Date(f.date_paiement).toLocaleDateString('fr-FR')}
+
+                  {/* Détail des courses */}
+                  {coursesDeLaFacture.length > 0 && (
+                    <div>
+                      {coursesDeLaFacture.map((c: any, ci: number) => (
+                        <a
+                          key={c.id}
+                          href={`/admin/courses/${c.id}`}
+                          style={{
+                            display: 'grid', gridTemplateColumns: '1fr auto auto',
+                            alignItems: 'center', gap: 12,
+                            padding: '9px 16px 9px 24px', textDecoration: 'none',
+                            borderBottom: ci < coursesDeLaFacture.length - 1 ? '1px solid rgba(201,168,76,.04)' : 'none',
+                            background: 'rgba(0,0,0,.06)',
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--t1)', fontWeight: 500 }}>
+                              {c.adresse_depart.split(',')[0]}
+                              <span style={{ color: 'var(--t3)', margin: '0 5px' }}>→</span>
+                              {c.adresse_arrivee.split(',')[0]}
+                            </div>
+                            <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 1, fontFamily: 'var(--font-jetbrains), monospace' }}>
+                              {new Date(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              {' · '}
+                              {new Date(c.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: 11, fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--t2)' }}>
+                            {c.prix_sous_traitant != null ? `${Number(c.prix_sous_traitant).toFixed(0)} €` : '—'}
+                          </div>
+                          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="var(--t3)" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+                          </svg>
+                        </a>
+                      ))}
                     </div>
                   )}
                 </div>
-                <div style={{
-                  fontFamily: 'var(--font-jetbrains), monospace',
-                  fontSize: 16, fontWeight: 600, color: 'var(--t1)',
-                }}>
-                  {f.montant_ht.toFixed(2)} €
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    fontSize: 9, padding: '3px 9px', borderRadius: 4, fontWeight: 600,
-                    color:      f.statut === 'payee' ? 'var(--grn)' : 'var(--amb)',
-                    background: f.statut === 'payee' ? 'rgba(61,184,122,.1)' : 'rgba(232,160,48,.1)',
-                    border:     f.statut === 'payee' ? '1px solid rgba(61,184,122,.25)' : '1px solid rgba(232,160,48,.25)',
-                  }}>
-                    {f.statut === 'payee' ? 'Payée' : 'En attente'}
-                  </span>
-                  {f.statut === 'en_attente' && (
-                    <form action={marquerFactureSTPayeeAction} style={{ display: 'inline' }}>
-                      <input type="hidden" name="facture_id" value={f.id} />
-                      <input type="hidden" name="sous_traitant_id" value={st.id} />
-                      <button type="submit" style={{
-                        padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500,
-                        background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)',
-                        color: 'var(--grn)', cursor: 'pointer',
-                        fontFamily: 'var(--font-dm-sans), sans-serif',
-                      }}>
-                        Marquer payée
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

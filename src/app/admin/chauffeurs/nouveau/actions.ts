@@ -23,6 +23,7 @@ export async function createChauffeur(
   const vehicule_marque          = (formData.get('vehicule_marque') as string) || null
   const vehicule_modele          = (formData.get('vehicule_modele') as string) || null
   const vehicule_immatriculation = (formData.get('vehicule_immatriculation') as string) || null
+  const sous_traitant_id         = (formData.get('sous_traitant_id') as string) || null
 
   if (!email?.trim() || !password || !nom || !prenom) {
     return { error: 'Tous les champs obligatoires doivent être remplis.' }
@@ -65,6 +66,7 @@ export async function createChauffeur(
     vehicule_marque,
     vehicule_modele,
     vehicule_immatriculation,
+    sous_traitant_id:         type_contrat === 'sous_traitant' ? sous_traitant_id : null,
     note_moyenne:             0,
     nb_courses:               0,
   })

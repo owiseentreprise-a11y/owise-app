@@ -173,23 +173,38 @@ export async function genererFactureSTAction(formData: FormData) {
     fin   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
   }
 
+  // Courses terminées sur la période, pas encore facturées à ce ST
   const { data: courses } = await supabase
     .from('courses')
-    .select('prix_sous_traitant')
+    .select('id, prix_sous_traitant, adresse_depart, adresse_arrivee, date_prevue')
     .eq('sous_traitant_id', sous_traitant_id)
     .eq('statut', 'terminee')
+    .is('facture_st_id', null)
     .gte('date_prevue', debut)
     .lte('date_prevue', fin)
 
-  const montant = (courses ?? []).reduce((s: number, c: any) => s + (c.prix_sous_traitant ?? 0), 0)
+  const coursesList = courses ?? []
+  const montant = coursesList.reduce((s: number, c: any) => s + (c.prix_sous_traitant ?? 0), 0)
 
-  await supabase.from('factures_sous_traitants').upsert({
+  if (coursesList.length === 0) {
+    redirect(`/admin/sous-traitants/${sous_traitant_id}?error=aucune-course`)
+  }
+
+  // Créer la facture
+  const { data: facture } = await supabase.from('factures_sous_traitants').upsert({
     sous_traitant_id,
     periode,
     montant_ht: montant,
     statut: 'en_attente',
-    notes: `${(courses ?? []).length} course(s) terminée(s)`,
-  }, { onConflict: 'sous_traitant_id,periode' })
+    notes: `${coursesList.length} course(s)`,
+  }, { onConflict: 'sous_traitant_id,periode' }).select('id').single()
+
+  // Lier les courses à la facture
+  if (facture?.id) {
+    await supabase.from('courses')
+      .update({ facture_st_id: facture.id })
+      .in('id', coursesList.map((c: any) => c.id))
+  }
 
   revalidatePath(`/admin/sous-traitants/${sous_traitant_id}`)
   redirect(`/admin/sous-traitants/${sous_traitant_id}`)
