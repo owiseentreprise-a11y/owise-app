@@ -106,7 +106,7 @@ const jsonLd = {
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Compte entreprise VTC', description: 'Facturation mensuelle, multi-collaborateurs' } },
     ],
   },
-  sameAs: ['https://owise.fr', 'https://facebook.com/Owise.vtc'],
+  sameAs: ['https://owise.fr', 'https://facebook.com/Owise.vtc', 'https://www.tiktok.com/@owise857'],
 }
 
 export default async function VitrinePage() {
