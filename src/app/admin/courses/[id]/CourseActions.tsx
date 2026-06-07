@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -62,6 +62,8 @@ export default function CourseActions({
   const [prixInput, setPrixInput] = useState(course.prix_final?.toString() ?? course.prix_estime?.toString() ?? '')
   const [notesInput, setNotesInput] = useState(course.notes ?? '')
   const [notesSaved, setNotesSaved] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const s = STATUT_STYLE[course.statut]
   const transitions = STATUT_TRANSITIONS[course.statut]
@@ -505,6 +507,71 @@ export default function CourseActions({
         >
           {notesSaved ? '✓ Sauvegardé' : 'Sauvegarder les notes'}
         </button>
+      </div>
+
+      {/* === ZONE DANGEREUSE === */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid rgba(217,84,84,.2)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 12, opacity: .7 }}>
+          Zone dangereuse
+        </div>
+        {!deleteOpen ? (
+          <button
+            onClick={() => setDeleteOpen(true)}
+            style={{
+              width: '100%', padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
+              background: 'rgba(217,84,84,.06)', border: '1px solid rgba(217,84,84,.2)',
+              color: 'var(--red)', fontSize: 12, fontWeight: 500,
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+            }}
+          >
+            Supprimer cette course
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 12, color: 'var(--t1)', lineHeight: 1.5 }}>
+              Cette action est <strong style={{ color: 'var(--red)' }}>irréversible</strong>. La course sera définitivement supprimée de la base de données.
+            </div>
+            {deleteError && (
+              <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+                {deleteError}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => {
+                  startTransition(async () => {
+                    const res = await supprimerCourse(course.id)
+                    if (res?.error) { setDeleteError(res.error); return }
+                    router.push('/admin/courses')
+                  })
+                }}
+                disabled={pending}
+                style={{
+                  flex: 1, padding: '9px', borderRadius: 7, cursor: pending ? 'wait' : 'pointer',
+                  background: 'var(--red)', border: 'none',
+                  color: '#fff', fontSize: 12, fontWeight: 600,
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                {pending ? 'Suppression…' : 'Confirmer la suppression'}
+              </button>
+              <button
+                onClick={() => { setDeleteOpen(false); setDeleteError(null) }}
+                style={{
+                  padding: '9px 14px', borderRadius: 7, cursor: 'pointer',
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  color: 'var(--t2)', fontSize: 12,
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

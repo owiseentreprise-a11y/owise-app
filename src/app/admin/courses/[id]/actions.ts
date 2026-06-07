@@ -180,6 +180,17 @@ export async function modifierNotes(courseId: string, notes: string): Promise<vo
   revalidatePath(`/admin/courses/${courseId}`)
 }
 
+export async function supprimerCourse(courseId: string): Promise<{ error?: string }> {
+  const supabase = await requireAdminClient()
+  // Détacher la course de toute facture avant suppression
+  await supabase.from('courses').update({ facture_id: null }).eq('id', courseId)
+  const { error } = await supabase.from('courses').delete().eq('id', courseId)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/courses')
+  revalidatePath('/admin')
+  return {}
+}
+
 export async function assignerSousTraitant(
   courseId: string,
   sousTraitantId: string | null,
