@@ -15,7 +15,7 @@ export default async function ChauffeurPage() {
   in30days.setDate(in30days.getDate() + 30)
 
   // Champs sans join clients (évite la récursion RLS)
-  const COURSE_FIELDS = 'id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, type_vehicule, notes, prix_estime, prix_final, client_id'
+  const COURSE_FIELDS = 'id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, type_vehicule, notes, prix_estime, prix_final, client_id, passager_prenom, passager_nom, passager_tel'
 
   const [profileRes, coursesActifRes, planningRes, historiqueRes] = await Promise.all([
     supabase

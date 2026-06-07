@@ -17,7 +17,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
   if (chauffeurId) {
     const [courseRes, chauffeurProfileRes, chauffeurEmail, fcmRes] = await Promise.all([
       supabase.from('courses')
-        .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
+        .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes, passager_prenom, passager_nom, passager_tel, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
         .eq('id', courseId).single(),
       supabase.from('profiles').select('prenom').eq('id', chauffeurId).single(),
       getUserEmail(chauffeurId),
@@ -29,9 +29,12 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
 
     if (course && chauffeurEmail) {
       const client = (course as any).clients
-      const clientNom = client?.type_compte === 'entreprise'
+      const clientNomCompte = client?.type_compte === 'entreprise'
         ? (client.entreprise_nom ?? '')
-        : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : ''
+        : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}`.trim() : ''
+      const clientNomLibre = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
+      const clientNom = clientNomCompte || clientNomLibre || 'Passager'
+      const clientTelEmail = client?.profiles?.telephone ?? (course as any).passager_tel ?? null
       const refCourse = courseId.slice(-6).toUpperCase()
       const dateStr = new Date(course.date_prevue).toLocaleString('fr-FR', {
         weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
@@ -46,7 +49,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
           adresseArrivee: course.adresse_arrivee,
           datePrevue: course.date_prevue,
           clientNom,
-          clientTel: client?.profiles?.telephone ?? null,
+          clientTel: clientTelEmail,
           nbPassagers: course.nb_passagers,
           notes: course.notes,
           refCourse,
@@ -99,13 +102,17 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
         const arrivee = courseForST.adresse_arrivee.split(',')[0]
         const dateLabel = new Date(courseForST.date_prevue)
           .toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        await supabase.from('factures_sous_traitants').insert({
+        const { data: factureImm } = await supabase.from('factures_sous_traitants').insert({
           sous_traitant_id: courseForST.sous_traitant_id,
           periode: `course-${courseId.slice(-8).toUpperCase()}`,
           montant_ht: courseForST.prix_sous_traitant,
           statut: 'en_attente',
           notes: `${dateLabel} · ${depart} → ${arrivee}`,
-        })
+        }).select('id').single()
+        // Lier la course à cette facture pour éviter double-comptage
+        if (factureImm?.id) {
+          await supabase.from('courses').update({ facture_st_id: factureImm.id }).eq('id', courseId)
+        }
         revalidatePath(`/admin/sous-traitants/${courseForST.sous_traitant_id}`)
       }
     }

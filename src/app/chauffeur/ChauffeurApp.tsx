@@ -43,16 +43,24 @@ function groupByDay(courses: any[]): { label: string; date: string; items: any[]
 
 function clientNom(course: any): string {
   const c = course.clients
-  if (!c) return 'Client inconnu'
-  if (c.type_compte === 'entreprise' && c.entreprise_nom) return c.entreprise_nom
-  const direct = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim()
-  if (direct) return direct
-  const fromProfile = `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
-  return fromProfile || c.email || 'Client inconnu'
+  if (c) {
+    if (c.type_compte === 'entreprise' && c.entreprise_nom) return c.entreprise_nom
+    const direct = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim()
+    if (direct) return direct
+    const fromProfile = `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
+    if (fromProfile) return fromProfile
+    if (c.email) return c.email
+  }
+  // Passager libre (saisie sans compte)
+  const libre = `${course.passager_prenom ?? ''} ${course.passager_nom ?? ''}`.trim()
+  return libre || 'Client inconnu'
 }
 
 function clientTel(course: any): string | null {
-  return course.clients?.tel ?? course.clients?.profiles?.telephone ?? null
+  return course.clients?.tel
+    ?? course.clients?.profiles?.telephone
+    ?? course.passager_tel
+    ?? null
 }
 
 export default function ChauffeurApp({
