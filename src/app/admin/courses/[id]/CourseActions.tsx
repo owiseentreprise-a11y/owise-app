@@ -308,8 +308,33 @@ export default function CourseActions({
             Sous-traitant
           </div>
 
-          {/* ST verrouillé — vient du chauffeur sélectionné */}
-          {stLockedFromChauffeur ? (
+          {/* Chauffeur Owise direct (salarié, pas de ST) — section verrouillée */}
+          {selectedChauffeur && !stLockedFromChauffeur ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 12px', borderRadius: 8,
+              background: 'var(--elevated)', border: '1px solid var(--t3)',
+              opacity: 0.7,
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                background: 'var(--floating)', border: '1px solid var(--t3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: 'var(--t3)',
+              }}>
+                O
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t2)' }}>Chauffeur Owise direct</div>
+                <div style={{ fontSize: 9, color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase', marginTop: 1 }}>
+                  Pas de sous-traitant
+                </div>
+              </div>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth={2.5}>
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+          ) : stLockedFromChauffeur ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,

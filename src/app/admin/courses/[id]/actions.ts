@@ -23,7 +23,11 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
 
   await supabase.from('courses').update({
     chauffeur_id: chauffeurId || null,
-    ...(chauffeurId && chauffeurSousTraitantId ? { sous_traitant_id: chauffeurSousTraitantId } : {}),
+    ...(chauffeurId && chauffeurSousTraitantId
+      ? { sous_traitant_id: chauffeurSousTraitantId }
+      : chauffeurId && !chauffeurSousTraitantId
+        ? { sous_traitant_id: null, prix_sous_traitant: null }
+        : {}),
     ...(chauffeurId === null ? { sous_traitant_id: null } : {}),
   }).eq('id', courseId)
 
