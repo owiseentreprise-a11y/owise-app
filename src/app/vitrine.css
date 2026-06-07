@@ -261,6 +261,45 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .t-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
 .t-role{font-size:12px;color:#6B6B6B}
 
+/* FAQ */
+.faq-section{padding:100px 52px;background:#09091A;position:relative}
+.faq-section::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3) 30%,rgba(201,168,76,.3) 70%,transparent)}
+.faq-inner{max-width:860px;margin:0 auto}
+.faq-header{margin-bottom:64px}
+.faq-eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.faq-eyebrow::before{content:'';display:block;width:28px;height:1px;background:#C9A84C}
+.faq-title{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,4.5vw,62px);font-weight:400;color:#EDE8DF;line-height:1.1;margin:0}
+.faq-title em{font-style:italic;color:#C9A84C}
+.faq-list{display:flex;flex-direction:column}
+.faq-item{border-bottom:1px solid rgba(201,168,76,.08);cursor:pointer;transition:background .2s;position:relative}
+.faq-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:#C9A84C;opacity:0;transition:opacity .25s}
+.faq-item.open::before{opacity:1}
+.faq-item:first-child{border-top:1px solid rgba(201,168,76,.08)}
+.faq-q{display:flex;align-items:center;gap:20px;padding:26px 0 26px 16px}
+.faq-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#3F3F5A;flex-shrink:0;width:24px;transition:color .2s}
+.faq-item.open .faq-num{color:#C9A84C}
+.faq-q-text{font-size:15.5px;font-weight:500;color:#EDE8DF;flex:1;line-height:1.4;transition:color .2s}
+.faq-item:hover .faq-q-text{color:#fff}
+.faq-icon{width:28px;height:28px;flex-shrink:0;border-radius:50%;border:1px solid rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;color:#C9A84C;transition:background .25s,transform .35s,border-color .25s}
+.faq-item.open .faq-icon{background:#C9A84C;border-color:#C9A84C;color:#09091A;transform:rotate(45deg)}
+.faq-icon-v{transition:opacity .25s}
+.faq-item.open .faq-icon-v{opacity:0}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.25,.8,.25,1)}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 0 26px 60px;font-size:14px;color:#848499;line-height:1.85}
+.faq-footer{margin-top:60px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding-top:40px;border-top:1px solid rgba(201,168,76,.08)}
+.faq-footer-text{font-size:14px;color:#3F3F5A;margin:0}
+.faq-footer-btns{display:flex;align-items:center;gap:12px}
+.faq-btn-wa{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;background:#25D366;color:#fff;font-size:13px;font-weight:500;text-decoration:none;transition:opacity .15s}
+.faq-btn-wa:hover{opacity:.9}
+.faq-btn-devis{display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:8px;border:1px solid rgba(201,168,76,.2);color:#C9A84C;font-size:13px;font-weight:500;background:none;cursor:pointer;transition:border-color .15s,background .15s;font-family:'DM Sans',sans-serif}
+.faq-btn-devis:hover{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.06)}
+@media(max-width:768px){
+  .faq-section{padding:72px 24px}
+  .faq-a-inner{padding-left:44px}
+  .faq-footer{flex-direction:column;align-items:flex-start}
+}
+
 /* ENTERPRISE CTA */
 .enterprise-section{
   background:#09091A;
