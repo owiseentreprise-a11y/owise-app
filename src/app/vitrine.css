@@ -219,21 +219,6 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .vc-visual svg{position:relative;z-index:1}
 
 /* FAQ */
-.faq-section{padding:100px 52px;background:var(--base);border-top:1px solid rgba(0,0,0,.07)}
-.faq-inner{max-width:780px;margin:0 auto}
-.faq-list{display:flex;flex-direction:column;gap:5px;margin-top:56px}
-.faq-item{border-radius:12px;border:1px solid rgba(0,0,0,.07);background:#FFFFFF;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-.faq-item.open{border-color:rgba(0,0,0,.14);box-shadow:0 4px 24px rgba(0,0,0,.06)}
-.faq-q{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 24px;cursor:pointer;user-select:none}
-.faq-q-text{font-size:15px;font-weight:500;color:var(--t1);line-height:1.4}
-.faq-icon{width:26px;height:26px;flex-shrink:0;border-radius:50%;border:1.5px solid rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;transition:transform .3s,border-color .3s,background .3s}
-.faq-item.open .faq-icon{background:#0A0A0A;border-color:#0A0A0A;transform:rotate(45deg)}
-.faq-icon-svg{width:10px;height:10px;transition:stroke .3s}
-.faq-item.open .faq-icon-svg{stroke:#fff!important}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.25,.8,.25,1)}
-.faq-item.open .faq-a{max-height:220px}
-.faq-a-inner{padding:0 24px 22px;font-size:14px;color:#5A5A6E;line-height:1.8;border-top:1px solid rgba(0,0,0,.05);padding-top:14px}
-.faq-cta-row{text-align:center;margin-top:48px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
 
 /* PROCESS */
 .process-section{padding:100px 52px;border-top:1px solid rgba(0,0,0,.07)}
@@ -803,8 +788,6 @@ nav.scrolled{
 .zone-item:hover{background:rgba(255,255,255,.98)!important;box-shadow:0 4px 20px rgba(0,0,0,.07);transform:translateX(4px)}
 .zone-item{transition:border-color .15s,background .15s,transform .2s,box-shadow .2s}
 
-/* ── FAQ items — glow ouverture ────────────────────────── */
-.faq-item.open{box-shadow:0 8px 32px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.09)!important}
 
 /* ── Btn-book (booking widget) ─────────────────────────── */
 .btn-book{position:relative;overflow:hidden}
