@@ -21,24 +21,12 @@ const PROGRESSION: Partial<Record<StatutCourse, StatutCourse>> = {
   prise_en_charge: 'terminee',
 }
 
-// Groupe un tableau de courses par jour
-function groupByDay(courses: any[]): { label: string; date: string; items: any[] }[] {
-  const map = new Map<string, any[]>()
-  const now = new Date()
-  for (const c of courses) {
-    const d = new Date(c.date_prevue)
-    const key = d.toISOString().split('T')[0]
-    if (!map.has(key)) map.set(key, [])
-    map.get(key)!.push(c)
-  }
-  return Array.from(map.entries()).map(([key, items]) => {
-    const d = new Date(key + 'T12:00:00')
-    const diff = Math.round((d.getTime() - new Date(now.toDateString()).getTime()) / 86400000)
-    const label = diff === 0 ? "Aujourd'hui"
-      : diff === 1 ? 'Demain'
-      : d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-    return { label, date: key, items }
-  })
+// Retourne une clé YYYY-MM-DD en heure locale (évite le décalage UTC)
+function localDateKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function clientNom(course: any): string {
@@ -80,7 +68,7 @@ export default function ChauffeurApp({
   const [pending, startTransition] = useTransition()
   useFcmRegistration()
   const [dispo, setDispo] = useState<StatutChauffeur>(profile?.chauffeurs?.statut ?? 'hors_ligne')
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(() => localDateKey(new Date()))
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
 
@@ -725,21 +713,21 @@ export default function ChauffeurApp({
             return true
           })
 
-          // Groupe par jour (clé YYYY-MM-DD)
+          // Groupe par jour (clé YYYY-MM-DD en heure locale)
           const byDay: Record<string, any[]> = {}
           for (const c of allCal) {
-            const key = c.date_prevue.slice(0, 10)
+            const key = localDateKey(new Date(c.date_prevue))
             if (!byDay[key]) byDay[key] = []
             byDay[key].push(c)
           }
 
           // 30 jours à partir d'aujourd'hui
-          const todayKey = new Date().toISOString().split('T')[0]
+          const todayKey = localDateKey(new Date())
           const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
           const days = Array.from({ length: 30 }, (_, i) => {
             const d = new Date()
             d.setDate(d.getDate() + i)
-            return { key: d.toISOString().split('T')[0], date: d }
+            return { key: localDateKey(d), date: d }
           })
 
           const selCourses = (byDay[selectedDate] ?? [])
