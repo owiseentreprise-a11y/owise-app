@@ -1068,9 +1068,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         <div style={{ maxWidth:960, margin:'0 auto' }}>
           {/* Header */}
           <div className="reveal" style={{ textAlign:'center', marginBottom:48 }}>
-            <div className="section-tag">Tarification</div>
-            <h2 className="section-title" style={{ marginBottom:12 }}>
-              Prix fixe garanti<br/><em className="chrome-gold-slow">zéro surprise à l'arrivée</em>
+            <div className="faq-eyebrow" style={{ justifyContent:'center' }}>Tarification</div>
+            <h2 style={{
+              fontFamily:"'Cormorant Garamond',serif",
+              fontSize:'clamp(36px,4vw,58px)',
+              fontWeight:500,
+              color:'#EDE8DF',
+              lineHeight:1.1,
+              letterSpacing:'-.01em',
+              marginBottom:12,
+            }}>
+              Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'#C9A84C' }}>zéro surprise à l'arrivée</em>
             </h2>
             <p style={{ fontSize:15, color:'#848499', maxWidth:520, margin:'0 auto' }}>
               Le prix affiché est celui que vous payez. Pas de majoration, pas de frais cachés — quelles que soient les conditions de trafic.
