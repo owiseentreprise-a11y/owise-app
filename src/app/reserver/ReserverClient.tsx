@@ -78,11 +78,23 @@ function calculerPrixForfait(
   tarifs: TarifVehicule[],
   zones: Zone[],
 ): number | null {
-  // Priorité : si une zone est un aéroport, utiliser les tarifs par véhicule
   const zDep = zones.find(z => z.id === zoneDepId)
   const zArr = zones.find(z => z.id === zoneArrId)
-  const airportZone = [zDep, zArr].find(z => z?.type === 'aeroport' && AIRPORT_COL[z.code])
 
+  // Priorité 1 : matrice zone-à-zone (prix spécifiques par paire)
+  const cell = grille.find(g => g.zone_depart_id === zoneDepId && g.zone_arrivee_id === zoneArrId)
+  if (cell && cell.prix_berline) {
+    let coef = 1
+    if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
+    if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
+    let prix = cell.prix_berline * coef
+    if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
+    prix = appliquerSupplements(prix, dateHeure, params)
+    return Math.round(prix * 100) / 100
+  }
+
+  // Fallback : tarif fixe aéroport si aucune entrée dans la grille pour cette paire
+  const airportZone = [zDep, zArr].find(z => z?.type === 'aeroport' && AIRPORT_COL[z.code])
   if (airportZone) {
     const tarif = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
     const col   = AIRPORT_COL[airportZone.code]
@@ -97,18 +109,7 @@ function calculerPrixForfait(
     }
   }
 
-  // Fallback : matrice zone-à-zone
-  const cell = grille.find(g => g.zone_depart_id === zoneDepId && g.zone_arrivee_id === zoneArrId)
-  if (!cell || !cell.prix_berline) return null
-
-  let coef = 1
-  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-
-  let prix = cell.prix_berline * coef
-  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-  prix = appliquerSupplements(prix, dateHeure, params)
-  return Math.round(prix * 100) / 100
+  return null
 }
 
 const VEHICULE_NOM: Record<string, string> = {

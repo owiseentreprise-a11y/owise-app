@@ -111,9 +111,10 @@ const jsonLd = {
 
 export default async function VitrinePage() {
   const admin = createAdminClient()
-  const [{ data: tarifs }, { data: zones }] = await Promise.all([
+  const [{ data: tarifs }, { data: zones }, { data: grille }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
+    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
   ])
 
   return (
@@ -122,7 +123,7 @@ export default async function VitrinePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} />
     </>
   )
 }

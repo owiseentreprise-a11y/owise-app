@@ -7,9 +7,10 @@ import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/add
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Zone   = { id: string; nom: string; code: string; type: string; prefixes_postaux: string[] }
-type Grille = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
-type AdresseVal = { label: string; codePostal: string; lat?: number; lng?: number }
+type Zone          = { id: string; nom: string; code: string; type: string; prefixes_postaux: string[] }
+type Grille        = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
+type TarifVehicule = { vehicule: string; prise_en_charge: number; prix_km: number }
+type AdresseVal    = { label: string; codePostal: string; lat?: number; lng?: number }
 
 type ClientOption = {
   id: string; type_compte: string; entreprise_nom: string | null
@@ -39,16 +40,27 @@ const lbl: React.CSSProperties = {
 
 // ── Tarif helpers (miroir de ReserverClient) ──────────────────────────────────
 
+const VEHICULE_NOM: Record<string, string> = {
+  berline: 'Berline', berline_premium: 'Berline Premium', van: 'Van 7 places',
+}
+
 function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Zone | null {
   if (addressLabel) {
     const lower = addressLabel.toLowerCase()
+    if (lower.includes('charles de gaulle') || lower.includes('roissy') || /\bcdg\b/.test(lower)) {
+      const z = zones.find(z => z.code === 'CDG'); if (z) return z
+    }
+    if (lower.includes('orly')) {
+      const z = zones.find(z => z.code === 'ORY'); if (z) return z
+    }
+    if (lower.includes('beauvais')) {
+      const z = zones.find(z => z.code === 'BVA'); if (z) return z
+    }
     if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
-      const z = zones.find(z => z.type === 'gare')
-      if (z) return z
+      const z = zones.find(z => z.type === 'gare'); if (z) return z
     }
     if (/\bparis\b/.test(lower)) {
-      const z = zones.find(z => z.code === 'Z1')
-      if (z) return z
+      const z = zones.find(z => z.code === 'Z1'); if (z) return z
     }
   }
   if (!codePostal) return null
@@ -85,13 +97,11 @@ function calculerPrixForfait(depId: string, arrId: string, vehicule: string, dat
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
 }
 
-function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any): number | null {
-  const base = params?.tarif_base_particulier ?? 15
-  const tarif = params?.tarif_km_particulier ?? 2
-  let coef = 1
-  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-  let prix = (base + km * tarif) * coef
+function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any, tarifs: TarifVehicule[]): number | null {
+  const tarif  = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
+  const base   = tarif ? Number(tarif.prise_en_charge) : (params?.tarif_base_particulier ?? 15)
+  const prixKm = tarif ? Number(tarif.prix_km)         : (params?.tarif_km_particulier   ?? 2)
+  let prix = base + km * prixKm
   if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
 }
@@ -213,12 +223,12 @@ function AddressInput({
 
 export default function NouvelleCourseForm({
   clients, collabs, chauffeurs, sousTraitants,
-  zones, grille, params,
+  zones, grille, params, tarifs,
   defaultDatetime,
 }: {
   clients: ClientOption[]; collabs: CollabOption[]
   chauffeurs: ChauffeurOption[]; sousTraitants: SousTraitantOption[]
-  zones: Zone[]; grille: Grille[]; params: any
+  zones: Zone[]; grille: Grille[]; params: any; tarifs: TarifVehicule[]
   defaultDatetime: string
 }) {
   const [pending, startTransition] = useTransition()
@@ -247,9 +257,9 @@ export default function NouvelleCourseForm({
   const prixAuto = useMemo(() => {
     if (!zoneDepart || !zoneArrivee) return null
     if (useForfait) return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, dateHeure, grille, params)
-    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, dateHeure, params)
+    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, dateHeure, params, tarifs)
     return null
-  }, [zoneDepart, zoneArrivee, useForfait, vehicule, dateHeure, distanceKm, grille, params])
+  }, [zoneDepart, zoneArrivee, useForfait, vehicule, dateHeure, distanceKm, grille, params, tarifs])
 
   // Fetch OSRM distance when in km mode
   useEffect(() => {

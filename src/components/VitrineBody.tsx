@@ -190,9 +190,10 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   )
 }
 
-type TarifRow = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
+type TarifRow   = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
+type GrilleMin  = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[] }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[] }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -481,10 +482,24 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const other    = await geocode(otherRaw)
       const otherZone = detectZoneMin(other.cp ?? '', other.label, zonesProp)
       if (otherZone) {
-        let fixe = 0
-        if (isCDGAddr)       fixe = Number(tarif.cdg_fixe)
-        else if (isOrlyAddr) fixe = Number(tarif.orly_fixe)
-        else                 fixe = Number(tarif.beauvais_fixe)
+        // Priorité 1 : grille zone-à-zone
+        const airportCode = isCDGAddr ? 'CDG' : isOrlyAddr ? 'ORY' : 'BVA'
+        const airportZone = zonesProp.find(z => z.code === airportCode)
+        if (airportZone && grilleProp.length > 0) {
+          const cell = grilleProp.find(g =>
+            (g.zone_depart_id === airportZone.id && g.zone_arrivee_id === otherZone.id) ||
+            (g.zone_depart_id === otherZone.id   && g.zone_arrivee_id === airportZone.id)
+          )
+          if (cell && cell.prix_berline) {
+            const nom   = v.name
+            const coef  = nom === 'Berline Premium' ? 1.25 : nom === 'Van 7 places' ? 1.5 : 1
+            let prix    = Math.round(cell.prix_berline * coef)
+            if (h >= 22 || h < 6) prix = Math.round(prix * 1.2)
+            return prix
+          }
+        }
+        // Fallback : tarif fixe aéroport
+        let fixe = isCDGAddr ? Number(tarif.cdg_fixe) : isOrlyAddr ? Number(tarif.orly_fixe) : Number(tarif.beauvais_fixe)
         if (fixe > 0) {
           if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
           return fixe
