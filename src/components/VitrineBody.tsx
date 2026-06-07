@@ -1067,7 +1067,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </section>
 
       {/* ── TARIFS ───────────────────────────────────────────── */}
-      <section id="tarifs" style={{ background:'#09091A', padding:'80px 24px' }}>
+      <section id="tarifs" style={{ background:'#F0EDE8', padding:'80px 24px' }}>
         <div style={{ maxWidth:960, margin:'0 auto' }}>
           {/* Header */}
           <div className="reveal" style={{ textAlign:'center', marginBottom:48 }}>
@@ -1076,14 +1076,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               fontFamily:"'Cormorant Garamond',serif",
               fontSize:'clamp(36px,4vw,58px)',
               fontWeight:500,
-              color:'#EDE8DF',
+              color:'#09091A',
               lineHeight:1.1,
               letterSpacing:'-.01em',
               marginBottom:12,
             }}>
               Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'#C9A84C' }}>zéro surprise à l'arrivée</em>
             </h2>
-            <p style={{ fontSize:15, color:'#848499', maxWidth:520, margin:'0 auto' }}>
+            <p style={{ fontSize:15, color:'#6B6B6B', maxWidth:520, margin:'0 auto' }}>
               Le prix affiché est celui que vous payez. Pas de majoration, pas de frais cachés — quelles que soient les conditions de trafic.
             </p>
           </div>
@@ -1124,22 +1124,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             ]
 
             return (
-              <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(201,168,76,.15)' }}>
+              <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(0,0,0,.1)', background:'#FFFFFF' }}>
                 {/* En-têtes colonnes */}
                 <div style={{
                   display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
-                  background:'rgba(201,168,76,.06)',
-                  borderBottom:'1px solid rgba(201,168,76,.12)',
+                  background:'rgba(0,0,0,.04)',
+                  borderBottom:'1px solid rgba(0,0,0,.09)',
                   padding:'14px 24px',
                 }}>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#848499' }}>Destination</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#6B6B6B' }}>Destination</div>
                   {[
                     { label:'Berline', emoji:'🚘' },
                     { label:'Premium', emoji:'⭐' },
                     { label:'Van 7 pl.', emoji:'🚐' },
                   ].map(v => (
                     <div key={v.label} style={{ textAlign:'center' }}>
-                      <div style={{ fontSize:11, fontWeight:600, color:'#EDE8DF' }}>{v.emoji} {v.label}</div>
+                      <div style={{ fontSize:11, fontWeight:600, color:'#09091A' }}>{v.emoji} {v.label}</div>
                     </div>
                   ))}
                 </div>
@@ -1149,15 +1149,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <div key={i} style={{
                     display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
                     padding:'18px 24px', alignItems:'center',
-                    borderBottom: i < rows.length-1 ? '1px solid rgba(201,168,76,.07)' : 'none',
-                    background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.015)',
+                    borderBottom: i < rows.length-1 ? '1px solid rgba(0,0,0,.06)' : 'none',
+                    background: i % 2 === 0 ? 'transparent' : 'rgba(0,0,0,.015)',
                   }}>
                     <div>
                       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                         <span style={{ fontSize:18 }}>{r.icon}</span>
-                        <span style={{ fontSize:14, fontWeight:600, color:'#EDE8DF' }}>{r.label}</span>
+                        <span style={{ fontSize:14, fontWeight:600, color:'#09091A' }}>{r.label}</span>
                       </div>
-                      <div style={{ fontSize:11, color:'#848499', marginTop:2, paddingLeft:26 }}>{r.sub}</div>
+                      <div style={{ fontSize:11, color:'#6B6B6B', marginTop:2, paddingLeft:26 }}>{r.sub}</div>
                     </div>
                     {[r.berline, r.premium, r.van].map((prix, j) => (
                       <div key={j} style={{ textAlign:'center' }}>
@@ -1167,10 +1167,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                               fontFamily:"'Courier New',monospace",
                               fontSize:20, fontWeight:700, color:'#C9A84C',
                             }}>{Math.round(Number(prix))}</span>
-                            <span style={{ fontSize:12, color:'#848499', marginLeft:2 }}>€</span>
-                            {!r.isFixed && <div style={{ fontSize:9, color:'#848499', letterSpacing:'.06em', textTransform:'uppercase' }}>dès</div>}
+                            <span style={{ fontSize:12, color:'#6B6B6B', marginLeft:2 }}>€</span>
+                            {!r.isFixed && <div style={{ fontSize:9, color:'#6B6B6B', letterSpacing:'.06em', textTransform:'uppercase' }}>dès</div>}
                           </div>
-                        ) : <span style={{ color:'#3F3F5A' }}>—</span>}
+                        ) : <span style={{ color:'rgba(0,0,0,.2)' }}>—</span>}
                       </div>
                     ))}
                   </div>
@@ -1180,15 +1180,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 <div style={{
                   display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
                   padding:'18px 24px', alignItems:'center',
-                  background:'rgba(201,168,76,.04)',
-                  borderTop:'1px solid rgba(201,168,76,.12)',
+                  background:'rgba(0,0,0,.03)',
+                  borderTop:'1px solid rgba(0,0,0,.09)',
                 }}>
                   <div>
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                       <span style={{ fontSize:18 }}>📍</span>
-                      <span style={{ fontSize:14, fontWeight:600, color:'#EDE8DF' }}>Autre destination</span>
+                      <span style={{ fontSize:14, fontWeight:600, color:'#09091A' }}>Autre destination</span>
                     </div>
-                    <div style={{ fontSize:11, color:'#848499', marginTop:2, paddingLeft:26 }}>Tarif calculé selon la distance réelle</div>
+                    <div style={{ fontSize:11, color:'#6B6B6B', marginTop:2, paddingLeft:26 }}>Tarif calculé selon la distance réelle</div>
                   </div>
                   {[berline, premium, van].map((t, j) => (
                     <div key={j} style={{ textAlign:'center' }}>
@@ -1198,7 +1198,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                             {Number(t.prix_km).toFixed(2)}
                           </span>
                           <span style={{ fontSize:11, color:'#848499' }}>€/km</span>
-                          <div style={{ fontSize:9, color:'#3F3F5A', marginTop:1 }}>
+                          <div style={{ fontSize:9, color:'rgba(0,0,0,.4)', marginTop:1 }}>
                             + {Number(t.prise_en_charge).toFixed(0)}€ prise en charge
                           </div>
                         </div>
@@ -1212,7 +1212,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
           {/* Notes + CTA */}
           <div className="reveal" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:24, flexWrap:'wrap', gap:16 }}>
-            <div style={{ fontSize:12, color:'#848499', display:'flex', flexDirection:'column', gap:4 }}>
+            <div style={{ fontSize:12, color:'#6B6B6B', display:'flex', flexDirection:'column', gap:4 }}>
               <span>⏰ Majoration nuit +20% (22h – 6h) · 🧳 Bagages inclus · ✈ Suivi vol en temps réel</span>
               <span>💳 Paiement sécurisé par carte en ligne · 📞 Réservation aussi par WhatsApp</span>
             </div>
