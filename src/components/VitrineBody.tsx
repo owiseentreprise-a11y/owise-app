@@ -1221,23 +1221,84 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
       {/* ENTERPRISE CTA */}
       <section className="enterprise-section">
-        <div className="enterprise-inner reveal reveal-scale">
-          <div>
+        {/* Grain texture */}
+        <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:.025,pointerEvents:'none'}} aria-hidden="true">
+          <filter id="ent-grain"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+          <rect width="100%" height="100%" filter="url(#ent-grain)"/>
+        </svg>
+        {/* Gold top line */}
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,#C9A84C 30%,#C9A84C 70%,transparent)'}}/>
+        {/* Decorative circle */}
+        <div style={{position:'absolute',right:-120,top:'50%',transform:'translateY(-50%)',width:500,height:500,borderRadius:'50%',border:'1px solid rgba(201,168,76,.06)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',right:-80,top:'50%',transform:'translateY(-50%)',width:340,height:340,borderRadius:'50%',border:'1px solid rgba(201,168,76,.04)',pointerEvents:'none'}}/>
+
+        <div className="enterprise-inner reveal">
+          {/* Left */}
+          <div className="ent-left">
             <div className="ent-label">Comptes entreprises</div>
-            <h2 className="ent-title">Vous gérez les<br/>déplacements de votre<br/><em className="chrome-gold-slow">équipe ?</em></h2>
-            <p className="ent-desc">Owise propose des solutions dédiées aux entreprises : tarifs négociés, facturation mensuelle centralisée, portail de réservation multi-utilisateurs et reporting détaillé.</p>
-            <div className="ent-perks">
-              {['Tarifs préférentiels dès 10 courses/mois','Facturation mensuelle consolidée + export comptable','Portail de réservation pour vos collaborateurs','Gestionnaire de compte dédié'].map((p,i)=>(
-                <div key={i} className="ent-perk"><div className="ent-perk-dot"/>{p}</div>
+            <h2 className="ent-title">
+              Vos équipes,<br/>
+              <em>toujours à l'heure.</em>
+            </h2>
+            <p className="ent-desc">
+              Tarifs négociés, facturation mensuelle centralisée, portail multi-collaborateurs — tout ce qu'il faut pour gérer les déplacements de votre société sans friction.
+            </p>
+
+            {/* Stats */}
+            <div className="ent-stats">
+              {[
+                {n:'10+', label:'courses/mois pour les tarifs préférentiels'},
+                {n:'24h', label:'délai de réponse garanti'},
+                {n:'100%', label:'visibilité sur vos dépenses'},
+              ].map((s,i)=>(
+                <div key={i} className="ent-stat">
+                  <div className="ent-stat-n">{s.n}</div>
+                  <div className="ent-stat-l">{s.label}</div>
+                </div>
               ))}
             </div>
+
+            <div className="ent-actions">
+              <button className="btn-ent" onClick={()=>scrollTo('#contact')}>
+                Demander un devis entreprise
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+              <button className="btn-ent-ghost" onClick={()=>scrollTo('#devis')}>Ou réserver directement →</button>
+            </div>
           </div>
-          <div className="ent-actions">
-            <button className="btn-ent" onClick={()=>scrollTo('#contact')}>
-              Nous contacter
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button className="btn-ent-ghost" onClick={()=>scrollTo('#devis')}>Ou réserver directement →</button>
+
+          {/* Right — feature cards */}
+          <div className="ent-features">
+            {[
+              {
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"/></svg>,
+                title:'Tarifs négociés',
+                desc:'Accès aux grilles entreprise dès 10 courses/mois',
+              },
+              {
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>,
+                title:'Facturation mensuelle',
+                desc:'Une facture consolidée + export comptable CSV/PDF',
+              },
+              {
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>,
+                title:'Portail collaborateurs',
+                desc:'Chaque collaborateur réserve sans avancer de frais',
+              },
+              {
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
+                title:'Gestionnaire dédié',
+                desc:'Un interlocuteur unique, joignable 7j/7',
+              },
+            ].map((f,i)=>(
+              <div key={i} className="ent-feature-card">
+                <div className="ent-feature-icon">{f.icon}</div>
+                <div>
+                  <div className="ent-feature-title">{f.title}</div>
+                  <div className="ent-feature-desc">{f.desc}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
