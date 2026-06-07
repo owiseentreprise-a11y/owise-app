@@ -43,7 +43,7 @@ export default async function CourseDetailPage({
       .maybeSingle(),
     supabase
       .from('chauffeurs')
-      .select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom, telephone)')
+      .select('id, statut, vehicule_marque, vehicule_modele, sous_traitant_id, sous_traitants(id, nom), profiles(prenom, nom, telephone)')
       .order('statut'),
     supabase
       .from('sous_traitants')
@@ -135,6 +135,8 @@ export default async function CourseDetailPage({
     prenom: c.profiles?.prenom ?? '',
     vehicule: [c.vehicule_marque, c.vehicule_modele].filter(Boolean).join(' ') || '—',
     statut: c.statut,
+    sous_traitant_id:  c.sous_traitant_id ?? null,
+    sous_traitant_nom: (c.sous_traitants as any)?.nom ?? null,
   }))
 
   const courseRef = course.id.slice(-8).toUpperCase()

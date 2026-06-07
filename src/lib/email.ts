@@ -221,6 +221,42 @@ export async function envoyerConfirmationClient(params: {
   await send(clientEmail, `Confirmation de course – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
 }
 
+// ── 2b. Notification société sous-traitante — course assignée à l'un de ses chauffeurs ──
+
+export async function envoyerNotificationST(params: {
+  stEmail: string
+  stNom: string
+  contactNom: string | null
+  chauffeurPrenom: string
+  chauffeurNom: string
+  adresseDepart: string
+  adresseArrivee: string
+  datePrevue: string
+  refCourse: string
+}) {
+  const { stEmail, stNom, contactNom, chauffeurPrenom, chauffeurNom, adresseDepart, adresseArrivee, datePrevue, refCourse } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Nouvelle course assignée</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour${contactNom ? ` ${contactNom}` : ''}, une course OWISE vient d'être confiée à l'un de vos chauffeurs.
+    </p>
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${refCourse}`)}
+        ${row('Chauffeur', `${chauffeurPrenom}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+      </table>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;">
+      Questions : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+  await send(stEmail, `[OWISE] Course #${refCourse} – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
+}
+
 // ── 2. Notification chauffeur assigné ────────────────────────────────────────
 
 export async function envoyerNotificationChauffeur(params: {

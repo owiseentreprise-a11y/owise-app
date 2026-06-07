@@ -3,16 +3,29 @@
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import type { StatutCourse } from '@/lib/types'
-import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation } from '@/lib/email'
+import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   const supabase = await requireAdminClient()
-  await supabase
-    .from('courses')
-    .update({ chauffeur_id: chauffeurId || null })
-    .eq('id', courseId)
+
+  // Si le chauffeur appartient à un ST, auto-lier le ST à la course
+  let chauffeurSousTraitantId: string | null = null
+  if (chauffeurId) {
+    const { data: chauffeurRow } = await supabase
+      .from('chauffeurs')
+      .select('sous_traitant_id')
+      .eq('id', chauffeurId)
+      .single()
+    chauffeurSousTraitantId = chauffeurRow?.sous_traitant_id ?? null
+  }
+
+  await supabase.from('courses').update({
+    chauffeur_id: chauffeurId || null,
+    ...(chauffeurId && chauffeurSousTraitantId ? { sous_traitant_id: chauffeurSousTraitantId } : {}),
+    ...(chauffeurId === null ? { sous_traitant_id: null } : {}),
+  }).eq('id', courseId)
 
   if (chauffeurId) {
     const [courseRes, chauffeurProfileRes, chauffeurEmail, fcmRes] = await Promise.all([
@@ -41,7 +54,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
       })
 
       // Email + push notification en parallèle
-      await Promise.all([
+      const notifications: Promise<any>[] = [
         envoyerNotificationChauffeur({
           chauffeurEmail,
           chauffeurPrenom: chauffeurProfile?.prenom ?? '',
@@ -60,7 +73,33 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
           body:  `${course.adresse_depart.split(',')[0]} → ${course.adresse_arrivee.split(',')[0]} · ${dateStr}`,
           data:  { courseId, type: 'assignation' },
         }) : Promise.resolve(),
-      ])
+      ]
+
+      // Si le chauffeur appartient à un ST → notifier aussi la société
+      if (chauffeurSousTraitantId) {
+        const { data: stData } = await supabase
+          .from('sous_traitants')
+          .select('nom, email, contact_nom')
+          .eq('id', chauffeurSousTraitantId)
+          .single()
+        if (stData?.email) {
+          notifications.push(
+            envoyerNotificationST({
+              stEmail: stData.email,
+              stNom: stData.nom,
+              contactNom: stData.contact_nom ?? null,
+              chauffeurPrenom: chauffeurProfile?.prenom ?? '',
+              chauffeurNom: clientNom,
+              adresseDepart: course.adresse_depart,
+              adresseArrivee: course.adresse_arrivee,
+              datePrevue: course.date_prevue,
+              refCourse,
+            })
+          )
+        }
+      }
+
+      await Promise.all(notifications)
     }
   }
 

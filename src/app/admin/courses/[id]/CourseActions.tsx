@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
@@ -51,7 +51,7 @@ export default function CourseActions({
     sous_traitant_nom: string | null
     sous_traitant_id: string | null
   }
-  chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string }>
+  chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string }>
 }) {
   const router = useRouter()
@@ -59,6 +59,24 @@ export default function CourseActions({
   const [selectedChauffeur, setSelectedChauffeur] = useState(course.chauffeur_id ?? '')
   const [selectedST, setSelectedST] = useState(course.sous_traitant_id ?? '')
   const [prixSTInput, setPrixSTInput] = useState(course.prix_sous_traitant?.toString() ?? '')
+  // ST verrouillé = auto-provient du chauffeur sélectionné (ne pas permettre override manuel)
+  const [stLockedFromChauffeur, setStLockedFromChauffeur] = useState<{ id: string; nom: string } | null>(() => {
+    if (!course.chauffeur_id) return null
+    const c = chauffeurs.find(ch => ch.id === course.chauffeur_id)
+    return c?.sous_traitant_id ? { id: c.sous_traitant_id, nom: c.sous_traitant_nom ?? '' } : null
+  })
+
+  // Quand on change de chauffeur → auto-lier son ST
+  useEffect(() => {
+    const c = chauffeurs.find(ch => ch.id === selectedChauffeur)
+    if (c?.sous_traitant_id) {
+      setSelectedST(c.sous_traitant_id)
+      setStLockedFromChauffeur({ id: c.sous_traitant_id, nom: c.sous_traitant_nom ?? '' })
+    } else {
+      setStLockedFromChauffeur(null)
+      if (selectedChauffeur) setSelectedST('')
+    }
+  }, [selectedChauffeur])
   const [prixInput, setPrixInput] = useState(course.prix_final?.toString() ?? course.prix_estime?.toString() ?? '')
   const [notesInput, setNotesInput] = useState(course.notes ?? '')
   const [notesSaved, setNotesSaved] = useState(false)
@@ -284,29 +302,39 @@ export default function CourseActions({
       </div>
 
       {/* === SOUS-TRAITANT === */}
-      {sousTraitants.length > 0 && !isTerminal && (
+      {!isTerminal && (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '18px 20px' }}>
           <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
             Sous-traitant
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <select
-              value={selectedST}
-              onChange={e => setSelectedST(e.target.value)}
-              style={{
-                width: '100%', padding: '9px 12px', minWidth: 0,
-                background: 'var(--elevated)', border: '1px solid var(--t3)',
-                borderRadius: 8, color: selectedST ? 'var(--t1)' : 'var(--t3)',
-                fontSize: 12, outline: 'none',
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-              }}
-            >
-              <option value="">— Aucun sous-traitant —</option>
-              {sousTraitants.map(st => (
-                <option key={st.id} value={st.id}>{st.nom}</option>
-              ))}
-            </select>
-            {selectedST && (
+
+          {/* ST verrouillé — vient du chauffeur sélectionné */}
+          {stLockedFromChauffeur ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)',
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                  background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, color: 'var(--gold)',
+                }}>
+                  {stLockedFromChauffeur.nom.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{stLockedFromChauffeur.nom}</div>
+                  <div style={{ fontSize: 9, color: 'var(--gold)', letterSpacing: '.08em', textTransform: 'uppercase', marginTop: 1 }}>
+                    Lié au chauffeur assigné
+                  </div>
+                </div>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2.5}>
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+              </div>
+              {/* Prix ST */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <input
@@ -325,40 +353,89 @@ export default function CourseActions({
                   <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--t3)' }}>€</span>
                 </div>
                 <button
-                  onClick={() => run(() => assignerSousTraitant(
-                    course.id,
-                    selectedST || null,
-                    prixSTInput ? parseFloat(prixSTInput) : null,
-                  ))}
+                  onClick={() => run(() => assignerSousTraitant(course.id, stLockedFromChauffeur.id, prixSTInput ? parseFloat(prixSTInput) : null))}
                   disabled={pending}
                   style={{
-                    padding: '9px 14px', borderRadius: 8,
-                    background: 'var(--gold)', border: 'none',
+                    padding: '9px 14px', borderRadius: 8, background: 'var(--gold)', border: 'none',
                     color: 'var(--base)', fontSize: 12, fontWeight: 600,
-                    cursor: pending ? 'wait' : 'pointer',
-                    fontFamily: 'var(--font-dm-sans), sans-serif',
-                    whiteSpace: 'nowrap',
+                    cursor: pending ? 'wait' : 'pointer', fontFamily: 'var(--font-dm-sans), sans-serif', whiteSpace: 'nowrap',
                   }}
                 >
-                  Assigner
+                  Sauver
                 </button>
               </div>
-            )}
-            {!selectedST && course.sous_traitant_nom && (
-              <button
-                onClick={() => run(() => assignerSousTraitant(course.id, null, null))}
-                disabled={pending}
-                style={{
-                  padding: '7px', borderRadius: 8, width: '100%',
-                  background: 'transparent', border: '1px solid rgba(217,80,80,.25)',
-                  color: 'var(--red)', fontSize: 11, cursor: 'pointer',
-                  fontFamily: 'var(--font-dm-sans), sans-serif',
-                }}
-              >
-                Retirer {course.sous_traitant_nom}
-              </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* ST manuel — aucun chauffeur ST assigné */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {sousTraitants.length > 0 ? (
+                <>
+                  <select
+                    value={selectedST}
+                    onChange={e => setSelectedST(e.target.value)}
+                    style={{
+                      width: '100%', padding: '9px 12px', minWidth: 0,
+                      background: 'var(--elevated)', border: '1px solid var(--t3)',
+                      borderRadius: 8, color: selectedST ? 'var(--t1)' : 'var(--t3)',
+                      fontSize: 12, outline: 'none', fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  >
+                    <option value="">— Aucun sous-traitant —</option>
+                    {sousTraitants.map(st => (
+                      <option key={st.id} value={st.id}>{st.nom}</option>
+                    ))}
+                  </select>
+                  {selectedST && (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <input
+                          type="number" min={0} step={0.5}
+                          value={prixSTInput}
+                          onChange={e => setPrixSTInput(e.target.value)}
+                          placeholder="Prix ST (€)"
+                          style={{
+                            width: '100%', padding: '9px 30px 9px 12px',
+                            background: 'var(--elevated)', border: '1px solid var(--t3)',
+                            borderRadius: 8, color: 'var(--t1)', fontSize: 13,
+                            fontFamily: 'var(--font-jetbrains), monospace',
+                            outline: 'none', boxSizing: 'border-box',
+                          }}
+                        />
+                        <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--t3)' }}>€</span>
+                      </div>
+                      <button
+                        onClick={() => run(() => assignerSousTraitant(course.id, selectedST || null, prixSTInput ? parseFloat(prixSTInput) : null))}
+                        disabled={pending}
+                        style={{
+                          padding: '9px 14px', borderRadius: 8, background: 'var(--gold)', border: 'none',
+                          color: 'var(--base)', fontSize: 12, fontWeight: 600,
+                          cursor: pending ? 'wait' : 'pointer', fontFamily: 'var(--font-dm-sans), sans-serif', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Assigner
+                      </button>
+                    </div>
+                  )}
+                  {!selectedST && course.sous_traitant_nom && (
+                    <button
+                      onClick={() => run(() => assignerSousTraitant(course.id, null, null))}
+                      disabled={pending}
+                      style={{
+                        padding: '7px', borderRadius: 8, width: '100%',
+                        background: 'transparent', border: '1px solid rgba(217,80,80,.25)',
+                        color: 'var(--red)', fontSize: 11, cursor: 'pointer',
+                        fontFamily: 'var(--font-dm-sans), sans-serif',
+                      }}
+                    >
+                      Retirer {course.sous_traitant_nom}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div style={{ fontSize: 11, color: 'var(--t3)', fontStyle: 'italic' }}>Aucun sous-traitant actif</div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
