@@ -189,8 +189,20 @@ export async function modifierNotes(courseId: string, notes: string): Promise<vo
 
 export async function supprimerCourse(courseId: string): Promise<{ error?: string }> {
   const supabase = await requireAdminClient()
+  // Récupérer le chauffeur avant suppression pour remettre son statut
+  const { data: courseData } = await supabase
+    .from('courses')
+    .select('chauffeur_id, statut')
+    .eq('id', courseId)
+    .single()
+
+  // Remettre le chauffeur disponible s'il était en course
+  if (courseData?.chauffeur_id && ['acceptee', 'en_route', 'prise_en_charge'].includes(courseData.statut)) {
+    await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', courseData.chauffeur_id)
+  }
+
   // Détacher la course de toute facture avant suppression
-  await supabase.from('courses').update({ facture_id: null }).eq('id', courseId)
+  await supabase.from('courses').update({ facture_id: null, facture_st_id: null }).eq('id', courseId)
   const { error } = await supabase.from('courses').delete().eq('id', courseId)
   if (error) return { error: error.message }
   revalidatePath('/admin/courses')
@@ -204,10 +216,23 @@ export async function assignerSousTraitant(
   prixSousTraitant: number | null,
 ): Promise<void> {
   const supabase = await requireAdminClient()
+
+  // Si on assigne un ST, on retire le chauffeur — remettre son statut disponible
+  if (sousTraitantId) {
+    const { data: courseData } = await supabase
+      .from('courses')
+      .select('chauffeur_id, statut')
+      .eq('id', courseId)
+      .single()
+    if (courseData?.chauffeur_id && ['acceptee', 'en_route', 'prise_en_charge'].includes(courseData.statut)) {
+      await supabase.from('chauffeurs').update({ statut: 'disponible' }).eq('id', courseData.chauffeur_id)
+    }
+  }
+
   await supabase.from('courses').update({
     sous_traitant_id: sousTraitantId || null,
     prix_sous_traitant: sousTraitantId ? prixSousTraitant : null,
-    chauffeur_id: sousTraitantId ? null : undefined, // on retire le chauffeur si ST assigné
+    chauffeur_id: sousTraitantId ? null : undefined,
   }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin/courses')

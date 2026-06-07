@@ -282,11 +282,11 @@ export default function ChauffeurApp({
             </button>
             <button
               onClick={toggleDispo}
-              disabled={dispo === 'en_course'}
+              disabled={dispo === 'en_course' && !!activeCourse}
               style={{
                 padding: '7px 14px', borderRadius: 100, fontSize: 11, fontWeight: 600,
                 fontFamily: 'var(--font-dm-sans), sans-serif',
-                cursor: dispo === 'en_course' ? 'default' : 'pointer',
+                cursor: (dispo === 'en_course' && !!activeCourse) ? 'default' : 'pointer',
                 transition: 'all .2s',
                 ...(dispo === 'disponible' ? {
                   background: 'rgba(60,196,124,.15)', border: '1px solid rgba(60,196,124,.35)',
