@@ -87,6 +87,12 @@ export default async function CourseDetailPage({
   const clientTel: string | null = clientData?.profiles?.telephone ?? null
   const clientType: string = clientData?.type_compte ?? 'particulier'
 
+  const passagerLibrePrenom: string | null = (course as any).passager_prenom ?? null
+  const passagerLibreNom: string | null    = (course as any).passager_nom    ?? null
+  const passagerLibreTel: string | null    = (course as any).passager_tel    ?? null
+  const passagerLibreNomComplet = [passagerLibrePrenom, passagerLibreNom].filter(Boolean).join(' ') || null
+  const isPassagerLibre = !clientNom && !!passagerLibreNomComplet
+
   const collabNom = collabData
     ? `${collabData.prenom ?? ''} ${collabData.nom ?? ''}`.trim() || null
     : null
@@ -332,14 +338,22 @@ export default async function CourseDetailPage({
             )}
           </div>
 
-          {/* Client */}
+          {/* Client / Passager */}
           <div style={{
             background: 'var(--surface)', border: '1px solid var(--gb)',
             borderRadius: 12, padding: '20px',
           }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 14 }}>
-              Client
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)' }}>
+                Client
+              </div>
+              {isPassagerLibre && (
+                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(77,142,212,.12)', border: '1px solid rgba(77,142,212,.25)', color: 'var(--blue)', fontWeight: 600 }}>
+                  PONCTUEL
+                </span>
+              )}
             </div>
+
             {clientNom ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {/* Entité de facturation */}
@@ -422,6 +436,49 @@ export default async function CourseDetailPage({
                       </a>
                     )}
                   </div>
+                )}
+              </div>
+            ) : isPassagerLibre ? (
+              /* Passager libre — saisie manuelle */
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: 'rgba(77,142,212,.08)', border: '1px solid rgba(77,142,212,.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-cormorant), serif',
+                    fontSize: 16, color: 'var(--blue)',
+                  }}>
+                    {(passagerLibrePrenom || passagerLibreNom || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+                      {passagerLibreNomComplet}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--blue)' }}>Client ponctuel — sans compte</div>
+                    {passagerLibreTel && (
+                      <a href={`tel:${passagerLibreTel}`} style={{
+                        fontSize: 11, color: 'var(--gold)', textDecoration: 'none', display: 'block', marginTop: 2,
+                        fontFamily: 'var(--font-jetbrains), monospace',
+                      }}>
+                        {passagerLibreTel}
+                      </a>
+                    )}
+                  </div>
+                </div>
+                {passagerLibreTel && (
+                  <a href={`tel:${passagerLibreTel}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '8px 14px', borderRadius: 8,
+                    background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)',
+                    color: 'var(--gold)', fontSize: 12, fontWeight: 500,
+                    textDecoration: 'none',
+                  }}>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    Appeler
+                  </a>
                 )}
               </div>
             ) : (

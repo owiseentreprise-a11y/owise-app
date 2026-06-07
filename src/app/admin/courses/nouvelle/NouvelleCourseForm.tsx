@@ -242,6 +242,10 @@ export default function NouvelleCourseForm({
   const [prixManuel, setPrixManuel] = useState<string>('')
   const [distanceKm, setDistanceKm] = useState<number | null>(null)
   const [clientId, setClientId]     = useState('')
+  const [passagerMode, setPassagerMode] = useState<'compte' | 'libre'>('compte')
+  const [passagerPrenom, setPassagerPrenom] = useState('')
+  const [passagerNom, setPassagerNom]       = useState('')
+  const [passagerTel, setPassagerTel]       = useState('')
   const [allerRetour, setAllerRetour] = useState(false)
   const [dateRetour, setDateRetour]   = useState('')
   const [numVolTrain, setNumVolTrain] = useState('')
@@ -283,6 +287,10 @@ export default function NouvelleCourseForm({
     fd.set('adresse_arrivee', arrivee.label || (fd.get('adresse_arrivee') as string))
     fd.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
     if (prixFinal !== null) fd.set('prix_estime', String(prixFinal))
+    fd.set('passager_mode', passagerMode)
+    fd.set('passager_prenom', passagerPrenom)
+    fd.set('passager_nom', passagerNom)
+    fd.set('passager_tel', passagerTel)
     fd.set('aller_retour', allerRetour ? 'true' : 'false')
     fd.set('date_retour', dateRetour)
     fd.set('num_vol_train', numVolTrain)
@@ -537,30 +545,93 @@ export default function NouvelleCourseForm({
           )}
         </div>
 
-        {/* Client + Collaborateur */}
-        <div>
-          <label style={lbl}>Client</label>
-          <select name="client_id" value={clientId} onChange={e => setClientId(e.target.value)} style={sel}>
-            <option value="">— Non assigné —</option>
-            {clients.map(c => {
-              const nom = c.type_compte === 'entreprise' ? (c.entreprise_nom ?? '—') : `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
-              return <option key={c.id} value={c.id}>{nom}</option>
-            })}
-          </select>
-        </div>
+        {/* Passager */}
+        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+          <legend style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
+            Passager
+          </legend>
 
-        {isEntreprise && filteredCollabs.length > 0 && (
-          <div>
-            <label style={lbl}>Collaborateur voyageur</label>
-            <select name="collaborateur_id" style={sel}>
-              <option value="">— Aucun —</option>
-              {filteredCollabs.map(c => {
-                const nom = c.profiles ? `${c.profiles.prenom} ${c.profiles.nom}` : '—'
-                return <option key={c.id} value={c.id}>{nom}{c.poste ? ` — ${c.poste}` : ''}</option>
-              })}
-            </select>
+          {/* Toggle compte / libre */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+            {(['compte', 'libre'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => { setPassagerMode(mode); if (mode === 'compte') { setPassagerPrenom(''); setPassagerNom(''); setPassagerTel('') } else { setClientId('') } }}
+                style={{
+                  padding: '6px 14px', borderRadius: 7, cursor: 'pointer',
+                  fontFamily: 'var(--font-dm-sans), sans-serif', fontSize: 12, fontWeight: passagerMode === mode ? 600 : 400,
+                  border: `1px solid ${passagerMode === mode ? 'rgba(201,168,76,.5)' : 'var(--t3)'}`,
+                  background: passagerMode === mode ? 'rgba(201,168,76,.1)' : 'var(--elevated)',
+                  color: passagerMode === mode ? 'var(--gold)' : 'var(--t2)',
+                }}
+              >
+                {mode === 'compte' ? '👤 Compte client' : '✏️ Saisie libre'}
+              </button>
+            ))}
           </div>
-        )}
+
+          {passagerMode === 'compte' ? (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <label style={lbl}>Client (compte enregistré)</label>
+                <select name="client_id" value={clientId} onChange={e => setClientId(e.target.value)} style={sel}>
+                  <option value="">— Non assigné —</option>
+                  {clients.map(c => {
+                    const nom = c.type_compte === 'entreprise' ? (c.entreprise_nom ?? '—') : `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
+                    return <option key={c.id} value={c.id}>{nom}</option>
+                  })}
+                </select>
+              </div>
+              {isEntreprise && filteredCollabs.length > 0 && (
+                <div>
+                  <label style={lbl}>Collaborateur voyageur</label>
+                  <select name="collaborateur_id" style={sel}>
+                    <option value="">— Aucun —</option>
+                    {filteredCollabs.map(c => {
+                      const nom = c.profiles ? `${c.profiles.prenom} ${c.profiles.nom}` : '—'
+                      return <option key={c.id} value={c.id}>{nom}{c.poste ? ` — ${c.poste}` : ''}</option>
+                    })}
+                  </select>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{
+              padding: 16, borderRadius: 10,
+              background: 'rgba(201,168,76,.04)', border: '1px solid rgba(201,168,76,.15)',
+              display: 'flex', flexDirection: 'column', gap: 12,
+            }}>
+              <div style={{ fontSize: 10, color: 'var(--t2)', marginBottom: 2 }}>
+                Client ponctuel ou passager différent du commanditaire — sans compte dans le système
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={lbl}>Prénom</label>
+                  <input
+                    value={passagerPrenom} onChange={e => setPassagerPrenom(e.target.value)}
+                    placeholder="Prénom du passager" style={inp}
+                  />
+                </div>
+                <div>
+                  <label style={lbl}>Nom</label>
+                  <input
+                    value={passagerNom} onChange={e => setPassagerNom(e.target.value)}
+                    placeholder="Nom du passager" style={inp}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={lbl}>Téléphone</label>
+                <input
+                  value={passagerTel} onChange={e => setPassagerTel(e.target.value)}
+                  placeholder="06 XX XX XX XX" type="tel"
+                  style={{ ...inp, fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.04em' }}
+                />
+              </div>
+            </div>
+          )}
+        </fieldset>
 
         {/* Chauffeur / Sous-traitant */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

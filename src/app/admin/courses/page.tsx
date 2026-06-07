@@ -21,7 +21,7 @@ export default async function CoursesPage({
   const [{ data: courses }, { data: chauffeursDispos }] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(prenom, nom), sous_traitants(id, nom)')
+      .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(prenom, nom), sous_traitants(id, nom), passager_prenom, passager_nom, passager_tel')
       .order('date_prevue', { ascending: false })
       .limit(500),
     supabase
@@ -58,11 +58,14 @@ export default async function CoursesPage({
         ? (client.entreprise_nom ?? '')
         : `${client?.profiles?.prenom ?? ''} ${client?.profiles?.nom ?? ''}`.trim()
       const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() : ''
+      const passagerNom = `${c.passager_prenom ?? ''} ${c.passager_nom ?? ''}`.trim()
       return (
         c.adresse_depart.toLowerCase().includes(filterQ) ||
         c.adresse_arrivee.toLowerCase().includes(filterQ) ||
         clientNom.toLowerCase().includes(filterQ) ||
-        collabNom.toLowerCase().includes(filterQ)
+        collabNom.toLowerCase().includes(filterQ) ||
+        passagerNom.toLowerCase().includes(filterQ) ||
+        (c.passager_tel ?? '').includes(filterQ)
       )
     })
   }
@@ -243,13 +246,15 @@ export default async function CoursesPage({
               const chauffeur = (course as any).chauffeurs
               const collab  = (course as any).collaborateurs
 
+              const passagerLibreNom = `${course.passager_prenom ?? ''} ${course.passager_nom ?? ''}`.trim()
               const clientNom = client
                 ? client.type_compte === 'entreprise'
                   ? (client.entreprise_nom ?? '—')
                   : (`${client.prenom ?? ''} ${client.nom ?? ''}`.trim()
                       || `${client.profiles?.prenom ?? ''} ${client.profiles?.nom ?? ''}`.trim()
                       || '—')
-                : '—'
+                : passagerLibreNom || '—'
+              const clientIsLibre = !client && !!passagerLibreNom
               const collabNom = collab
                 ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || null
                 : null
@@ -287,7 +292,19 @@ export default async function CoursesPage({
 
                   {/* Client */}
                   <div style={{ position: 'relative', zIndex: 2 }}>
-                    <div style={{ fontSize: 12, color: 'var(--t1)' }}>{clientNom}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {clientIsLibre && (
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: 'rgba(77,142,212,.12)', border: '1px solid rgba(77,142,212,.25)', color: 'var(--blue)', fontWeight: 600 }}>
+                          PONCTUEL
+                        </span>
+                      )}
+                      <span style={{ fontSize: 12, color: clientNom === '—' ? 'var(--t3)' : 'var(--t1)' }}>{clientNom}</span>
+                    </div>
+                    {clientIsLibre && course.passager_tel && (
+                      <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1, fontFamily: 'var(--font-jetbrains), monospace' }}>
+                        {course.passager_tel}
+                      </div>
+                    )}
                     {collabNom && (
                       <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>↳ {collabNom}</div>
                     )}

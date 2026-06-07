@@ -30,6 +30,10 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const heure_arrivee_vol = (formData.get('heure_arrivee_vol') as string) || null
   const prix_sous_traitant_raw = formData.get('prix_sous_traitant') as string
   const prix_sous_traitant  = prix_sous_traitant_raw ? parseFloat(prix_sous_traitant_raw) : null
+  const passager_mode   = (formData.get('passager_mode') as string) || 'compte'
+  const passager_prenom = passager_mode === 'libre' ? ((formData.get('passager_prenom') as string) || null) : null
+  const passager_nom    = passager_mode === 'libre' ? ((formData.get('passager_nom')    as string) || null) : null
+  const passager_tel    = passager_mode === 'libre' ? ((formData.get('passager_tel')    as string) || null) : null
 
   if (!adresse_depart || !adresse_arrivee || !date_prevue || !type_vehicule) {
     return { error: 'Champs obligatoires manquants' }
@@ -43,15 +47,18 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     nb_passagers,
     prix_estime,
     notes,
-    client_id,
+    client_id: passager_mode === 'libre' ? null : client_id,
     chauffeur_id: sous_traitant_id ? null : chauffeur_id,
-    collaborateur_id,
+    collaborateur_id: passager_mode === 'libre' ? null : collaborateur_id,
     sous_traitant_id,
     prix_sous_traitant: sous_traitant_id ? prix_sous_traitant : null,
     etapes: etapes.length > 0 ? etapes : null,
     num_vol_train,
     terminal: terminal_val,
     heure_arrivee_vol,
+    passager_prenom,
+    passager_nom,
+    passager_tel,
     statut: 'en_attente',
   }).select('id').single()
 
@@ -70,11 +77,14 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
         nb_passagers,
         prix_estime:       null,
         notes:             notes ? `Retour — ${notes}` : 'Retour',
-        client_id,
-        collaborateur_id,
+        client_id: passager_mode === 'libre' ? null : client_id,
+        collaborateur_id: passager_mode === 'libre' ? null : collaborateur_id,
         chauffeur_id:      sous_traitant_id ? null : chauffeur_id,
         sous_traitant_id,
         prix_sous_traitant: sous_traitant_id ? prix_sous_traitant : null,
+        passager_prenom,
+        passager_nom,
+        passager_tel,
         statut:            'en_attente',
       })
     }
