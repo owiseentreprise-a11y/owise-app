@@ -92,8 +92,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
               stEmail: stData.email,
               stNom: stData.nom,
               contactNom: stData.contact_nom ?? null,
-              chauffeurPrenom: chauffeurProfile?.prenom ?? '',
-              chauffeurNom: clientNom,
+              chauffeurPrenom: chauffeurProfile?.prenom ?? null,
               adresseDepart: course.adresse_depart,
               adresseArrivee: course.adresse_arrivee,
               datePrevue: course.date_prevue,
@@ -277,6 +276,31 @@ export async function assignerSousTraitant(
     prix_sous_traitant: sousTraitantId ? prixSousTraitant : null,
     chauffeur_id: sousTraitantId ? null : undefined,
   }).eq('id', courseId)
+
+  // Notifier le ST par email lors d'une nouvelle assignation directe
+  if (sousTraitantId) {
+    const [courseRes, stRes] = await Promise.all([
+      supabase.from('courses')
+        .select('adresse_depart, adresse_arrivee, date_prevue')
+        .eq('id', courseId).single(),
+      supabase.from('sous_traitants')
+        .select('nom, email, contact_nom')
+        .eq('id', sousTraitantId).single(),
+    ])
+    if (courseRes.data && stRes.data?.email) {
+      await envoyerNotificationST({
+        stEmail: stRes.data.email,
+        stNom: stRes.data.nom,
+        contactNom: stRes.data.contact_nom ?? null,
+        chauffeurPrenom: null,
+        adresseDepart: courseRes.data.adresse_depart,
+        adresseArrivee: courseRes.data.adresse_arrivee,
+        datePrevue: courseRes.data.date_prevue,
+        refCourse: courseId.slice(-6).toUpperCase(),
+      })
+    }
+  }
+
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin/courses')
 }

@@ -12,12 +12,18 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-  // Seuls les chauffeurs enregistrent un token FCM
-  if (user.app_metadata?.role !== 'chauffeur') {
+  const admin = createAdminClient()
+
+  // Chauffeurs et comptes sous_traitant qui ont une ligne chauffeur peuvent enregistrer un token FCM
+  const role = user.app_metadata?.role
+  if (role !== 'chauffeur' && role !== 'sous_traitant') {
     return NextResponse.json({ error: 'not_chauffeur' }, { status: 403 })
   }
+  if (role === 'sous_traitant') {
+    const { data: hasChauffeurRow } = await admin.from('chauffeurs').select('id').eq('id', user.id).maybeSingle()
+    if (!hasChauffeurRow) return NextResponse.json({ error: 'not_chauffeur' }, { status: 403 })
+  }
 
-  const admin = createAdminClient()
   await admin.from('chauffeurs').update({ fcm_token: token }).eq('id', user.id)
 
   return NextResponse.json({ ok: true })

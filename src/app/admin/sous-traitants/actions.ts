@@ -234,6 +234,32 @@ export async function toggleActifSTAction(id: string, actif: boolean): Promise<{
   return {}
 }
 
+export async function verifierSTAction(id: string): Promise<{
+  chauffeursCount: number
+  chauffeursNoms: string[]
+  coursesActiveCount: number
+}> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  const [chauffeursRes, coursesRes] = await Promise.all([
+    supabase.from('chauffeurs')
+      .select('id, profiles(prenom, nom)')
+      .eq('sous_traitant_id', id),
+    supabase.from('courses')
+      .select('id')
+      .eq('sous_traitant_id', id)
+      .in('statut', ['en_attente', 'acceptee', 'en_route', 'prise_en_charge']),
+  ])
+
+  const chauffeurs = chauffeursRes.data ?? []
+  return {
+    chauffeursCount: chauffeurs.length,
+    chauffeursNoms: chauffeurs.map((c: any) => `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()).filter(Boolean),
+    coursesActiveCount: (coursesRes.data ?? []).length,
+  }
+}
+
 export async function supprimerSTAction(id: string): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
@@ -248,6 +274,9 @@ export async function supprimerSTAction(id: string): Promise<{ error?: string }>
   if (coursesEnCours && coursesEnCours.length > 0) {
     return { error: 'Le sous-traitant est en course en ce moment. Impossible de le supprimer.' }
   }
+
+  // Délier les chauffeurs rattachés (leur compte est conservé, juste dissocié)
+  await supabase.from('chauffeurs').update({ sous_traitant_id: null }).eq('sous_traitant_id', id)
 
   // Libérer les courses en attente/acceptées → retour dans le panier
   await supabase

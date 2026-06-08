@@ -1,12 +1,23 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function ChauffeurLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
-  if (user.app_metadata?.role !== 'chauffeur') redirect('/login')
+
+  const role = user.app_metadata?.role
+  if (role !== 'chauffeur' && role !== 'sous_traitant') redirect('/login')
+
+  // Un compte sous_traitant peut accéder à l'app chauffeur UNIQUEMENT s'il a une ligne dans chauffeurs
+  // (cas où le gérant d'un ST est aussi chauffeur)
+  if (role === 'sous_traitant') {
+    const admin = createAdminClient()
+    const { data: chauffeurRow } = await admin.from('chauffeurs').select('id').eq('id', user.id).maybeSingle()
+    if (!chauffeurRow) redirect('/sous-traitant')
+  }
 
   return (
     <div style={{
