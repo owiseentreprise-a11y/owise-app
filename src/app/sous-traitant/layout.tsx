@@ -1,15 +1,6 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-
+// Auth gérée exclusivement par le proxy (src/proxy.ts) pour éviter les boucles
+// de redirections quand la session expire entre le proxy et le layout.
 export default async function SousTraitantLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/sous-traitant-login')
-  if (user.app_metadata?.role !== 'sous_traitant' && user.app_metadata?.role !== 'admin') {
-    redirect('/sous-traitant-login')
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
