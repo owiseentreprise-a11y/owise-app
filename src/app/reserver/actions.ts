@@ -106,7 +106,7 @@ export async function createReservationCheckout(data: {
   if (!key) return { error: 'Clé Stripe manquante' }
 
   // Recalculer le prix côté serveur — ne jamais faire confiance au prix client
-  const prixServeur = await calculerPrixServeur(
+  let prixServeur = await calculerPrixServeur(
     data.zone_depart_id,
     data.zone_arrivee_id,
     data.type_vehicule,
@@ -119,6 +119,25 @@ export async function createReservationCheckout(data: {
       type_vehicule: data.type_vehicule,
     })
     return { error: 'Tarif introuvable pour ce trajet. Veuillez contacter le support.' }
+  }
+
+  // Aller-retour : ×2
+  if (data.aller_retour && data.date_retour) {
+    prixServeur = Math.round(prixServeur * 2 * 100) / 100
+  }
+
+  // Code parrainage : -10% si code actif en base
+  if (data.code_parrainage) {
+    const admin = createAdminClient()
+    const { data: codeRow } = await admin
+      .from('codes_parrainage')
+      .select('id')
+      .eq('code', data.code_parrainage.toUpperCase().trim())
+      .eq('actif', true)
+      .single()
+    if (codeRow) {
+      prixServeur = Math.round(prixServeur * 0.9 * 100) / 100
+    }
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
