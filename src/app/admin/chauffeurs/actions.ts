@@ -39,7 +39,10 @@ export async function supprimerChauffeurAction(id: string): Promise<{ error?: st
     .eq('chauffeur_id', id)
     .in('statut', ['en_attente', 'acceptee'])
 
-  const { error } = await supabase.from('chauffeurs').delete().eq('id', id)
+  // Supprimer la ligne chauffeur, le profil, puis le compte auth
+  await supabase.from('chauffeurs').delete().eq('id', id)
+  await supabase.from('profiles').delete().eq('id', id)
+  const { error } = await supabase.auth.admin.deleteUser(id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/chauffeurs')
