@@ -24,7 +24,7 @@ export async function accepterCourseAction(courseId: string): Promise<void> {
   const admin = createAdminClient()
 
   await Promise.all([
-    admin.from('courses').update({ statut: 'acceptee' }).eq('id', courseId),
+    admin.from('courses').update({ statut: 'acceptee' }).eq('id', courseId).eq('chauffeur_id', user.id),
     admin.from('chauffeurs').update({ statut: 'en_course' }).eq('id', user.id),
   ])
 
@@ -77,6 +77,7 @@ export async function refuserCourseAction(courseId: string): Promise<void> {
   await admin.from('courses')
     .update({ statut: 'en_attente', chauffeur_id: null })
     .eq('id', courseId)
+    .eq('chauffeur_id', user.id)
 
   const course = courseRes.data
   const chauffeurProfile = chauffeurProfileRes.data
@@ -109,7 +110,7 @@ export async function progresserCourseAction(
   if (nextStatut === 'en_route')  updates.date_debut = new Date().toISOString()
   if (nextStatut === 'terminee')  updates.date_fin   = new Date().toISOString()
 
-  await admin.from('courses').update(updates).eq('id', courseId)
+  await admin.from('courses').update(updates).eq('id', courseId).eq('chauffeur_id', user.id)
 
   if (nextStatut === 'terminee') {
     await admin.from('chauffeurs').update({ statut: 'disponible' }).eq('id', user.id)
