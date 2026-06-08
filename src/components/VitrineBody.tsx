@@ -35,6 +35,7 @@ async function fetchOsrmDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact } from '@/lib/pixel'
+import { calculerPrix, calculerPrixKm, appliquerSupplements, NOM_VERS_CLE, type ParamsCalc, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -190,10 +191,10 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   )
 }
 
-type TarifRow   = { vehicule: string; prise_en_charge: number; prix_km: number; cdg_fixe: number; orly_fixe: number; beauvais_fixe: number }
-type GrilleMin  = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
+type TarifRow  = TarifRow2
+type GrilleMin = GrilleCalc
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[] }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -433,6 +434,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const isBeauvais = /beauvais/i.test(dest) || /beauvais/i.test(orig)
     const isGare     = /\bgare\b|gare du nord|gare de lyon|montparnasse|saint-lazare/i.test(dest) || f.destType === 'gare'
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
+    const dateStr  = f.date || new Date().toISOString().slice(0, 10)
+    const fakeDate = `${dateStr}T${String(h).padStart(2,'0')}:00`
     if (tarif) {
       let base = 0
       if (isOrly)          base = Number(tarif.orly_fixe)
@@ -442,16 +445,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
       if (!base)           base = Number(tarif.prise_en_charge) + 30
       if (etapeOpen) base += 10
-      const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
-      return Math.round(base + maj + suppTotal)
+      if (paramsProp?.tarif_pec_actif) base += Number(paramsProp.tarif_frais_pec ?? 0)
+      base = appliquerSupplements(base, fakeDate, paramsProp)
+      return Math.round(base + suppTotal)
     }
     // fallback hardcodé
     let base = v.base
     if (isCDG || isOrly || isBeauvais) base += 25
     else if (isGare)                   base += 12
     if (etapeOpen)                     base += 10
-    const maj = (h >= 22 || h < 6) ? Math.round(base * 0.2) : 0
-    return base + maj + suppTotal
+    base = appliquerSupplements(base, fakeDate, paramsProp)
+    return Math.round(base + suppTotal)
   }
 
   async function bcEstimate(): Promise<number> {
@@ -491,18 +495,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             (g.zone_depart_id === otherZone.id   && g.zone_arrivee_id === airportZone.id)
           )
           if (cell && cell.prix_berline) {
-            const nom   = v.name
-            const coef  = nom === 'Berline Premium' ? 1.25 : nom === 'Van 7 places' ? 1.5 : 1
-            let prix    = Math.round(cell.prix_berline * coef)
-            if (h >= 22 || h < 6) prix = Math.round(prix * 1.2)
-            return prix
+            const cle  = NOM_VERS_CLE[v.name] ?? 'berline'
+            const coef = cle === 'berline_premium' ? (paramsProp?.coef_berline_premium ?? 1.25) : cle === 'van' ? (paramsProp?.coef_van ?? 1.5) : 1
+            let prix   = Number(cell.prix_berline) * coef
+            if (paramsProp?.tarif_pec_actif) prix += Number(paramsProp.tarif_frais_pec ?? 0)
+            const fakeDate = `2000-01-03T${bcTime || '09:00'}`
+            prix = appliquerSupplements(prix, fakeDate, paramsProp)
+            return Math.round(prix)
           }
         }
         // Fallback : tarif fixe aéroport
         let fixe = isCDGAddr ? Number(tarif.cdg_fixe) : isOrlyAddr ? Number(tarif.orly_fixe) : Number(tarif.beauvais_fixe)
         if (fixe > 0) {
-          if (h >= 22 || h < 6) fixe = Math.round(fixe * 1.2)
-          return fixe
+          if (paramsProp?.tarif_pec_actif) fixe += Number(paramsProp.tarif_frais_pec ?? 0)
+          const fakeDate = `2000-01-03T${bcTime || '09:00'}`
+          fixe = appliquerSupplements(fixe, fakeDate, paramsProp)
+          return Math.round(fixe)
         }
       }
       // Pas de zone connue → on passe au calcul km
@@ -523,9 +531,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const [dep, arr] = await Promise.all([geocode(bcDepart), geocode(bcArrivee)])
       const distKm = await fetchOsrmDist(dep, arr)
       if (distKm !== null) {
-        let prix = Number(tarif.prise_en_charge) + distKm * Number(tarif.prix_km)
-        if (h >= 22 || h < 6) prix = Math.round(prix * 1.2)
-        return Math.round(prix)
+        const cle = NOM_VERS_CLE[v.name] ?? 'berline'
+        const fakeDate = `2000-01-03T${bcTime || '09:00'}`
+        const px = calculerPrixKm(distKm, cle, fakeDate, paramsProp, tarifsProp)
+        if (px !== null) return Math.round(px)
       }
     }
 
@@ -533,8 +542,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     let base = v.base
     if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
     else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
-    if (h >= 22 || h < 6) base = Math.round(base * 1.2)
-    return base
+    const fakeDate = `2000-01-03T${bcTime || '09:00'}`
+    base = appliquerSupplements(base, fakeDate, paramsProp)
+    return Math.round(base)
   }
 
   async function submitDevis() {

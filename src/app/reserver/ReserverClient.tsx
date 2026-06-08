@@ -7,6 +7,17 @@ import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout } from '@/lib/pixel'
+import {
+  calculerPrix,
+  calculerPrixKm,
+  appliquerSupplements,
+  AIRPORT_COL,
+  VEHICULE_NOM,
+  type TarifCalc,
+  type GrilleCalc,
+  type ZoneCalc,
+  type ParamsCalc,
+} from '@/lib/calcPrix'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -59,90 +70,6 @@ function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Z
 /** Forfait si l'une des zones est un aéroport, une gare, ou Paris intramuros (Z1) */
 function isForfaitZone(zone: Zone): boolean {
   return zone.type === 'aeroport' || zone.type === 'gare' || zone.code === 'Z1'
-}
-
-// Codes de zone aéroport → colonne dans tarifs
-const AIRPORT_COL: Record<string, keyof TarifVehicule> = {
-  CDG: 'cdg_fixe',
-  ORY: 'orly_fixe',
-  BVA: 'beauvais_fixe',
-}
-
-function calculerPrixForfait(
-  zoneDepId: string,
-  zoneArrId: string,
-  vehicule: string,
-  dateHeure: string,
-  grille: Grille[],
-  params: any,
-  tarifs: TarifVehicule[],
-  zones: Zone[],
-): number | null {
-  const zDep = zones.find(z => z.id === zoneDepId)
-  const zArr = zones.find(z => z.id === zoneArrId)
-
-  // Priorité 1 : matrice zone-à-zone (prix spécifiques par paire)
-  const cell = grille.find(g => g.zone_depart_id === zoneDepId && g.zone_arrivee_id === zoneArrId)
-  if (cell && cell.prix_berline) {
-    let coef = 1
-    if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-    if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-    let prix = cell.prix_berline * coef
-    if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-    prix = appliquerSupplements(prix, dateHeure, params)
-    return Math.round(prix * 100) / 100
-  }
-
-  // Fallback : tarif fixe aéroport si aucune entrée dans la grille pour cette paire
-  const airportZone = [zDep, zArr].find(z => z?.type === 'aeroport' && AIRPORT_COL[z.code])
-  if (airportZone) {
-    const tarif = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
-    const col   = AIRPORT_COL[airportZone.code]
-    if (tarif && col) {
-      const prix_base = Number(tarif[col])
-      if (prix_base > 0) {
-        let prix = prix_base
-        if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-        prix = appliquerSupplements(prix, dateHeure, params)
-        return Math.round(prix * 100) / 100
-      }
-    }
-  }
-
-  return null
-}
-
-const VEHICULE_NOM: Record<string, string> = {
-  berline:         'Berline',
-  berline_premium: 'Berline Premium',
-  van:             'Van 7 places',
-}
-
-function calculerPrixKm(
-  distanceKm: number,
-  vehicule: string,
-  dateHeure: string,
-  params: any,
-  tarifs: TarifVehicule[],
-): number | null {
-  const tarif = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
-  const base  = tarif ? Number(tarif.prise_en_charge) : (params?.tarif_base_particulier ?? 15)
-  const km    = tarif ? Number(tarif.prix_km)         : (params?.tarif_km_particulier   ?? 2)
-
-  let prix = base + distanceKm * km
-  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-  prix = appliquerSupplements(prix, dateHeure, params)
-  return Math.round(prix * 100) / 100
-}
-
-function appliquerSupplements(prix: number, dateHeure: string, params: any): number {
-  if (!dateHeure) return prix
-  const d = new Date(dateHeure)
-  const h = d.getHours()
-  const j = d.getDay()
-  if (h >= 22 || h < 6)   prix *= 1 + (params?.supplement_nuit    ?? 0) / 100
-  if (j === 0 || j === 6)  prix *= 1 + (params?.supplement_weekend ?? 0) / 100
-  return prix
 }
 
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
@@ -446,7 +373,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   // Prix forfait — null si montant = 0 (non configuré) ou zones inconnues
   const forfaitPrix = useMemo(() => {
     if (!mightBeForfait) return null
-    return calculerPrixForfait(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, params, tarifs, activeZones)
+    return calculerPrix(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, params, tarifs, activeZones)
   }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, params, tarifs, activeZones])
 
   // Forfait actif uniquement si le montant est configuré (> 0) — sinon fallback km
