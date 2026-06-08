@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { logoutAction } from '@/app/login/actions'
+import { clientLogoutAction } from '@/app/espace-client/actions'
 
 export default async function EspaceClientLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  if (!user) redirect('/client-login')
 
   const role = user.app_metadata?.role
   if (role === 'admin') redirect('/admin')
@@ -84,7 +84,7 @@ export default async function EspaceClientLayout({ children }: { children: React
               <div style={{ fontSize: 10, color: '#999999' }}>{collab.poste}</div>
             )}
           </div>
-          <form action={logoutAction}>
+          <form action={clientLogoutAction}>
             <button type="submit" style={{
               background: '#F3F0EB', border: '1px solid rgba(0,0,0,.12)',
               borderRadius: 7, padding: '6px 12px',

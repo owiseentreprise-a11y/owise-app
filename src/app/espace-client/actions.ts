@@ -5,6 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 
+export async function clientLogoutAction() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/client-login')
+}
+
 export async function demanderCourse(formData: FormData): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
