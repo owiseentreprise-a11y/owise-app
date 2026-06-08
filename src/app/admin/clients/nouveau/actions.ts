@@ -3,34 +3,56 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerBienvenueClient } from '@/lib/email'
 
 export async function createClientAccount(formData: FormData): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
 
-  const email               = formData.get('email') as string
+  const email               = (formData.get('email') as string)?.trim()
   const password            = formData.get('password') as string
-  const nom                 = formData.get('nom') as string
-  const prenom              = formData.get('prenom') as string
-  const telephone           = (formData.get('telephone') as string) || null
+  const nom                 = (formData.get('nom') as string)?.trim()
+  const prenom              = (formData.get('prenom') as string)?.trim()
+  const telephone           = (formData.get('telephone') as string)?.trim() || null
   const type_compte         = formData.get('type_compte') as string
-  const entreprise_nom      = (formData.get('entreprise_nom') as string) || null
-  const adresse_facturation = (formData.get('adresse_facturation') as string) || null
+  const entreprise_nom      = (formData.get('entreprise_nom') as string)?.trim() || null
+  const adresse_facturation = (formData.get('adresse_facturation') as string)?.trim() || null
 
-  const { data, error } = await supabase.rpc('create_client_account', {
-    p_email: email,
-    p_password: password,
-    p_nom: nom,
-    p_prenom: prenom,
-    p_telephone: telephone,
-    p_type_compte: type_compte,
-    p_entreprise_nom: entreprise_nom,
-    p_adresse_facturation: adresse_facturation,
+  const admin = createAdminClient()
+
+  // 1. Créer le compte auth
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    app_metadata: { role: 'client' },
+    user_metadata: { prenom, nom },
   })
+  if (authError) throw new Error(authError.message)
 
-  if (error) throw new Error(error.message)
+  const userId = authData.user.id
 
-  // Email de bienvenue (non bloquant)
+  // 2. Profil
+  const { error: profileError } = await admin.from('profiles').upsert({
+    id: userId, nom, prenom, telephone, role: 'client',
+  })
+  if (profileError) {
+    await admin.auth.admin.deleteUser(userId).catch(() => {})
+    throw new Error(profileError.message)
+  }
+
+  // 3. Client
+  const { error: clientError } = await admin.from('clients').upsert({
+    id: userId,
+    type_compte: type_compte || 'particulier',
+    entreprise_nom,
+    adresse_facturation,
+  })
+  if (clientError) {
+    await admin.auth.admin.deleteUser(userId).catch(() => {})
+    throw new Error(clientError.message)
+  }
+
   envoyerBienvenueClient({
     email, prenom, nom, password,
     typeCompte: type_compte,
@@ -39,5 +61,5 @@ export async function createClientAccount(formData: FormData): Promise<void> {
 
   revalidatePath('/admin/clients')
   revalidatePath('/admin')
-  redirect(`/admin/clients/${data}`)
+  redirect(`/admin/clients/${userId}`)
 }
