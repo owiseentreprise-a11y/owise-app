@@ -58,6 +58,7 @@ export async function modifierSousTraitantAction(formData: FormData) {
 }
 
 export async function creerCompteSTAction(formData: FormData) {
+  await requireAdminClient()
   const supabase = createAdminClient()
   const authAdmin = getAuthAdminClient()
   const sous_traitant_id = formData.get('sous_traitant_id') as string
