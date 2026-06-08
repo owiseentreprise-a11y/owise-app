@@ -36,12 +36,13 @@ export async function proxy(request: NextRequest) {
     path === '/sous-traitant'   || path.startsWith('/sous-traitant/')
   )
 
-  // Non connecté sur page protégée → login
+  // Non connecté sur page protégée → login approprié
   if (isProtected && !user) {
-    const loginPage = (path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
-      ? '/sous-traitant-login'
-      : '/login'
-    return NextResponse.redirect(new URL(loginPage, request.url))
+    if (path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
+      return NextResponse.redirect(new URL('/sous-traitant-login', request.url))
+    if (path === '/espace-client' || path.startsWith('/espace-client/'))
+      return NextResponse.redirect(new URL('/client-login', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   if (user) {
@@ -49,8 +50,16 @@ export async function proxy(request: NextRequest) {
 
     // Connecté sur une page de login → rediriger vers la bonne section
     if (isLoginPage) {
-      if (role === 'admin')         return NextResponse.redirect(new URL('/admin', request.url))
-      if (role === 'chauffeur')     return NextResponse.redirect(new URL('/chauffeur', request.url))
+      if (role === 'admin')     return NextResponse.redirect(new URL('/admin', request.url))
+      if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
+      // sous_traitant : portail ST par défaut, sauf /client-login qu'on laisse passer
+      // (l'admin peut aussi vouloir tester le login client)
+      if (role === 'sous_traitant' && path !== '/client-login')
+        return NextResponse.redirect(new URL('/sous-traitant', request.url))
+      // client / collaborateur / sous_traitant sur /client-login → espace-client
+      if (path === '/client-login')
+        return NextResponse.redirect(new URL('/espace-client', request.url))
+      // Autres pages login (admin /login, /sous-traitant-login) → section appropriée
       if (role === 'sous_traitant') return NextResponse.redirect(new URL('/sous-traitant', request.url))
       return NextResponse.redirect(new URL('/espace-client', request.url))
     }
@@ -65,8 +74,11 @@ export async function proxy(request: NextRequest) {
       if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
         return NextResponse.redirect(new URL('/chauffeur', request.url))
 
-      // Sous-traitant hors de /sous-traitant → renvoyer sur /sous-traitant
-      if (role === 'sous_traitant' && !path.startsWith('/sous-traitant'))
+      // Sous-traitant : autorisé sur /sous-traitant ET /chauffeur
+      // (certains gérants ST sont aussi chauffeurs — le layout /chauffeur vérifie la ligne chauffeurs)
+      if (role === 'sous_traitant'
+          && !path.startsWith('/sous-traitant')
+          && !path.startsWith('/chauffeur'))
         return NextResponse.redirect(new URL('/sous-traitant', request.url))
 
       // Mauvais rôle sur /sous-traitant → login sous-traitant
@@ -74,10 +86,13 @@ export async function proxy(request: NextRequest) {
           && role !== 'sous_traitant' && role !== 'admin')
         return NextResponse.redirect(new URL('/sous-traitant-login', request.url))
 
-      // Non admin/chauffeur sur /admin ou /chauffeur → login
+      // Non admin sur /admin → login
       if (role !== 'admin' && path.startsWith('/admin'))
         return NextResponse.redirect(new URL('/login', request.url))
-      if (role !== 'admin' && role !== 'chauffeur' && path.startsWith('/chauffeur'))
+
+      // Non chauffeur / non sous_traitant sur /chauffeur → login
+      if (role !== 'admin' && role !== 'chauffeur' && role !== 'sous_traitant'
+          && path.startsWith('/chauffeur'))
         return NextResponse.redirect(new URL('/login', request.url))
     }
   }
