@@ -75,8 +75,11 @@ export async function addCollaborateur(
 }
 
 export async function deleteCollaborateur(clientId: string, collabId: string): Promise<void> {
-  const supabase = await requireAdminClient()
-  await supabase.from('collaborateurs').delete().eq('id', collabId)
+  await requireAdminClient()
+  const admin = createAdminClient()
+  await admin.from('collaborateurs').delete().eq('id', collabId)
+  await admin.from('profiles').delete().eq('id', collabId)
+  await admin.auth.admin.deleteUser(collabId).catch(() => {})
   revalidatePath(`/admin/clients/${clientId}`)
 }
 

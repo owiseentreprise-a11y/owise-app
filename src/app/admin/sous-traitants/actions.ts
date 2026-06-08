@@ -262,7 +262,8 @@ export async function verifierSTAction(id: string): Promise<{
 
 export async function supprimerSTAction(id: string): Promise<{ error?: string }> {
   await requireAdminClient()
-  const supabase = createAdminClient()
+  const supabase  = createAdminClient()
+  const authAdmin = getAuthAdminClient()
 
   // Bloquer si en course physiquement
   const { data: coursesEnCours } = await supabase
@@ -274,6 +275,13 @@ export async function supprimerSTAction(id: string): Promise<{ error?: string }>
   if (coursesEnCours && coursesEnCours.length > 0) {
     return { error: 'Le sous-traitant est en course en ce moment. Impossible de le supprimer.' }
   }
+
+  // Récupérer le user_id avant suppression
+  const { data: st } = await supabase
+    .from('sous_traitants')
+    .select('user_id')
+    .eq('id', id)
+    .single()
 
   // Délier les chauffeurs rattachés (leur compte est conservé, juste dissocié)
   await supabase.from('chauffeurs').update({ sous_traitant_id: null }).eq('sous_traitant_id', id)
@@ -287,6 +295,12 @@ export async function supprimerSTAction(id: string): Promise<{ error?: string }>
 
   const { error } = await supabase.from('sous_traitants').delete().eq('id', id)
   if (error) return { error: error.message }
+
+  // Supprimer le compte auth du gestionnaire ST s'il existe
+  if (st?.user_id) {
+    await supabase.from('profiles').delete().eq('id', st.user_id)
+    await authAdmin.auth.admin.deleteUser(st.user_id).catch(() => {})
+  }
 
   revalidatePath('/admin/sous-traitants')
   revalidatePath('/admin')
