@@ -41,6 +41,7 @@ export async function createChauffeur(
     user_metadata: { prenom, nom },
   })
   if (authError) {
+    console.error('[createChauffeur] authError:', authError.message, 'email:', email.trim())
     if (authError.message.toLowerCase().includes('already exists'))
       return { error: `Un compte existe déjà avec l'adresse ${email.trim()}. Utilisez un autre email.` }
     return { error: authError.message }
@@ -53,6 +54,7 @@ export async function createChauffeur(
     id: userId, nom, prenom, telephone, role: 'chauffeur',
   })
   if (profileError) {
+    console.error('[createChauffeur] profileError:', profileError.message)
     await admin.auth.admin.deleteUser(userId)
     return { error: profileError.message }
   }
@@ -71,6 +73,7 @@ export async function createChauffeur(
     nb_courses:               0,
   })
   if (chauffeurError) {
+    console.error('[createChauffeur] chauffeurError:', chauffeurError.message, 'type_contrat:', type_contrat, 'sous_traitant_id:', sous_traitant_id)
     await admin.auth.admin.deleteUser(userId)
     return { error: chauffeurError.message }
   }
