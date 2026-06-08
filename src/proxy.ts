@@ -1,6 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Redirige en copiant les cookies Supabase rafraîchis sur la réponse.
+// Sans ça : session expirée → Supabase rafraîchit dans le proxy → redirect sans cookies
+// → prochain appel a encore l'ancien token expiré → boucle infinie (ERR_TOO_MANY_REDIRECTS)
+function redirect(to: string, request: NextRequest, session: NextResponse): NextResponse {
+  const res = NextResponse.redirect(new URL(to, request.url))
+  session.cookies.getAll().forEach(c => res.cookies.set(c.name, c.value, c))
+  return res
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -39,10 +48,10 @@ export async function proxy(request: NextRequest) {
   // Non connecté sur page protégée → login approprié
   if (isProtected && !user) {
     if (path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
-      return NextResponse.redirect(new URL('/sous-traitant-login', request.url))
+      return redirect('/sous-traitant-login', request, supabaseResponse)
     if (path === '/espace-client' || path.startsWith('/espace-client/'))
-      return NextResponse.redirect(new URL('/client-login', request.url))
-    return NextResponse.redirect(new URL('/login', request.url))
+      return redirect('/client-login', request, supabaseResponse)
+    return redirect('/login', request, supabaseResponse)
   }
 
   if (user) {
@@ -50,50 +59,48 @@ export async function proxy(request: NextRequest) {
 
     // Connecté sur une page de login → rediriger vers la bonne section
     if (isLoginPage) {
-      if (role === 'admin')     return NextResponse.redirect(new URL('/admin', request.url))
-      if (role === 'chauffeur') return NextResponse.redirect(new URL('/chauffeur', request.url))
+      if (role === 'admin')     return redirect('/admin', request, supabaseResponse)
+      if (role === 'chauffeur') return redirect('/chauffeur', request, supabaseResponse)
       // sous_traitant : portail ST par défaut, sauf /client-login qu'on laisse passer
-      // (l'admin peut aussi vouloir tester le login client)
       if (role === 'sous_traitant' && path !== '/client-login')
-        return NextResponse.redirect(new URL('/sous-traitant', request.url))
+        return redirect('/sous-traitant', request, supabaseResponse)
       // client / collaborateur / sous_traitant sur /client-login → espace-client
       if (path === '/client-login')
-        return NextResponse.redirect(new URL('/espace-client', request.url))
-      // Autres pages login (admin /login, /sous-traitant-login) → section appropriée
-      if (role === 'sous_traitant') return NextResponse.redirect(new URL('/sous-traitant', request.url))
-      return NextResponse.redirect(new URL('/espace-client', request.url))
+        return redirect('/espace-client', request, supabaseResponse)
+      // /login ou /sous-traitant-login connecté → section appropriée
+      if (role === 'sous_traitant') return redirect('/sous-traitant', request, supabaseResponse)
+      return redirect('/espace-client', request, supabaseResponse)
     }
 
     // Protection par rôle sur les sections réservées
     if (isProtected) {
       // Admin hors de /admin → renvoyer sur /admin
       if (role === 'admin' && !path.startsWith('/admin'))
-        return NextResponse.redirect(new URL('/admin', request.url))
+        return redirect('/admin', request, supabaseResponse)
 
       // Chauffeur hors de /chauffeur → renvoyer sur /chauffeur
       if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
-        return NextResponse.redirect(new URL('/chauffeur', request.url))
+        return redirect('/chauffeur', request, supabaseResponse)
 
       // Sous-traitant : autorisé sur /sous-traitant ET /chauffeur
-      // (certains gérants ST sont aussi chauffeurs — le layout /chauffeur vérifie la ligne chauffeurs)
       if (role === 'sous_traitant'
           && !path.startsWith('/sous-traitant')
           && !path.startsWith('/chauffeur'))
-        return NextResponse.redirect(new URL('/sous-traitant', request.url))
+        return redirect('/sous-traitant', request, supabaseResponse)
 
       // Mauvais rôle sur /sous-traitant → login sous-traitant
       if ((path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
           && role !== 'sous_traitant' && role !== 'admin')
-        return NextResponse.redirect(new URL('/sous-traitant-login', request.url))
+        return redirect('/sous-traitant-login', request, supabaseResponse)
 
       // Non admin sur /admin → login
       if (role !== 'admin' && path.startsWith('/admin'))
-        return NextResponse.redirect(new URL('/login', request.url))
+        return redirect('/login', request, supabaseResponse)
 
       // Non chauffeur / non sous_traitant sur /chauffeur → login
       if (role !== 'admin' && role !== 'chauffeur' && role !== 'sous_traitant'
           && path.startsWith('/chauffeur'))
-        return NextResponse.redirect(new URL('/login', request.url))
+        return redirect('/login', request, supabaseResponse)
     }
   }
 
