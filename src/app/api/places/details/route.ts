@@ -2,7 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const GOOGLE_KEY = process.env.GOOGLE_MAPS_KEY ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ''
 
+const hits = new Map<string, { count: number; reset: number }>()
+const LIMIT = 60
+const WINDOW = 60
+
+function isRateLimited(ip: string): boolean {
+  const now = Math.floor(Date.now() / 1000)
+  const entry = hits.get(ip)
+  if (!entry || entry.reset <= now) {
+    hits.set(ip, { count: 1, reset: now + WINDOW })
+    return false
+  }
+  entry.count++
+  return entry.count > LIMIT
+}
+
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+  }
+
   const placeId = req.nextUrl.searchParams.get('place_id') ?? ''
   const token   = req.nextUrl.searchParams.get('sessiontoken') ?? ''
 
