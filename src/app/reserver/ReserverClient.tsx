@@ -75,11 +75,10 @@ function isForfaitZone(zone: Zone): boolean {
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
   if (!dep.lng || !dep.lat || !arr.lng || !arr.lat) return null
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${dep.lng},${dep.lat};${arr.lng},${arr.lat}?overview=false`
+    const url = `/api/distance?olat=${dep.lat}&olng=${dep.lng}&dlat=${arr.lat}&dlng=${arr.lng}`
     const res  = await fetch(url)
     const json = await res.json()
-    const meters = json.routes?.[0]?.distance
-    return meters ? Math.round((meters / 1000) * 10) / 10 : null
+    return json.km ?? null
   } catch {
     return null
   }
@@ -313,14 +312,13 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         return
       }
       try {
-        const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(label)}&limit=1&autocomplete=0`)
+        const res  = await fetch(`/api/geocode?q=${encodeURIComponent(label)}`)
         const json = await res.json()
-        const f    = json.features?.[0]
-        if (f) setter({
-          label:      f.properties.label,
-          codePostal: f.properties.postcode ?? '',
-          lat:        f.geometry.coordinates[1],
-          lng:        f.geometry.coordinates[0],
+        if (json.lat && json.lng) setter({
+          label:      json.label || label,
+          codePostal: json.codePostal ?? '',
+          lat:        json.lat,
+          lng:        json.lng,
         })
       } catch {}
     }

@@ -23,15 +23,23 @@ function detectZoneMin(cp: string, label: string, zones: ZoneMin[]): ZoneMin | n
   return sorted.find(z => z.prefixes_postaux.some(p => p.trim() && cp.startsWith(p.trim()))) ?? null
 }
 
-async function fetchOsrmDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
+async function fetchGoogleDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
   if (!dep.lat || !dep.lng || !arr.lat || !arr.lng) return null
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${dep.lng},${dep.lat};${arr.lng},${arr.lat}?overview=false`
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    const url = `/api/distance?olat=${dep.lat}&olng=${dep.lng}&dlat=${arr.lat}&dlng=${arr.lng}`
+    const res  = await fetch(url, { signal: AbortSignal.timeout(8000) })
     const json = await res.json()
-    if (json.code !== 'Ok' || !json.routes?.[0]) return null
-    return Math.round(json.routes[0].distance / 100) / 10
+    return json.km ?? null
   } catch { return null }
+}
+
+async function geocodeAddress(label: string): Promise<{ lat: number; lng: number; cp: string } | null> {
+  try {
+    const res  = await fetch(`/api/geocode?q=${encodeURIComponent(label)}`, { signal: AbortSignal.timeout(5000) })
+    const json = await res.json()
+    if (json.lat && json.lng) return { lat: json.lat, lng: json.lng, cp: json.codePostal ?? '' }
+  } catch {}
+  return null
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact } from '@/lib/pixel'
@@ -473,19 +481,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const isBVAAddr  = /\bbeauvais\b/i.test(dest) || /\bbeauvais\b/i.test(dep)
     if (tarif && (isCDGAddr || isOrlyAddr || isBVAAddr)) {
       // Vérifier que l'autre adresse (non-aéroport) est dans une zone connue
-      const geocode = async (addr: BcAddr): Promise<BcAddr> => {
-        if (addr.lat) return addr
-        try {
-          const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addr.label)}&limit=1&autocomplete=0`)
-          const json = await res.json()
-          const f    = json.features?.[0]
-          if (f) return { label: addr.label, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], cp: f.properties.postcode }
-        } catch {}
-        return addr
+      const gcAddr = async (addr: BcAddr): Promise<BcAddr> => {
+        if (addr.lat && addr.cp) return addr
+        if (addr.lat && !addr.cp) {
+          // Coordonnées dispo mais pas de cp — géocode pour récupérer le cp
+          const gc = await geocodeAddress(addr.label)
+          return gc ? { ...addr, cp: gc.cp } : addr
+        }
+        const gc = await geocodeAddress(addr.label)
+        return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
       }
       const airportIsArr = /cdg|roissy|charles de gaulle|orly|beauvais/i.test(bcArrivee.label)
       const otherRaw = airportIsArr ? bcDepart : bcArrivee
-      const other    = await geocode(otherRaw)
+      const other    = await gcAddr(otherRaw)
       const otherZone = detectZoneMin(other.cp ?? '', other.label, zonesProp)
       if (otherZone) {
         // Priorité 1 : grille zone-à-zone
@@ -518,20 +526,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       // Pas de zone connue → on passe au calcul km
     }
 
-    // 2. Tarif km via OSRM — géocode si pas de coordonnées
-    const geocode = async (addr: BcAddr): Promise<BcAddr> => {
-      if (addr.lat) return addr
-      try {
-        const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addr.label)}&limit=1&autocomplete=0`)
-        const json = await res.json()
-        const f    = json.features?.[0]
-        if (f) return { label: addr.label, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0] }
-      } catch {}
-      return addr
+    // 2. Tarif km via Google Distance Matrix — géocode si pas de coordonnées
+    const gcForKm = async (addr: BcAddr): Promise<BcAddr> => {
+      if (addr.lat && addr.lng) return addr
+      const gc = await geocodeAddress(addr.label)
+      return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng } : addr
     }
     if (tarif && bcDepart.label && bcArrivee.label) {
-      const [dep, arr] = await Promise.all([geocode(bcDepart), geocode(bcArrivee)])
-      const distKm = await fetchOsrmDist(dep, arr)
+      const [dep, arr] = await Promise.all([gcForKm(bcDepart), gcForKm(bcArrivee)])
+      const distKm = await fetchGoogleDist(dep, arr)
       if (distKm !== null) {
         const cle = NOM_VERS_CLE[v.name] ?? 'berline'
         const fakeDate = `2000-01-03T${bcTime || '09:00'}`

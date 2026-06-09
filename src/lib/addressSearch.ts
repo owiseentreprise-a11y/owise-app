@@ -34,15 +34,9 @@ export async function searchAddresses(q: string): Promise<AddressSuggestion[]> {
     isGoogle: false,
   }))
 
-  // 2. Google Places via proxy (si disponible)
+  // 2. Google Places via proxy
   const googleResults = await fetchGooglePlaces(q)
-  if (googleResults.length > 0) {
-    return [...lieux, ...googleResults].slice(0, 7)
-  }
-
-  // 3. Fallback : API Adresse gouv.fr (France uniquement)
-  const govResults = await fetchGovAdresse(q)
-  return [...lieux, ...govResults].slice(0, 7)
+  return [...lieux, ...googleResults].slice(0, 7)
 }
 
 // ── Récupérer lat/lng + code postal d'un lieu Google ───────────────────────
@@ -73,22 +67,6 @@ async function fetchGooglePlaces(q: string): Promise<AddressSuggestion[]> {
       isLieu:   isLieuType(p.types),
       placeId:  p.place_id,
       isGoogle: true,
-    }))
-  } catch {
-    return []
-  }
-}
-
-// ── API Adresse gouv.fr (fallback) ──────────────────────────────────────────
-async function fetchGovAdresse(q: string): Promise<AddressSuggestion[]> {
-  try {
-    const res  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)
-    const json = await res.json()
-    return (json.features ?? []).map((f: any) => ({
-      label:    f.properties.label,
-      sublabel: f.properties.context ?? '',
-      isLieu:   false,
-      isGoogle: false,
     }))
   } catch {
     return []

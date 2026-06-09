@@ -109,11 +109,9 @@ function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params:
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
   if (!dep.lng || !dep.lat || !arr.lng || !arr.lat) return null
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${dep.lng},${dep.lat};${arr.lng},${arr.lat}?overview=false`
-    const res = await fetch(url)
+    const res  = await fetch(`/api/distance?olat=${dep.lat}&olng=${dep.lng}&dlat=${arr.lat}&dlng=${arr.lng}`)
     const json = await res.json()
-    const m = json?.routes?.[0]?.distance
-    return m ? Math.round(m / 100) / 10 : null
+    return json.km ?? null
   } catch { return null }
 }
 

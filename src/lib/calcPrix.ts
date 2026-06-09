@@ -104,7 +104,7 @@ export function calculerPrix(
 }
 
 /**
- * Calcule le prix au kilomètre (OSRM) quand aucune grille de zone ne s'applique.
+ * Calcule le prix au kilomètre (Google Distance Matrix) quand aucune grille de zone ne s'applique.
  */
 export function calculerPrixKm(
   distanceKm: number,
