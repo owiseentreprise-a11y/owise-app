@@ -214,6 +214,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [bcPax,      setBcPax]      = useState(1)
   const [bcEtape,    setBcEtape]    = useState(false)
   const [bcPrice,    setBcPrice]    = useState<number|null>(null)
+  const [bcIsKm,     setBcIsKm]     = useState(false)
   const [bcLoading,  setBcLoading]  = useState(false)
   const [bcDepart,   setBcDepart]   = useState<BcAddr>({ label: '' })
   const [bcArrivee,  setBcArrivee]  = useState<BcAddr>({ label: '' })
@@ -364,8 +365,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
       setBcPrice(null)
-      const p = await bcEstimate()
-      setBcPrice(p)
+      const result = await bcEstimate()
+      setBcPrice(result.prix)
+      setBcIsKm(result.isKm)
       setBcLoading(false)
     }, 900)
     return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
@@ -458,7 +460,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return Math.round(base + suppTotal)
   }
 
-  async function bcEstimate(): Promise<number> {
+  async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
     const v    = getVehicle(bcPax)
     const h    = parseInt((bcTime || '09:00').split(':')[0])
     const dest = bcArrivee.label.toLowerCase()
@@ -501,7 +503,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             if (paramsProp?.tarif_pec_actif) prix += Number(paramsProp.tarif_frais_pec ?? 0)
             const fakeDate = `2000-01-03T${bcTime || '09:00'}`
             prix = appliquerSupplements(prix, fakeDate, paramsProp)
-            return Math.round(prix)
+            return { prix: Math.round(prix), isKm: false }
           }
         }
         // Fallback : tarif fixe aéroport
@@ -510,7 +512,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           if (paramsProp?.tarif_pec_actif) fixe += Number(paramsProp.tarif_frais_pec ?? 0)
           const fakeDate = `2000-01-03T${bcTime || '09:00'}`
           fixe = appliquerSupplements(fixe, fakeDate, paramsProp)
-          return Math.round(fixe)
+          return { prix: Math.round(fixe), isKm: false }
         }
       }
       // Pas de zone connue → on passe au calcul km
@@ -534,7 +536,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         const cle = NOM_VERS_CLE[v.name] ?? 'berline'
         const fakeDate = `2000-01-03T${bcTime || '09:00'}`
         const px = calculerPrixKm(distKm, cle, fakeDate, paramsProp, tarifsProp)
-        if (px !== null) return Math.round(px)
+        if (px !== null) return { prix: Math.round(px), isKm: true }
       }
     }
 
@@ -544,7 +546,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
     const fakeDate = `2000-01-03T${bcTime || '09:00'}`
     base = appliquerSupplements(base, fakeDate, paramsProp)
-    return Math.round(base)
+    return { prix: Math.round(base), isKm: false }
   }
 
   async function submitDevis() {
@@ -817,7 +819,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div className="booking-card">
               <div className="bc-header">
                 <span className="bc-title">Estimation rapide</span>
-                <span className="bc-badge">Tarif fixe garanti</span>
+                <span className="bc-badge">{bcIsKm && bcPrice !== null ? 'Tarif au km' : 'Tarif fixe garanti'}</span>
               </div>
               <div className="bc-body">
                 <div className="route-wrap">
@@ -872,9 +874,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 )}
                 {bcPrice !== null && (
                   <div className="bc-price show">
-                    <div className="bc-price-label">Estimation TTC</div>
+                    <div className="bc-price-label">{bcIsKm ? 'Estimation TTC' : 'Tarif fixe TTC'}</div>
                     <div className="bc-price-amount"><sup className="chrome-gold-static">€</sup><span className="chrome-gold-static">{bcPrice}</span></div>
-                    <div className="bc-price-sub">{getVehicle(bcPax).name} · Tarif fixe · Prix garanti</div>
+                    <div className="bc-price-sub">{getVehicle(bcPax).name} · {bcIsKm ? 'Tarif au km · Prix estimé' : 'Tarif fixe · Prix garanti'}</div>
                   </div>
                 )}
                 <button className="btn-book" onClick={()=>{
@@ -900,7 +902,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <span style={{fontSize:10,color:'var(--t2)'}}>✓ Annulation gratuite</span>
                 </div>
                 {bcPrice !== null && (
-                  <button onClick={async()=>{setBcLoading(true);setBcPrice(null);const p=await bcEstimate();setBcPrice(p);setBcLoading(false)}} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
+                  <button onClick={async()=>{setBcLoading(true);setBcPrice(null);const r=await bcEstimate();setBcPrice(r.prix);setBcIsKm(r.isKm);setBcLoading(false)}} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
                     ↺ Recalculer
                   </button>
                 )}
