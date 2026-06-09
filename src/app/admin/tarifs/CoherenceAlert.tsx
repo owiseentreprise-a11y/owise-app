@@ -37,12 +37,17 @@ export default function CoherenceAlert({
 
       if (!isAirport) continue
 
-      const prix = Number(cell.prix_berline)
-      if (prix === fixe) continue
-
       const other = zones.find(z =>
         z.id === (cell.zone_depart_id === airportZone.id ? cell.zone_arrivee_id : cell.zone_depart_id)
       )
+
+      // Ignorer les routes inter-aéroports (CDG↔ORY, CDG↔BVA…) —
+      // ces trajets ont un prix dédié dans la grille, la colonne de secours n'est pas pertinente
+      if (other?.type === 'aeroport') continue
+
+      const prix = Number(cell.prix_berline)
+      if (prix === fixe) continue
+
       ecarts.push({
         aeroport: code,
         route: `${other?.nom ?? other?.code ?? '?'} ↔ ${code}`,
