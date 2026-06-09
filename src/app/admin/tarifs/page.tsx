@@ -4,6 +4,7 @@ import TarifsMatrix from './TarifsMatrix'
 import TarifsVehicules from './TarifsVehicules'
 import ZonesSection from './ZonesSection'
 import GlobalParamsForm from './GlobalParamsForm'
+import CoherenceAlert from './CoherenceAlert'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,9 @@ export default async function TarifsPage() {
       </div>
 
       <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+        {/* Alerte de cohérence tarifaire */}
+        <CoherenceAlert zones={zones} grille={grille} tarifs={tarifs} />
 
         {/* Tarifs de base par véhicule */}
         <div className="tarif-section">
