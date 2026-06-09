@@ -1,11 +1,14 @@
 import { searchLieux, LieuSuggestion } from './lieux'
 
 export type AddressSuggestion = {
-  label:    string
-  sublabel: string
-  isLieu:   boolean
-  placeId?: string       // Google place_id (pour fetchDetails)
-  isGoogle: boolean
+  label:      string
+  sublabel:   string
+  isLieu:     boolean
+  placeId?:   string       // Google place_id (pour fetchDetails)
+  isGoogle:   boolean
+  lat?:       number       // présent pour LIEUX_CONNUS et data.gouv.fr
+  lng?:       number
+  codePostal?: string
 }
 
 export type AddressDetails = {
@@ -32,11 +35,19 @@ export async function searchAddresses(q: string): Promise<AddressSuggestion[]> {
     sublabel: l.sublabel,
     isLieu:   true,
     isGoogle: false,
+    lat:      l.lat,
+    lng:      l.lng,
   }))
 
-  // 2. Google Places via proxy
+  // 2. Google Places via proxy (si clé configurée)
   const googleResults = await fetchGooglePlaces(q)
-  return [...lieux, ...googleResults].slice(0, 7)
+  if (googleResults.length > 0) {
+    return [...lieux, ...googleResults].slice(0, 7)
+  }
+
+  // 3. Fallback data.gouv.fr (gratuit, France uniquement — actif si Google non configuré)
+  const govResults = await fetchGovAdresse(q)
+  return [...lieux, ...govResults].slice(0, 7)
 }
 
 // ── Récupérer lat/lng + code postal d'un lieu Google ───────────────────────
@@ -67,6 +78,27 @@ async function fetchGooglePlaces(q: string): Promise<AddressSuggestion[]> {
       isLieu:   isLieuType(p.types),
       placeId:  p.place_id,
       isGoogle: true,
+    }))
+  } catch {
+    return []
+  }
+}
+
+// ── data.gouv.fr Autocomplete (fallback sans clé) ───────────────────────────
+async function fetchGovAdresse(q: string): Promise<AddressSuggestion[]> {
+  try {
+    const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`
+    const res  = await fetch(url, { signal: AbortSignal.timeout(4000) })
+    const json = await res.json()
+    if (!json.features?.length) return []
+    return json.features.map((f: any) => ({
+      label:      f.properties.label ?? '',
+      sublabel:   f.properties.context ?? '',
+      isLieu:     false,
+      isGoogle:   false,
+      lat:        f.geometry?.coordinates?.[1] ?? undefined,
+      lng:        f.geometry?.coordinates?.[0] ?? undefined,
+      codePostal: f.properties.postcode ?? undefined,
     }))
   } catch {
     return []

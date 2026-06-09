@@ -146,7 +146,7 @@ function AddressInput({
       const details = await fetchPlaceDetails(s.placeId)
       if (details) onSelect({ label: details.label || s.label, codePostal: details.codePostal, lat: details.lat, lng: details.lng })
     } else {
-      onSelect({ label: s.label, codePostal: s.postcode ?? '' })
+      onSelect({ label: s.label, codePostal: s.codePostal ?? s.postcode ?? '', lat: s.lat, lng: s.lng })
     }
   }
 

@@ -1,7 +1,9 @@
 export type LieuSuggestion = {
-  label: string
+  label:  string
   sublabel: string
   isLieu: true
+  lat?:   number
+  lng?:   number
 }
 
 export const LIEUX_CONNUS: Array<{
@@ -42,6 +44,6 @@ export function searchLieux(q: string): LieuSuggestion[] {
   if (lower.length < 2) return []
   return LIEUX_CONNUS
     .filter(l => l.keywords.some(k => k.includes(lower) || lower.includes(k)))
-    .map(l => ({ label: l.label, sublabel: l.sublabel, isLieu: true as const }))
+    .map(l => ({ label: l.label, sublabel: l.sublabel, isLieu: true as const, lat: l.lat, lng: l.lng }))
     .slice(0, 3)
 }
