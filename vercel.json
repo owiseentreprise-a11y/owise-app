@@ -1,5 +1,4 @@
 {
-  "buildCommand": "next build --no-turbopack",
   "crons": [
     {
       "path": "/api/cron/rappels",

@@ -161,7 +161,7 @@ export async function createReservationCheckout(data: {
       body: params.toString(),
     })
 
-    const json = await res.json() as any
+    const json = await res.json() as { url: string; error?: { message?: string } }
 
     if (!res.ok) {
       console.error('[Stripe] API error:', json?.error?.message)
@@ -169,10 +169,11 @@ export async function createReservationCheckout(data: {
     }
 
     redirect(json.url)
-  } catch (err: any) {
+  } catch (err: unknown) {
     // redirect() de Next.js lance une erreur NEXT_REDIRECT — la laisser passer
-    if (err?.digest?.startsWith('NEXT_REDIRECT') || err?.message === 'NEXT_REDIRECT') throw err
-    console.error('[Stripe] fetch error:', err?.message)
-    return { error: `Connexion: ${err?.message}` }
+    const e = err as { digest?: string; message?: string }
+    if (e?.digest?.startsWith('NEXT_REDIRECT') || e?.message === 'NEXT_REDIRECT') throw err
+    console.error('[Stripe] fetch error:', e?.message)
+    return { error: `Connexion: ${e?.message}` }
   }
 }
