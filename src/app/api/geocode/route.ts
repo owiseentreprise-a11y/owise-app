@@ -48,7 +48,27 @@ export async function GET(req: NextRequest) {
     const cpComp = (result.address_components ?? []).find(
       (c: any) => c.types.includes('postal_code')
     )
-    const codePostal = cpComp?.long_name ?? ''
+    let codePostal = cpComp?.long_name ?? ''
+
+    // Si pas de code postal sur la réponse directe (requête ville ex: "Creil, France"),
+    // on fait un reverse-geocode sur les coordonnées pour récupérer le code postal
+    if (!codePostal && lat && lng) {
+      try {
+        const rUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+        rUrl.searchParams.set('latlng',      `${lat},${lng}`)
+        rUrl.searchParams.set('key',         GOOGLE_KEY)
+        rUrl.searchParams.set('language',    'fr')
+        rUrl.searchParams.set('result_type', 'postal_code')
+        const rRes  = await fetch(rUrl.toString(), { next: { revalidate: 0 } })
+        const rJson = await rRes.json()
+        if (rJson.results?.[0]) {
+          const cp = (rJson.results[0].address_components ?? []).find(
+            (c: any) => c.types.includes('postal_code')
+          )
+          if (cp) codePostal = cp.long_name
+        }
+      } catch {}
+    }
 
     return NextResponse.json({ lat, lng, codePostal, label: result.formatted_address ?? q })
   } catch {

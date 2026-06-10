@@ -416,8 +416,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     if (!date)                 return setStep1Error('Date et heure requises.')
     if (new Date(date) < new Date()) return setStep1Error('La date de prise en charge doit être dans le futur.')
     // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
-    if (!depart.codePostal && !zoneDepart)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
-    if (!arrivee.codePostal && !zoneArrivee)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
+    if (!depart.codePostal && !zoneDepart && !depart.lat)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
+    if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
     if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
     fbInitCheckout({ value: prixTotal ?? undefined, currency: 'EUR', content_category: 'VTC', num_items: 1 })
@@ -575,7 +575,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneDepart
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneDepart.nom}</span>
-                      : depart.codePostal
+                      : (depart.codePostal || depart.lat)
                         ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
                         : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
@@ -596,7 +596,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneArrivee
                       ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneArrivee.nom}</span>
-                      : arrivee.codePostal
+                      : (arrivee.codePostal || arrivee.lat)
                         ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
                         : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
                     }
@@ -832,7 +832,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
             </div>
 
             {/* Prix estimé */}
-            {(prix !== null || loadingRoute) && (depart.codePostal || zoneDepart) && (arrivee.codePostal || zoneArrivee) && (
+            {(prix !== null || loadingRoute) && (depart.codePostal || zoneDepart || depart.lat) && (arrivee.codePostal || zoneArrivee || arrivee.lat) && (
               <div style={{
                 background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05))',
                 border: '1px solid rgba(201,168,76,.25)',
