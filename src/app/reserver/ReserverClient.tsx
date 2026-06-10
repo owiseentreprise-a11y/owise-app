@@ -303,7 +303,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   useEffect(() => {
     async function resolve(label: string, setter: (v: AdresseVal) => void) {
       if (label.length < 3) return
-      // Lieux connus : extraction du code postal depuis le sublabel (ex: "75010 Paris")
+      // Lieux connus en priorité
       const lower = label.toLowerCase()
       const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower || l.label.toLowerCase() === lower))
       if (lieu) {
@@ -311,15 +311,13 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '', lat: lieu.lat, lng: lieu.lng })
         return
       }
+      // Google Geocoding
       try {
         const res  = await fetch(`/api/geocode?q=${encodeURIComponent(label)}`)
         const json = await res.json()
-        if (json.lat && json.lng) setter({
-          label:      json.label || label,
-          codePostal: json.codePostal ?? '',
-          lat:        json.lat,
-          lng:        json.lng,
-        })
+        if (json.lat && json.lng) {
+          setter({ label: json.label || label, codePostal: json.codePostal ?? '', lat: json.lat, lng: json.lng })
+        }
       } catch {}
     }
     const dep = searchParams.get('depart')
