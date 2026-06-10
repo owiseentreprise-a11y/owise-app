@@ -6,7 +6,7 @@ export type AddressSuggestion = {
   isLieu:     boolean
   placeId?:   string       // Google place_id (pour fetchDetails)
   isGoogle:   boolean
-  lat?:       number       // présent pour LIEUX_CONNUS et data.gouv.fr
+  lat?:       number
   lng?:       number
   codePostal?: string
 }

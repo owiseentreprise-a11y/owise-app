@@ -136,7 +136,6 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
       if (det) onSelect({ label: det.label || s.label, lat: det.lat, lng: det.lng })
       return
     }
-    // data.gouv.fr : lat/lng inclus directement dans la suggestion
     onSelect({ label: s.label, lat: s.lat, lng: s.lng })
   }
 

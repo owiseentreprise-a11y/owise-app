@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GOOGLE_KEY = process.env.GOOGLE_MAPS_KEY ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ''
+const GOOGLE_KEY = process.env.GOOGLE_MAPS_KEY ?? ''
 
 const hits = new Map<string, { count: number; reset: number }>()
 const LIMIT = 60
