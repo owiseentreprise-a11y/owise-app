@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ['firebase'],
-  turbopack: {},
 
   async rewrites() {
     return [
