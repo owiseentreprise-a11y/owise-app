@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
 import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
@@ -10,13 +11,11 @@ import { fbInitCheckout } from '@/lib/pixel'
 import {
   calculerPrix,
   calculerPrixKm,
-  appliquerSupplements,
   AIRPORT_COL,
   VEHICULE_NOM,
   type TarifCalc,
   type GrilleCalc,
   type ZoneCalc,
-  type ParamsCalc,
 } from '@/lib/calcPrix'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -104,6 +103,7 @@ function AddressInput({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapRef  = useRef<HTMLDivElement>(null)
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setQuery(value.label) }, [value.label])
 
   useEffect(() => {
@@ -285,10 +285,9 @@ const baseInput: React.CSSProperties = {
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
 
-export default function ReserverClient({ zones, grille, params, tarifs, profil }: {
+export default function ReserverClient({ zones, grille, tarifs, profil }: {
   zones: Zone[]
   grille: Grille[]
-  params: any
   tarifs: TarifVehicule[]
   profil?: Profil | null
 }) {
@@ -325,10 +324,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
     if (dep) resolve(dep, setDepart)
     if (arr) resolve(arr, setArrivee)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-  const [date,      setDate]     = useState(() => {
-    const d = searchParams.get('date'), t = searchParams.get('time')
-    return d && t ? `${d}T${t}` : d ? `${d}T09:00` : ''
-  })
+  const [dateOnly, setDateOnly] = useState(() => searchParams.get('date') || '')
+  const [timeOnly, setTimeOnly] = useState(() => searchParams.get('time') || '09:00')
+  const date = dateOnly ? `${dateOnly}T${timeOnly}` : ''
   const [vehicule,  setVehicule] = useState('berline')
   const [passagers, setPassagers] = useState(() => parseInt(searchParams.get('pax') || '1') || 1)
 
@@ -336,8 +334,10 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   const [prenom,    setPrenom]    = useState(profil?.prenom    ?? '')
   const [email,     setEmail]     = useState(profil?.email     ?? '')
   const [telephone, setTelephone] = useState(profil?.telephone ?? '')
-  const [allerRetour,  setAllerRetour]  = useState(false)
-  const [dateRetour,   setDateRetour]   = useState('')
+  const [allerRetour,     setAllerRetour]     = useState(false)
+  const [dateRetourOnly,  setDateRetourOnly]  = useState('')
+  const [timeRetourOnly,  setTimeRetourOnly]  = useState('10:00')
+  const dateRetour = dateRetourOnly ? `${dateRetourOnly}T${timeRetourOnly}` : ''
   const [numVolTrain,  setNumVolTrain]  = useState('')
   const [terminal,     setTerminal]     = useState('')
   const [heureArrivee, setHeureArrivee] = useState('')
@@ -369,8 +369,8 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   // Prix forfait — null si montant = 0 (non configuré) ou zones inconnues
   const forfaitPrix = useMemo(() => {
     if (!mightBeForfait) return null
-    return calculerPrix(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, params, tarifs, activeZones)
-  }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, params, tarifs, activeZones])
+    return calculerPrix(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, tarifs, activeZones)
+  }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, tarifs, activeZones])
 
   // Forfait actif uniquement si le montant est configuré (> 0) — sinon fallback km
   const useForfait = forfaitPrix !== null
@@ -378,6 +378,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   // Charger la distance OSRM uniquement si pas de forfait disponible
   useEffect(() => {
     if (useForfait || !depart.lat || !arrivee.lat) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDistanceKm(null)
       return
     }
@@ -391,14 +392,19 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
   const prix = useMemo(() => {
     if (useForfait) return forfaitPrix
     if (distanceKm === null) return null
-    return calculerPrixKm(distanceKm, vehicule, date, params, tarifs)
-  }, [useForfait, forfaitPrix, distanceKm, vehicule, date, params, tarifs])
+    return calculerPrixKm(distanceKm, vehicule, date, tarifs)
+  }, [useForfait, forfaitPrix, distanceKm, vehicule, date, tarifs])
 
   // Prix total : aller × 2 si aller-retour activé
   const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
 
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
+
+  function handleDateChange(d: string)        { setDateOnly(d) }
+  function handleTimeChange(t: string)        { setTimeOnly(t || '09:00') }
+  function handleDateRetourChange(d: string)  { setDateRetourOnly(d) }
+  function handleTimeRetourChange(t: string)  { setTimeRetourOnly(t || '10:00') }
 
   async function checkCodeParrain(code: string) {
     const c = code.toUpperCase().trim()
@@ -491,6 +497,11 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         .pas-btn:hover { background: rgba(0,0,0,.06) !important; }
         .pay-btn:hover:not(:disabled) { background: #09091A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.15) !important; }
         .back-btn:hover { color: #09091A !important; }
+        .res-time { color: #C9A84C !important; }
+        .res-time::-webkit-datetime-edit { color: #C9A84C !important; }
+        .res-time::-webkit-datetime-edit-hour-field,
+        .res-time::-webkit-datetime-edit-minute-field { color: #C9A84C !important; background: transparent; }
+        .res-time:focus { border-color: rgba(201,168,76,.6) !important; box-shadow: 0 0 0 3px rgba(201,168,76,.12) !important; }
         @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
       `}</style>
 
@@ -502,13 +513,13 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
         background: '#FFFFFF',
         boxShadow: '0 1px 8px rgba(0,0,0,.04)',
       }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
           <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           <div>
             <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#09091A', lineHeight: 1 }}>OWISE</div>
             <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#9B9B9B', fontWeight: 400 }}>Transport de prestige</div>
           </div>
-        </a>
+        </Link>
         {/* Étapes */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {[1, 2].map(s => (
@@ -585,7 +596,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
               {/* Arrivée */}
               <div>
-                <FieldLabel>Adresse d'arrivée</FieldLabel>
+                <FieldLabel>Adresse d&apos;arrivée</FieldLabel>
                 <AddressInput value={arrivee} placeholder="Aéroport CDG, Terminal 2, 95700 Roissy" icon={
                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
                     <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="#C9A84C"/>
@@ -628,15 +639,48 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               )}
               </div>{/* fin .gap-14 adresses */}
 
-              {/* Date */}
+              {/* Date + Heure */}
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
-                <FieldLabel>Date et heure de prise en charge</FieldLabel>
-                <input className="res-input" type="datetime-local"
-                  style={{ ...baseInput, background: '#FFFFFF', color: '#09091A',
-                    border: `1px solid ${datePast ? '#D95454' : 'rgba(0,0,0,.12)'}`,
-                    boxShadow: datePast ? '0 0 0 3px rgba(217,84,84,.1)' : 'none',
-                  }}
-                  value={date} min={new Date().toISOString().slice(0, 16)} onChange={e => setDate(e.target.value)} />
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10 }}>
+                  {/* Date */}
+                  <div>
+                    <FieldLabel>Date de prise en charge</FieldLabel>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9B9B9B' }}>
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                      </span>
+                      <input className="res-input" type="date"
+                        style={{ ...baseInput, paddingLeft: 34,
+                          border: `1px solid ${datePast ? '#D95454' : 'rgba(0,0,0,.12)'}`,
+                          boxShadow: datePast ? '0 0 0 3px rgba(217,84,84,.1)' : 'none',
+                        }}
+                        value={dateOnly}
+                        min={new Date().toISOString().slice(0, 10)}
+                        onChange={e => handleDateChange(e.target.value)} />
+                    </div>
+                  </div>
+                  {/* Heure */}
+                  <div>
+                    <FieldLabel>Heure</FieldLabel>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={2}>
+                          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                      </span>
+                      <input className="res-input res-time" type="time"
+                        style={{ ...baseInput, paddingLeft: 32,
+                          fontFamily: 'var(--font-jetbrains, monospace)',
+                          fontSize: 17, fontWeight: 700, textAlign: 'center',
+                          border: `1px solid ${datePast ? '#D95454' : 'rgba(201,168,76,.35)'}`,
+                        }}
+                        value={timeOnly}
+                        onChange={e => handleTimeChange(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
                 {datePast && (
                   <div style={{ marginTop: 6, fontSize: 11, color: '#D95454', display: 'flex', alignItems: 'center', gap: 5 }}>
                     <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -650,7 +694,7 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
               {/* Aller-Retour */}
               <div style={{ marginTop: 16 }}>
                 <button type="button"
-                  onClick={() => { setAllerRetour(a => !a); if (allerRetour) setDateRetour('') }}
+                  onClick={() => { setAllerRetour(a => !a); if (allerRetour) { setDateRetourOnly(''); setTimeRetourOnly('10:00') } }}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     width: '100%', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
@@ -699,10 +743,23 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
 
                 {allerRetour && (
                   <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)' }}>
-                    <FieldLabel>Date et heure du retour</FieldLabel>
-                    <input className="res-input" type="datetime-local" style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A', marginBottom: 10 }}
-                      value={dateRetour} min={date || new Date().toISOString().slice(0, 16)}
-                      onChange={e => setDateRetour(e.target.value)} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10, marginBottom: 10 }}>
+                      <div>
+                        <FieldLabel>Date du retour</FieldLabel>
+                        <input className="res-input" type="date"
+                          style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A' }}
+                          value={dateRetourOnly}
+                          min={dateOnly || new Date().toISOString().slice(0, 10)}
+                          onChange={e => handleDateRetourChange(e.target.value)} />
+                      </div>
+                      <div>
+                        <FieldLabel>Heure</FieldLabel>
+                        <input className="res-input res-time" type="time"
+                          style={{ ...baseInput, background: '#FFFFFF', fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 17, fontWeight: 700, border: '1px solid rgba(201,168,76,.35)' }}
+                          value={timeRetourOnly}
+                          onChange={e => handleTimeRetourChange(e.target.value)} />
+                      </div>
+                    </div>
                     {(depart.label || arrivee.label) && (
                       <div style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
@@ -846,9 +903,9 @@ export default function ReserverClient({ zones, grille, params, tarifs, profil }
                   </div>
                   <div style={{ fontSize: 10, color: '#9B9B9B', marginTop: 3 }}>
                     {useForfait && zoneDepart && zoneArrivee
-                      ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                      ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}`
                       : distanceKm !== null
-                        ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}${params?.tarif_pec_actif ? ' · PEC inclus' : ''}`
+                        ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}`
                         : 'Calcul de l\'itinéraire…'
                     }
                   </div>

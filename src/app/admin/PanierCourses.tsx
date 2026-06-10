@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import DispatchRapideButton from './courses/DispatchRapideButton'
 
 type ChauffeurLean = {
@@ -45,14 +46,14 @@ export default function PanierCourses({
             — à dispatcher
           </span>
         </div>
-        <a href="/admin/courses" style={{
+        <Link href="/admin/courses" style={{
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
           padding: '4px 10px', borderRadius: 6,
           border: '1px solid rgba(201,168,76,.15)',
           transition: 'color .15s',
         }}>
           Voir tout →
-        </a>
+        </Link>
       </div>
 
       {/* Colonne headers */}
@@ -77,9 +78,10 @@ export default function PanierCourses({
         const collab = c.collaborateurs
         const clientNom = client?.type_compte === 'entreprise'
           ? (client.entreprise_nom ?? '—')
-          : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : '—'
+          : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : 'Invité'
         const collabLabel = collab ? `${collab.prenom} ${collab.nom}`.trim() : null
         const date = new Date(c.date_prevue)
+        const dateValid = !isNaN(date.getTime())
         const prix = c.prix_final ?? c.prix_estime
         const isLast = idx === courses.length - 1
 
@@ -118,17 +120,21 @@ export default function PanierCourses({
               fontFamily: 'var(--font-jetbrains), monospace',
               fontSize: 10, color: 'var(--t3)', lineHeight: 1.5,
             }}>
-              <div>{date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</div>
-              <div>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+              {dateValid ? (
+                <>
+                  <div>{date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}</div>
+                  <div>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</div>
+                </>
+              ) : <div>—</div>}
             </div>
 
             {/* Prix */}
             <div style={{
               fontFamily: 'var(--font-jetbrains), monospace',
               fontSize: 13, fontWeight: 500,
-              color: prix ? 'var(--gold)' : 'var(--t3)',
+              color: prix != null ? 'var(--gold)' : 'var(--t3)',
             }}>
-              {prix ? `${Number(prix).toFixed(0)} €` : '—'}
+              {prix != null ? `${Number(prix).toFixed(0)} €` : '—'}
             </div>
 
             {/* Dispatcher */}

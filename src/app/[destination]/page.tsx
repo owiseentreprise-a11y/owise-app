@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import '../vitrine.css'
@@ -263,6 +264,8 @@ export function generateStaticParams() {
   return Object.keys(DESTINATIONS).map(slug => ({ destination: slug }))
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function DestinationPage({ params }: { params: Promise<{ destination: string }> }) {
   const { destination } = await params
   const dest = DESTINATIONS[destination]
@@ -301,9 +304,9 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           <span style={{ fontSize: 11, color: 'rgba(237,232,223,.35)' }}>·</span>
           <span style={{ fontSize: 11, color: 'rgba(237,232,223,.5)' }}>{dest.prix} · {dest.duree}</span>
         </div>
-        <a href="/" style={{ fontSize: 11, color: 'rgba(201,168,76,.7)', textDecoration: 'none', letterSpacing: '.08em' }}>
+        <Link href="/" style={{ fontSize: 11, color: 'rgba(201,168,76,.7)', textDecoration: 'none', letterSpacing: '.08em' }}>
           ← Accueil
-        </a>
+        </Link>
       </div>
 
       <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} />

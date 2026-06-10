@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
@@ -122,7 +123,7 @@ export default async function AdminDashboard() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {nonAssignees.length > 0 && (
-            <a href="/admin/courses" style={{
+            <Link href="/admin/courses" style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '5px 12px', borderRadius: 20,
               background: 'rgba(232,160,48,.12)', border: '1px solid rgba(232,160,48,.3)',
@@ -130,7 +131,7 @@ export default async function AdminDashboard() {
             }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amb)', display: 'inline-block' }} />
               {nonAssignees.length} sans chauffeur
-            </a>
+            </Link>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--grn)' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--grn)', display: 'inline-block' }} />
@@ -146,7 +147,7 @@ export default async function AdminDashboard() {
 
           {/* Aujourd'hui */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 18px' }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Aujourd'hui</div>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Aujourd&apos;hui</div>
             <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--t1)', lineHeight: 1 }}>
               {coursesAujourdHui.length}
               <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>courses</span>
@@ -219,13 +220,13 @@ export default async function AdminDashboard() {
                   {demandesCollaborateur.length} demande{demandesCollaborateur.length > 1 ? 's' : ''} collaborateur à dispatcher
                 </span>
               </div>
-              <a href="/admin/courses" style={{
+              <Link href="/admin/courses" style={{
                 padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                 background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)',
                 color: 'var(--blu)', textDecoration: 'none',
               }}>
                 Voir tout →
-              </a>
+              </Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {demandesCollaborateur.slice(0, 4).map((c: any) => {
@@ -256,8 +257,8 @@ export default async function AdminDashboard() {
                       fontFamily: 'var(--font-jetbrains), monospace',
                       fontSize: 10, color: 'var(--t3)', textAlign: 'right',
                     }}>
-                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
+                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
                     </div>
                   </a>
                 )
@@ -280,13 +281,13 @@ export default async function AdminDashboard() {
                   {facturesRetard.length} facture{facturesRetard.length > 1 ? 's' : ''} en retard de paiement
                 </span>
               </div>
-              <a href="/admin/facturation" style={{
+              <Link href="/admin/facturation" style={{
                 padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                 background: 'rgba(217,80,80,.12)', border: '1px solid rgba(217,80,80,.3)',
                 color: 'var(--red)', textDecoration: 'none',
               }}>
                 Voir tout →
-              </a>
+              </Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {facturesRetard.slice(0, 3).map((f: any) => {
@@ -340,13 +341,13 @@ export default async function AdminDashboard() {
                   {docsAlert.length} document{docsAlert.length > 1 ? 's' : ''} expiré{docsAlert.length > 1 ? 's' : ''} ou bientôt
                 </span>
               </div>
-              <a href="/admin/chauffeurs" style={{
+              <Link href="/admin/chauffeurs" style={{
                 padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                 background: 'rgba(232,160,48,.12)', border: '1px solid rgba(232,160,48,.25)',
                 color: 'var(--amb)', textDecoration: 'none',
               }}>
                 Chauffeurs →
-              </a>
+              </Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {docsAlert.slice(0, 5).map((d: any) => {
@@ -458,9 +459,9 @@ export default async function AdminDashboard() {
                 padding: '14px 20px', borderBottom: '1px solid rgba(201,168,76,.07)',
               }}>
                 <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>Courses récentes</div>
-                <a href="/admin/courses" style={{ fontSize: 11, color: 'var(--t2)', textDecoration: 'none' }}>
+                <Link href="/admin/courses" style={{ fontSize: 11, color: 'var(--t2)', textDecoration: 'none' }}>
                   Voir tout →
-                </a>
+                </Link>
               </div>
 
               {/* Header */}
@@ -502,8 +503,12 @@ export default async function AdminDashboard() {
                     <div style={{ fontSize: 11, color: 'var(--t2)' }}>{clientNom}</div>
                     <div style={{ fontSize: 11, color: 'var(--t2)' }}>{chauffeurNom}</div>
                     <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
-                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      {isNaN(date.getTime()) ? '—' : (
+                        <>
+                          {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
+                          {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
+                        </>
+                      )}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{
@@ -571,9 +576,9 @@ export default async function AdminDashboard() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
                 <span>Chauffeurs</span>
-                <a href="/admin/chauffeurs" style={{ fontSize: 10, color: 'var(--t2)', textDecoration: 'none' }}>
+                <Link href="/admin/chauffeurs" style={{ fontSize: 10, color: 'var(--t2)', textDecoration: 'none' }}>
                   Gérer →
-                </a>
+                </Link>
               </div>
 
               {chauffeurs.length === 0 ? (

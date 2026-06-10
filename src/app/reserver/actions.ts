@@ -18,9 +18,8 @@ async function calculerPrixServeur(
   dateHeure: string,
 ): Promise<number | null> {
   const admin = createAdminClient()
-  const [grilleRes, paramsRes, tarifsRes, zonesRes] = await Promise.all([
+  const [grilleRes, tarifsRes, zonesRes] = await Promise.all([
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
-    admin.from('parametres').select('coef_berline_premium,coef_van,tarif_pec_actif,tarif_frais_pec,supplement_nuit,supplement_weekend').single(),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
   ])
@@ -30,7 +29,6 @@ async function calculerPrixServeur(
     vehicule,
     dateHeure,
     grilleRes.data ?? [],
-    paramsRes.data ?? null,
     tarifsRes.data ?? [],
     zonesRes.data ?? [],
   )
@@ -144,6 +142,7 @@ export async function createReservationCheckout(data: {
           date_prevue:     dateRetourParsed.toISOString(),
           type_vehicule:   data.type_vehicule,
           nb_passagers:    data.nb_passagers,
+          prix_estime:     Math.round(data.prix / 2),
           notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
           mode_paiement:   'stripe',
           statut:          'en_attente',
