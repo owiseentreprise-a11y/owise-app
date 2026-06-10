@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
@@ -43,7 +44,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact } from '@/lib/pixel'
-import { calculerPrix, calculerPrixKm, appliquerSupplements, NOM_VERS_CLE, type ParamsCalc, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc } from '@/lib/calcPrix'
+import { calculerPrixKm, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -202,7 +203,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 type TarifRow  = TarifRow2
 type GrilleMin = GrilleCalc
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[] }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -298,6 +299,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const t = setTimeout(() => setCookieVisible(true), 2500)
       return () => clearTimeout(t)
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCookieDone(true)
     }
   }, [])
@@ -455,8 +457,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
       if (!base)           base = Number(tarif.prise_en_charge) + 30
       if (etapeOpen) base += 10
-      if (paramsProp?.tarif_pec_actif) base += Number(paramsProp.tarif_frais_pec ?? 0)
-      base = appliquerSupplements(base, fakeDate, paramsProp)
       return Math.round(base + suppTotal)
     }
     // fallback hardcodé
@@ -464,7 +464,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     if (isCDG || isOrly || isBeauvais) base += 25
     else if (isGare)                   base += 12
     if (etapeOpen)                     base += 10
-    base = appliquerSupplements(base, fakeDate, paramsProp)
     return Math.round(base + suppTotal)
   }
 
@@ -506,20 +505,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           )
           if (cell && cell.prix_berline) {
             const cle  = NOM_VERS_CLE[v.name] ?? 'berline'
-            const coef = cle === 'berline_premium' ? (paramsProp?.coef_berline_premium ?? 1.25) : cle === 'van' ? (paramsProp?.coef_van ?? 1.5) : 1
-            let prix   = Number(cell.prix_berline) * coef
-            if (paramsProp?.tarif_pec_actif) prix += Number(paramsProp.tarif_frais_pec ?? 0)
-            const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-            prix = appliquerSupplements(prix, fakeDate, paramsProp)
+            const coef = cle === 'berline_premium' ? 1.5 : cle === 'van' ? 1.7 : 1
+            const prix = Number(cell.prix_berline) * coef
             return { prix: Math.round(prix), isKm: false }
           }
         }
         // Fallback : tarif fixe aéroport
-        let fixe = isCDGAddr ? Number(tarif.cdg_fixe) : isOrlyAddr ? Number(tarif.orly_fixe) : Number(tarif.beauvais_fixe)
+        const fixe = isCDGAddr ? Number(tarif.cdg_fixe) : isOrlyAddr ? Number(tarif.orly_fixe) : Number(tarif.beauvais_fixe)
         if (fixe > 0) {
-          if (paramsProp?.tarif_pec_actif) fixe += Number(paramsProp.tarif_frais_pec ?? 0)
-          const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-          fixe = appliquerSupplements(fixe, fakeDate, paramsProp)
           return { prix: Math.round(fixe), isKm: false }
         }
       }
@@ -538,7 +531,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       if (distKm !== null) {
         const cle = NOM_VERS_CLE[v.name] ?? 'berline'
         const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-        const px = calculerPrixKm(distKm, cle, fakeDate, paramsProp, tarifsProp)
+        const px = calculerPrixKm(distKm, cle, fakeDate, tarifsProp)
         if (px !== null) return { prix: Math.round(px), isKm: true }
       }
     }
@@ -547,8 +540,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     let base = v.base
     if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
     else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
-    const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-    base = appliquerSupplements(base, fakeDate, paramsProp)
     return { prix: Math.round(base), isKm: false }
   }
 
@@ -718,7 +709,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </a>
           ))}
         </div>
-        <a href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</a>
+        <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
         <div className="mm-sub">Transport de prestige · Paris · IDF</div>
         <div style={{display:'flex',gap:12,marginTop:28}}>
           <a href="https://www.facebook.com/Owise.vtc" className="fs-link" style={{width:44,height:44,borderRadius:12}} target="_blank" rel="noopener" aria-label="Facebook">
@@ -752,7 +743,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
       {/* NAV */}
       <nav className={navScrolled ? 'scrolled' : ''}>
-        <a href="/" className="nav-logo" style={{textDecoration:'none'}}>
+        <Link href="/" className="nav-logo" style={{textDecoration:'none'}}>
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
             <rect width="36" height="36" rx="8" fill="#09091A"/>
             <circle cx="18" cy="18" r="10" stroke="rgba(255,255,255,0.88)" strokeWidth="1.8" fill="none"/>
@@ -764,14 +755,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <span className="nav-name">OWISE</span>
             <span className="nav-sub">Transport de prestige</span>
           </div>
-        </a>
+        </Link>
         <div className="nav-links">
           {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
         </div>
         <div className="nav-r">
-          <a href="/espace-client" className="nav-ghost">Espace client</a>
+          <Link href="/espace-client" className="nav-ghost">Espace client</Link>
           <button className="nav-cta" onClick={()=>scrollTo('#devis')}>Obtenir un devis</button>
         </div>
         <button className={`nav-hamburger${menuOpen?' open':''}`} onClick={()=>setMenuOpen(v=>!v)} aria-label="Menu">
@@ -1096,7 +1087,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               letterSpacing:'-.01em',
               marginBottom:12,
             }}>
-              Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'#C9A84C' }}>zéro surprise à l'arrivée</em>
+              Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'#C9A84C' }}>zéro surprise à l&apos;arrivée</em>
             </h2>
             <p style={{ fontSize:15, color:'#6B6B6B', maxWidth:520, margin:'0 auto' }}>
               Le prix affiché est celui que vous payez. Pas de majoration, pas de frais cachés — quelles que soient les conditions de trafic.
@@ -1264,10 +1255,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div className="ent-label">Comptes entreprises</div>
             <h2 className="ent-title">
               Vos équipes,<br/>
-              <em>toujours à l'heure.</em>
+              <em>toujours à l&apos;heure.</em>
             </h2>
             <p className="ent-desc">
-              Tarifs négociés, facturation mensuelle centralisée, portail multi-collaborateurs — tout ce qu'il faut pour gérer les déplacements de votre société sans friction.
+              Tarifs négociés, facturation mensuelle centralisée, portail multi-collaborateurs — tout ce qu&apos;il faut pour gérer les déplacements de votre société sans friction.
             </p>
 
             {/* Stats */}
@@ -1829,10 +1820,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div>
             <div className="footer-col-title">Informations</div>
             <div className="footer-links">
-              <a href="/mentions-legales" className="footer-link">Conditions générales</a>
-              <a href="/mentions-legales" className="footer-link">Politique de confidentialité</a>
-              <a href="/mentions-legales" className="footer-link">Mentions légales</a>
-              <a href="/admin" className="footer-link">Espace administration</a>
+              <Link href="/mentions-legales" className="footer-link">Conditions générales</Link>
+              <Link href="/mentions-legales" className="footer-link">Politique de confidentialité</Link>
+              <Link href="/mentions-legales" className="footer-link">Mentions légales</Link>
+              <Link href="/admin" className="footer-link">Espace administration</Link>
             </div>
           </div>
           <div>
@@ -1866,7 +1857,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div className="cookie-title">Gestion des cookies</div>
             <div className="cookie-desc">
               Nous utilisons des cookies pour améliorer votre expérience. Consultez notre{' '}
-              <a href="/mentions-legales">politique de confidentialité</a>.
+              <Link href="/mentions-legales">politique de confidentialité</Link>.
             </div>
           </div>
           <div className="cookie-actions">
