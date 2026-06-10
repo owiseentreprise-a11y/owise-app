@@ -58,12 +58,6 @@ export default function GlobalParamsForm({ p }: { p: any }) {
         <Field label="tarif_frais_pec"      name="tarif_frais_pec"      value={p?.tarif_frais_pec ?? 15} />
 
         <div style={{ gridColumn: '1/-1', fontSize: 10, color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase', paddingTop: 8, borderTop: '1px solid rgba(201,168,76,.07)' }}>
-          Particuliers — tarif au km
-        </div>
-        <Field label="tarif_base_particulier" name="tarif_base_particulier" value={p?.tarif_base_particulier ?? 15} />
-        <Field label="tarif_km_particulier"   name="tarif_km_particulier"   value={p?.tarif_km_particulier ?? 2} />
-
-        <div style={{ gridColumn: '1/-1', fontSize: 10, color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase', paddingTop: 8, borderTop: '1px solid rgba(201,168,76,.07)' }}>
           Suppléments (%)
         </div>
         <Field label="supplement_nuit"    name="supplement_nuit"    value={p?.supplement_nuit ?? 20} />

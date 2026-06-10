@@ -99,8 +99,8 @@ function calculerPrixForfait(depId: string, arrId: string, vehicule: string, dat
 
 function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any, tarifs: TarifVehicule[]): number | null {
   const tarif  = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
-  const base   = tarif ? Number(tarif.prise_en_charge) : (params?.tarif_base_particulier ?? 15)
-  const prixKm = tarif ? Number(tarif.prix_km)         : (params?.tarif_km_particulier   ?? 2)
+  const base   = tarif ? Number(tarif.prise_en_charge) : 15
+  const prixKm = tarif ? Number(tarif.prix_km)         : 1.2
   let prix = base + km * prixKm
   if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
