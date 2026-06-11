@@ -1,10 +1,32 @@
 import Link from 'next/link'
 import PurchaseEvent from './PurchaseEvent'
 
-export default function PaiementMerciPage() {
+async function getStripeAmount(sessionId: string): Promise<number> {
+  try {
+    const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
+    const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
+    if (!key) return 0
+    const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+      headers: { Authorization: `Bearer ${key}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return 0
+    const session = await res.json() as { amount_total?: number }
+    return Math.round((session.amount_total ?? 0) / 100)
+  } catch { return 0 }
+}
+
+export default async function PaiementMerciPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>
+}) {
+  const { session_id } = await searchParams
+  const amount = session_id ? await getStripeAmount(session_id) : 0
+
   return (
     <div>
-      <PurchaseEvent />
+      <PurchaseEvent amount={amount} />
     <div style={{
       minHeight: '100vh',
       background: '#F8F6F1',
@@ -115,7 +137,7 @@ export default function PaiementMerciPage() {
               borderRadius: 10, textDecoration: 'none',
               fontSize: 13, fontWeight: 400,
             }}>
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
           </div>
         </div>

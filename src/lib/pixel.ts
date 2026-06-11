@@ -13,8 +13,9 @@ export function fbEvent(name: string, params?: Record<string, unknown>) {
   }
 }
 
-export const fbPageView    = () => fbEvent('PageView')
-export const fbLead        = (params?: Record<string, unknown>) => fbEvent('Lead', params)
-export const fbContact     = () => fbEvent('Contact')
+export const fbPageView     = () => fbEvent('PageView')
+export const fbViewContent  = (params?: Record<string, unknown>) => fbEvent('ViewContent', params)
+export const fbLead         = (params?: Record<string, unknown>) => fbEvent('Lead', params)
+export const fbContact      = () => fbEvent('Contact')
 export const fbInitCheckout = (params?: Record<string, unknown>) => fbEvent('InitiateCheckout', params)
-export const fbPurchase    = (value: number, currency = 'EUR') => fbEvent('Purchase', { value, currency })
+export const fbPurchase     = (value: number, currency = 'EUR') => fbEvent('Purchase', { value, currency })

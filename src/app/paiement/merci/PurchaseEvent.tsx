@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { fbPurchase } from '@/lib/pixel'
+import { fbPurchase, fbLead } from '@/lib/pixel'
 
-export default function PurchaseEvent() {
+export default function PurchaseEvent({ amount }: { amount: number }) {
   useEffect(() => {
-    fbPurchase(0, 'EUR')
-  }, [])
+    fbPurchase(amount, 'EUR')
+    fbLead({ value: amount, currency: 'EUR', content_category: 'VTC' })
+  }, [amount])
   return null
 }

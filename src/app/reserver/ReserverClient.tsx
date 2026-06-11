@@ -7,7 +7,7 @@ import { createReservationCheckout } from './actions'
 import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
-import { fbInitCheckout } from '@/lib/pixel'
+import { fbInitCheckout, fbLead, fbViewContent } from '@/lib/pixel'
 import {
   calculerPrix,
   calculerPrixKm,
@@ -395,6 +395,16 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
     return calculerPrixKm(distanceKm, vehicule, date, tarifs)
   }, [useForfait, forfaitPrix, distanceKm, vehicule, date, tarifs])
 
+  // Fire ViewContent la première fois qu'un prix est calculé (signal d'intention forte)
+  const prixCalculéRef = useRef(false)
+  useEffect(() => {
+    if (prix !== null && !prixCalculéRef.current) {
+      prixCalculéRef.current = true
+      fbViewContent({ value: prix, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
+    }
+    if (prix === null) prixCalculéRef.current = false
+  }, [prix, depart.label, arrivee.label])
+
   // Prix total : aller × 2 si aller-retour activé
   const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
 
@@ -436,6 +446,7 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
     if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
     if (prixFinal === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
+    fbLead({ value: prixFinal, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
     startTransition(async () => {
       const result = await createReservationCheckout({
         adresse_depart:  depart.label,
