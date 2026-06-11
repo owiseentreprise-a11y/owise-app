@@ -10,10 +10,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (user.app_metadata?.role !== 'admin') redirect('/login')
 
   return (
-    <div className="theme-light" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#F8F6F1' }}>
+    <div className="theme-light" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#F8F6F1' }}>
       <Sidebar />
       <main style={{
-        flex: 1, height: '100vh',
+        flex: 1, minHeight: 0,
         overflowY: 'auto', overflowX: 'hidden',
         display: 'flex', flexDirection: 'column',
         background: '#F8F6F1',

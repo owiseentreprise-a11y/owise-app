@@ -91,11 +91,12 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: 220, minWidth: 220, height: '100vh',
+      width: 220, minWidth: 220, height: '100dvh',
       background: '#FFFFFF',
       borderRight: '1px solid rgba(0,0,0,.07)',
       display: 'flex', flexDirection: 'column',
       position: 'relative', flexShrink: 0,
+      overflow: 'hidden',
     }}>
       {/* Bande or en haut */}
       <div style={{
@@ -130,7 +131,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: '8px 10px', overflowY: 'auto' }}>
+      <nav style={{ flex: 1, minHeight: 0, padding: '8px 10px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'rgba(201,168,76,.25) transparent' }}>
         {navItems.map((group, gi) => (
           <div key={group.section} style={{ marginTop: gi === 0 ? 4 : 0 }}>
             <div style={{
