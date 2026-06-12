@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { supprimerDevis, convertirEnFacture } from './actions'
+import { supprimerDevis, convertirEnFacture, convertirEnCourse } from './actions'
 
 function fmtDate(d: string | null) {
   if (!d) return '—'
@@ -19,7 +19,7 @@ const VEHICULE_LABEL: Record<string, string> = {
 
 function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   const [pending, startTransition] = useTransition()
-  const [confirm, setConfirm]      = useState<'delete' | 'facture' | null>(null)
+  const [confirm, setConfirm]      = useState<'delete' | 'facture' | 'course' | null>(null)
   const [success, setSuccess]      = useState<string | null>(null)
 
   function handleSupprimer() {
@@ -28,21 +28,31 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
     })
   }
 
-  function handleConvertir() {
+  const devisData = {
+    id: d.id, nom: d.nom, tel: d.tel, email: d.email,
+    societe: d.societe, price: d.price,
+    origin: d.origin, destination: d.destination,
+    date_course: d.date_course, heure: d.heure,
+    vehicle: d.vehicle, pax: d.pax,
+  }
+
+  function handleConvertirFacture() {
     startTransition(async () => {
       try {
-        const num = await convertirEnFacture({
-          id: d.id, nom: d.nom, tel: d.tel, email: d.email,
-          societe: d.societe, price: d.price,
-          origin: d.origin, destination: d.destination,
-          date_course: d.date_course, heure: d.heure,
-          vehicle: d.vehicle, pax: d.pax,
-        })
-        setSuccess(num)
+        const num = await convertirEnFacture(devisData)
+        setSuccess(`Facture ${num} créée`)
         setConfirm(null)
-      } catch (e: any) {
-        alert(e.message)
-      }
+      } catch (e: any) { alert(e.message) }
+    })
+  }
+
+  function handleConvertirCourse() {
+    startTransition(async () => {
+      try {
+        const ref = await convertirEnCourse(devisData)
+        setSuccess(`Course ${ref} créée`)
+        setConfirm(null)
+      } catch (e: any) { alert(e.message) }
     })
   }
 
@@ -50,7 +60,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
     return (
       <tr style={{ background: 'rgba(61,184,122,.04)', borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,.05)' }}>
         <td colSpan={10} style={{ padding: '14px 20px', fontSize: 13, color: '#3DB87A', fontWeight: 500 }}>
-          ✓ Facture <span style={{ fontFamily: 'monospace' }}>{success}</span> créée — devis supprimé
+          ✓ <span style={{ fontFamily: 'monospace' }}>{success}</span> — devis supprimé
         </td>
       </tr>
     )
@@ -112,6 +122,18 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       <td style={{ padding: '13px 14px', whiteSpace: 'nowrap' }}>
         {confirm === null && (
           <div style={{ display: 'flex', gap: 6 }}>
+            {/* Convertir en course */}
+            <button onClick={() => setConfirm('course')} disabled={pending}
+              title="Créer une course à partir de ce devis"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(201,168,76,.3)',
+                background: 'rgba(201,168,76,.08)', color: '#C9A84C',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 13l4.553 2.276A1 1 0 0021 21.382V10.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 4"/></svg>
+              Course
+            </button>
             {/* Convertir en facture */}
             <button onClick={() => setConfirm('facture')} disabled={pending || !d.price}
               title={!d.price ? 'Prix manquant' : 'Convertir en facture'}
@@ -138,6 +160,21 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
           </div>
         )}
 
+        {/* Confirmation course */}
+        {confirm === 'course' && (
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600 }}>Créer la course ?</span>
+            <button onClick={handleConvertirCourse} disabled={pending}
+              style={{ padding: '4px 8px', borderRadius: 5, background: '#C9A84C', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Oui
+            </button>
+            <button onClick={() => setConfirm(null)}
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Non
+            </button>
+          </div>
+        )}
+
         {/* Confirmation supprimer */}
         {confirm === 'delete' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -157,7 +194,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
         {confirm === 'facture' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
             <span style={{ fontSize: 10, color: '#4D8ED4', fontWeight: 600 }}>Créer facture {d.price}€ ?</span>
-            <button onClick={handleConvertir} disabled={pending}
+            <button onClick={handleConvertirFacture} disabled={pending}
               style={{ padding: '4px 8px', borderRadius: 5, background: '#4D8ED4', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Oui
             </button>
