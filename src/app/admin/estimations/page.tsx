@@ -25,8 +25,31 @@ function formatDate(iso: string) {
     + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
 }
 
-function shortAddr(addr: string) {
-  return addr.split(',')[0]?.trim().slice(0, 40) ?? addr.slice(0, 40)
+function extractCity(addr: string): string {
+  const parts = addr.split(',').map(p => p.trim())
+  // "60510 Bresles" → "Bresles"
+  for (const part of parts) {
+    const m = part.match(/^\d{5}\s+(.+)$/)
+    if (m) return m[1]
+  }
+  // Pas de code postal → première partie si court, sinon vide
+  return ''
+}
+
+function shortAddr(addr: string): string {
+  const parts = addr.split(',').map(p => p.trim())
+  if (parts.length <= 1) return addr.slice(0, 45)
+  const street = parts[0].slice(0, 30)
+  const city   = extractCity(addr)
+  return city ? `${street}, ${city}` : street
+}
+
+function cityOnly(addr: string): string {
+  const city = extractCity(addr)
+  if (city) return city
+  // Adresse sans code postal (ex: "Creil, France" ou "CDG")
+  const parts = addr.split(',').map(p => p.trim())
+  return parts[0].slice(0, 35)
 }
 
 export default async function EstimationsPage() {
@@ -94,10 +117,10 @@ export default async function EstimationsPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)
 
-  // Top zones départ
+  // Top zones départ (regroupées par ville)
   const depMap: Record<string, number> = {}
   for (const e of estimations) {
-    const key = shortAddr(e.adresse_depart)
+    const key = cityOnly(e.adresse_depart)
     depMap[key] = (depMap[key] ?? 0) + 1
   }
   const topDep = Object.entries(depMap).sort((a, b) => b[1] - a[1]).slice(0, 5)
@@ -250,10 +273,17 @@ export default async function EstimationsPage() {
             fontSize: 11,
           }}>
             <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#999' }}>{formatDate(e.created_at)}</div>
-            <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12 }}>
-              {shortAddr(e.adresse_depart)}
+            <div style={{ paddingRight: 12, overflow: 'hidden' }}>
+              <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
+                {e.adresse_depart.split(',')[0]?.trim().slice(0, 30) ?? e.adresse_depart.slice(0, 30)}
+              </div>
+              {extractCity(e.adresse_depart) && (
+                <div style={{ color: '#C9A84C', fontSize: 10, fontWeight: 600, marginTop: 1 }}>
+                  {extractCity(e.adresse_depart)}
+                </div>
+              )}
             </div>
-            <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12 }}>
+            <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12, fontSize: 11 }}>
               {shortAddr(e.adresse_arrivee)}
             </div>
             <div style={{ color: '#666' }}>{e.vehicule ? (VH_LABEL[e.vehicule] ?? e.vehicule) : '—'}</div>
