@@ -26,6 +26,7 @@ const navItems = [
       { href: '/admin/clients',        label: 'Clients',        icon: 'briefcase' },
       { href: '/admin/sous-traitants', label: 'Sous-traitants', icon: 'truck'     },
       { href: '/admin/tarifs',         label: 'Tarifs',         icon: 'tag'       },
+      { href: '/admin/backups',         label: 'Sauvegardes',    icon: 'backup'    },
       { href: '/admin/parametres',     label: 'Paramètres',     icon: 'settings'  },
     ],
   },
@@ -45,6 +46,7 @@ const ICONS: Record<string, React.ReactNode> = {
   inbox:     <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>,
   search:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/></svg>,
   analytics: <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l4-4 4 4 4-6 4 3"/><path strokeLinecap="round" strokeLinejoin="round" d="M3 20h18"/></svg>,
+  backup:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>,
 }
 
 function NavItem({ item, isActive }: { item: { href: string; label: string; icon: string }; isActive: boolean }) {
