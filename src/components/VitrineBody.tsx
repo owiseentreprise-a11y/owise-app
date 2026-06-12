@@ -252,7 +252,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const mxRef        = useRef(0); const myRef = useRef(0)
   const rxRef        = useRef(0); const ryRef = useRef(0)
   const rafRef       = useRef<number>(0)
-  const autoEstTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoEstTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastEstimRef  = useRef<string>('')
 
   /* ── cursor ────────────────────────────────────────────── */
   useEffect(() => {
@@ -379,14 +380,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       setBcPrice(result.prix)
       setBcIsKm(result.isKm)
       setBcLoading(false)
-      if (result.prix > 0) {
+      const dep = bcDepart.label.trim()
+      const arr = bcArrivee.label.trim()
+      const vh  = NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline'
+      const key = `${dep}|${arr}|${vh}`
+      if (result.prix > 0 && dep.length >= 8 && arr.length >= 8 && key !== lastEstimRef.current) {
+        lastEstimRef.current = key
         fetch('/api/estimations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            adresse_depart:  bcDepart.label,
-            adresse_arrivee: bcArrivee.label,
-            vehicule:        NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline',
+            adresse_depart:  dep,
+            adresse_arrivee: arr,
+            vehicule:        vh,
             prix:            result.prix,
             source:          'vitrine',
           }),
