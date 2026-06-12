@@ -71,12 +71,12 @@ const FAQS = [
 
 /* ── services ──────────────────────────────────────────── */
 const SERVICES = [
-  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-immediat.png',   alt:'Course immédiate' },
-  { cls:'sc-teal',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.',        cta:'Planifier',         href:'#devis',   img:'/brand_assets/service-avance.png',     alt:'Réserver à l\'avance' },
-  { cls:'sc-blue',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.',             cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-aeroport.png',   alt:'Transfert aéroport' },
-  { cls:'sc-indigo', title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.',          cta:'Réserver',         href:'#devis',   img:'/brand_assets/service-groupes.png',    alt:'Groupes et familles' },
-  { cls:'sc-navy',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.',           cta:'En savoir plus',   href:'#contact', img:'/brand_assets/service-entreprise.png', alt:'Comptes entreprise' },
-  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.',   cta:'Demander un devis',href:'#devis',   img:'/brand_assets/service-evenements.png', alt:'Événements et soirées' },
+  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-immediat.png',   alt:'Course immédiate' },
+  { cls:'sc-teal',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.',        cta:'Planifier',         href:'/reserver', img:'/brand_assets/service-avance.png',     alt:'Réserver à l\'avance' },
+  { cls:'sc-blue',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.',             cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-aeroport.png',   alt:'Transfert aéroport' },
+  { cls:'sc-indigo', title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.',          cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-groupes.png',    alt:'Groupes et familles' },
+  { cls:'sc-navy',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.',           cta:'En savoir plus',   href:'#contact',  img:'/brand_assets/service-entreprise.png', alt:'Comptes entreprise' },
+  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.',   cta:'Demander un devis',href:'#devis',    img:'/brand_assets/service-evenements.png', alt:'Événements et soirées' },
 ]
 
 /* ── vehicles display ──────────────────────────────────── */
@@ -243,8 +243,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   })
   const [submitErr,  setSubmitErr]  = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [submitted,  setSubmitted]  = useState(false)
-  const [confirmRef, setConfirmRef] = useState('')
+  const [submitted,   setSubmitted]  = useState(false)
+  const [confirmRef,  setConfirmRef] = useState('')
+  const [reserverUrl, setReserverUrl] = useState('')
 
   /* ── refs ──────────────────────────────────────────────── */
   const cursorRef    = useRef<HTMLDivElement>(null)
@@ -592,13 +593,20 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       })
       fbLead({ content_category: 'devis', content_name: v.name })
       fbContact()
+      // Préparer l'URL /reserver avec toutes les infos pré-remplies
       const params = new URLSearchParams()
-      if (form.origin) params.set('depart',  form.origin)
-      if (form.dest)   params.set('arrivee', form.dest)
-      if (form.date)   params.set('date',    form.date)
-      if (form.time)   params.set('time',    form.time)
-      params.set('pax', String(pax))
-      router.push('/reserver?' + params.toString())
+      if (form.origin)  params.set('depart',  form.origin)
+      if (form.dest)    params.set('arrivee', form.dest)
+      if (form.date)    params.set('date',    form.date)
+      if (form.time)    params.set('time',    form.time)
+      params.set('pax',   String(pax))
+      if (form.nom)     params.set('nom',     form.nom)
+      if (form.tel)     params.set('tel',     form.tel)
+      if (form.email)   params.set('email',   form.email)
+      setReserverUrl('/reserver?' + params.toString())
+      setConfirmRef(ref)
+      setStep(4)
+      setSubmitted(true)
     } catch {
       setSubmitErr('Erreur lors de l\'envoi. Réessayez ou contactez-nous par WhatsApp.')
     } finally {
@@ -975,7 +983,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 <div className="sc-left">
                   <div className="sc-title">{s.title}</div>
                   <div className="sc-desc">{s.desc}</div>
-                  <button className="sc-btn" onClick={()=>scrollTo(s.href)}>{s.cta} <span className="sc-btn-arrow">→</span></button>
+                  <button className="sc-btn" onClick={()=>s.href.startsWith('/')?router.push(s.href):scrollTo(s.href)}>{s.cta} <span className="sc-btn-arrow">→</span></button>
                 </div>
                 <div className="sc-img">
                   <img src={s.img} alt={s.alt} style={{maxWidth:130,maxHeight:120,objectFit:'contain',display:'block'}}/>
@@ -1776,7 +1784,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <button className="btn-prev" onClick={()=>setStep(2)}>← Retour</button>
                   <button className="btn-next" onClick={submitDevis} disabled={submitting} style={{padding:'14px 36px',fontSize:14,opacity:submitting?.6:1}}>
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    {submitting ? 'Envoi…' : 'Confirmer la réservation'}
+                    {submitting ? 'Envoi…' : 'Envoyer ma demande'}
                   </button>
                 </div>
               </div>
@@ -1788,13 +1796,28 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 <div style={{width:60,height:60,borderRadius:'50%',background:'rgba(61,184,122,.1)',border:'1px solid rgba(61,184,122,.25)',display:'inline-flex',alignItems:'center',justifyContent:'center',marginBottom:20}}>
                   <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#3DB87A" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:500,color:'#0A0A0A',marginBottom:10}}>Demande envoyée !</div>
-                <p style={{fontSize:13,color:'var(--t2)',lineHeight:1.7,maxWidth:340,margin:'0 auto 24px'}}>
-                  Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong> pour confirmer votre réservation.
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:500,color:'#0A0A0A',marginBottom:10}}>Demande reçue !</div>
+                <p style={{fontSize:13,color:'var(--t2)',lineHeight:1.7,maxWidth:340,margin:'0 auto 8px'}}>
+                  Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong>.
                 </p>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'var(--t2)',background:'rgba(0,0,0,.04)',borderRadius:6,padding:'8px 14px',display:'inline-block',marginBottom:28}}>{confirmRef}</div>
-                <br/>
-                <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(0,0,0,.15)',borderRadius:8,padding:'10px 22px',fontSize:13,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit',transition:'all .15s'}}>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'var(--t2)',background:'rgba(0,0,0,.04)',borderRadius:6,padding:'8px 14px',display:'inline-block',marginBottom:20}}>{confirmRef}</div>
+
+                {/* Option : payer directement sans attendre le rappel */}
+                <div style={{background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',borderRadius:10,padding:'14px 20px',marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>
+                  <div style={{fontSize:11,color:'var(--t2)',marginBottom:10}}>Vous souhaitez confirmer et payer maintenant sans attendre ?</div>
+                  <button onClick={()=>router.push(reserverUrl)} style={{
+                    display:'inline-flex',alignItems:'center',gap:8,
+                    background:'linear-gradient(135deg,#C9A84C,#DDB95A)',
+                    color:'#fff',border:'none',borderRadius:8,
+                    padding:'10px 22px',fontSize:13,fontWeight:600,
+                    cursor:'pointer',fontFamily:'inherit',
+                  }}>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Réserver et payer maintenant
+                  </button>
+                </div>
+
+                <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(0,0,0,.15)',borderRadius:8,padding:'8px 18px',fontSize:12,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit'}}>
                   Nouvelle demande
                 </button>
               </div>
