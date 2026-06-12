@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createBrowserClient } from '@supabase/ssr'
 
 const L = {
@@ -24,7 +25,9 @@ export default function ClientUpdatePasswordPage() {
     const type          = params.get('type')
 
     if (!access_token || !refresh_token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus('error')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setErrMsg('Lien invalide ou déjà utilisé. Refaites une demande.')
       return
     }
@@ -118,11 +121,11 @@ export default function ClientUpdatePasswordPage() {
               borderRadius: 9, padding: '14px', marginBottom: 20,
               fontSize: 13, color: L.red,
             }}>{errMsg}</div>
-            <a href="/client-login/reset-password" style={{
+            <Link href="/client-login/reset-password" style={{
               display: 'inline-block', background: L.gold, color: '#fff',
               textDecoration: 'none', padding: '12px 24px', borderRadius: 9,
               fontSize: 13, fontWeight: 600,
-            }}>Refaire une demande</a>
+            }}>Refaire une demande</Link>
           </div>
         )}
 

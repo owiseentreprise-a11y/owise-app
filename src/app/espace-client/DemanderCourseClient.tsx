@@ -176,7 +176,7 @@ export default function DemanderCourseClient({
         )}
         {error && (
           <div style={{ marginBottom: 16, marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.2)', fontSize: 12, color: '#C03030' }}>
-            Veuillez renseigner le départ, l'arrivée et la date.
+            Veuillez renseigner le départ, l&apos;arrivée et la date.
           </div>
         )}
 
@@ -358,7 +358,7 @@ export default function DemanderCourseClient({
 
               {/* Arrivée */}
               <div>
-                <label style={labelStyle}>Adresse d'arrivée</label>
+                <label style={labelStyle}>Adresse d&apos;arrivée</label>
                 <AddressInput name="arrivee" placeholder="CDG, Gare de Lyon, adresse..." value={arrivee} onChange={setArrivee} theme="light" />
               </div>
             </div>

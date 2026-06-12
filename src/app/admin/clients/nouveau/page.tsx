@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClientAccount } from './actions'
 import SubmitButton from '../../components/SubmitButton'
 
@@ -35,7 +36,7 @@ export default function NouveauClientPage() {
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,
       }}>
-        <a href="/admin/clients" style={{
+        <Link href="/admin/clients" style={{
           display: 'flex', alignItems: 'center', gap: 5,
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
         }}>
@@ -43,7 +44,7 @@ export default function NouveauClientPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
           Clients
-        </a>
+        </Link>
         <div style={{ width: 1, height: 14, background: 'var(--t3)' }} />
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>Nouveau client</span>
       </div>
@@ -100,7 +101,7 @@ export default function NouveauClientPage() {
                 </select>
               </div>
               <div>
-                <label style={labelStyle} htmlFor="entreprise_nom">Nom de l'entreprise</label>
+                <label style={labelStyle} htmlFor="entreprise_nom">Nom de l&apos;entreprise</label>
                 <input id="entreprise_nom" name="entreprise_nom" style={inputStyle} placeholder="ACME SAS" />
               </div>
             </div>
@@ -117,7 +118,7 @@ export default function NouveauClientPage() {
           {/* Submit */}
           <div style={{ display: 'flex', gap: 12 }}>
             <SubmitButton label="Créer le compte client" pendingLabel="Création…" style={{ padding: '12px 28px', borderRadius: 10 }} />
-            <a
+            <Link
               href="/admin/clients"
               style={{
                 padding: '12px 20px', borderRadius: 10,
@@ -125,7 +126,7 @@ export default function NouveauClientPage() {
                 fontSize: 13, border: '1px solid var(--t3)',
                 textDecoration: 'none', display: 'flex', alignItems: 'center',
               }}
-            >Annuler</a>
+            >Annuler</Link>
           </div>
         </form>
       </div>

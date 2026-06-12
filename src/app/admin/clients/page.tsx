@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
@@ -77,7 +78,7 @@ export default async function ClientsPage({
             {list.length}{filterType || filterQ ? ` / ${counts.total}` : ''}
           </div>
         </div>
-        <a href="/admin/clients/nouveau" style={{
+        <Link href="/admin/clients/nouveau" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8,
           background: 'var(--gold)', color: '#0A0A0A',
@@ -88,7 +89,7 @@ export default async function ClientsPage({
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
           Nouveau client
-        </a>
+        </Link>
       </div>
 
       {/* Barre de filtres */}

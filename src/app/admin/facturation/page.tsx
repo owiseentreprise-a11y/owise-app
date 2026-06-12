@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Facture } from '@/lib/types'
 
@@ -45,7 +46,7 @@ export default async function FacturationPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <a href="/admin/facturation/export" style={{
+        <Link href="/admin/facturation/export" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'var(--elevated)', color: 'var(--t2)',
           border: '1px solid var(--t3)',
@@ -56,15 +57,15 @@ export default async function FacturationPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
           Export CSV
-        </a>
-        <a href="/admin/facturation/nouvelle" style={{
+        </Link>
+        <Link href="/admin/facturation/nouvelle" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'var(--gold)', color: 'var(--base)',
           padding: '8px 16px', borderRadius: 8,
           fontSize: 12, fontWeight: 600, textDecoration: 'none',
         }}>
           + Nouvelle facture
-        </a>
+        </Link>
         </div>
       </div>
 

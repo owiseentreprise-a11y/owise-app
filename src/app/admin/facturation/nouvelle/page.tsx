@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import NouvelleFactureForm from './NouvelleFactureForm'
 
@@ -36,7 +37,7 @@ export default async function NouvelleFacturePage() {
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,
       }}>
-        <a href="/admin/facturation" style={{
+        <Link href="/admin/facturation" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
         }}>
@@ -44,7 +45,7 @@ export default async function NouvelleFacturePage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
           Facturation
-        </a>
+        </Link>
         <div style={{ width: 1, height: 16, background: 'var(--t3)' }} />
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Nouvelle facture</div>
       </div>

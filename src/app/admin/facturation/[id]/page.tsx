@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 import FactureActions from './FactureActions'
@@ -67,7 +68,7 @@ export default async function FactureDetailPage({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <a href="/admin/facturation" style={{
+          <Link href="/admin/facturation" style={{
             display: 'flex', alignItems: 'center', gap: 5,
             fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
           }}>
@@ -75,7 +76,7 @@ export default async function FactureDetailPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
             Facturation
-          </a>
+          </Link>
           <div style={{ width: 1, height: 14, background: 'var(--t3)' }} />
           <div style={{
             fontFamily: 'var(--font-jetbrains), monospace',

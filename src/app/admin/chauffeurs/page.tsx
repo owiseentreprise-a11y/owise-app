@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Chauffeur } from '@/lib/types'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
@@ -47,14 +48,14 @@ export default async function ChauffeursPage() {
             <span style={{ color: 'var(--grn)' }}>● {disponibles} disponible{disponibles > 1 ? 's' : ''}</span>
             <span style={{ color: 'var(--blu)' }}>● {enCourse} en course</span>
           </div>
-          <a href="/admin/chauffeurs/nouveau" style={{
+          <Link href="/admin/chauffeurs/nouveau" style={{
             display: 'flex', alignItems: 'center', gap: 6,
             background: 'var(--gold)', color: 'var(--base)',
             padding: '8px 16px', borderRadius: 8,
             fontSize: 12, fontWeight: 600, textDecoration: 'none',
           }}>
             + Nouveau chauffeur
-          </a>
+          </Link>
         </div>
       </div>
 

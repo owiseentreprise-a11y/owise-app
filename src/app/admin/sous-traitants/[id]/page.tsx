@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { modifierSousTraitantAction, genererFactureSTAction, marquerFactureSTPayeeAction, creerCompteSTAction, supprimerCompteSTAction } from '../actions'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
@@ -67,9 +68,9 @@ export default async function SousTraitantDetailPage({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/admin/sous-traitants" style={{ color: 'var(--t3)', textDecoration: 'none', fontSize: 13 }}>
+          <Link href="/admin/sous-traitants" style={{ color: 'var(--t3)', textDecoration: 'none', fontSize: 13 }}>
             ← Sous-traitants
-          </a>
+          </Link>
           <span style={{ color: 'var(--t3)' }}>/</span>
           <span style={{ fontSize: 13, color: 'var(--t1)' }}>{st.nom}</span>
         </div>
@@ -104,7 +105,7 @@ export default async function SousTraitantDetailPage({
               <>
                 <strong>Email déjà utilisé par un autre compte.</strong><br/>
                 <span style={{ fontSize: 12, color: 'var(--t2)' }}>
-                  Si c'est un auto-entrepreneur avec la même adresse, utilisez une variante :<br/>
+                  Si c&apos;est un auto-entrepreneur avec la même adresse, utilisez une variante :<br/>
                   • Gmail : ajoutez <code style={{ background: 'var(--elevated)', padding: '1px 5px', borderRadius: 4 }}>+st</code> → <em>jean.dupont+st@gmail.com</em> (même boîte, email différent)<br/>
                   • Autre : créez une adresse pro dédiée (ex: <em>vtc@societe.fr</em>)
                 </span>
@@ -260,7 +261,7 @@ export default async function SousTraitantDetailPage({
                       color: 'var(--red)', cursor: 'pointer',
                       fontFamily: 'var(--font-dm-sans), sans-serif',
                     }}>
-                      Supprimer l'accès
+                      Supprimer l&apos;accès
                     </button>
                   </form>
                 </div>
@@ -438,7 +439,7 @@ export default async function SousTraitantDetailPage({
             <div style={{ padding: '28px 24px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
               Aucun chauffeur rattaché à cette société.<br/>
               <span style={{ fontSize: 11, marginTop: 4, display: 'block' }}>
-                Créez un chauffeur avec type "Sous-traitant" et sélectionnez {st.nom}.
+                Créez un chauffeur avec type &quot;Sous-traitant&quot; et sélectionnez {st.nom}.
               </span>
             </div>
           ) : (

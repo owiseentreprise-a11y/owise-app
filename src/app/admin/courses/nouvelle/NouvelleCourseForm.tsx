@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useTransition, useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
@@ -78,32 +79,23 @@ function isForfaitZone(z: Zone) {
   return z.type === 'aeroport' || z.type === 'gare' || z.code === 'Z1'
 }
 
-function appliquerSupplements(prix: number, dateHeure: string, params: any): number {
-  if (!dateHeure) return prix
-  const d = new Date(dateHeure), h = d.getHours(), j = d.getDay()
-  if (h >= 22 || h < 6)   prix *= 1 + (params?.supplement_nuit    ?? 0) / 100
-  if (j === 0 || j === 6)  prix *= 1 + (params?.supplement_weekend ?? 0) / 100
-  return prix
-}
+const COEF_PREMIUM = 1.5
+const COEF_VAN     = 1.7
 
-function calculerPrixForfait(depId: string, arrId: string, vehicule: string, dateHeure: string, grille: Grille[], params: any): number | null {
+function calculerPrixForfait(depId: string, arrId: string, vehicule: string, grille: Grille[]): number | null {
   const cell = grille.find(g => g.zone_depart_id === depId && g.zone_arrivee_id === arrId)
   if (!cell || !cell.prix_berline) return null
   let coef = 1
-  if (vehicule === 'berline_premium') coef = params?.coef_berline_premium ?? 1.25
-  if (vehicule === 'van')             coef = params?.coef_van ?? 1.5
-  let prix = cell.prix_berline * coef
-  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-  return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
+  if (vehicule === 'berline_premium') coef = COEF_PREMIUM
+  if (vehicule === 'van')             coef = COEF_VAN
+  return Math.round(cell.prix_berline * coef * 100) / 100
 }
 
-function calculerPrixKm(km: number, vehicule: string, dateHeure: string, params: any, tarifs: TarifVehicule[]): number | null {
+function calculerPrixKm(km: number, vehicule: string, tarifs: TarifVehicule[]): number | null {
   const tarif  = tarifs.find(t => t.vehicule === VEHICULE_NOM[vehicule])
   const base   = tarif ? Number(tarif.prise_en_charge) : 15
   const prixKm = tarif ? Number(tarif.prix_km)         : 1.2
-  let prix = base + km * prixKm
-  if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-  return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
+  return Math.round((base + km * prixKm) * 100) / 100
 }
 
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
@@ -221,12 +213,12 @@ function AddressInput({
 
 export default function NouvelleCourseForm({
   clients, collabs, chauffeurs, sousTraitants,
-  zones, grille, params, tarifs,
+  zones, grille, tarifs,
   defaultDatetime,
 }: {
   clients: ClientOption[]; collabs: CollabOption[]
   chauffeurs: ChauffeurOption[]; sousTraitants: SousTraitantOption[]
-  zones: Zone[]; grille: Grille[]; params: any; tarifs: TarifVehicule[]
+  zones: Zone[]; grille: Grille[]; tarifs: TarifVehicule[]
   defaultDatetime: string
 }) {
   const [pending, startTransition] = useTransition()
@@ -258,13 +250,14 @@ export default function NouvelleCourseForm({
 
   const prixAuto = useMemo(() => {
     if (!zoneDepart || !zoneArrivee) return null
-    if (useForfait) return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, dateHeure, grille, params)
-    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, dateHeure, params, tarifs)
+    if (useForfait) return calculerPrixForfait(zoneDepart.id, zoneArrivee.id, vehicule, grille)
+    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, tarifs)
     return null
-  }, [zoneDepart, zoneArrivee, useForfait, vehicule, dateHeure, distanceKm, grille, params, tarifs])
+  }, [zoneDepart, zoneArrivee, useForfait, vehicule, distanceKm, grille, tarifs])
 
   // Fetch OSRM distance when in km mode
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (useForfait || !depart.lat || !arrivee.lat) { setDistanceKm(null); return }
     let alive = true
     fetchDistanceKm(depart, arrivee).then(d => { if (alive) setDistanceKm(d) })
@@ -695,7 +688,7 @@ export default function NouvelleCourseForm({
           }}>
             {pending ? 'Création en cours…' : 'Créer la course'}
           </button>
-          <a href="/admin/courses" style={{
+          <Link href="/admin/courses" style={{
             padding: '13px 24px', borderRadius: 10,
             background: 'var(--elevated)', border: '1px solid var(--t3)',
             color: 'var(--t2)', fontSize: 13, fontWeight: 500,
@@ -703,7 +696,7 @@ export default function NouvelleCourseForm({
             textDecoration: 'none', display: 'flex', alignItems: 'center',
           }}>
             Annuler
-          </a>
+          </Link>
         </div>
       </div>
     </form>

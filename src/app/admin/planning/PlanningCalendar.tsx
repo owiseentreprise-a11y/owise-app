@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import DispatchRapideButton from '../courses/DispatchRapideButton'
 import { STATUT_COURSE_COLOR, STATUT_COURSE_LABEL } from '@/lib/types'
 
@@ -592,7 +593,7 @@ export default function PlanningCalendar({
         {/* Navigation */}
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <button onClick={prev} style={{ ...btnStyle(false), padding:'5px 10px', fontSize:14 }}>←</button>
-          <button onClick={goToday} style={{ ...btnStyle(false), fontSize:10, letterSpacing:'.08em' }}>Aujourd'hui</button>
+          <button onClick={goToday} style={{ ...btnStyle(false), fontSize:10, letterSpacing:'.08em' }}>Aujourd&apos;hui</button>
           <button onClick={next} style={{ ...btnStyle(false), padding:'5px 10px', fontSize:14 }}>→</button>
           <span style={{ fontFamily:'var(--font-jetbrains), monospace', fontSize:12, color:'var(--t1)', marginLeft:8, minWidth:200 }}>
             {navLabel}
@@ -619,13 +620,13 @@ export default function PlanningCalendar({
               </button>
             ))}
           </div>
-          <a href="/admin/courses/nouvelle" style={{
+          <Link href="/admin/courses/nouvelle" style={{
             ...btnStyle(false),
             background:'var(--gold)', color:'var(--base)', border:'none', textDecoration:'none',
             padding:'6px 14px',
           }}>
             + Nouvelle course
-          </a>
+          </Link>
         </div>
       </div>
 

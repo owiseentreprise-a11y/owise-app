@@ -30,13 +30,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const admin = createAdminClient()
   const { data, error } = await admin.from('courses').insert({
-    adresse_depart:  body.adresse_depart  ?? '60100 Creil, France',
-    adresse_arrivee: body.adresse_arrivee ?? 'Aéroport CDG Terminal 2',
-    date_prevue:     body.date_prevue     ?? new Date(Date.now() + 7 * 86400_000).toISOString(),
-    type_vehicule:   body.type_vehicule   ?? 'berline',
-    nb_passagers:    body.nb_passagers    ?? 2,
-    prix_estime:     body.prix_estime     ?? null,
-    statut: 'en_attente',
+    adresse_depart:      body.adresse_depart      ?? '60100 Creil, France',
+    adresse_arrivee:     body.adresse_arrivee     ?? 'Aéroport CDG Terminal 2',
+    date_prevue:         body.date_prevue         ?? new Date(Date.now() + 7 * 86400_000).toISOString(),
+    type_vehicule:       body.type_vehicule       ?? 'berline',
+    nb_passagers:        body.nb_passagers        ?? 2,
+    prix_estime:         body.prix_estime         ?? null,
+    statut:              body.statut              ?? 'en_attente',
+    sous_traitant_id:    body.sous_traitant_id    ?? null,
+    prix_sous_traitant:  body.prix_sous_traitant  ?? null,
+    chauffeur_id:        body.chauffeur_id        ?? null,
     etapes: null,
   }).select('id').single()
 

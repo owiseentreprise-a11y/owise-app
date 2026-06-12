@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { clientLoginAction, clientRegisterAction } from './actions'
 
 const L = {
@@ -49,7 +50,7 @@ export default async function ClientLoginPage({
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <a href="/" style={{ textDecoration: 'none' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
             <div style={{
               width: 48, height: 48,
               background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
@@ -58,7 +59,7 @@ export default async function ClientLoginPage({
               fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'Georgia, serif',
               boxShadow: '0 8px 24px rgba(201,168,76,.25)',
             }}>O</div>
-          </a>
+          </Link>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
           <div style={{ fontSize: 11, color: L.t2, marginTop: 4, letterSpacing: '.06em' }}>Espace client</div>
         </div>
@@ -110,9 +111,9 @@ export default async function ClientLoginPage({
             <Field label="Mot de passe" name="password" type="password" placeholder="••••••••" />
             <Btn>Se connecter</Btn>
             <div style={{ textAlign: 'center', marginTop: 4 }}>
-              <a href="/client-login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
+              <Link href="/client-login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
                 Mot de passe oublié ?
-              </a>
+              </Link>
             </div>
           </form>
         )}
@@ -129,7 +130,7 @@ export default async function ClientLoginPage({
             <Btn>Créer mon compte</Btn>
             <p style={{ margin: '8px 0 0', fontSize: 11, color: L.t3, textAlign: 'center' }}>
               En créant un compte vous acceptez nos{' '}
-              <a href="/mentions-legales" style={{ color: L.gold, textDecoration: 'none' }}>CGU</a>.
+              <Link href="/mentions-legales" style={{ color: L.gold, textDecoration: 'none' }}>CGU</Link>.
             </p>
           </form>
         )}
@@ -140,7 +141,7 @@ export default async function ClientLoginPage({
           borderTop: `1px solid ${L.border}`,
           textAlign: 'center', fontSize: 11, color: L.t3,
         }}>
-          <a href="/login" style={{ color: L.t3, textDecoration: 'none' }}>Accès administration →</a>
+          <Link href="/login" style={{ color: L.t3, textDecoration: 'none' }}>Accès administration →</Link>
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { clientResetPasswordAction } from '@/app/client-login/actions'
 
 const L = {
@@ -44,7 +45,7 @@ export default async function ClientResetPasswordPage({
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <a href="/" style={{ textDecoration: 'none' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
             <div style={{
               width: 48, height: 48,
               background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
@@ -53,7 +54,7 @@ export default async function ClientResetPasswordPage({
               fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'Georgia, serif',
               boxShadow: '0 8px 24px rgba(201,168,76,.25)',
             }}>O</div>
-          </a>
+          </Link>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
           <div style={{ fontSize: 11, color: L.t2, marginTop: 4 }}>Réinitialisation du mot de passe</div>
         </div>
@@ -70,9 +71,9 @@ export default async function ClientResetPasswordPage({
             <div style={{ fontSize: 13, color: L.t2, lineHeight: 1.7, marginBottom: 28 }}>
               Consultez votre boîte mail et cliquez sur le lien pour définir un nouveau mot de passe.
             </div>
-            <a href="/client-login" style={{ fontSize: 13, color: L.gold, textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/client-login" style={{ fontSize: 13, color: L.gold, textDecoration: 'none', fontWeight: 500 }}>
               ← Retour à la connexion
-            </a>
+            </Link>
           </div>
         ) : (
           <>
@@ -106,9 +107,9 @@ export default async function ClientResetPasswordPage({
               </button>
             </form>
             <div style={{ marginTop: 20, textAlign: 'center' }}>
-              <a href="/client-login" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
+              <Link href="/client-login" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
                 ← Retour à la connexion
-              </a>
+              </Link>
             </div>
           </>
         )}

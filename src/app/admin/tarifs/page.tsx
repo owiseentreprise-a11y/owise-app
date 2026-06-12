@@ -3,7 +3,6 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import TarifsMatrix from './TarifsMatrix'
 import TarifsVehicules from './TarifsVehicules'
 import ZonesSection from './ZonesSection'
-import GlobalParamsForm from './GlobalParamsForm'
 import CoherenceAlert from './CoherenceAlert'
 
 export const dynamic = 'force-dynamic'
@@ -12,16 +11,14 @@ export default async function TarifsPage() {
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  const [zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
+  const [zonesRes, grilleRes, tarifsRes] = await Promise.all([
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
-    supabase.from('parametres').select('*').eq('id', true).single(),
     supabase.from('tarifs').select('*'),
   ])
 
   const zones  = zonesRes.data ?? []
   const grille = grilleRes.data ?? []
-  const p      = paramsRes.data as any
   const tarifs = tarifsRes.data ?? []
 
   return (
@@ -55,7 +52,7 @@ export default async function TarifsPage() {
             Tarifs de base par véhicule
           </div>
           <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 20 }}>
-            Formule appliquée partout : Prise en charge + Distance (km) × Prix/km · Suppléments nuit/weekend ci-dessous
+            Formule appliquée partout : Prise en charge + Distance (km) × Prix/km
           </div>
           <TarifsVehicules tarifs={tarifs} />
         </div>
@@ -68,17 +65,9 @@ export default async function TarifsPage() {
           <TarifsMatrix
             zones={zones}
             grille={grille}
-            coefPremium={p?.coef_berline_premium ?? 1.25}
-            coefVan={p?.coef_van ?? 1.5}
+            coefPremium={1.5}
+            coefVan={1.7}
           />
-        </div>
-
-        {/* Paramètres globaux */}
-        <div className="tarif-section">
-          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 20 }}>
-            Paramètres globaux
-          </div>
-          <GlobalParamsForm p={p} />
         </div>
 
         {/* Zones */}

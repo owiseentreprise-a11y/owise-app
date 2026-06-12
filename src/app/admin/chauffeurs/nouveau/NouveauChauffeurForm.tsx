@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import Link from 'next/link'
 import { createChauffeur } from './actions'
 import { TYPE_VEHICULE_LABEL } from '@/lib/types'
 
@@ -39,7 +40,7 @@ export default function NouveauChauffeurForm({
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,
       }}>
-        <a href="/admin/chauffeurs" style={{
+        <Link href="/admin/chauffeurs" style={{
           display: 'flex', alignItems: 'center', gap: 5,
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
         }}>
@@ -47,7 +48,7 @@ export default function NouveauChauffeurForm({
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
           Chauffeurs
-        </a>
+        </Link>
         <div style={{ width: 1, height: 14, background: 'var(--t3)' }} />
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>Nouveau chauffeur</span>
       </div>
@@ -173,9 +174,9 @@ export default function NouveauChauffeurForm({
                       fontSize: 12, color: 'var(--amb)',
                     }}>
                       Aucune société enregistrée —{' '}
-                      <a href="/admin/sous-traitants/nouveau" style={{ color: 'var(--gold)', textDecoration: 'none' }}>
+                      <Link href="/admin/sous-traitants/nouveau" style={{ color: 'var(--gold)', textDecoration: 'none' }}>
                         Créer une société
-                      </a>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -208,12 +209,12 @@ export default function NouveauChauffeurForm({
             >
               {pending ? 'Création en cours…' : 'Créer le compte chauffeur'}
             </button>
-            <a href="/admin/chauffeurs" style={{
+            <Link href="/admin/chauffeurs" style={{
               padding: '12px 20px', borderRadius: 10,
               background: 'var(--elevated)', color: 'var(--t2)',
               fontSize: 13, border: '1px solid var(--t3)',
               textDecoration: 'none', display: 'flex', alignItems: 'center',
-            }}>Annuler</a>
+            }}>Annuler</Link>
           </div>
         </form>
       </div>

@@ -58,7 +58,7 @@ export default async function ChauffeurPage() {
   ]
   const clientIds = [...new Set(allCourses.map((c: any) => c.client_id).filter(Boolean))]
 
-  let clientsById: Record<string, any> = {}
+  const clientsById: Record<string, any> = {}
   if (clientIds.length > 0) {
     const admin = createAdminClient()
     const { data: clientsData } = await admin

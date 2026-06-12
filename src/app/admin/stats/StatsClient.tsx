@@ -264,7 +264,7 @@ export default function StatsClient({
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 14, padding: '20px 24px' }}>
           <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16 }}>
-            Chiffre d'affaires
+            Chiffre d&apos;affaires
           </div>
           <AreaChart data={caArea} color="var(--gold)" label="ca" />
         </div>

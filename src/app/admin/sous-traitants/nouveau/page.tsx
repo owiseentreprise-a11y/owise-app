@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { creerSousTraitantAction } from '../actions'
 import SubmitButton from '../../components/SubmitButton'
 
@@ -34,9 +35,9 @@ export default async function NouveauSousTraitantPage({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/admin/sous-traitants" style={{ color: 'var(--t3)', textDecoration: 'none', fontSize: 13 }}>
+          <Link href="/admin/sous-traitants" style={{ color: 'var(--t3)', textDecoration: 'none', fontSize: 13 }}>
             ← Sous-traitants
-          </a>
+          </Link>
           <span style={{ color: 'var(--t3)' }}>/</span>
           <span style={{ fontSize: 13, color: 'var(--t1)' }}>Nouveau</span>
         </div>
@@ -107,14 +108,14 @@ export default async function NouveauSousTraitantPage({
 
           <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
             <SubmitButton label="Créer le sous-traitant" pendingLabel="Création…" />
-            <a href="/admin/sous-traitants" style={{
+            <Link href="/admin/sous-traitants" style={{
               display: 'flex', alignItems: 'center',
               padding: '12px 20px', borderRadius: 9,
               background: 'var(--elevated)', border: '1px solid var(--t3)',
               fontSize: 13, color: 'var(--t2)', textDecoration: 'none',
             }}>
               Annuler
-            </a>
+            </Link>
           </div>
         </form>
       </div>

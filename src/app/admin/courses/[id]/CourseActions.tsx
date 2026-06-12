@@ -70,10 +70,14 @@ export default function CourseActions({
   useEffect(() => {
     const c = chauffeurs.find(ch => ch.id === selectedChauffeur)
     if (c?.sous_traitant_id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedST(c.sous_traitant_id)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStLockedFromChauffeur({ id: c.sous_traitant_id, nom: c.sous_traitant_nom ?? '' })
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStLockedFromChauffeur(null)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (selectedChauffeur) setSelectedST('')
     }
   }, [selectedChauffeur])

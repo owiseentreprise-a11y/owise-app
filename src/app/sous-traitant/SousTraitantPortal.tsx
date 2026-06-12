@@ -315,7 +315,7 @@ export default function SousTraitantPortal({
               borderRadius: 16, padding: '32px 24px', textAlign: 'center', marginBottom: 12,
             }}>
               <div style={{ fontSize: 28, marginBottom: 10 }}>🚘</div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 4 }}>Aucune mission aujourd'hui</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)', marginBottom: 4 }}>Aucune mission aujourd&apos;hui</div>
               <div style={{ fontSize: 12, color: 'var(--t3)' }}>Consultez le planning pour vos prochaines courses.</div>
             </div>
           )}

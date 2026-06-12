@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
 import NouvelleCourseForm from './NouvelleCourseForm'
@@ -8,7 +9,7 @@ export default async function NouvelleCourse() {
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, paramsRes, tarifsRes] = await Promise.all([
+  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, tarifsRes] = await Promise.all([
     supabase.from('clients').select('id, entreprise_nom, type_compte, profiles(prenom, nom)'),
     supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom)')
       .in('statut', ['disponible', 'hors_ligne']),
@@ -16,7 +17,6 @@ export default async function NouvelleCourse() {
     supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
-    supabase.from('parametres').select('*').eq('id', true).single(),
     supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km'),
   ])
 
@@ -34,7 +34,7 @@ export default async function NouvelleCourse() {
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', gap: 16,
       }}>
-        <a href="/admin/courses" style={{
+        <Link href="/admin/courses" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
         }}>
@@ -42,7 +42,7 @@ export default async function NouvelleCourse() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
           Courses
-        </a>
+        </Link>
         <div style={{ width: 1, height: 16, background: 'var(--t3)' }} />
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Nouvelle course</div>
       </div>
@@ -55,7 +55,6 @@ export default async function NouvelleCourse() {
           sousTraitants={sousTraitantsRes.data as any ?? []}
           zones={zonesRes.data as any ?? []}
           grille={grilleRes.data as any ?? []}
-          params={paramsRes.data as any}
           tarifs={tarifsRes.data as any ?? []}
           defaultDatetime={defaultDatetime}
         />

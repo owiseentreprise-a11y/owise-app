@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 const TABS = [
   { id: 'mentions',       label: 'Mentions légales' },
@@ -99,20 +100,20 @@ export default function MentionsLegalesClient() {
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} />
           <span style={{
             fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 19, fontWeight: 600, letterSpacing: '.1em', color: '#09091A',
           }}>OWISE</span>
-        </a>
-        <a href="/" style={{
+        </Link>
+        <Link href="/" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           fontSize: 12, color: '#6B6B6B', textDecoration: 'none',
           padding: '6px 12px', border: '1px solid rgba(0,0,0,.1)', borderRadius: 6,
         }}>
           ← Retour
-        </a>
+        </Link>
       </div>
 
       {/* Hero */}

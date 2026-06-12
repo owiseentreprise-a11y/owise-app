@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 import CourseActions from './CourseActions'
@@ -153,7 +154,7 @@ export default async function CourseDetailPage({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <a href="/admin/courses" style={{
+          <Link href="/admin/courses" style={{
             display: 'flex', alignItems: 'center', gap: 5,
             fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
           }}>
@@ -161,7 +162,7 @@ export default async function CourseDetailPage({
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
             Courses
-          </a>
+          </Link>
           <div style={{ width: 1, height: 14, background: 'var(--t3)' }} />
           <div style={{
             fontSize: 11, color: 'var(--t2)',
@@ -295,7 +296,7 @@ export default async function CourseDetailPage({
                 )}
                 {(course as any).heure_arrivee_vol && (
                   <div>
-                    <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>HEURE D'ARRIVÉE</div>
+                    <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>HEURE D&apos;ARRIVÉE</div>
                     <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                       {(course as any).heure_arrivee_vol}
                     </div>

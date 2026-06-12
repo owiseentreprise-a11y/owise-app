@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { loginAction } from './actions'
 
 const L = {
@@ -57,7 +58,7 @@ export default function LoginPage({
             boxShadow: '0 8px 24px rgba(201,168,76,.25)',
           }}>O</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
-          <div style={{ fontSize: 11, color: L.t2, marginTop: 4, letterSpacing: '.08em' }}>Espace d'administration</div>
+          <div style={{ fontSize: 11, color: L.t2, marginTop: 4, letterSpacing: '.08em' }}>Espace d&apos;administration</div>
         </div>
 
         {/* Bannières */}
@@ -127,9 +128,9 @@ export default function LoginPage({
         </form>
 
         <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <a href="/login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
+          <Link href="/login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
             Mot de passe oublié ?
-          </a>
+          </Link>
         </div>
 
         <div style={{

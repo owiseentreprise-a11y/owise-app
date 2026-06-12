@@ -673,7 +673,7 @@ export default function ChauffeurApp({
             </div>
             <div style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.6 }}>
               {dispo === 'disponible' ? (
-                <><span style={{ color: 'var(--grn)', fontWeight: 500 }}>● Vous êtes disponible</span><br/>En attente d'une course.</>
+                <><span style={{ color: 'var(--grn)', fontWeight: 500 }}>● Vous êtes disponible</span><br/>En attente d&apos;une course.</>
               ) : (
                 <>Passez en mode <strong style={{ color: 'var(--t1)' }}>Disponible</strong><br/>pour recevoir des courses.</>
               )}

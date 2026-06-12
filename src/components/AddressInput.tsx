@@ -29,6 +29,7 @@ export default function AddressInput({ name, placeholder, value = '', onChange, 
   const dropBg      = '#fff'
   const dropBorder  = isDark ? 'rgba(201,168,76,.25)' : 'rgba(0,0,0,.12)'
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setQuery(value) }, [value])
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import PrintButton from '@/components/PrintButton'
 import PayerButton from './PayerButton'
@@ -71,7 +72,7 @@ export default async function ClientFacturePage({
 
       {/* Retour + actions */}
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <a href="/espace-client" style={{
+        <Link href="/espace-client" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
         }}>
@@ -79,7 +80,7 @@ export default async function ClientFacturePage({
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
           Retour
-        </a>
+        </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {facture.statut !== 'payee' && <PayerButton factureId={facture.id} />}
           <PrintButton />
@@ -179,7 +180,7 @@ export default async function ClientFacturePage({
             <div style={{ display: 'flex', gap: 32 }}>
               <div>
                 <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 6 }}>
-                  Date d'émission
+                  Date d&apos;émission
                 </div>
                 <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t1)' }}>
                   {new Date(facture.date_emission).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}

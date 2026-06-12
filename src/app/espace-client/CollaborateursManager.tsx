@@ -157,7 +157,7 @@ export default function CollaborateursManager({ collaborateurs }: { collaborateu
         }}>
           <div style={{ fontSize: 12, color: 'var(--t3)', marginBottom: 4 }}>Aucun collaborateur enregistré.</div>
           <div style={{ fontSize: 11, color: 'var(--t2)' }}>
-            Ajoutez les contacts de votre équipe pour les identifier rapidement lors d'une réservation.
+            Ajoutez les contacts de votre équipe pour les identifier rapidement lors d&apos;une réservation.
           </div>
         </div>
       )}

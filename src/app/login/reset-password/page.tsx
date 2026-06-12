@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { resetPasswordAction } from '../actions'
 
 export default async function ResetPasswordPage({
@@ -70,12 +71,12 @@ export default async function ResetPasswordPage({
             <div style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.6, marginBottom: 24 }}>
               Consultez votre boîte mail et cliquez sur le lien pour définir un nouveau mot de passe.
             </div>
-            <a href="/login" style={{
+            <Link href="/login" style={{
               display: 'block', textAlign: 'center',
               fontSize: 12, color: 'var(--t2)', textDecoration: 'none',
             }}>
               ← Retour à la connexion
-            </a>
+            </Link>
           </div>
         ) : (
           <>
@@ -120,9 +121,9 @@ export default async function ResetPasswordPage({
             </form>
 
             <div style={{ marginTop: 20, textAlign: 'center' }}>
-              <a href="/login" style={{ fontSize: 12, color: 'var(--t3)', textDecoration: 'none' }}>
+              <Link href="/login" style={{ fontSize: 12, color: 'var(--t3)', textDecoration: 'none' }}>
                 ← Retour à la connexion
-              </a>
+              </Link>
             </div>
           </>
         )}
