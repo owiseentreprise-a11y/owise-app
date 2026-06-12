@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
+import { PHProvider } from './providers'
 import './globals.css'
 
 const FB_PIXEL_ID = '1688600002292509'
@@ -67,7 +68,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
       </head>
       <body className="h-full">
-        {children}
+        <PHProvider>
+          {children}
+        </PHProvider>
         <Analytics />
       </body>
     </html>
