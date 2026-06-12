@@ -5,9 +5,14 @@ export const dynamic = 'force-dynamic'
 const PH_HOST    = 'https://eu.posthog.com'
 const PH_PROJECT = '200343'
 
+let phError: string | null = null
+
 async function phQuery(query: string): Promise<unknown[][]> {
   const key = process.env.POSTHOG_PERSONAL_KEY
-  if (!key) return []
+  if (!key) {
+    phError = 'POSTHOG_PERSONAL_KEY manquante dans les variables Vercel'
+    return []
+  }
   try {
     const res = await fetch(`${PH_HOST}/api/projects/${PH_PROJECT}/query`, {
       method:  'POST',
@@ -15,10 +20,17 @@ async function phQuery(query: string): Promise<unknown[][]> {
       body:    JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
       cache:   'no-store',
     })
-    if (!res.ok) return []
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      phError = `PostHog API ${res.status}: ${body.slice(0, 200)}`
+      return []
+    }
     const j = await res.json() as { results?: unknown[][] }
     return j.results ?? []
-  } catch { return [] }
+  } catch (e) {
+    phError = `Erreur réseau PostHog: ${String(e)}`
+    return []
+  }
 }
 
 function num(v: unknown): number {
@@ -153,9 +165,9 @@ export default async function AnalyticsPage() {
         </h1>
         <p style={{ fontSize: 12, color: '#888' }}>
           Trafic owise.fr · 30 derniers jours · données PostHog
-          {noData && (
+          {noData && phError && (
             <span style={{ color: '#D95454', marginLeft: 8 }}>
-              — clé API manquante, configurez POSTHOG_PERSONAL_KEY dans Vercel
+              — {phError}
             </span>
           )}
         </p>
