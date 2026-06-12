@@ -379,6 +379,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       setBcPrice(result.prix)
       setBcIsKm(result.isKm)
       setBcLoading(false)
+      if (result.prix > 0) {
+        fetch('/api/estimations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adresse_depart:  bcDepart.label,
+            adresse_arrivee: bcArrivee.label,
+            vehicule:        NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline',
+            prix:            result.prix,
+            source:          'vitrine',
+          }),
+        }).catch(() => {})
+      }
     }, 900)
     return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps

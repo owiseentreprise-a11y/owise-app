@@ -401,9 +401,20 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
     if (prix !== null && !prixCalculéRef.current) {
       prixCalculéRef.current = true
       fbViewContent({ value: prix, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
+      fetch('/api/estimations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adresse_depart:  depart.label,
+          adresse_arrivee: arrivee.label,
+          vehicule,
+          prix:            Math.round(prix),
+          source:          'reservation',
+        }),
+      }).catch(() => {})
     }
     if (prix === null) prixCalculéRef.current = false
-  }, [prix, depart.label, arrivee.label])
+  }, [prix, depart.label, arrivee.label, vehicule])
 
   // Prix total : aller × 2 si aller-retour activé
   const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
