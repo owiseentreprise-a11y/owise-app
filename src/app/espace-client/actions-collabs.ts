@@ -16,9 +16,10 @@ export async function ajouterCollaborateur(formData: FormData) {
     client_id: user.id,
     nom,
     prenom,
-    tel:   (formData.get('tel')   as string).trim() || null,
-    email: (formData.get('email') as string).trim() || null,
-    poste: (formData.get('poste') as string).trim() || null,
+    tel:     (formData.get('tel')     as string).trim() || null,
+    email:   (formData.get('email')   as string).trim() || null,
+    poste:   (formData.get('poste')   as string).trim() || null,
+    adresse: (formData.get('adresse') as string).trim() || null,
   })
   revalidatePath('/espace-client')
 }

@@ -48,6 +48,7 @@ export async function demanderCourse(formData: FormData): Promise<void> {
 
   const dateParsed = new Date(date)
   if (isNaN(dateParsed.getTime())) redirect('/espace-client?error=champs-manquants')
+  if (dateParsed < new Date(Date.now() - 5 * 60_000)) redirect('/espace-client?error=champs-manquants')
 
   let clientId: string | null = null
   let collabId: string | null = null
@@ -123,8 +124,8 @@ export async function demanderCourse(formData: FormData): Promise<void> {
         adresseDepart: depart,
         adresseArrivee: arrivee,
         datePrevue: dateParsed.toISOString(),
-        typeVehicule: 'berline',
-        nbPassagers: 1,
+        typeVehicule: vehicule,
+        nbPassagers: passagers,
         refCourse,
       }) : Promise.resolve(),
       envoyerNotificationAdmin({
@@ -183,4 +184,60 @@ export async function noterCourse(courseId: string, note: number): Promise<{ ok:
   }
 
   return { ok: true }
+}
+
+export async function annulerCourseClient(courseId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const admin = createAdminClient()
+
+  // Vérifie que la course appartient à cet utilisateur et est annulable
+  const { data: course } = await admin
+    .from('courses')
+    .select('id, statut, chauffeur_id, adresse_depart, adresse_arrivee, date_prevue')
+    .eq('id', courseId)
+    .or(`client_id.eq.${user.id},collaborateur_id.eq.${user.id}`)
+    .eq('statut', 'en_attente')
+    .single()
+
+  if (!course) return { error: 'Course introuvable ou déjà prise en charge' }
+
+  await admin.from('courses').update({ statut: 'annulee' }).eq('id', courseId)
+  return {}
+}
+
+export async function modifierReservationClient(
+  courseId: string,
+  data: { date_prevue: string; nb_passagers: number }
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const dateParsed = new Date(data.date_prevue)
+  if (dateParsed < new Date(Date.now() - 5 * 60_000)) {
+    return { error: 'La date ne peut pas être dans le passé' }
+  }
+
+  const admin = createAdminClient()
+
+  const { data: course } = await admin
+    .from('courses')
+    .select('id, statut')
+    .eq('id', courseId)
+    .or(`client_id.eq.${user.id},collaborateur_id.eq.${user.id}`)
+    .eq('statut', 'en_attente')
+    .single()
+
+  if (!course) return { error: 'Course introuvable ou déjà prise en charge' }
+
+  const { error } = await admin.from('courses').update({
+    date_prevue:  data.date_prevue,
+    nb_passagers: data.nb_passagers,
+  }).eq('id', courseId)
+
+  if (error) return { error: error.message }
+  return {}
 }

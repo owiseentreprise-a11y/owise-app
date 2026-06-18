@@ -43,10 +43,12 @@ function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Z
       const z = zones.find(z => z.code === 'BVA')
       if (z) return z
     }
-    // "gare" dans l'adresse → zone gare (Gare du Nord, Gare de Lyon…)
+    // "gare" dans l'adresse → zone gare uniquement si Paris intramuros (CP 75xxx)
     if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
-      const gareZone = zones.find(z => z.type === 'gare')
-      if (gareZone) return gareZone
+      if (/^75/.test(codePostal)) {
+        const gareZone = zones.find(z => z.type === 'gare')
+        if (gareZone) return gareZone
+      }
     }
     // "paris" dans l'adresse → Paris intramuros (Z1)
     if (/\bparis\b/.test(lower)) {
@@ -440,8 +442,10 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
   function handleStep1() {
     if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
     if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
-    if (!date)                 return setStep1Error('Date et heure requises.')
-    if (new Date(date) < new Date()) return setStep1Error('La date de prise en charge doit être dans le futur.')
+    if (!date)                                                                     return setStep1Error('Date et heure requises.')
+    if (isNaN(new Date(date).getTime()))                                           return setStep1Error('Date invalide.')
+    if (new Date(date) < new Date())                                               return setStep1Error('La date de prise en charge doit être dans le futur.')
+    if (new Date(date) > new Date(Date.now() + 730 * 86400000))                   return setStep1Error('Date trop lointaine (max 2 ans).')
     // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
     if (!depart.codePostal && !zoneDepart && !depart.lat)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
     if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
@@ -469,6 +473,7 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
         nom, prenom, email, telephone,
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
+        distance_km:     distanceKm ?? undefined,
         aller_retour:    allerRetour,
         date_retour:     allerRetour ? dateRetour : '',
         num_vol_train:   numVolTrain || undefined,
@@ -485,6 +490,7 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
   const fmtDate = (iso: string) => {
     if (!iso) return ''
     const d = new Date(iso)
+    if (isNaN(d.getTime())) return ''
     return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
       + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   }
@@ -680,6 +686,7 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
                         }}
                         value={dateOnly}
                         min={new Date().toISOString().slice(0, 10)}
+                        max={new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10)}
                         onChange={e => handleDateChange(e.target.value)} />
                     </div>
                   </div>

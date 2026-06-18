@@ -2,7 +2,7 @@
 
 export type RoleUtilisateur = 'admin' | 'client' | 'chauffeur'
 export type StatutCourse = 'en_attente' | 'acceptee' | 'en_route' | 'prise_en_charge' | 'terminee' | 'annulee'
-export type TypeVehicule = 'berline' | 'berline_premium' | 'van_7' | 'grand_van_8'
+export type TypeVehicule = 'berline' | 'berline_premium' | 'van' | 'grand_van'
 export type StatutChauffeur = 'disponible' | 'en_course' | 'hors_ligne'
 export type TypeContrat = 'salarie' | 'sous_traitant'
 export type StatutFacture = 'en_attente' | 'payee' | 'retard'
@@ -230,6 +230,6 @@ export const STATUT_CHAUFFEUR_COLOR: Record<StatutChauffeur, string> = {
 export const TYPE_VEHICULE_LABEL: Record<TypeVehicule, string> = {
   berline:         'Berline',
   berline_premium: 'Berline Premium',
-  van_7:           'Van 7 places',
-  grand_van_8:     'Grand Van 8 pl.',
+  van:             'Van 7 places',
+  grand_van:       'Grand Van 8 pl.',
 }

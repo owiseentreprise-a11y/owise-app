@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -86,6 +86,15 @@ export default function CourseActions({
   const [notesSaved, setNotesSaved] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const [editOpen, setEditOpen] = useState(false)
+  const [editDate, setEditDate] = useState(course.date_prevue.slice(0, 16))
+  const [editVehicule, setEditVehicule] = useState(course.type_vehicule as string)
+  const [editPassagers, setEditPassagers] = useState(String(course.nb_passagers))
+  const [editDepart, setEditDepart] = useState(course.adresse_depart)
+  const [editArrivee, setEditArrivee] = useState(course.adresse_arrivee)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editSaved, setEditSaved] = useState(false)
 
   const s = STATUT_STYLE[course.statut]
   const transitions = STATUT_TRANSITIONS[course.statut]
@@ -282,6 +291,7 @@ export default function CourseActions({
               {chauffeurs.map(c => (
                 <option key={c.id} value={c.id}>
                   {c.prenom} {c.nom} — {c.vehicule}
+                  {c.sous_traitant_nom ? ` · ${c.sous_traitant_nom}` : ' · Owise'}
                   {c.statut === 'disponible' ? ' ✓' : c.statut === 'en_course' ? ' (en course)' : ' (hors ligne)'}
                 </option>
               ))}
@@ -573,6 +583,153 @@ export default function CourseActions({
           </div>
         )}
       </div>
+
+      {/* === MODIFIER LA COURSE === */}
+      {!isTerminal && (
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: editOpen ? 14 : 0 }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)' }}>
+              Modifier la course
+            </div>
+            <button
+              onClick={() => { setEditOpen(!editOpen); setEditError(null); setEditSaved(false) }}
+              style={{
+                fontSize: 11, padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
+                background: editOpen ? 'var(--elevated)' : 'rgba(201,168,76,.1)',
+                border: `1px solid ${editOpen ? 'var(--t3)' : 'rgba(201,168,76,.25)'}`,
+                color: editOpen ? 'var(--t2)' : 'var(--gold)',
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              {editOpen ? 'Fermer' : 'Modifier'}
+            </button>
+          </div>
+
+          {editOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Date & heure */}
+              <div>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>Date & heure</div>
+                <input
+                  type="datetime-local"
+                  value={editDate}
+                  onChange={e => setEditDate(e.target.value)}
+                  style={{
+                    width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                    colorScheme: 'dark',
+                  }}
+                />
+              </div>
+
+              {/* Véhicule + Passagers */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>Véhicule</div>
+                  <select
+                    value={editVehicule}
+                    onChange={e => setEditVehicule(e.target.value)}
+                    style={{
+                      width: '100%', padding: '9px 12px',
+                      background: 'var(--elevated)', border: '1px solid var(--t3)',
+                      borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  >
+                    <option value="berline">Berline</option>
+                    <option value="berline_premium">Berline Premium</option>
+                    <option value="van">Van 7 places</option>
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>Passagers</div>
+                  <input
+                    type="number" min={1} max={7}
+                    value={editPassagers}
+                    onChange={e => setEditPassagers(e.target.value)}
+                    style={{
+                      width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+                      background: 'var(--elevated)', border: '1px solid var(--t3)',
+                      borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Départ */}
+              <div>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>Adresse de départ</div>
+                <input
+                  type="text"
+                  value={editDepart}
+                  onChange={e => setEditDepart(e.target.value)}
+                  style={{
+                    width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                />
+              </div>
+
+              {/* Arrivée */}
+              <div>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>Adresse d&apos;arrivée</div>
+                <input
+                  type="text"
+                  value={editArrivee}
+                  onChange={e => setEditArrivee(e.target.value)}
+                  style={{
+                    width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                />
+              </div>
+
+              {editError && (
+                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+                  {editError}
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setEditError(null); setEditSaved(false)
+                  startTransition(async () => {
+                    const res = await modifierCourseDetails(course.id, {
+                      date_prevue:    editDate,
+                      type_vehicule:  editVehicule,
+                      nb_passagers:   parseInt(editPassagers) || 1,
+                      adresse_depart: editDepart,
+                      adresse_arrivee: editArrivee,
+                    })
+                    if (res?.error) { setEditError(res.error); return }
+                    setEditSaved(true)
+                    setEditOpen(false)
+                    router.refresh()
+                  })
+                }}
+                disabled={pending}
+                style={{
+                  width: '100%', padding: '10px', borderRadius: 8, border: 'none', cursor: pending ? 'wait' : 'pointer',
+                  background: editSaved ? 'rgba(61,184,122,.15)' : 'var(--gold)',
+                  color: editSaved ? 'var(--grn)' : 'var(--base)',
+                  fontSize: 12, fontWeight: 600,
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                  opacity: pending ? .6 : 1,
+                }}
+              >
+                {pending ? 'Sauvegarde…' : 'Sauvegarder les modifications'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* === NOTES === */}
       <div style={{

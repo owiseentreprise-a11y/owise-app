@@ -229,6 +229,32 @@ export async function modifierNotes(courseId: string, notes: string): Promise<vo
   revalidatePath(`/admin/courses/${courseId}`)
 }
 
+export async function modifierCourseDetails(
+  courseId: string,
+  data: {
+    date_prevue: string
+    type_vehicule: string
+    nb_passagers: number
+    adresse_depart: string
+    adresse_arrivee: string
+  }
+): Promise<{ error?: string } | void> {
+  const supabase = await requireAdminClient()
+  if (!data.adresse_depart || !data.adresse_arrivee || !data.date_prevue) {
+    return { error: 'Champs obligatoires manquants' }
+  }
+  const { error } = await supabase.from('courses').update({
+    date_prevue:    data.date_prevue,
+    type_vehicule:  data.type_vehicule,
+    nb_passagers:   data.nb_passagers,
+    adresse_depart: data.adresse_depart,
+    adresse_arrivee: data.adresse_arrivee,
+  }).eq('id', courseId)
+  if (error) return { error: error.message }
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+}
+
 export async function supprimerCourse(courseId: string): Promise<{ error?: string }> {
   const supabase = await requireAdminClient()
   // Récupérer le chauffeur avant suppression pour remettre son statut

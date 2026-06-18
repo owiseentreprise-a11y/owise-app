@@ -39,6 +39,11 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     return { error: 'Champs obligatoires manquants' }
   }
 
+  const dateParsed = new Date(date_prevue)
+  if (dateParsed < new Date(Date.now() - 15 * 60_000)) {
+    return { error: 'La date de prise en charge est dans le passé' }
+  }
+
   const { error, data: newCourse } = await supabase.from('courses').insert({
     adresse_depart,
     adresse_arrivee,

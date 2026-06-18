@@ -14,8 +14,8 @@ export async function supprimerDevis(id: string) {
 const VH_MAP: Record<string, string> = {
   'Berline':         'berline',
   'Berline Premium': 'berline_premium',
-  'Van 7 places':    'van_7',
-  'Grand Van':       'grand_van_8',
+  'Van 7 places':    'van',
+  'Grand Van':       'grand_van',
 }
 
 export async function convertirEnCourse(devis: {

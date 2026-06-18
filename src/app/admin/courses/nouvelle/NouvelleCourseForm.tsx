@@ -17,8 +17,8 @@ type ClientOption = {
   id: string; type_compte: string; entreprise_nom: string | null
   profiles: { prenom: string; nom: string } | null
 }
-type CollabOption = { id: string; client_id: string; poste: string | null; profiles: { prenom: string; nom: string } | null }
-type ChauffeurOption = { id: string; statut: string; vehicule_marque: string | null; vehicule_modele: string | null; profiles: { prenom: string; nom: string } | null }
+type CollabOption = { id: string; client_id: string; nom: string | null; prenom: string | null; poste: string | null }
+type ChauffeurOption = { id: string; statut: string; vehicule_marque: string | null; vehicule_modele: string | null; sous_traitant_id: string | null; profiles: { prenom: string; nom: string } | null }
 type SousTraitantOption = { id: string; nom: string }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Z
     if (lower.includes('beauvais')) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z
     }
-    if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
+    if ((lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) && /^75/.test(codePostal)) {
       const z = zones.find(z => z.type === 'gare'); if (z) return z
     }
     if (/\bparis\b/.test(lower)) {
@@ -241,6 +241,21 @@ export default function NouvelleCourseForm({
   const [numVolTrain, setNumVolTrain] = useState('')
   const [terminal, setTerminal]       = useState('')
   const [heureArrivee, setHeureArrivee] = useState('')
+  const [chauffeurId, setChauffeurId]         = useState('')
+  const [sousTraitantId, setSousTraitantId]   = useState('')
+  const [collaborateurId, setCollaborateurId] = useState('')
+
+  function handleChauffeurChange(id: string) {
+    setChauffeurId(id)
+    const c = chauffeurs.find((c: ChauffeurOption) => c.id === id)
+    if (c?.sous_traitant_id) setSousTraitantId(c.sous_traitant_id)
+    else setSousTraitantId('')
+  }
+
+  function handleClientChange(id: string) {
+    setClientId(id)
+    setCollaborateurId('')
+  }
 
   const activeZones = useMemo(() => zones.filter(z => z.code !== 'HORS'), [zones])
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart,  activeZones])
@@ -266,9 +281,11 @@ export default function NouvelleCourseForm({
 
   const prixFinal = prixManuel !== '' ? parseFloat(prixManuel) : prixAuto
 
-  const selectedClient = clients.find(c => c.id === clientId)
-  const isEntreprise   = selectedClient?.type_compte === 'entreprise'
-  const filteredCollabs = collabs.filter(c => c.client_id === clientId)
+  const selectedClient    = clients.find(c => c.id === clientId)
+  const isEntreprise      = selectedClient?.type_compte === 'entreprise'
+  const filteredCollabs   = collabs.filter(c => c.client_id === clientId)
+  const selectedChauffeur = chauffeurs.find((c: ChauffeurOption) => c.id === chauffeurId)
+  const isInternalChauffeur = !!chauffeurId && !selectedChauffeur?.sous_traitant_id
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -566,7 +583,7 @@ export default function NouvelleCourseForm({
             <>
               <div style={{ marginBottom: 12 }}>
                 <label style={lbl}>Client (compte enregistré)</label>
-                <select name="client_id" value={clientId} onChange={e => setClientId(e.target.value)} style={sel}>
+                <select name="client_id" value={clientId} onChange={e => handleClientChange(e.target.value)} style={sel}>
                   <option value="">— Non assigné —</option>
                   {clients.map(c => {
                     const nom = c.type_compte === 'entreprise' ? (c.entreprise_nom ?? '—') : `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
@@ -574,15 +591,18 @@ export default function NouvelleCourseForm({
                   })}
                 </select>
               </div>
-              {isEntreprise && filteredCollabs.length > 0 && (
+              {isEntreprise && (
                 <div>
                   <label style={lbl}>Collaborateur voyageur</label>
-                  <select name="collaborateur_id" style={sel}>
-                    <option value="">— Aucun —</option>
-                    {filteredCollabs.map(c => {
-                      const nom = c.profiles ? `${c.profiles.prenom} ${c.profiles.nom}` : '—'
-                      return <option key={c.id} value={c.id}>{nom}{c.poste ? ` — ${c.poste}` : ''}</option>
-                    })}
+                  <select name="collaborateur_id" value={collaborateurId} onChange={e => setCollaborateurId(e.target.value)} style={sel}>
+                    <option value="">— Aucun (course entreprise générale) —</option>
+                    {filteredCollabs.length === 0
+                      ? <option disabled value="">Aucun collaborateur enregistré pour ce compte</option>
+                      : filteredCollabs.map(c => {
+                          const nom = `${c.prenom ?? ''} ${c.nom ?? ''}`.trim() || '—'
+                          return <option key={c.id} value={c.id}>{nom}{c.poste ? ` — ${c.poste}` : ''}</option>
+                        })
+                    }
                   </select>
                 </div>
               )}
@@ -626,11 +646,11 @@ export default function NouvelleCourseForm({
 
         {/* Chauffeur / Sous-traitant */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
+          <div style={isInternalChauffeur ? { gridColumn: '1 / -1' } : {}}>
             <label style={lbl}>Chauffeur</label>
-            <select name="chauffeur_id" style={sel}>
+            <select name="chauffeur_id" style={sel} value={chauffeurId} onChange={e => handleChauffeurChange(e.target.value)}>
               <option value="">— Non assigné —</option>
-              {chauffeurs.map((c: any) => {
+              {chauffeurs.map((c: ChauffeurOption) => {
                 const nom = `${c.profiles?.prenom ?? ''} ${c.profiles?.nom ?? ''}`.trim()
                 const veh = `${c.vehicule_marque ?? ''} ${c.vehicule_modele ?? ''}`.trim()
                 return (
@@ -641,21 +661,25 @@ export default function NouvelleCourseForm({
               })}
             </select>
           </div>
-          <div>
-            <label style={lbl}>Sous-traitant</label>
-            <select name="sous_traitant_id" style={sel}>
-              <option value="">— Aucun —</option>
-              {sousTraitants.map((st: any) => (
-                <option key={st.id} value={st.id}>{st.nom}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={lbl}>Prix sous-traitant (€)</label>
-            <input type="number" name="prix_sous_traitant" min={0} step={0.5}
-              placeholder="0.00"
-              style={inp} />
-          </div>
+          {!isInternalChauffeur && (
+            <div>
+              <label style={lbl}>Sous-traitant</label>
+              <select name="sous_traitant_id" style={sel} value={sousTraitantId} onChange={e => setSousTraitantId(e.target.value)}>
+                <option value="">— Aucun —</option>
+                {sousTraitants.map((st: SousTraitantOption) => (
+                  <option key={st.id} value={st.id}>{st.nom}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {!isInternalChauffeur && (
+            <div>
+              <label style={lbl}>Prix sous-traitant (€)</label>
+              <input type="number" name="prix_sous_traitant" min={0} step={0.5}
+                placeholder="0.00"
+                style={inp} />
+            </div>
+          )}
         </div>
 
         {/* Notes */}

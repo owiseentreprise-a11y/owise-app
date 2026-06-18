@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm } from '@/lib/calcPrix'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -53,6 +53,7 @@ export async function createReservationCheckout(data: {
   terminal?: string
   heure_arrivee_vol?: string
   code_parrainage?: string
+  distance_km?: number
 }): Promise<{ error?: string } | void> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
@@ -65,6 +66,13 @@ export async function createReservationCheckout(data: {
     data.type_vehicule,
     data.date_prevue,
   )
+  // Fallback km-based si pas de grille (ex : Creil → Gare de Lyon)
+  if ((!prixServeur || prixServeur <= 0) && data.distance_km && data.distance_km > 0) {
+    const admin = createAdminClient()
+    const { data: tarifs } = await admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe')
+    const dist = Math.min(Math.max(data.distance_km, 1), 600) // borne 1–600 km
+    prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [])
+  }
   if (!prixServeur || prixServeur <= 0) {
     console.error('[createReservation] prix serveur introuvable', {
       zone_depart_id: data.zone_depart_id,

@@ -11,9 +11,9 @@ export default async function NouvelleCourse() {
 
   const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, tarifsRes] = await Promise.all([
     supabase.from('clients').select('id, entreprise_nom, type_compte, profiles(prenom, nom)'),
-    supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, profiles(prenom, nom)')
+    supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, sous_traitant_id, profiles(prenom, nom)')
       .in('statut', ['disponible', 'hors_ligne']),
-    supabase.from('collaborateurs').select('id, client_id, poste, profiles(prenom, nom)'),
+    supabase.from('collaborateurs').select('id, client_id, nom, prenom, poste'),
     supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),

@@ -14,7 +14,7 @@ function detectZoneMin(cp: string, label: string, zones: ZoneMin[]): ZoneMin | n
   if (/charles de gaulle|roissy|\bcdg\b/i.test(l)) return zones.find(z => z.code === 'CDG') ?? null
   if (/\borly\b/i.test(l))     return zones.find(z => z.code === 'ORY') ?? null
   if (/\bbeauvais\b/i.test(l)) return zones.find(z => z.code === 'BVA') ?? null
-  if (/\bgare\b/i.test(l))     return zones.find(z => z.type === 'gare') ?? null
+  if (/\bgare\b/i.test(l) && /^75/.test(cp)) return zones.find(z => z.type === 'gare') ?? null
   if (/\bparis\b/i.test(l))    return zones.find(z => z.code === 'Z1')  ?? null
   if (!cp) return null
   const sorted = [...zones].sort((a, b) =>
@@ -488,75 +488,60 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   }
 
   async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
-    const v    = getVehicle(bcPax)
-    const h    = parseInt((bcTime || '09:00').split(':')[0])
-    const dest = bcArrivee.label.toLowerCase()
-    const dep  = bcDepart.label.toLowerCase()
-
-    // 1. Forfait aéroport — uniquement si les DEUX adresses ont une zone connue
+    const v     = getVehicle(bcPax)
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
-    const isCDGAddr  = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(dep)
-    const isOrlyAddr = /\borly\b/i.test(dest) || /\borly\b/i.test(dep)
-    const isBVAAddr  = /\bbeauvais\b/i.test(dest) || /\bbeauvais\b/i.test(dep)
-    if (tarif && (isCDGAddr || isOrlyAddr || isBVAAddr)) {
-      // Vérifier que l'autre adresse (non-aéroport) est dans une zone connue
-      const gcAddr = async (addr: BcAddr): Promise<BcAddr> => {
-        if (addr.lat && addr.cp) return addr
-        if (addr.lat && !addr.cp) {
-          // Coordonnées dispo mais pas de cp — géocode pour récupérer le cp
-          const gc = await geocodeAddress(addr.label)
-          return gc ? { ...addr, cp: gc.cp } : addr
-        }
-        const gc = await geocodeAddress(addr.label)
-        return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
-      }
-      const airportIsArr = /cdg|roissy|charles de gaulle|orly|beauvais/i.test(bcArrivee.label)
-      const otherRaw = airportIsArr ? bcDepart : bcArrivee
-      const other    = await gcAddr(otherRaw)
-      const otherZone = detectZoneMin(other.cp ?? '', other.label, zonesProp)
-      if (otherZone) {
+
+    // Géocode une adresse pour obtenir lat/lng + cp (résultats mis en cache par geocodeAddress)
+    const gcFull = async (addr: BcAddr): Promise<BcAddr> => {
+      if (addr.lat && addr.cp) return addr
+      const gc = await geocodeAddress(addr.label)
+      return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
+    }
+
+    if (tarif && bcDepart.label && bcArrivee.label) {
+      const [depGc, arrGc] = await Promise.all([gcFull(bcDepart), gcFull(bcArrivee)])
+      // Détection de zone via cp (couvre "Terminal 2E" → 95700 → CDG) puis label en fallback
+      const zoneDep = detectZoneMin(depGc.cp ?? '', depGc.label, zonesProp)
+      const zoneArr = detectZoneMin(arrGc.cp ?? '', arrGc.label, zonesProp)
+
+      if (zoneDep && zoneArr) {
         // Priorité 1 : grille zone-à-zone
-        const airportCode = isCDGAddr ? 'CDG' : isOrlyAddr ? 'ORY' : 'BVA'
-        const airportZone = zonesProp.find(z => z.code === airportCode)
-        if (airportZone && grilleProp.length > 0) {
+        if (grilleProp.length > 0) {
           const cell = grilleProp.find(g =>
-            (g.zone_depart_id === airportZone.id && g.zone_arrivee_id === otherZone.id) ||
-            (g.zone_depart_id === otherZone.id   && g.zone_arrivee_id === airportZone.id)
+            (g.zone_depart_id === zoneDep.id && g.zone_arrivee_id === zoneArr.id) ||
+            (g.zone_depart_id === zoneArr.id  && g.zone_arrivee_id === zoneDep.id)
           )
           if (cell && cell.prix_berline) {
             const cle  = NOM_VERS_CLE[v.name] ?? 'berline'
             const coef = cle === 'berline_premium' ? 1.5 : cle === 'van' ? 1.7 : 1
-            const prix = Number(cell.prix_berline) * coef
-            return { prix: Math.round(prix), isKm: false }
+            return { prix: Math.round(Number(cell.prix_berline) * coef), isKm: false }
           }
         }
-        // Fallback : tarif fixe aéroport
-        const fixe = isCDGAddr ? Number(tarif.cdg_fixe) : isOrlyAddr ? Number(tarif.orly_fixe) : Number(tarif.beauvais_fixe)
-        if (fixe > 0) {
-          return { prix: Math.round(fixe), isKm: false }
+        // Priorité 2 : forfait fixe si l'une des zones est un aéroport
+        const airportZone = [zoneDep, zoneArr].find(z => z.type === 'aeroport')
+        if (airportZone) {
+          const fixe = airportZone.code === 'CDG' ? Number(tarif.cdg_fixe)
+                     : airportZone.code === 'ORY' ? Number(tarif.orly_fixe)
+                     : Number(tarif.beauvais_fixe)
+          if (fixe > 0) return { prix: Math.round(fixe), isKm: false }
         }
       }
-      // Pas de zone connue → on passe au calcul km
-    }
 
-    // 2. Tarif km via Google Distance Matrix — géocode si pas de coordonnées
-    const gcForKm = async (addr: BcAddr): Promise<BcAddr> => {
-      if (addr.lat && addr.lng) return addr
-      const gc = await geocodeAddress(addr.label)
-      return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng } : addr
-    }
-    if (tarif && bcDepart.label && bcArrivee.label) {
-      const [dep, arr] = await Promise.all([gcForKm(bcDepart), gcForKm(bcArrivee)])
-      const distKm = await fetchGoogleDist(dep, arr)
-      if (distKm !== null) {
-        const cle = NOM_VERS_CLE[v.name] ?? 'berline'
-        const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-        const px = calculerPrixKm(distKm, cle, fakeDate, tarifsProp)
-        if (px !== null) return { prix: Math.round(px), isKm: true }
+      // Tarif km via Google Distance Matrix
+      if (depGc.lat && depGc.lng && arrGc.lat && arrGc.lng) {
+        const distKm = await fetchGoogleDist(depGc, arrGc)
+        if (distKm !== null) {
+          const cle = NOM_VERS_CLE[v.name] ?? 'berline'
+          const fakeDate = `2000-01-03T${bcTime || '09:00'}`
+          const px = calculerPrixKm(distKm, cle, fakeDate, tarifsProp)
+          if (px !== null) return { prix: Math.round(px), isKm: true }
+        }
       }
     }
 
-    // 3. Fallback base price
+    // Fallback base price
+    const dest = bcArrivee.label.toLowerCase()
+    const dep  = bcDepart.label.toLowerCase()
     let base = v.base
     if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
     else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
@@ -1130,29 +1115,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             const rows = [
               {
                 icon: '✈', label: 'CDG / Roissy',
-                sub: 'Aéroport Charles de Gaulle',
+                sub: 'Paris → Aéroport Charles de Gaulle',
                 berline: berline?.cdg_fixe, premium: premium?.cdg_fixe, van: van?.cdg_fixe,
                 isFixed: true,
               },
               {
                 icon: '✈', label: 'Orly',
-                sub: 'Aéroport d\'Orly',
+                sub: 'Paris → Aéroport d\'Orly',
                 berline: berline?.orly_fixe, premium: premium?.orly_fixe, van: van?.orly_fixe,
                 isFixed: true,
               },
               {
                 icon: '✈', label: 'Beauvais-Tillé',
-                sub: 'Aéroport de Beauvais',
+                sub: 'Paris → Aéroport de Beauvais',
                 berline: berline?.beauvais_fixe, premium: premium?.beauvais_fixe, van: van?.beauvais_fixe,
                 isFixed: true,
-              },
-              {
-                icon: '🚉', label: 'Gares parisiennes',
-                sub: 'Nord, Lyon, Montparnasse…',
-                berline: berline ? Math.round(Number(berline.prise_en_charge) + 10 * Number(berline.prix_km)) : null,
-                premium: premium ? Math.round(Number(premium.prise_en_charge) + 10 * Number(premium.prix_km)) : null,
-                van:     van     ? Math.round(Number(van.prise_en_charge)     + 10 * Number(van.prix_km))     : null,
-                isFixed: false,
               },
             ]
 
@@ -1165,7 +1142,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   borderBottom:'1px solid rgba(0,0,0,.09)',
                   padding:'14px 24px',
                 }}>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#6B6B6B' }}>Destination</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#6B6B6B' }}>Trajet</div>
                   {[
                     { label:'Berline', emoji:'🚘' },
                     { label:'Premium', emoji:'⭐' },
@@ -1209,36 +1186,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                 ))}
 
-                {/* Ligne tarif km */}
-                <div style={{
-                  display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
-                  padding:'18px 24px', alignItems:'center',
-                  background:'rgba(0,0,0,.03)',
-                  borderTop:'1px solid rgba(0,0,0,.09)',
-                }}>
-                  <div>
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span style={{ fontSize:18 }}>📍</span>
-                      <span style={{ fontSize:14, fontWeight:600, color:'#09091A' }}>Autre destination</span>
-                    </div>
-                    <div style={{ fontSize:11, color:'#6B6B6B', marginTop:2, paddingLeft:26 }}>Tarif calculé selon la distance réelle</div>
-                  </div>
-                  {[berline, premium, van].map((t, j) => (
-                    <div key={j} style={{ textAlign:'center' }}>
-                      {t ? (
-                        <div>
-                          <span style={{ fontFamily:"'Courier New',monospace", fontSize:16, fontWeight:700, color:'#C9A84C' }}>
-                            {Number(t.prix_km).toFixed(2)}
-                          </span>
-                          <span style={{ fontSize:11, color:'#848499' }}>€/km</span>
-                          <div style={{ fontSize:9, color:'rgba(0,0,0,.4)', marginTop:1 }}>
-                            + {Number(t.prise_en_charge).toFixed(0)}€ prise en charge
-                          </div>
-                        </div>
-                      ) : <span style={{ color:'#3F3F5A' }}>—</span>}
-                    </div>
-                  ))}
-                </div>
               </div>
             )
           })()}
@@ -1246,7 +1193,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           {/* Notes + CTA */}
           <div className="reveal" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:24, flexWrap:'wrap', gap:16 }}>
             <div style={{ fontSize:12, color:'#6B6B6B', display:'flex', flexDirection:'column', gap:4 }}>
-              <span>⏰ Majoration nuit +20% (22h – 6h) · 🧳 Bagages inclus · ✈ Suivi vol en temps réel</span>
+              <span>🧳 Bagages inclus · ✈ Suivi vol en temps réel</span>
               <span>💳 Paiement sécurisé par carte en ligne · 📞 Réservation aussi par WhatsApp</span>
             </div>
             <button

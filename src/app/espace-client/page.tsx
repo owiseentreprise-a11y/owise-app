@@ -5,6 +5,7 @@ import CollaborateursManager from './CollaborateursManager'
 import NotationCourse from './NotationCourse'
 import ClientRealtime from './ClientRealtime'
 import ParrainageWidget from './ParrainageWidget'
+import CourseActionsClient from './CourseActionsClient'
 import { getOrCreateParrainageCode, getParrainageStats } from './actions-parrainage'
 
 export const dynamic = 'force-dynamic'
@@ -66,7 +67,7 @@ export default async function EspaceClientPage({
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
   const baseQuery = supabase
     .from('courses')
-    .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, note_client, chauffeur_id, chauffeurs(profiles(prenom, nom))')
+    .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, note_client, chauffeur_id, chauffeurs(profiles(prenom, nom))')
     .order('date_prevue', { ascending: false })
     .limit(50)
 
@@ -103,8 +104,9 @@ export default async function EspaceClientPage({
   const factures = (facturesRes.data ?? []) as any[]
   const collaborateurs = (collabsRes.data ?? []) as any[]
 
-  const enCours = list.filter(c => ['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
-  const historique = list.filter(c => !['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
+  const enCours   = list.filter(c => ['acceptee', 'en_route', 'prise_en_charge'].includes(c.statut))
+  const enAttente = list.filter(c => c.statut === 'en_attente')
+  const historique = list.filter(c => ['terminee', 'annulee'].includes(c.statut))
 
   // Parrainage — créer le code si nécessaire + stats
   const [parrainageCode, parrainageStats] = await Promise.all([
@@ -133,6 +135,18 @@ export default async function EspaceClientPage({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {enCours.map(c => <CourseCard key={c.id} course={c} highlight />)}
+          </div>
+        </div>
+      )}
+
+      {/* Réservations en attente — modifiables/annulables */}
+      {enAttente.length > 0 && (
+        <div>
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--amb)', fontWeight: 500, marginBottom: 12 }}>
+            En attente de confirmation
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {enAttente.map(c => <CourseCard key={c.id} course={c} highlight />)}
           </div>
         </div>
       )}
@@ -315,6 +329,14 @@ function CourseCard({ course, highlight = false }: { course: any; highlight?: bo
       {/* Widget de notation */}
       {peutNoter && (
         <NotationCourse courseId={course.id} chauffeurNom={chauffeurNom} />
+      )}
+      {/* Actions client — uniquement pour les courses en attente */}
+      {course.statut === 'en_attente' && (
+        <CourseActionsClient
+          courseId={course.id}
+          datePrevue={course.date_prevue}
+          nbPassagers={(course as any).nb_passagers ?? 1}
+        />
       )}
     </div>
   )
