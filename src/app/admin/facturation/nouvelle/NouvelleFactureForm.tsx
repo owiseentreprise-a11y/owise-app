@@ -76,8 +76,8 @@ export default function NouvelleFactureForm({
   }
 
   const selectedCourses = clientCourses.filter(c => checked.has(c.id))
-  const totalHT = selectedCourses.reduce((s, c) => s + (c.prix_final ?? 0), 0)
-  const totalTTC = totalHT * (1 + tauxTva / 100)
+  const totalTTC = selectedCourses.reduce((s, c) => s + (c.prix_final ?? 0), 0)
+  const totalHT = totalTTC / (1 + tauxTva / 100)
 
   const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
