@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     const clientNom = client?.type_compte === 'entreprise'
       ? (client.entreprise_nom ?? '')
       : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : ''
-    const collabNom = collab?.profiles ? `${collab.profiles.prenom} ${collab.profiles.nom}` : ''
+    const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() : ''
     const assigneNom = chauffeur?.profiles
       ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
       : st?.nom ? `[ST] ${st.nom}` : ''

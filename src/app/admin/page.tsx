@@ -232,7 +232,7 @@ export default async function AdminDashboard() {
               {demandesCollaborateur.slice(0, 4).map((c: any) => {
                 const collab = c.collaborateurs
                 const client = c.clients
-                const collabNom = collab?.profiles ? `${collab.profiles.prenom} ${collab.profiles.nom}` : '—'
+                const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || '—' : '—'
                 const entreprise = client?.entreprise_nom ?? '—'
                 const date = new Date(c.date_prevue)
                 return (

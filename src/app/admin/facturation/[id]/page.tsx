@@ -193,8 +193,8 @@ export default async function FactureDetailPage({
               </div>
               {courses.map((course: any) => {
                 const collab = course.collaborateurs
-                const collabNom = collab?.profiles
-                  ? `${collab.profiles.prenom} ${collab.profiles.nom}`
+                const collabNom = collab
+                  ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || null
                   : null
                 return (
                   <div key={course.id} style={{
