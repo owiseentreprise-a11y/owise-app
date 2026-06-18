@@ -4,7 +4,9 @@
  * vérifie l'affichage admin + les 3 vues client, puis nettoie tout.
  */
 import puppeteer from 'puppeteer-core'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
+
+const KEEP = process.argv.includes('--keep')
 
 const env = readFileSync(new URL('./.env.local', import.meta.url), 'utf8')
 for (const l of env.split('\n')) { const m = l.match(/^([^#=]+)=(.*)$/); if (m) process.env[m[1].trim()] = m[2].trim() }
@@ -34,22 +36,31 @@ function section(s) { console.log(`\n\x1b[1m\x1b[36m====  ${s}  ====\x1b[0m`) }
 
 const created = { authUsers: [], collaborateurs: [], courses: [], factures: [], stripePaymentLinkId: null }
 
-async function cleanup() {
+async function cleanup(state) {
   section('NETTOYAGE — suppression des données factices')
-  if (created.factures.length)        { await sb.from('factures').delete().in('id', created.factures); ok(`${created.factures.length} facture(s) supprimée(s)`) }
-  if (created.courses.length)         { await sb.from('courses').delete().in('id', created.courses); ok(`${created.courses.length} course(s) supprimée(s)`) }
-  if (created.collaborateurs.length)  { await sb.from('collaborateurs').delete().in('id', created.collaborateurs); ok(`${created.collaborateurs.length} collaborateur(s) supprimé(s)`) }
-  for (const id of created.authUsers) {
+  if (state.factures.length)        { await sb.from('factures').delete().in('id', state.factures); ok(`${state.factures.length} facture(s) supprimée(s)`) }
+  if (state.courses.length)         { await sb.from('courses').delete().in('id', state.courses); ok(`${state.courses.length} course(s) supprimée(s)`) }
+  if (state.collaborateurs.length)  { await sb.from('collaborateurs').delete().in('id', state.collaborateurs); ok(`${state.collaborateurs.length} collaborateur(s) supprimé(s)`) }
+  for (const id of state.authUsers) {
     await sb.from('clients').delete().eq('id', id)
     await sb.from('profiles').delete().eq('id', id)
     await sb.auth.admin.deleteUser(id).catch(() => {})
   }
-  if (created.authUsers.length) ok(`${created.authUsers.length} compte(s) auth + profil + client supprimé(s)`)
-  if (created.stripePaymentLinkId) {
-    await stripe.paymentLinks.update(created.stripePaymentLinkId, { active: false }).catch(() => {})
+  if (state.authUsers.length) ok(`${state.authUsers.length} compte(s) auth + profil + client supprimé(s)`)
+  if (state.stripePaymentLinkId) {
+    await stripe.paymentLinks.update(state.stripePaymentLinkId, { active: false }).catch(() => {})
     ok('Lien de paiement Stripe TEST désactivé')
   }
 }
+
+if (process.argv.includes('--cleanup-only')) {
+  const state = JSON.parse(readFileSync(new URL('./test-facturation-state.json', import.meta.url), 'utf8'))
+  await cleanup(state)
+  console.log('\nNettoyage terminé.\n')
+  process.exit(0)
+}
+
+const info = {}
 
 try {
   // ════════════════════════════════════════════════════════
@@ -57,6 +68,7 @@ try {
   // ════════════════════════════════════════════════════════
 
   const entrepriseEmail = `test-entreprise-${rand}@owise-test.local`
+  info.entrepriseEmail = entrepriseEmail
   const { data: entAuth, error: entAuthErr } = await sb.auth.admin.createUser({
     email: entrepriseEmail, password: TEST_PASSWORD, email_confirm: true,
     app_metadata: { role: 'client' }, user_metadata: { prenom: 'Test', nom: 'Entreprise' },
@@ -69,6 +81,7 @@ try {
   ok(`Entreprise : ${entrepriseEmail} (${entId.slice(-6)})`)
 
   const particulierEmail = `test-particulier-${rand}@owise-test.local`
+  info.particulierEmail = particulierEmail
   const { data: partAuth, error: partAuthErr } = await sb.auth.admin.createUser({
     email: particulierEmail, password: TEST_PASSWORD, email_confirm: true,
     app_metadata: { role: 'client' }, user_metadata: { prenom: 'Jean', nom: 'Particulier' },
@@ -81,6 +94,7 @@ try {
   ok(`Particulier : ${particulierEmail} (${partId.slice(-6)})`)
 
   const collabEmail = `test-collab-${rand}@owise-test.local`
+  info.collabEmail = collabEmail
   const { data: collabAuth, error: collabAuthErr } = await sb.auth.admin.createUser({
     email: collabEmail, password: TEST_PASSWORD, email_confirm: true,
     app_metadata: { role: 'collaborateur', client_id: entId }, user_metadata: { prenom: 'Marie', nom: 'Collab' },
@@ -152,6 +166,8 @@ try {
   }).select('id').single()
   if (factErr || !facture) throw new Error('Création facture: ' + factErr?.message)
   created.factures.push(facture.id)
+  info.factureId = facture.id
+  info.numero = numero
   ok(`Facture ${numero} créée — ${montantTtc}€ TTC (HT ${montantHt}€)`)
 
   try {
@@ -302,7 +318,20 @@ try {
   fail(`ERREUR FATALE : ${e.message}`)
   console.error(e)
 } finally {
-  await cleanup()
+  if (KEEP) {
+    writeFileSync(new URL('./test-facturation-state.json', import.meta.url), JSON.stringify(created, null, 2))
+    section('DONNÉES CONSERVÉES (--keep) — à vérifier dans l\'admin et l\'espace-client')
+    console.log(`  Admin facturation     : https://owise.fr/admin/facturation/${info.factureId ?? ''}`)
+    console.log(`  Numéro facture        : ${info.numero ?? '?'}`)
+    console.log(`  Login client-login    : https://owise.fr/client-login`)
+    console.log(`  Entreprise            : ${info.entrepriseEmail ?? '?'}  /  ${TEST_PASSWORD}`)
+    console.log(`  Collaborateur (auth)  : ${info.collabEmail ?? '?'}  /  ${TEST_PASSWORD}`)
+    console.log(`  Particulier           : ${info.particulierEmail ?? '?'}  /  ${TEST_PASSWORD}`)
+    console.log('  État sauvegardé dans test-facturation-state.json')
+    console.log('  Pour nettoyer plus tard : node test-facturation-complet.mjs --cleanup-only')
+  } else {
+    await cleanup(created)
+  }
 }
 
 console.log('\n' + '='.repeat(62))

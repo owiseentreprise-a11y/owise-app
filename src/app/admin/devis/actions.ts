@@ -108,8 +108,11 @@ export async function convertirEnFacture(devis: {
   const ts    = Date.now().toString(36).toUpperCase().slice(-4)
   const numero = `F-${year}-${ts}`
 
+  const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
+  const tauxTva = parametres?.facture_taux_tva ?? 0
+
   const montant_ttc = Number(devis.price)
-  const montant_ht  = Math.round((montant_ttc / 1.2) * 100) / 100
+  const montant_ht  = Math.round((montant_ttc / (1 + tauxTva / 100)) * 100) / 100
   const tva = Math.round((montant_ttc - montant_ht) * 100) / 100
 
   const date_emission = new Date().toISOString().slice(0, 10)

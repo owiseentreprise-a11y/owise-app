@@ -17,7 +17,7 @@ export async function sauvegarderParametres(formData: FormData): Promise<{ error
     societe_telephone:      (formData.get('societe_telephone') as string) || null,
     societe_email:          (formData.get('societe_email') as string) || null,
     facture_prefixe:        (formData.get('facture_prefixe') as string) || 'OW-',
-    facture_taux_tva:       parseFloat(formData.get('facture_taux_tva') as string) || 20,
+    facture_taux_tva:       (() => { const v = parseFloat(formData.get('facture_taux_tva') as string); return isNaN(v) ? 0 : v })(),
     facture_delai_paiement: parseInt(formData.get('facture_delai_paiement') as string, 10) || 30,
     facture_mentions:       (formData.get('facture_mentions') as string) || null,
     banque_iban:            (formData.get('banque_iban') as string) || null,

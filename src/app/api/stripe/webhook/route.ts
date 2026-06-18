@@ -170,8 +170,10 @@ async function handleNewReservation(meta: Record<string, string>) {
     const year     = new Date().getFullYear()
     const ts       = Date.now().toString(36).toUpperCase().slice(-5)
     const numero   = `OW-${year}-${ts}`
+    const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
+    const tauxTva  = parametres?.facture_taux_tva ?? 0
     const prixTtc  = prix
-    const prixHt   = Math.round((prixTtc / 1.2) * 100) / 100
+    const prixHt   = Math.round((prixTtc / (1 + tauxTva / 100)) * 100) / 100
     const prixTva  = Math.round((prixTtc - prixHt) * 100) / 100
     const echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
     await supabase.from('factures').insert({

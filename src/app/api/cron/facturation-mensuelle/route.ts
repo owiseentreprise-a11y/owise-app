@@ -13,6 +13,9 @@ export async function GET(req: Request) {
   const supabase = createAdminClient()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
 
+  const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
+  const tauxTva = parametres?.facture_taux_tva ?? 0
+
   // Fenêtre : mois précédent complet
   const now = new Date()
   const debutMois = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -62,7 +65,7 @@ export async function GET(req: Request) {
     if (totalTtc <= 0) return
 
     const montantTtc = Math.round(totalTtc * 100) / 100
-    const montantHt  = Math.round((totalTtc / 1.2) * 100) / 100
+    const montantHt  = Math.round((totalTtc / (1 + tauxTva / 100)) * 100) / 100
     const tva        = Math.round((montantTtc - montantHt) * 100) / 100
 
     const numero = `OW-${yyyymm}-${String(seq++).padStart(4, '0')}`

@@ -16,7 +16,7 @@ export default async function ParametresPage() {
     societe_nom: null, societe_siret: null, societe_tva_numero: null, societe_naf: null,
     societe_adresse: null, societe_code_postal: null, societe_ville: null,
     societe_telephone: null, societe_email: null,
-    facture_prefixe: 'OW-', facture_taux_tva: 20, facture_delai_paiement: 30, facture_mentions: null,
+    facture_prefixe: 'OW-', facture_taux_tva: 0, facture_delai_paiement: 30, facture_mentions: null,
     banque_iban: null, banque_bic: null, banque_nom: null,
   }
 

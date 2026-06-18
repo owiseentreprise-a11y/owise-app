@@ -119,16 +119,16 @@ export default function ParametresForm({ data }: { data: Parametres }) {
               />
             </div>
             <div>
-              <label style={label}>Taux TVA (%)</label>
-              <input
+              <label style={label}>Taux TVA</label>
+              <select
                 name="facture_taux_tva"
-                type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                defaultValue={data.facture_taux_tva ?? 20}
+                defaultValue={String(data.facture_taux_tva ?? 0)}
                 style={{ ...input, fontFamily: 'var(--font-jetbrains), monospace' }}
-              />
+              >
+                <option value="0">0% — Franchise en base (auto-entrepreneur)</option>
+                <option value="10">10%</option>
+                <option value="20">20%</option>
+              </select>
             </div>
             <div>
               <label style={label}>Délai de paiement (jours)</label>

@@ -24,7 +24,7 @@ export default async function NouvelleFacturePage() {
 
   const clients = clientsRes.data ?? []
   const courses = coursesRes.data ?? []
-  const tauxTva = parametresRes.data?.facture_taux_tva ?? 20
+  const tauxTva = parametresRes.data?.facture_taux_tva ?? 0
   const delaiPaiement = parametresRes.data?.facture_delai_paiement ?? 30
 
   return (
