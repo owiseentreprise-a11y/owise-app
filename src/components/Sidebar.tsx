@@ -55,6 +55,7 @@ function NavItem({ item, isActive }: { item: { href: string; label: string; icon
   return (
     <Link
       href={item.href}
+      prefetch={false}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
