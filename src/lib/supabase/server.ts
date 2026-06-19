@@ -24,7 +24,12 @@ export async function createClient() {
 
 export async function requireAdminClient() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const cookieStore = await cookies()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  console.log('[DEBUG requireAdminClient]', {
+    hasUser: !!user, role: user?.app_metadata?.role, error: error?.message,
+    cookieNames: cookieStore.getAll().map(c => c.name),
+  })
   if (user?.app_metadata?.role !== 'admin') redirect('/login')
   return supabase
 }
