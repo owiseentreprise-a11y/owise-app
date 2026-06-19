@@ -32,11 +32,9 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user }, error } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
-  console.log('[DEBUG proxy]', {
-    method: request.method, path,
-    hasUser: !!user, role: user?.app_metadata?.role, error: error?.message,
-    incomingCookies: request.cookies.getAll().map(c => `${c.name}=${c.value.length}b`),
-  })
+  if (request.method === 'POST') {
+    console.log(`PXY u=${!!user} r=${user?.app_metadata?.role} e=${error?.message ?? '-'} c=${request.cookies.getAll().length}`)
+  }
 
   // Pages de login — jamais protégées
   const loginPages = ['/login', '/client-login', '/sous-traitant-login']
