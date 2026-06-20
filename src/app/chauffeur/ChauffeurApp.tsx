@@ -85,6 +85,8 @@ export default function ChauffeurApp({
   const [selectedDate, setSelectedDate] = useState(() => localDateKey(new Date()))
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [planningOpen, setPlanningOpen] = useState(false)
+  const [planningTab, setPlanningTab] = useState<'avenir' | 'historique'>('avenir')
 
   // Mode nuit — auto 20h-7h sauf préférence manuelle sauvegardée
   const [nightMode, setNightMode] = useState<boolean>(() => {
@@ -807,8 +809,74 @@ export default function ChauffeurApp({
           ))}
         </div>
 
-        {/* ── Agenda ── */}
-        {(() => {
+        {/* ── Accès Planning & historique (1 clic) ── */}
+        <button
+          onClick={() => setPlanningOpen(true)}
+          style={{
+            width: '100%', textAlign: 'left', cursor: 'pointer',
+            background: 'var(--surface)', border: '1px solid rgba(201,168,76,.18)',
+            borderRadius: 14, padding: '14px 16px', marginBottom: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+            }}>📅</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>Planning & historique</div>
+              <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 1 }}>
+                Courses à venir et terminées
+              </div>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth={2.5}>
+            <polyline points="9 6 15 12 9 18"/>
+          </svg>
+        </button>
+
+        {/* ── Modal Planning & Historique ── */}
+        {planningOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'var(--base)',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 16px', borderBottom: '1px solid rgba(201,168,76,.15)',
+              background: 'var(--surface)', flexShrink: 0,
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--t1)' }}>Planning</div>
+              <button onClick={() => setPlanningOpen(false)} style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, padding: '12px 16px 0', flexShrink: 0 }}>
+              {(['avenir', 'historique'] as const).map(tab => (
+                <button key={tab} onClick={() => setPlanningTab(tab)} style={{
+                  flex: 1, padding: '10px', borderRadius: 10, fontSize: 12, fontWeight: 600,
+                  background: planningTab === tab ? 'var(--gold)' : 'var(--elevated)',
+                  color: planningTab === tab ? 'var(--base)' : 'var(--t2)',
+                  border: planningTab === tab ? 'none' : '1px solid var(--t3)',
+                  cursor: 'pointer',
+                }}>
+                  {tab === 'avenir' ? 'À venir' : 'Historique'}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 24px' }}>
+            {planningTab === 'avenir' && (() => {
           // Déduplique courses actives + planning par ID
           const seen = new Set<string>()
           const allCal = [...courses, ...planning].filter(c => {
@@ -1056,9 +1124,9 @@ export default function ChauffeurApp({
           )
         })()}
 
-        {/* ── Historique ── */}
-        {historique.length > 0 && (
-          <div style={{ background: 'var(--surface)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 16, overflow: 'hidden', marginTop: 16 }}>
+        {planningTab === 'historique' && (
+          historique.length > 0 ? (
+          <div style={{ background: 'var(--surface)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 16, overflow: 'hidden' }}>
             <div style={{ padding: '13px 16px', borderBottom: '1px solid rgba(201,168,76,.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500 }}>Historique</span>
               <span style={{ fontSize: 9, fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--t3)' }}>{historique.length} course{historique.length > 1 ? 's' : ''}</span>
@@ -1099,6 +1167,14 @@ export default function ChauffeurApp({
                 </div>
               )
             })}
+          </div>
+          ) : (
+            <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
+              Aucune course terminée pour le moment
+            </div>
+          )
+        )}
+            </div>
           </div>
         )}
       </div>
