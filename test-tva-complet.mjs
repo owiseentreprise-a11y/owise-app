@@ -20,7 +20,7 @@ const sb = createClient(
 )
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-const BASE   = 'https://owise.fr'
+const BASE   = 'https://www.owise.fr'
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 const ADMIN_EMAIL = 'owise.entreprise@gmail.com'
 const ADMIN_PASS  = 'Taoubataouba6791?'
