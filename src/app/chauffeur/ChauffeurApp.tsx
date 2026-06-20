@@ -88,15 +88,10 @@ export default function ChauffeurApp({
   const [planningOpen, setPlanningOpen] = useState(false)
   const [planningTab, setPlanningTab] = useState<'avenir' | 'historique'>('avenir')
 
-  // Mode nuit — auto 20h-7h sauf préférence manuelle sauvegardée
-  const [nightMode, setNightMode] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    const saved = window.localStorage.getItem('owise_chauffeur_theme')
-    if (saved === 'night') return true
-    if (saved === 'day') return false
-    const h = new Date().getHours()
-    return h >= 20 || h < 7
-  })
+  // Mode nuit — auto 20h-7h sauf préférence manuelle sauvegardée.
+  // Démarre toujours à false (identique serveur/client) pour éviter un
+  // mismatch d'hydratation — la vraie valeur est appliquée au montage.
+  const [nightMode, setNightMode] = useState<boolean>(false)
 
   // Compte à rebours visuel sur les nouvelles demandes
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -114,15 +109,22 @@ export default function ChauffeurApp({
     document.addEventListener('touchstart', handler, { once: true })
   }, [])
 
-  // Re-vérifie le mode auto nuit/jour toutes les 10 min (sauf override manuel)
+  // Applique la vraie valeur (localStorage ou heure locale) au montage,
+  // puis re-vérifie toutes les 10 min (sauf préférence manuelle sauvegardée)
   useEffect(() => {
-    const saved = window.localStorage.getItem('owise_chauffeur_theme')
-    if (saved === 'night' || saved === 'day') return
-    const check = () => {
+    const applyAuto = () => {
+      const saved = window.localStorage.getItem('owise_chauffeur_theme')
+      if (saved === 'night') { setNightMode(true); return }
+      if (saved === 'day')   { setNightMode(false); return }
       const h = new Date().getHours()
       setNightMode(h >= 20 || h < 7)
     }
-    const interval = setInterval(check, 10 * 60 * 1000)
+    applyAuto()
+    const interval = setInterval(() => {
+      const saved = window.localStorage.getItem('owise_chauffeur_theme')
+      if (saved === 'night' || saved === 'day') return
+      applyAuto()
+    }, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
