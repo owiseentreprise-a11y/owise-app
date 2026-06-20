@@ -51,6 +51,20 @@ function clientTel(course: any): string | null {
     ?? null
 }
 
+function relativeDayLabel(dateStr: string): string {
+  const d = new Date(dateStr)
+  const today = new Date()
+  const diffDays = Math.round(
+    (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+     new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / 86400000
+  )
+  if (diffDays === 0) return "aujourd'hui"
+  if (diffDays === 1) return 'demain'
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+const COUNTDOWN_SECONDS = 30
+
 export default function ChauffeurApp({
   userId,
   profile,
@@ -72,6 +86,20 @@ export default function ChauffeurApp({
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
 
+  // Mode nuit — auto 20h-7h sauf préférence manuelle sauvegardée
+  const [nightMode, setNightMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    const saved = window.localStorage.getItem('owise_chauffeur_theme')
+    if (saved === 'night') return true
+    if (saved === 'day') return false
+    const h = new Date().getHours()
+    return h >= 20 || h < 7
+  })
+
+  // Compte à rebours visuel sur les nouvelles demandes
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const countdownStartedFor = useRef<string | null>(null)
+
   // Refs pour détecter les changements et déclencher les sons
   const prevPendingId  = useRef<string | null>(null)
   const prevActiveId   = useRef<string | null>(null)
@@ -83,6 +111,26 @@ export default function ChauffeurApp({
     document.addEventListener('click', handler, { once: true })
     document.addEventListener('touchstart', handler, { once: true })
   }, [])
+
+  // Re-vérifie le mode auto nuit/jour toutes les 10 min (sauf override manuel)
+  useEffect(() => {
+    const saved = window.localStorage.getItem('owise_chauffeur_theme')
+    if (saved === 'night' || saved === 'day') return
+    const check = () => {
+      const h = new Date().getHours()
+      setNightMode(h >= 20 || h < 7)
+    }
+    const interval = setInterval(check, 10 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  function toggleNightMode() {
+    setNightMode(v => {
+      const next = !v
+      window.localStorage.setItem('owise_chauffeur_theme', next ? 'night' : 'day')
+      return next
+    })
+  }
 
   // Realtime : refresh + sons sur changements de courses
   useEffect(() => {
@@ -140,6 +188,39 @@ export default function ChauffeurApp({
     ...courses.filter(c => new Date(c.date_prevue).toDateString() === todayStr),
     ...historique.filter(c => new Date(c.date_prevue).toDateString() === todayStr),
   ]
+
+  // Prochaine course à venir — affichée quand rien n'est actif/en attente aujourd'hui
+  const nextCourse = (() => {
+    if (activeCourse || pendingCourse) return null
+    const seen = new Set<string>()
+    const now = Date.now()
+    return [...courses, ...planning]
+      .filter(c => {
+        if (seen.has(c.id)) return false
+        seen.add(c.id)
+        return !['terminee', 'annulee'].includes(c.statut) && new Date(c.date_prevue).getTime() > now
+      })
+      .sort((a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime())[0] ?? null
+  })()
+
+  // Démarre/relance le compte à rebours quand une nouvelle demande arrive
+  useEffect(() => {
+    if (!pendingCourse) {
+      setCountdown(null)
+      countdownStartedFor.current = null
+      return
+    }
+    if (countdownStartedFor.current !== pendingCourse.id) {
+      countdownStartedFor.current = pendingCourse.id
+      setCountdown(COUNTDOWN_SECONDS)
+    }
+  }, [pendingCourse?.id])
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return
+    const t = setTimeout(() => setCountdown(c => (c !== null ? c - 1 : null)), 1000)
+    return () => clearTimeout(t)
+  }, [countdown])
 
   const prenom = profile?.prenom ?? 'Chauffeur'
   const nom = profile?.nom ?? ''
@@ -200,7 +281,24 @@ export default function ChauffeurApp({
     <div style={{
       minHeight: '100vh',
       fontFamily: 'var(--font-dm-sans), sans-serif',
-      paddingBottom: 32,
+      paddingBottom: 110,
+      background: nightMode ? '#09091A' : '#F8F6F1',
+      transition: 'background .3s',
+      ['--base' as any]:     nightMode ? '#09091A' : '#F8F6F1',
+      ['--surface' as any]:  nightMode ? '#111128' : '#FFFFFF',
+      ['--elevated' as any]: nightMode ? '#181832' : '#F3F0EB',
+      ['--floating' as any]: nightMode ? '#202042' : '#EDEAE4',
+      ['--gb' as any]:       nightMode ? 'rgba(201,168,76,.16)' : 'rgba(0,0,0,.08)',
+      ['--gm' as any]:       nightMode ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.08)',
+      ['--t1' as any]:       nightMode ? '#EDE8DF' : '#0A0A0A',
+      ['--t2' as any]:       nightMode ? '#9494A8' : '#555555',
+      ['--t3' as any]:       nightMode ? '#5C5C78' : '#999999',
+      ['--gold' as any]:     nightMode ? '#DDB95A' : '#C9A84C',
+      ['--gold2' as any]:    nightMode ? '#E8C878' : '#DDB95A',
+      ['--grn' as any]:      nightMode ? '#4ECB8F' : '#3DB87A',
+      ['--amb' as any]:      nightMode ? '#F0B040' : '#E8A030',
+      ['--red' as any]:      nightMode ? '#E36868' : '#D95454',
+      ['--blu' as any]:      nightMode ? '#5C9CE0' : '#4D8ED4',
     }}>
       {/* Header */}
       <div style={{
@@ -234,7 +332,11 @@ export default function ChauffeurApp({
               }}>{initials}</div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', lineHeight: 1.2 }}>{prenom} {nom}</div>
-                <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>
+                <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                    background: dispo === 'disponible' ? 'var(--grn)' : dispo === 'en_course' ? 'var(--blu)' : 'var(--t3)',
+                  }} />
                   {[profile?.chauffeurs?.vehicule_marque, profile?.chauffeurs?.vehicule_modele].filter(Boolean).join(' ') || 'Chauffeur OWISE'}
                 </div>
               </div>
@@ -243,53 +345,6 @@ export default function ChauffeurApp({
 
           {/* Actions droite */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Bouton son */}
-            <button
-              onClick={() => { resumeAudioCtx(); setSoundEnabled(v => !v) }}
-              title={soundEnabled ? 'Couper le son' : 'Activer le son'}
-              style={{
-                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                background: soundEnabled ? 'rgba(201,168,76,.12)' : 'var(--elevated)',
-                border: `1px solid ${soundEnabled ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
-                color: soundEnabled ? 'var(--gold)' : 'var(--t3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all .15s',
-              }}
-            >
-              {soundEnabled ? (
-                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
-                </svg>
-              ) : (
-                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                  <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
-                </svg>
-              )}
-            </button>
-            <button
-              onClick={toggleDispo}
-              disabled={dispo === 'en_course' && !!activeCourse}
-              style={{
-                padding: '7px 14px', borderRadius: 100, fontSize: 11, fontWeight: 600,
-                fontFamily: 'var(--font-dm-sans), sans-serif',
-                cursor: (dispo === 'en_course' && !!activeCourse) ? 'default' : 'pointer',
-                transition: 'all .2s',
-                ...(dispo === 'disponible' ? {
-                  background: 'rgba(60,196,124,.15)', border: '1px solid rgba(60,196,124,.35)',
-                  color: 'var(--grn)', boxShadow: '0 0 12px rgba(60,196,124,.15)',
-                } : dispo === 'en_course' ? {
-                  background: 'rgba(74,142,208,.12)', border: '1px solid rgba(74,142,208,.25)',
-                  color: 'var(--blu)',
-                } : {
-                  background: 'var(--elevated)', border: '1px solid var(--t3)',
-                  color: 'var(--t2)',
-                }),
-              }}
-            >
-              {dispo === 'disponible' ? '● Disponible' : dispo === 'en_course' ? '⚡ En course' : '○ Hors ligne'}
-            </button>
             <button
               onClick={deconnecter}
               title="Se déconnecter"
@@ -573,12 +628,40 @@ export default function ChauffeurApp({
               <span style={{ fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--amb)', fontWeight: 700, flex: 1 }}>
                 Nouvelle demande · à répondre
               </span>
+              {countdown !== null && (
+                countdown > 0 ? (
+                  <span style={{
+                    fontFamily: 'var(--font-jetbrains), monospace', fontSize: 12, fontWeight: 700,
+                    color: countdown <= 10 ? 'var(--red)' : 'var(--amb)',
+                    background: countdown <= 10 ? 'rgba(217,80,80,.12)' : 'rgba(232,160,48,.12)',
+                    padding: '2px 9px', borderRadius: 20, flexShrink: 0,
+                  }}>{countdown}s</span>
+                ) : (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase',
+                    color: 'var(--red)', background: 'rgba(217,80,80,.12)',
+                    padding: '3px 9px', borderRadius: 20, flexShrink: 0,
+                  }}>Délai dépassé</span>
+                )
+              )}
               <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--gold)', fontWeight: 600 }}>
                 {new Date(pendingCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                 {' · '}
                 {new Date(pendingCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
+
+            {/* Barre de temps restant */}
+            {countdown !== null && (
+              <div style={{ height: 3, background: 'rgba(232,160,48,.12)' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.max(0, (countdown / COUNTDOWN_SECONDS) * 100)}%`,
+                  background: countdown <= 10 ? 'var(--red)' : 'var(--amb)',
+                  transition: 'width 1s linear, background .3s',
+                }} />
+              </div>
+            )}
 
             <div style={{ padding: '14px 16px' }}>
               {/* Trajet */}
@@ -678,6 +761,27 @@ export default function ChauffeurApp({
                 <>Passez en mode <strong style={{ color: 'var(--t1)' }}>Disponible</strong><br/>pour recevoir des courses.</>
               )}
             </div>
+
+            {nextCourse && (
+              <button
+                onClick={() => setSelectedDate(localDateKey(new Date(nextCourse.date_prevue)))}
+                style={{
+                  marginTop: 16, width: '100%', textAlign: 'left',
+                  background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)',
+                  borderRadius: 12, padding: '12px 16px', cursor: 'pointer',
+                }}
+              >
+                <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 600, marginBottom: 4 }}>
+                  Prochaine course
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)', marginBottom: 3, textTransform: 'capitalize' }}>
+                  {relativeDayLabel(nextCourse.date_prevue)} à {new Date(nextCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--t2)' }}>
+                  {nextCourse.adresse_depart.split(',')[0]} → {nextCourse.adresse_arrivee.split(',')[0]}
+                </div>
+              </button>
+            )}
           </div>
         )}
 
@@ -997,6 +1101,91 @@ export default function ChauffeurApp({
             })}
           </div>
         )}
+      </div>
+
+      {/* ── Barre d'action fixe — accessible au pouce ── */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
+        background: 'var(--surface)',
+        borderTop: '1px solid rgba(201,168,76,.2)',
+        boxShadow: '0 -4px 24px rgba(0,0,0,.1)',
+        padding: '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        {/* Son */}
+        <button
+          onClick={() => { resumeAudioCtx(); setSoundEnabled(v => !v) }}
+          title={soundEnabled ? 'Couper le son' : 'Activer le son'}
+          style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: soundEnabled ? 'rgba(201,168,76,.12)' : 'var(--elevated)',
+            border: `1px solid ${soundEnabled ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
+            color: soundEnabled ? 'var(--gold)' : 'var(--t3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'all .15s',
+          }}
+        >
+          {soundEnabled ? (
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          )}
+        </button>
+
+        {/* Disponibilité — action principale, plein pouce */}
+        <button
+          onClick={toggleDispo}
+          disabled={dispo === 'en_course' && !!activeCourse}
+          style={{
+            flex: 1, padding: '14px', borderRadius: 14, fontSize: 14, fontWeight: 700,
+            fontFamily: 'var(--font-dm-sans), sans-serif',
+            cursor: (dispo === 'en_course' && !!activeCourse) ? 'default' : 'pointer',
+            transition: 'all .2s',
+            ...(dispo === 'disponible' ? {
+              background: 'linear-gradient(135deg,#3DB87A,#2a9e62)', border: 'none', color: '#fff',
+              boxShadow: '0 4px 16px rgba(60,196,124,.3)',
+            } : dispo === 'en_course' ? {
+              background: 'rgba(74,142,208,.12)', border: '1px solid rgba(74,142,208,.25)',
+              color: 'var(--blu)',
+            } : {
+              background: 'var(--elevated)', border: '1px solid var(--t3)',
+              color: 'var(--t2)',
+            }),
+          }}
+        >
+          {dispo === 'disponible' ? '● Disponible' : dispo === 'en_course' ? '⚡ En course' : '○ Hors ligne'}
+        </button>
+
+        {/* Mode nuit/jour */}
+        <button
+          onClick={toggleNightMode}
+          title={nightMode ? 'Passer en mode jour' : 'Passer en mode nuit'}
+          style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: nightMode ? 'rgba(201,168,76,.15)' : 'var(--elevated)',
+            border: `1px solid ${nightMode ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
+            color: 'var(--gold)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'all .15s',
+          }}
+        >
+          {nightMode ? (
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="5"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   )
