@@ -205,6 +205,12 @@ export default function ChauffeurApp({
       .sort((a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime())[0] ?? null
   })()
 
+  // Courses du jour à afficher sur l'écran principal (hors mission active / demande déjà mises en avant)
+  const todayCoursesForList = todayCourses
+    .filter(c => c.id !== activeCourse?.id && c.id !== pendingCourse?.id)
+    .slice()
+    .sort((a: any, b: any) => a.date_prevue.localeCompare(b.date_prevue))
+
   // Démarre/relance le compte à rebours quand une nouvelle demande arrive
   useEffect(() => {
     if (!pendingCourse) {
@@ -784,6 +790,162 @@ export default function ChauffeurApp({
                 </div>
               </button>
             )}
+          </div>
+        )}
+
+        {/* ── Aujourd'hui — toujours visible, sans clic ── */}
+        {todayCoursesForList.length > 0 && (
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid rgba(201,168,76,.18)',
+            borderRadius: 16, overflow: 'hidden', marginBottom: 16,
+          }}>
+            <div style={{
+              padding: '11px 16px', borderBottom: '1px solid rgba(201,168,76,.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <span style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 600 }}>
+                Aujourd'hui
+              </span>
+              <span style={{ fontSize: 9, color: 'var(--t3)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                {todayCoursesForList.length} course{todayCoursesForList.length > 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {todayCoursesForList.map((c: any, i: number) => {
+              const date = new Date(c.date_prevue)
+              const nom = clientNom(c)
+              const tel = clientTel(c)
+              const prix = c.prix_final ?? c.prix_estime
+              const isExpanded = expandedId === c.id
+
+              const statutBadge = {
+                acceptee:        { label: 'Acceptée',    color: 'var(--gold)' },
+                en_attente:      { label: 'À confirmer', color: 'var(--amb)'  },
+                en_route:        { label: 'En route',    color: 'var(--blu)'  },
+                prise_en_charge: { label: 'À bord',      color: 'var(--grn)'  },
+                terminee:        { label: '✓ Terminée',  color: 'var(--grn)'  },
+              }[c.statut as string]
+
+              return (
+                <div key={c.id} style={{
+                  borderBottom: i < todayCoursesForList.length - 1 ? '1px solid rgba(201,168,76,.06)' : 'none',
+                }}>
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : c.id)}
+                    style={{
+                      width: '100%', background: isExpanded ? 'rgba(201,168,76,.04)' : 'transparent',
+                      border: 'none', cursor: 'pointer', padding: '13px 16px',
+                      display: 'grid', gridTemplateColumns: '52px 1fr auto', gap: '0 10px',
+                      alignItems: 'start', textAlign: 'left',
+                      transition: 'background .12s',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 15, fontWeight: 700, color: 'var(--gold)' }}>
+                        {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      {statutBadge && (
+                        <div style={{ fontSize: 7.5, letterSpacing: '.06em', textTransform: 'uppercase', color: statutBadge.color, fontWeight: 600, marginTop: 3 }}>
+                          {statutBadge.label}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--grn)', flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>{c.adresse_depart.split(',')[0]}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: 1, border: '1.5px solid var(--red)', flexShrink: 0 }} />
+                        <span style={{ fontSize: 11, color: 'var(--t2)' }}>{c.adresse_arrivee.split(',')[0]}</span>
+                      </div>
+                      <span style={{ fontSize: 10, color: 'var(--t3)' }}>
+                        {c.nb_passagers} pass. · {TYPE_VEHICULE_LABEL[c.type_vehicule as keyof typeof TYPE_VEHICULE_LABEL] ?? c.type_vehicule}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingTop: 2 }}>
+                      {prix && (
+                        <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>
+                          {prix} €
+                        </span>
+                      )}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth={2.5}
+                        style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div style={{
+                      margin: '0 12px 12px',
+                      background: 'rgba(201,168,76,.04)',
+                      border: '1px solid rgba(201,168,76,.14)',
+                      borderRadius: 12, padding: '14px',
+                      display: 'flex', flexDirection: 'column', gap: 10,
+                    }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        paddingBottom: 10, borderBottom: '1px solid rgba(201,168,76,.1)',
+                      }}>
+                        <div>
+                          <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 3 }}>Client</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: nom === 'Client inconnu' ? 'var(--t3)' : 'var(--t1)' }}>{nom}</div>
+                        </div>
+                        {tel ? (
+                          <a href={`tel:${tel}`} style={{
+                            display: 'flex', alignItems: 'center', gap: 7,
+                            padding: '9px 16px', borderRadius: 100,
+                            background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.25)',
+                            color: 'var(--gold)', fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                          }}>
+                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            {tel}
+                          </a>
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--t3)', fontStyle: 'italic' }}>Pas de numéro</span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <a href={mapsUrl(c.adresse_depart)} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'flex-start', gap: 8, textDecoration: 'none' }}>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--grn)', flexShrink: 0, marginTop: 4 }} />
+                          <span style={{ fontSize: 12, color: 'var(--t1)', textDecoration: 'underline', textDecorationColor: 'rgba(201,168,76,.3)' }}>{c.adresse_depart}</span>
+                        </a>
+                        <a href={mapsUrl(c.adresse_arrivee)} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'flex-start', gap: 8, textDecoration: 'none' }}>
+                          <span style={{ width: 7, height: 7, borderRadius: 2, border: '2px solid var(--red)', flexShrink: 0, marginTop: 4 }} />
+                          <span style={{ fontSize: 12, color: 'var(--t1)', textDecoration: 'underline', textDecorationColor: 'rgba(201,168,76,.3)' }}>{c.adresse_arrivee}</span>
+                        </a>
+                      </div>
+
+                      {(c.notes || prix) && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, paddingTop: 8, borderTop: '1px solid rgba(201,168,76,.1)' }}>
+                          {c.notes ? (
+                            <div style={{ fontSize: 11, color: 'var(--t2)', lineHeight: 1.5, flex: 1 }}>
+                              <span style={{ fontSize: 9, color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', marginRight: 4 }}>Note :</span>
+                              {c.notes}
+                            </div>
+                          ) : <div />}
+                          {prix && (
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <div style={{ fontSize: 9, color: 'var(--t3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Tarif</div>
+                              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>{prix} €</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 
