@@ -24,11 +24,7 @@ export async function createClient() {
 
 export async function requireAdminClient() {
   const supabase = await createClient()
-  const cookieStore = await cookies()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  if (user?.app_metadata?.role !== 'admin') {
-    const dbg = JSON.stringify({ u: !!user, r: user?.app_metadata?.role, e: error?.message, c: cookieStore.getAll().length })
-    redirect(`/login?dbg=${encodeURIComponent(dbg)}`)
-  }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.app_metadata?.role !== 'admin') redirect('/login')
   return supabase
 }

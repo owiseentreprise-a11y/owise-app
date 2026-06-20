@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
   // Pages de login — jamais protégées
@@ -51,7 +51,7 @@ export async function proxy(request: NextRequest) {
       return redirect('/sous-traitant-login', request, supabaseResponse)
     if (path === '/espace-client' || path.startsWith('/espace-client/'))
       return redirect('/client-login', request, supabaseResponse)
-    return redirect(`/login?dbg=${encodeURIComponent(JSON.stringify({ from: 'pxy-noauth', method: request.method, e: error?.message }))}`, request, supabaseResponse)
+    return redirect('/login', request, supabaseResponse)
   }
 
   if (user) {
@@ -95,7 +95,7 @@ export async function proxy(request: NextRequest) {
 
       // Non admin sur /admin → login
       if (role !== 'admin' && path.startsWith('/admin'))
-        return redirect(`/login?dbg=${encodeURIComponent(JSON.stringify({ from: 'pxy-wrongrole', method: request.method, role }))}`, request, supabaseResponse)
+        return redirect('/login', request, supabaseResponse)
 
       // Non chauffeur / non sous_traitant sur /chauffeur → login
       if (role !== 'admin' && role !== 'chauffeur' && role !== 'sous_traitant'
