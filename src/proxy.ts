@@ -1,21 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-async function logDbg2(tag: string) {
-  try {
-    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/parametres?id=eq.true`, {
-      method: 'PATCH',
-      headers: {
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({ banque_nom: tag.slice(0, 200) }),
-    })
-  } catch {}
-}
-
 // Redirige en copiant les cookies Supabase rafraîchis sur la réponse.
 // Sans ça : session expirée → Supabase rafraîchit dans le proxy → redirect sans cookies
 // → prochain appel a encore l'ancien token expiré → boucle infinie (ERR_TOO_MANY_REDIRECTS)
@@ -26,9 +11,6 @@ function redirect(to: string, request: NextRequest, session: NextResponse): Next
 }
 
 export async function proxy(request: NextRequest) {
-  if (request.method === 'POST' && request.nextUrl.pathname.includes('facturation')) {
-    await logDbg2(`PXY-entry-${request.nextUrl.pathname}`)
-  }
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -69,7 +51,6 @@ export async function proxy(request: NextRequest) {
       return redirect('/sous-traitant-login', request, supabaseResponse)
     if (path === '/espace-client' || path.startsWith('/espace-client/'))
       return redirect('/client-login', request, supabaseResponse)
-    if (request.method === 'POST') await logDbg2(`PXY-r3-noauth-${path}`)
     return redirect('/login', request, supabaseResponse)
   }
 
@@ -113,10 +94,8 @@ export async function proxy(request: NextRequest) {
         return redirect('/sous-traitant-login', request, supabaseResponse)
 
       // Non admin sur /admin → login
-      if (role !== 'admin' && path.startsWith('/admin')) {
-        if (request.method === 'POST') await logDbg2(`PXY-r14-wrongrole-${role}-${path}`)
+      if (role !== 'admin' && path.startsWith('/admin'))
         return redirect('/login', request, supabaseResponse)
-      }
 
       // Non chauffeur / non sous_traitant sur /chauffeur → login
       if (role !== 'admin' && role !== 'chauffeur' && role !== 'sous_traitant'
