@@ -1,26 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-async function logDbg(tag: string) {
-  try {
-    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/parametres?id=eq.true`, {
-      method: 'PATCH',
-      headers: {
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({ facture_mentions: tag }),
-    })
-  } catch {}
-}
-
 // Redirige en copiant les cookies Supabase rafraîchis sur la réponse.
 // Sans ça : session expirée → Supabase rafraîchit dans le proxy → redirect sans cookies
 // → prochain appel a encore l'ancien token expiré → boucle infinie (ERR_TOO_MANY_REDIRECTS)
-async function redirect(to: string, request: NextRequest, session: NextResponse, reason?: string): Promise<NextResponse> {
-  if (reason) await logDbg(`PXY-${reason}-${request.method}-${request.nextUrl.pathname}`)
+function redirect(to: string, request: NextRequest, session: NextResponse): NextResponse {
   const res = NextResponse.redirect(new URL(to, request.url))
   session.cookies.getAll().forEach(c => res.cookies.set(c.name, c.value, c))
   return res
@@ -64,10 +48,10 @@ export async function proxy(request: NextRequest) {
   // Non connecté sur page protégée → login approprié
   if (isProtected && !user) {
     if (path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
-      return await redirect('/sous-traitant-login', request, supabaseResponse, 'r1')
+      return redirect('/sous-traitant-login', request, supabaseResponse)
     if (path === '/espace-client' || path.startsWith('/espace-client/'))
-      return await redirect('/client-login', request, supabaseResponse, 'r2')
-    return await redirect('/login', request, supabaseResponse, 'r3-noauth')
+      return redirect('/client-login', request, supabaseResponse)
+    return redirect('/login', request, supabaseResponse)
   }
 
   if (user) {
@@ -75,48 +59,48 @@ export async function proxy(request: NextRequest) {
 
     // Connecté sur une page de login → rediriger vers la bonne section
     if (isLoginPage) {
-      if (role === 'admin')     return await redirect('/admin', request, supabaseResponse, 'r4')
-      if (role === 'chauffeur') return await redirect('/chauffeur', request, supabaseResponse, 'r5')
+      if (role === 'admin')     return redirect('/admin', request, supabaseResponse)
+      if (role === 'chauffeur') return redirect('/chauffeur', request, supabaseResponse)
       // sous_traitant : portail ST par défaut, sauf /client-login qu'on laisse passer
       if (role === 'sous_traitant' && path !== '/client-login')
-        return await redirect('/sous-traitant', request, supabaseResponse, 'r6')
+        return redirect('/sous-traitant', request, supabaseResponse)
       // client / collaborateur / sous_traitant sur /client-login → espace-client
       if (path === '/client-login')
-        return await redirect('/espace-client', request, supabaseResponse, 'r7')
+        return redirect('/espace-client', request, supabaseResponse)
       // /login ou /sous-traitant-login connecté → section appropriée
-      if (role === 'sous_traitant') return await redirect('/sous-traitant', request, supabaseResponse, 'r8')
-      return await redirect('/espace-client', request, supabaseResponse, 'r9')
+      if (role === 'sous_traitant') return redirect('/sous-traitant', request, supabaseResponse)
+      return redirect('/espace-client', request, supabaseResponse)
     }
 
     // Protection par rôle sur les sections réservées
     if (isProtected) {
       // Admin hors de /admin → renvoyer sur /admin
       if (role === 'admin' && !path.startsWith('/admin'))
-        return await redirect('/admin', request, supabaseResponse, 'r10')
+        return redirect('/admin', request, supabaseResponse)
 
       // Chauffeur hors de /chauffeur → renvoyer sur /chauffeur
       if (role === 'chauffeur' && !path.startsWith('/chauffeur'))
-        return await redirect('/chauffeur', request, supabaseResponse, 'r11')
+        return redirect('/chauffeur', request, supabaseResponse)
 
       // Sous-traitant : autorisé sur /sous-traitant ET /chauffeur
       if (role === 'sous_traitant'
           && !path.startsWith('/sous-traitant')
           && !path.startsWith('/chauffeur'))
-        return await redirect('/sous-traitant', request, supabaseResponse, 'r12')
+        return redirect('/sous-traitant', request, supabaseResponse)
 
       // Mauvais rôle sur /sous-traitant → login sous-traitant
       if ((path === '/sous-traitant' || path.startsWith('/sous-traitant/'))
           && role !== 'sous_traitant' && role !== 'admin')
-        return await redirect('/sous-traitant-login', request, supabaseResponse, 'r13')
+        return redirect('/sous-traitant-login', request, supabaseResponse)
 
       // Non admin sur /admin → login
       if (role !== 'admin' && path.startsWith('/admin'))
-        return await redirect('/login', request, supabaseResponse, `r14-wrongrole-${role}`)
+        return redirect('/login', request, supabaseResponse)
 
       // Non chauffeur / non sous_traitant sur /chauffeur → login
       if (role !== 'admin' && role !== 'chauffeur' && role !== 'sous_traitant'
           && path.startsWith('/chauffeur'))
-        return await redirect('/login', request, supabaseResponse, 'r15')
+        return redirect('/login', request, supabaseResponse)
     }
   }
 

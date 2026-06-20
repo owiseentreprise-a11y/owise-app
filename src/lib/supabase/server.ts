@@ -22,27 +22,9 @@ export async function createClient() {
   )
 }
 
-async function logDbg(tag: string) {
-  try {
-    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/parametres?id=eq.true`, {
-      method: 'PATCH',
-      headers: {
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({ facture_mentions: tag }),
-    })
-  } catch {}
-}
-
 export async function requireAdminClient() {
   const supabase = await createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  if (user?.app_metadata?.role !== 'admin') {
-    await logDbg(`RAC-u${!!user}-r${user?.app_metadata?.role}-e${error?.message ?? 'none'}`)
-    redirect('/login')
-  }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.app_metadata?.role !== 'admin') redirect('/login')
   return supabase
 }
