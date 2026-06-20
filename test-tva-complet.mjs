@@ -102,7 +102,8 @@ try {
       preview.includes(fmt(expectedHt)) ? ok(`Manuel ${taux}% — aperçu Total HT correct (${fmt(expectedHt)} €)`) : fail(`Manuel ${taux}% — aperçu Total HT incorrect, attendu ${fmt(expectedHt)} €`)
       preview.includes(fmt(100)) ? ok(`Manuel ${taux}% — aperçu Total TTC = prix course (100,00 €)`) : fail(`Manuel ${taux}% — aperçu Total TTC incorrect`)
 
-      await adminPage.locator('button[type="submit"]').click()
+      const submitBtn = await adminPage.evaluateHandle(() => Array.from(document.querySelectorAll('button[type="submit"]')).find(b => b.textContent?.includes('Créer la facture')))
+      await submitBtn.asElement()?.click()
       await adminPage.waitForNavigation({ waitUntil: 'networkidle0', timeout: 20000 }).catch(() => {})
 
       const { data: facture } = await sb.from('factures').select('*').eq('client_id', clientId).order('created_at', { ascending: false }).limit(1).single()
