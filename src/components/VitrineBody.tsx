@@ -8,21 +8,8 @@ import { LIEUX_CONNUS } from '@/lib/lieux'
 
 type BcAddr  = { label: string; lat?: number; lng?: number; cp?: string }
 type ZoneMin = { id: string; code: string; type: string; prefixes_postaux: string[] }
-
-function detectZoneMin(cp: string, label: string, zones: ZoneMin[]): ZoneMin | null {
-  const l = label.toLowerCase()
-  if (/charles de gaulle|roissy|\bcdg\b/i.test(l)) return zones.find(z => z.code === 'CDG') ?? null
-  if (/\borly\b/i.test(l))     return zones.find(z => z.code === 'ORY') ?? null
-  if (/\bbeauvais\b/i.test(l)) return zones.find(z => z.code === 'BVA') ?? null
-  if (/\bgare\b/i.test(l) && /^75/.test(cp)) return zones.find(z => z.type === 'gare') ?? null
-  if (/\bparis\b/i.test(l))    return zones.find(z => z.code === 'Z1')  ?? null
-  if (!cp) return null
-  const sorted = [...zones].sort((a, b) =>
-    Math.max(0, ...b.prefixes_postaux.map(p => p.trim().length)) -
-    Math.max(0, ...a.prefixes_postaux.map(p => p.trim().length))
-  )
-  return sorted.find(z => z.prefixes_postaux.some(p => p.trim() && cp.startsWith(p.trim()))) ?? null
-}
+// Détection de zone et calcul de prix : voir @/lib/calcPrix (source unique
+// partagée avec /reserver et le serveur, pour garantir prix affiché = prix facturé)
 
 async function fetchGoogleDist(dep: BcAddr, arr: BcAddr): Promise<number | null> {
   if (!dep.lat || !dep.lng || !arr.lat || !arr.lng) return null
@@ -44,7 +31,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact } from '@/lib/pixel'
-import { calculerPrixKm, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, detectZone, appliquerSupplements, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -203,7 +190,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 type TarifRow  = TarifRow2
 type GrilleMin = GrilleCalc
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [] }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[] }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -476,6 +463,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       else if (isGare)     base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
       else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
       if (!base)           base = Number(tarif.prise_en_charge) + 30
+      if (paramsProp?.tarif_pec_actif) base += paramsProp.tarif_frais_pec ?? 0
+      base = appliquerSupplements(base, fakeDate, paramsProp)
       if (etapeOpen) base += 10
       return Math.round(base + suppTotal)
     }
@@ -498,33 +487,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
     }
 
+    const realDate = bcDate ? `${bcDate}T${bcTime || '09:00'}` : ''
+
     if (tarif && bcDepart.label && bcArrivee.label) {
       const [depGc, arrGc] = await Promise.all([gcFull(bcDepart), gcFull(bcArrivee)])
       // Détection de zone via cp (couvre "Terminal 2E" → 95700 → CDG) puis label en fallback
-      const zoneDep = detectZoneMin(depGc.cp ?? '', depGc.label, zonesProp)
-      const zoneArr = detectZoneMin(arrGc.cp ?? '', arrGc.label, zonesProp)
+      const zoneDep = detectZone(depGc.cp ?? '', zonesProp, depGc.label)
+      const zoneArr = detectZone(arrGc.cp ?? '', zonesProp, arrGc.label)
 
       if (zoneDep && zoneArr) {
-        // Priorité 1 : grille zone-à-zone
-        if (grilleProp.length > 0) {
-          const cell = grilleProp.find(g =>
-            (g.zone_depart_id === zoneDep.id && g.zone_arrivee_id === zoneArr.id) ||
-            (g.zone_depart_id === zoneArr.id  && g.zone_arrivee_id === zoneDep.id)
-          )
-          if (cell && cell.prix_berline) {
-            const cle  = NOM_VERS_CLE[v.name] ?? 'berline'
-            const coef = cle === 'berline_premium' ? 1.5 : cle === 'van' ? 1.7 : 1
-            return { prix: Math.round(Number(cell.prix_berline) * coef), isKm: false }
-          }
-        }
-        // Priorité 2 : forfait fixe si l'une des zones est un aéroport
-        const airportZone = [zoneDep, zoneArr].find(z => z.type === 'aeroport')
-        if (airportZone) {
-          const fixe = airportZone.code === 'CDG' ? Number(tarif.cdg_fixe)
-                     : airportZone.code === 'ORY' ? Number(tarif.orly_fixe)
-                     : Number(tarif.beauvais_fixe)
-          if (fixe > 0) return { prix: Math.round(fixe), isKm: false }
-        }
+        const cle = NOM_VERS_CLE[v.name] ?? 'berline'
+        const px  = calculerPrix(zoneDep.id, zoneArr.id, cle, realDate, grilleProp, tarifsProp, zonesProp, paramsProp)
+        if (px !== null) return { prix: Math.round(px), isKm: false }
       }
 
       // Tarif km via Google Distance Matrix
@@ -532,8 +506,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         const distKm = await fetchGoogleDist(depGc, arrGc)
         if (distKm !== null) {
           const cle = NOM_VERS_CLE[v.name] ?? 'berline'
-          const fakeDate = `2000-01-03T${bcTime || '09:00'}`
-          const px = calculerPrixKm(distKm, cle, fakeDate, tarifsProp)
+          const px = calculerPrixKm(distKm, cle, realDate, tarifsProp, paramsProp)
           if (px !== null) return { prix: Math.round(px), isKm: true }
         }
       }

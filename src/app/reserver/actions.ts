@@ -18,10 +18,11 @@ async function calculerPrixServeur(
   dateHeure: string,
 ): Promise<number | null> {
   const admin = createAdminClient()
-  const [grilleRes, tarifsRes, zonesRes] = await Promise.all([
+  const [grilleRes, tarifsRes, zonesRes, paramsRes] = await Promise.all([
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
+    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
   ])
   return calculerPrix(
     zoneDepId,
@@ -31,6 +32,7 @@ async function calculerPrixServeur(
     grilleRes.data ?? [],
     tarifsRes.data ?? [],
     zonesRes.data ?? [],
+    paramsRes.data,
   )
 }
 
@@ -69,9 +71,12 @@ export async function createReservationCheckout(data: {
   // Fallback km-based si pas de grille (ex : Creil → Gare de Lyon)
   if ((!prixServeur || prixServeur <= 0) && data.distance_km && data.distance_km > 0) {
     const admin = createAdminClient()
-    const { data: tarifs } = await admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe')
+    const [{ data: tarifs }, { data: params }] = await Promise.all([
+      admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+      admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
+    ])
     const dist = Math.min(Math.max(data.distance_km, 1), 600) // borne 1–600 km
-    prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [])
+    prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [], params)
   }
   if (!prixServeur || prixServeur <= 0) {
     console.error('[createReservation] prix serveur introuvable', {

@@ -272,9 +272,11 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
   if (!dest) notFound()
 
   const admin = createAdminClient()
-  const [{ data: tarifs }, { data: zones }] = await Promise.all([
+  const [{ data: tarifs }, { data: zones }, { data: grille }, { data: tarifParams }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
+    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
+    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
   ])
 
   const jsonLd = {
@@ -309,7 +311,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} />
 
       {/* Section intro SEO */}
       <section style={{ background: '#fff', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>

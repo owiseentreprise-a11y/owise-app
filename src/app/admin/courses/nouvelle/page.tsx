@@ -9,7 +9,7 @@ export default async function NouvelleCourse() {
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, tarifsRes] = await Promise.all([
+  const [clientsRes, chauffeursRes, collabsRes, sousTraitantsRes, zonesRes, grilleRes, tarifsRes, paramsRes] = await Promise.all([
     supabase.from('clients').select('id, entreprise_nom, type_compte, profiles(prenom, nom)'),
     supabase.from('chauffeurs').select('id, statut, vehicule_marque, vehicule_modele, sous_traitant_id, profiles(prenom, nom)')
       .in('statut', ['disponible', 'hors_ligne']),
@@ -17,7 +17,8 @@ export default async function NouvelleCourse() {
     supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
-    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km'),
+    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    supabase.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
   ])
 
   const now = new Date()
@@ -56,6 +57,7 @@ export default async function NouvelleCourse() {
           zones={zonesRes.data as any ?? []}
           grille={grilleRes.data as any ?? []}
           tarifs={tarifsRes.data as any ?? []}
+          params={paramsRes.data}
           defaultDatetime={defaultDatetime}
         />
       </div>

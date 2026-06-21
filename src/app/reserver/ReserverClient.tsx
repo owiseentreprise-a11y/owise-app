@@ -11,11 +11,14 @@ import { fbInitCheckout, fbLead, fbViewContent } from '@/lib/pixel'
 import {
   calculerPrix,
   calculerPrixKm,
+  detectZone,
+  isForfaitZone,
   AIRPORT_COL,
   VEHICULE_NOM,
   type TarifCalc,
   type GrilleCalc,
   type ZoneCalc,
+  type ParamsCalc,
 } from '@/lib/calcPrix'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -26,52 +29,9 @@ type TarifVehicule = { vehicule: string; prise_en_charge: number; prix_km: numbe
 type AdresseVal   = { label: string; codePostal: string; lat?: number; lng?: number }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function detectZone(codePostal: string, zones: Zone[], addressLabel?: string): Zone | null {
-  if (addressLabel) {
-    const lower = addressLabel.toLowerCase()
-    // Aéroports en priorité absolue (avant le test "paris")
-    if (lower.includes('charles de gaulle') || lower.includes('roissy') || /\bcdg\b/.test(lower)) {
-      const z = zones.find(z => z.code === 'CDG')
-      if (z) return z
-    }
-    if (lower.includes('orly')) {
-      const z = zones.find(z => z.code === 'ORY')
-      if (z) return z
-    }
-    if (lower.includes('beauvais')) {
-      const z = zones.find(z => z.code === 'BVA')
-      if (z) return z
-    }
-    // "gare" dans l'adresse → zone gare uniquement si Paris intramuros (CP 75xxx)
-    if (lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) {
-      if (/^75/.test(codePostal)) {
-        const gareZone = zones.find(z => z.type === 'gare')
-        if (gareZone) return gareZone
-      }
-    }
-    // "paris" dans l'adresse → Paris intramuros (Z1)
-    if (/\bparis\b/.test(lower)) {
-      const parisZone = zones.find(z => z.code === 'Z1')
-      if (parisZone) return parisZone
-    }
-  }
-  if (!codePostal) return null
-  // Sort by prefix length descending so more specific prefixes win (e.g. "60550" > "60")
-  const sorted = [...zones].sort((a, b) => {
-    const maxA = Math.max(0, ...(a.prefixes_postaux as string[]).map(p => p.trim().length))
-    const maxB = Math.max(0, ...(b.prefixes_postaux as string[]).map(p => p.trim().length))
-    return maxB - maxA
-  })
-  return sorted.find(z =>
-    (z.prefixes_postaux as string[]).some(p => p.trim() && codePostal.startsWith(p.trim()))
-  ) ?? null
-}
-
-/** Forfait si l'une des zones est un aéroport, une gare, ou Paris intramuros (Z1) */
-function isForfaitZone(zone: Zone): boolean {
-  return zone.type === 'aeroport' || zone.type === 'gare' || zone.code === 'Z1'
-}
+// detectZone / isForfaitZone / calculerPrix / calculerPrixKm vivent dans
+// @/lib/calcPrix — source unique partagée avec actions.ts (serveur) et la
+// vitrine, pour garantir que le prix affiché = le prix facturé.
 
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
   if (!dep.lng || !dep.lat || !arr.lng || !arr.lat) return null
@@ -287,10 +247,11 @@ const baseInput: React.CSSProperties = {
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
 
-export default function ReserverClient({ zones, grille, tarifs, profil }: {
+export default function ReserverClient({ zones, grille, tarifs, params, profil }: {
   zones: Zone[]
   grille: Grille[]
   tarifs: TarifVehicule[]
+  params?: ParamsCalc | null
   profil?: Profil | null
 }) {
   const searchParams = useSearchParams()
@@ -371,8 +332,8 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
   // Prix forfait — null si montant = 0 (non configuré) ou zones inconnues
   const forfaitPrix = useMemo(() => {
     if (!mightBeForfait) return null
-    return calculerPrix(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, tarifs, activeZones)
-  }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, tarifs, activeZones])
+    return calculerPrix(zoneDepart?.id ?? '', zoneArrivee?.id ?? '', vehicule, date, grille, tarifs, activeZones, params)
+  }, [mightBeForfait, zoneDepart, zoneArrivee, vehicule, date, grille, tarifs, activeZones, params])
 
   // Forfait actif uniquement si le montant est configuré (> 0) — sinon fallback km
   const useForfait = forfaitPrix !== null
@@ -394,8 +355,8 @@ export default function ReserverClient({ zones, grille, tarifs, profil }: {
   const prix = useMemo(() => {
     if (useForfait) return forfaitPrix
     if (distanceKm === null) return null
-    return calculerPrixKm(distanceKm, vehicule, date, tarifs)
-  }, [useForfait, forfaitPrix, distanceKm, vehicule, date, tarifs])
+    return calculerPrixKm(distanceKm, vehicule, date, tarifs, params)
+  }, [useForfait, forfaitPrix, distanceKm, vehicule, date, tarifs, params])
 
   // Fire ViewContent la première fois qu'un prix est calculé (signal d'intention forte)
   const prixCalculéRef = useRef(false)
