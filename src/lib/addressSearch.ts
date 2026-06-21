@@ -31,12 +31,13 @@ export async function searchAddresses(q: string): Promise<AddressSuggestion[]> {
 
   // 1. Landmarks locaux en priorité (instantané, pas d'API)
   const lieux: AddressSuggestion[] = searchLieux(q).map(l => ({
-    label:    l.label,
-    sublabel: l.sublabel,
-    isLieu:   true,
-    isGoogle: false,
-    lat:      l.lat,
-    lng:      l.lng,
+    label:      l.label,
+    sublabel:   l.sublabel,
+    isLieu:     true,
+    isGoogle:   false,
+    lat:        l.lat,
+    lng:        l.lng,
+    codePostal: l.codePostal,
   }))
 
   // 2. Google Places via proxy
