@@ -120,12 +120,13 @@ if (zanetti && relko) {
   warn('Zanetti ou Relko introuvable — vérifier si effacé')
 }
 
-// --- Tarifs ---
-for (const v of ['berline', 'berline_premium', 'van']) {
-  const t = tarifs?.find(t => t.vehicule === v)
+// --- Tarifs --- (tarifs.vehicule stocke le nom affiché, pas la clé — cf. VEHICULE_NOM dans calcPrix.ts)
+const VEHICULE_NOM = { berline: 'Berline', berline_premium: 'Berline Premium', van: 'Van 7 places' }
+for (const [key, nom] of Object.entries(VEHICULE_NOM)) {
+  const t = tarifs?.find(t => t.vehicule === nom)
   t
-    ? ok(`Tarif "${v}" : prise_en_charge=${t.prise_en_charge}€  prix_km=${t.prix_km}€`)
-    : fail(`Tarif manquant pour "${v}"`)
+    ? ok(`Tarif "${key}" : prise_en_charge=${t.prise_en_charge}€  prix_km=${t.prix_km}€`)
+    : fail(`Tarif manquant pour "${key}" (cherché sous le nom "${nom}")`)
 }
 
 // --- Zones ---
@@ -143,7 +144,7 @@ for (const st of stActifs ?? []) {
 }
 
 // --- Paramètres ---
-if (parametres?.data) {
+if (parametres) {
   ok('Table parametres : accessible')
 } else {
   warn('Table parametres vide ou inaccessible')
