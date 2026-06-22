@@ -282,3 +282,17 @@ La plateforme est **en production sur owise.fr**, fonctionnelle de bout en bout.
 | OSRM | Calcul de distances | API publique (pas de clé) |
 | Google Places | Autocomplete adresses | Clé API dans `.env` |
 | Google Maps | Carte dispatch | Clé API dans `.env` |
+
+---
+
+## 11. SESSION 2026-06-22
+
+**Déclenché par un audit "qu'est-ce qu'on peut améliorer" puis un incident de rotation de clé.**
+
+- **Sécurité** : `supprimerSTAction`/`supprimerChauffeurAction` vérifient maintenant tout l'historique (courses terminées/annulées, factures, documents) avant toute mutation, refusent proprement plutôt que de laisser des FK orphelines (`actif=false` recommandé à la place). `chauffeurs.actif` ajouté (parité avec `sous_traitants.actif`) — `desactiverChauffeurAction` est désormais un vrai flag admin-only, distinct de `statut`/`disponible` que le chauffeur peut changer lui-même.
+- **Clé `service_role` fuitée** (était codée en dur dans un vieux script `fix-tarifs.mjs`) : rotée, ancienne révoquée et vérifiée morte. Local + Vercel + `test-e2e.mjs` mis à jour.
+- **Performance** : 9 index DB (`courses.statut/client_id/chauffeur_id/sous_traitant_id/date_prevue`, etc.), ISR (`revalidate: 3600`) sur `/` et `/[destination]` (admin et `/reserver` restent dynamiques).
+- **Qualité** : 57 `any` corrigés (type `CSSVarStyle` partagé pour les variables CSS), 2 faux positifs corrigés dans `audit-complet.mjs`.
+- **Observabilité** : Sentry (`@sentry/nextjs`) actif en prod, vérifié avec une vraie erreur client + serveur capturée dans le dashboard. Alerte par défaut ("high priority issues") confirmée fonctionnelle. MCP Sentry connecté pour gestion directe (lecture issues/alertes, résolution).
+- **CI/CD** : workflow GitHub Actions (`tsc --noEmit` + `next build`) sur chaque push/PR vers `main` — premier vrai garde-fou automatique avant déploiement.
+- Tout vérifié en conditions réelles (audit-complet.mjs final : 48 ✓ / 2 ⚠ / 0 ✗ contre la vraie prod), pas seulement en local.
