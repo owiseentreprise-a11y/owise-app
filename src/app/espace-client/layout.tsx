@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { clientLogoutAction } from '@/app/espace-client/actions'
+import type { CSSVarStyle } from '@/lib/types'
 
 export default async function EspaceClientLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -28,27 +29,30 @@ export default async function EspaceClientLayout({ children }: { children: React
     .eq('id', user.id)
     .single()
 
-  const entrepriseNom = (collab?.clients as any)?.entreprise_nom ?? null
+  const clientsRel = collab?.clients as { entreprise_nom: string | null } | { entreprise_nom: string | null }[] | null
+  const entrepriseNom = (Array.isArray(clientsRel) ? clientsRel[0] : clientsRel)?.entreprise_nom ?? null
+
+  // Surcharge les variables CSS en thème clair pour l'espace client
+  const layoutStyle: CSSVarStyle = {
+    minHeight: '100vh', background: '#F8F6F1', display: 'flex', flexDirection: 'column',
+    '--base':     '#F8F6F1',
+    '--surface':  '#FFFFFF',
+    '--elevated': '#F3F0EB',
+    '--floating': '#FFFFFF',
+    '--gb':       'rgba(0,0,0,.1)',
+    '--t1':       '#0A0A0A',
+    '--t2':       '#555555',
+    '--t3':       '#999999',
+    '--gold':     '#C9A84C',
+    '--grn':      '#2E9E5E',
+    '--amb':      '#C07020',
+    '--red':      '#C03030',
+    '--blue':     '#3070C0',
+    color:        '#0A0A0A',
+  }
 
   return (
-    <div style={{
-      minHeight: '100vh', background: '#F8F6F1', display: 'flex', flexDirection: 'column',
-      // Surcharge les variables CSS en thème clair pour l'espace client
-      ['--base' as any]:     '#F8F6F1',
-      ['--surface' as any]:  '#FFFFFF',
-      ['--elevated' as any]: '#F3F0EB',
-      ['--floating' as any]: '#FFFFFF',
-      ['--gb' as any]:       'rgba(0,0,0,.1)',
-      ['--t1' as any]:       '#0A0A0A',
-      ['--t2' as any]:       '#555555',
-      ['--t3' as any]:       '#999999',
-      ['--gold' as any]:     '#C9A84C',
-      ['--grn' as any]:      '#2E9E5E',
-      ['--amb' as any]:      '#C07020',
-      ['--red' as any]:      '#C03030',
-      ['--blue' as any]:     '#3070C0',
-      color:                  '#0A0A0A',
-    }}>
+    <div style={layoutStyle}>
       {/* Topbar */}
       <header data-noprint className="no-print" style={{
         position: 'sticky', top: 0, zIndex: 50,

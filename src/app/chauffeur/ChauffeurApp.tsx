@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur } from '@/lib/types'
+import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur, type CSSVarStyle } from '@/lib/types'
 import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
 import { useFcmRegistration } from './useFcmRegistration'
 import { soundNouvelleCourse, soundConfirmation, soundTerminee, resumeAudioCtx } from '@/lib/sound'
@@ -287,29 +287,31 @@ export default function ChauffeurApp({
   const pendingClientNom = pendingCourse ? clientNom(pendingCourse) : '—'
   const pendingClientTel = pendingCourse ? clientTel(pendingCourse) : null
 
+  const rootStyle: CSSVarStyle = {
+    minHeight: '100vh',
+    fontFamily: 'var(--font-dm-sans), sans-serif',
+    paddingBottom: 110,
+    background: nightMode ? '#09091A' : '#F8F6F1',
+    transition: 'background .3s',
+    '--base':     nightMode ? '#09091A' : '#F8F6F1',
+    '--surface':  nightMode ? '#111128' : '#FFFFFF',
+    '--elevated': nightMode ? '#181832' : '#F3F0EB',
+    '--floating': nightMode ? '#202042' : '#EDEAE4',
+    '--gb':       nightMode ? 'rgba(201,168,76,.16)' : 'rgba(0,0,0,.08)',
+    '--gm':       nightMode ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.08)',
+    '--t1':       nightMode ? '#EDE8DF' : '#0A0A0A',
+    '--t2':       nightMode ? '#9494A8' : '#555555',
+    '--t3':       nightMode ? '#5C5C78' : '#999999',
+    '--gold':     nightMode ? '#DDB95A' : '#C9A84C',
+    '--gold2':    nightMode ? '#E8C878' : '#DDB95A',
+    '--grn':      nightMode ? '#4ECB8F' : '#3DB87A',
+    '--amb':      nightMode ? '#F0B040' : '#E8A030',
+    '--red':      nightMode ? '#E36868' : '#D95454',
+    '--blu':      nightMode ? '#5C9CE0' : '#4D8ED4',
+  }
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      fontFamily: 'var(--font-dm-sans), sans-serif',
-      paddingBottom: 110,
-      background: nightMode ? '#09091A' : '#F8F6F1',
-      transition: 'background .3s',
-      ['--base' as any]:     nightMode ? '#09091A' : '#F8F6F1',
-      ['--surface' as any]:  nightMode ? '#111128' : '#FFFFFF',
-      ['--elevated' as any]: nightMode ? '#181832' : '#F3F0EB',
-      ['--floating' as any]: nightMode ? '#202042' : '#EDEAE4',
-      ['--gb' as any]:       nightMode ? 'rgba(201,168,76,.16)' : 'rgba(0,0,0,.08)',
-      ['--gm' as any]:       nightMode ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.08)',
-      ['--t1' as any]:       nightMode ? '#EDE8DF' : '#0A0A0A',
-      ['--t2' as any]:       nightMode ? '#9494A8' : '#555555',
-      ['--t3' as any]:       nightMode ? '#5C5C78' : '#999999',
-      ['--gold' as any]:     nightMode ? '#DDB95A' : '#C9A84C',
-      ['--gold2' as any]:    nightMode ? '#E8C878' : '#DDB95A',
-      ['--grn' as any]:      nightMode ? '#4ECB8F' : '#3DB87A',
-      ['--amb' as any]:      nightMode ? '#F0B040' : '#E8A030',
-      ['--red' as any]:      nightMode ? '#E36868' : '#D95454',
-      ['--blu' as any]:      nightMode ? '#5C9CE0' : '#4D8ED4',
-    }}>
+    <div style={rootStyle}>
       {/* Header */}
       <div style={{
         background: 'var(--surface)',

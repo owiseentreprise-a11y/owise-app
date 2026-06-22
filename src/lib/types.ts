@@ -1,5 +1,10 @@
 // Types générés manuellement depuis le schéma Supabase
 
+// React.CSSProperties n'autorise pas les variables CSS personnalisées (--xxx) —
+// ce type permet de les déclarer sans recourir à `as any` sur chaque clé.
+import type { CSSProperties } from 'react'
+export type CSSVarStyle = CSSProperties & { [key: `--${string}`]: string | number }
+
 export type RoleUtilisateur = 'admin' | 'client' | 'chauffeur'
 export type StatutCourse = 'en_attente' | 'acceptee' | 'en_route' | 'prise_en_charge' | 'terminee' | 'annulee'
 export type TypeVehicule = 'berline' | 'berline_premium' | 'van' | 'grand_van'
