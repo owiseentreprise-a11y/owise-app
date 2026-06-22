@@ -7,10 +7,23 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export async function desactiverChauffeurAction(id: string): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
+  // actif=false est distinct de statut/disponible : ces deux derniers champs
+  // peuvent être remis par le chauffeur lui-même depuis son app (toggle dispo),
+  // alors qu'actif ne peut être changé que par un admin — c'est ce flag qui
+  // détermine l'éligibilité à de nouvelles courses (même rôle que sous_traitants.actif).
   const { error } = await supabase
     .from('chauffeurs')
-    .update({ statut: 'hors_ligne', disponible: false })
+    .update({ statut: 'hors_ligne', disponible: false, actif: false })
     .eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/chauffeurs')
+  return {}
+}
+
+export async function reactiverChauffeurAction(id: string): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  const { error } = await supabase.from('chauffeurs').update({ actif: true }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/chauffeurs')
   return {}

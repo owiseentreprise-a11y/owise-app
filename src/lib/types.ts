@@ -35,6 +35,7 @@ export interface ChauffeurRow {
   vehicule_modele: string | null
   vehicule_immatriculation: string | null
   type_vehicule: TypeVehicule
+  actif: boolean
   created_at: string
 }
 

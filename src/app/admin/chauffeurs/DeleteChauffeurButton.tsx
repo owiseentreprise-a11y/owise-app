@@ -1,16 +1,14 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { desactiverChauffeurAction, supprimerChauffeurAction } from './actions'
+import { desactiverChauffeurAction, reactiverChauffeurAction, supprimerChauffeurAction } from './actions'
 
 export default function DeleteChauffeurButton({
-  id, nom, statut,
-}: { id: string; nom: string; statut: string }) {
+  id, nom, actif,
+}: { id: string; nom: string; actif: boolean }) {
   const [step, setStep]   = useState<'idle' | 'confirm-deactivate' | 'confirm-delete'>('idle')
   const [err,  setErr]    = useState('')
   const [pending, start]  = useTransition()
-
-  const isInactif = statut === 'hors_ligne'
 
   if (step === 'confirm-deactivate') return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -56,7 +54,7 @@ export default function DeleteChauffeurButton({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
       {err && <div style={{ fontSize: 9, color: 'var(--red)', maxWidth: 200, textAlign: 'right' }}>{err}</div>}
       <div style={{ display: 'flex', gap: 5 }}>
-        {!isInactif && (
+        {actif ? (
           <button
             onClick={() => setStep('confirm-deactivate')}
             title="Désactiver"
@@ -67,6 +65,22 @@ export default function DeleteChauffeurButton({
             }}
           >
             Désactiver
+          </button>
+        ) : (
+          <button
+            disabled={pending}
+            onClick={() => start(async () => {
+              const { error } = await reactiverChauffeurAction(id)
+              if (error) setErr(error)
+            })}
+            title="Réactiver"
+            style={{
+              padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500, cursor: pending ? 'wait' : 'pointer',
+              background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.25)', color: 'var(--grn)',
+              transition: 'background .15s',
+            }}
+          >
+            {pending ? '…' : 'Réactiver'}
           </button>
         )}
         <button

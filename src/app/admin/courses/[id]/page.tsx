@@ -45,6 +45,7 @@ export default async function CourseDetailPage({
     supabase
       .from('chauffeurs')
       .select('id, statut, vehicule_marque, vehicule_modele, sous_traitant_id, sous_traitants(id, nom), profiles(prenom, nom, telephone)')
+      .eq('actif', true)
       .order('statut'),
     supabase
       .from('sous_traitants')

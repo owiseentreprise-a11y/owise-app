@@ -169,7 +169,7 @@ export default async function ChauffeursPage() {
                 </div>
 
                 {/* Statut */}
-                <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
                   <span style={{
                     fontSize: 10, padding: '4px 10px',
                     borderRadius: 20, fontWeight: 500,
@@ -178,6 +178,15 @@ export default async function ChauffeursPage() {
                   }}>
                     {s.label}
                   </span>
+                  <span style={{
+                    fontSize: 9, padding: '2px 8px',
+                    borderRadius: 20, fontWeight: 500,
+                    color:      c.actif ? 'var(--grn)' : 'var(--t3)',
+                    background: c.actif ? 'rgba(61,184,122,.1)' : 'var(--elevated)',
+                    border:     c.actif ? '1px solid rgba(61,184,122,.2)' : '1px solid var(--t3)',
+                  }}>
+                    {c.actif ? 'Actif' : 'Inactif'}
+                  </span>
                 </div>
 
                 {/* Actions */}
@@ -185,7 +194,7 @@ export default async function ChauffeursPage() {
                   <DeleteChauffeurButton
                     id={c.id}
                     nom={`${prenom} ${nom}`.trim()}
-                    statut={c.statut}
+                    actif={c.actif}
                   />
                 </div>
               </div>
