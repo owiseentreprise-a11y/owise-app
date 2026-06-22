@@ -61,7 +61,10 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
     if ((lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) && /^75/.test(codePostal)) {
       const z = zones.find(z => z.type === 'gare'); if (z) return z
     }
-    if (/\bparis\b/.test(lower)) {
+    // "paris" dans le libellé → Z1 uniquement si le code postal connu confirme
+    // Paris intramuros (75xxx) — évite de faire matcher "Disneyland Paris"
+    // (77700) ou "Aéroport Paris-Le Bourget" (93350) sur la zone Paris.
+    if (/\bparis\b/.test(lower) && (!codePostal || /^75/.test(codePostal))) {
       const z = zones.find(z => z.code === 'Z1'); if (z) return z
     }
   }
