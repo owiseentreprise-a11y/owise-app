@@ -14,7 +14,6 @@ export async function loginAction(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error || !data.user) {
-    console.error(`DBGSTATUS=${error?.status}|${(error?.message ?? '').slice(0, 25)}`)
     redirect('/login?error=identifiants-incorrects')
   }
 
