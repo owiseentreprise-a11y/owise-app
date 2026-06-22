@@ -115,16 +115,16 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
     setSugg([]); setOpen(false); setFocused(-1)
     if (s.isLieu) {
       const lieu = LIEUX_CONNUS.find(l => l.label === s.label)
-      onSelect({ label: s.label, lat: lieu?.lat, lng: lieu?.lng })
+      onSelect({ label: s.label, lat: lieu?.lat, lng: lieu?.lng, cp: lieu?.codePostal })
       return
     }
     if (s.isGoogle && s.placeId) {
       onSelect({ label: s.label })
       const det = await fetchPlaceDetails(s.placeId)
-      if (det) onSelect({ label: det.label || s.label, lat: det.lat, lng: det.lng })
+      if (det) onSelect({ label: det.label || s.label, lat: det.lat, lng: det.lng, cp: det.codePostal })
       return
     }
-    onSelect({ label: s.label, lat: s.lat, lng: s.lng })
+    onSelect({ label: s.label, lat: s.lat, lng: s.lng, cp: s.codePostal })
   }
 
   function handleKey(e: React.KeyboardEvent) {

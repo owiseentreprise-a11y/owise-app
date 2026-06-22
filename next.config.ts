@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ['firebase'],
-  turbopack: {},
+  turbopack: { root: __dirname },
 
   async rewrites() {
     return [
