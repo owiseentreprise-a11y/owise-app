@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerResetPassword } from '@/lib/email'
+import { reportAuthFailureIfAbnormal } from '@/lib/authMonitoring'
 
 export async function clientLoginAction(formData: FormData) {
   const supabase = await createClient()
@@ -11,7 +12,10 @@ export async function clientLoginAction(formData: FormData) {
   const password = formData.get('password') as string
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error || !data.user) redirect('/client-login?error=identifiants-incorrects')
+  if (error || !data.user) {
+    reportAuthFailureIfAbnormal(error, 'login client')
+    redirect('/client-login?error=identifiants-incorrects')
+  }
 
   const role = data.user.app_metadata?.role as string | undefined
   if (role === 'admin')    redirect('/admin')

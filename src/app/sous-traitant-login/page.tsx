@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { reportAuthFailureIfAbnormal } from '@/lib/authMonitoring'
 
 export default function SousTraitantLoginPage() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function SousTraitantLoginPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
+      reportAuthFailureIfAbnormal(error, 'login sous-traitant')
       setError('Email ou mot de passe incorrect.')
       setLoading(false)
     } else {
