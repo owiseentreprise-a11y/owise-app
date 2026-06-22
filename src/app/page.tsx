@@ -109,7 +109,7 @@ const jsonLd = {
   sameAs: ['https://owise.fr', 'https://facebook.com/Owise.vtc', 'https://www.tiktok.com/@owise857'],
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export default async function VitrinePage() {
   const admin = createAdminClient()

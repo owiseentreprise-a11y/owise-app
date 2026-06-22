@@ -264,7 +264,7 @@ export function generateStaticParams() {
   return Object.keys(DESTINATIONS).map(slug => ({ destination: slug }))
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 export default async function DestinationPage({ params }: { params: Promise<{ destination: string }> }) {
   const { destination } = await params
