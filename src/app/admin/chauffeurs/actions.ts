@@ -32,6 +32,18 @@ export async function supprimerChauffeurAction(id: string): Promise<{ error?: st
     return { error: 'Le chauffeur est en course en ce moment. Impossible de le supprimer.' }
   }
 
+  // Toute course historique (terminée/annulée) ou document chauffeur référençant ce
+  // chauffeur bloque la suppression définitive — vérifié AVANT toute mutation pour ne
+  // jamais libérer des courses puis échouer sur le delete sans retour arrière possible.
+  const [{ data: coursesHistorique }, { data: documents }] = await Promise.all([
+    supabase.from('courses').select('id').eq('chauffeur_id', id)
+      .in('statut', ['terminee', 'annulee']).limit(1),
+    supabase.from('documents_chauffeur').select('id').eq('chauffeur_id', id).limit(1),
+  ])
+  if ((coursesHistorique && coursesHistorique.length > 0) || (documents && documents.length > 0)) {
+    return { error: 'Ce chauffeur a un historique de courses ou des documents enregistrés — désactivez-le plutôt que de le supprimer.' }
+  }
+
   // Libérer les courses en attente ou acceptées → retour dans le panier
   await supabase
     .from('courses')

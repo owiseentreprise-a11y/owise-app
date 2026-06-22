@@ -277,6 +277,19 @@ export async function supprimerSTAction(id: string): Promise<{ error?: string }>
     return { error: 'Le sous-traitant est en course en ce moment. Impossible de le supprimer.' }
   }
 
+  // Toute course historique (terminée/annulée) ou facture référençant ce ST bloque
+  // la suppression définitive — la FK n'a pas de ON DELETE et la suppression échouerait
+  // de toute façon, mais après avoir déjà délié chauffeurs/courses en attente sans retour
+  // arrière possible. On vérifie donc AVANT de muter quoi que ce soit.
+  const [{ data: coursesHistorique }, { data: factures }] = await Promise.all([
+    supabase.from('courses').select('id').eq('sous_traitant_id', id)
+      .in('statut', ['terminee', 'annulee']).limit(1),
+    supabase.from('factures_sous_traitants').select('id').eq('sous_traitant_id', id).limit(1),
+  ])
+  if ((coursesHistorique && coursesHistorique.length > 0) || (factures && factures.length > 0)) {
+    return { error: 'Ce sous-traitant a un historique de courses ou de factures — désactivez-le plutôt que de le supprimer (le bouton "Désactiver" conserve l\'historique).' }
+  }
+
   // Récupérer le user_id avant suppression
   const { data: st } = await supabase
     .from('sous_traitants')
