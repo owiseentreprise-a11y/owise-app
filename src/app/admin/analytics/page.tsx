@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
@@ -328,7 +329,7 @@ export default async function AnalyticsPage() {
             {(estCount as number).toLocaleString('fr-FR')}
           </div>
           <div style={{ fontSize: 11, color: '#999', marginBottom: 16 }}>recherches de prix sans réservation</div>
-          <a href="/admin/estimations" style={{
+          <Link href="/admin/estimations" style={{
             display: 'inline-block', fontSize: 11, color: '#C9A84C',
             textDecoration: 'none', fontWeight: 500,
             padding: '6px 12px', borderRadius: 7,
@@ -336,7 +337,7 @@ export default async function AnalyticsPage() {
             transition: 'background .12s',
           }}>
             Voir le détail →
-          </a>
+          </Link>
         </div>
       </div>
 
