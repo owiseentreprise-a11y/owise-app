@@ -6,6 +6,7 @@ import type { StatutCourse } from '@/lib/types'
 import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
+import { stripe } from '@/lib/stripe'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   const supabase = await requireAdminClient()
@@ -329,4 +330,31 @@ export async function assignerSousTraitant(
 
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin/courses')
+}
+
+export async function rembourserCourseAction(courseId: string): Promise<{ error?: string; montant?: number }> {
+  const supabase = await requireAdminClient()
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('stripe_payment_intent_id, prix_final, prix_estime, paiement_statut')
+    .eq('id', courseId)
+    .single()
+
+  if (!course?.stripe_payment_intent_id) {
+    return { error: 'Aucun paiement Stripe associé à cette course (paiement manuel ou trop ancien).' }
+  }
+  if (course.paiement_statut === 'remboursee') {
+    return { error: 'Cette course a déjà été remboursée.' }
+  }
+
+  try {
+    const refund = await stripe.refunds.create({ payment_intent: course.stripe_payment_intent_id })
+    await supabase.from('courses').update({ paiement_statut: 'remboursee' }).eq('id', courseId)
+    revalidatePath(`/admin/courses/${courseId}`)
+    return { montant: refund.amount / 100 }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Erreur Stripe : ${message}` }
+  }
 }

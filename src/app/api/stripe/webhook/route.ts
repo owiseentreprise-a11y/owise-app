@@ -41,7 +41,8 @@ export async function POST(req: Request) {
 
     if (session.metadata?.type === 'reservation') {
       try {
-        await handleNewReservation(session.metadata)
+        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
+        await handleNewReservation(session.metadata, paymentIntentId)
       } catch (err) {
         console.error('[webhook] reservation error', err)
       }
@@ -97,7 +98,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ received: true })
 }
 
-async function handleNewReservation(meta: Record<string, string>) {
+async function handleNewReservation(meta: Record<string, string>, paymentIntentId: string | null) {
   const supabase = createAdminClient()
 
   const email     = meta.email
@@ -157,6 +158,8 @@ async function handleNewReservation(meta: Record<string, string>) {
     nb_passagers:    nbPassagers,
     prix_estime:     prix,
     statut:          'en_attente',
+    mode_paiement:   'stripe',
+    stripe_payment_intent_id: paymentIntentId,
   }).select('id').single()
 
   if (courseErr || !course) {

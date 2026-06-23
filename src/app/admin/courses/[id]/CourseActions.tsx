@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -50,6 +50,9 @@ export default function CourseActions({
     prix_sous_traitant: number | null
     sous_traitant_nom: string | null
     sous_traitant_id: string | null
+    mode_paiement: string | null
+    paiement_statut: string | null
+    stripe_payment_intent_id: string | null
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string }>
@@ -86,6 +89,9 @@ export default function CourseActions({
   const [notesSaved, setNotesSaved] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [refundOpen, setRefundOpen] = useState(false)
+  const [refundError, setRefundError] = useState<string | null>(null)
+  const [refundDone, setRefundDone] = useState<number | null>(null)
 
   const [editOpen, setEditOpen] = useState(false)
   const [editDate, setEditDate] = useState(course.date_prevue.slice(0, 16))
@@ -771,6 +777,77 @@ export default function CourseActions({
           {notesSaved ? '✓ Sauvegardé' : 'Sauvegarder les notes'}
         </button>
       </div>
+
+      {course.mode_paiement === 'stripe' && course.stripe_payment_intent_id && (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid rgba(232,160,48,.2)',
+          borderRadius: 12, padding: '18px 20px',
+        }}>
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--amb)', marginBottom: 12, opacity: .7 }}>
+            Paiement Stripe
+          </div>
+          {course.paiement_statut === 'remboursee' || refundDone !== null ? (
+            <div style={{ fontSize: 12, color: 'var(--t2)' }}>
+              ✓ Remboursé{refundDone !== null ? ` (${refundDone.toFixed(2)} €)` : ''}
+            </div>
+          ) : !refundOpen ? (
+            <button
+              onClick={() => setRefundOpen(true)}
+              style={{
+                width: '100%', padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
+                background: 'rgba(232,160,48,.06)', border: '1px solid rgba(232,160,48,.25)',
+                color: 'var(--amb)', fontSize: 12, fontWeight: 500,
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              Rembourser ce client
+            </button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontSize: 12, color: 'var(--t1)', lineHeight: 1.5 }}>
+                Ceci déclenche un <strong style={{ color: 'var(--amb)' }}>vrai remboursement Stripe</strong>, irréversible.
+              </div>
+              {refundError && (
+                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+                  {refundError}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => {
+                    startTransition(async () => {
+                      const res = await rembourserCourseAction(course.id)
+                      if (res?.error) { setRefundError(res.error); return }
+                      setRefundDone(res.montant ?? 0)
+                      setRefundOpen(false)
+                    })
+                  }}
+                  disabled={pending}
+                  style={{
+                    flex: 1, padding: '9px', borderRadius: 7, cursor: pending ? 'wait' : 'pointer',
+                    background: 'var(--amb)', border: 'none',
+                    color: '#fff', fontSize: 12, fontWeight: 600,
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                >
+                  {pending ? 'Remboursement…' : 'Confirmer le remboursement'}
+                </button>
+                <button
+                  onClick={() => { setRefundOpen(false); setRefundError(null) }}
+                  style={{
+                    padding: '9px 14px', borderRadius: 7, cursor: 'pointer',
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    color: 'var(--t2)', fontSize: 12,
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* === ZONE DANGEREUSE === */}
       <div style={{

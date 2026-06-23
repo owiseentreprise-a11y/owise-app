@@ -129,6 +129,9 @@ export default async function CourseDetailPage({
     adresse_arrivee: course.adresse_arrivee,
     client: clientNom ? { nom: '', prenom: clientNom, telephone: clientTel, entreprise: clientData?.entreprise_nom } : null,
     chauffeur: chauffeurNom ? { nom: '', prenom: chauffeurNom, telephone: chauffeurTel, vehicule: chauffeurVehicule } : null,
+    mode_paiement: (course as any).mode_paiement ?? null,
+    paiement_statut: (course as any).paiement_statut ?? null,
+    stripe_payment_intent_id: (course as any).stripe_payment_intent_id ?? null,
   }
 
   const chauffeursForActions = chauffeurs.map((c: any) => ({
