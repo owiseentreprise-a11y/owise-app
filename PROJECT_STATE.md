@@ -296,3 +296,13 @@ La plateforme est **en production sur owise.fr**, fonctionnelle de bout en bout.
 - **Observabilité** : Sentry (`@sentry/nextjs`) actif en prod, vérifié avec une vraie erreur client + serveur capturée dans le dashboard. Alerte par défaut ("high priority issues") confirmée fonctionnelle. MCP Sentry connecté pour gestion directe (lecture issues/alertes, résolution).
 - **CI/CD** : workflow GitHub Actions (`tsc --noEmit` + `next build`) sur chaque push/PR vers `main` — premier vrai garde-fou automatique avant déploiement.
 - Tout vérifié en conditions réelles (audit-complet.mjs final : 48 ✓ / 2 ⚠ / 0 ✗ contre la vraie prod), pas seulement en local.
+
+---
+
+## 12. SESSION 2026-06-23 — Stripe passe en live
+
+- **Stripe live activé en prod** : clés `sk_live_`/`pk_live_`/`whsec_` sur Vercel (compte `acct_1SMGAtBGSaFJhz3V`, FR, charges+payouts actifs). Vérifié par une vraie session de paiement (`cs_live_...`) créée via le vrai parcours `/reserver`, arrêtée avant saisie de carte, puis expirée — zéro écriture DB (la création course/facture n'a lieu qu'au webhook `checkout.session.completed` confirmé payé).
+- **Frais Stripe audités** : `payment_method_types` déjà limité à `card` dans le code (Klarna/PayPal/Amazon Pay actifs sur le compte mais jamais proposés), pas de `automatic_tax`, payout hebdomadaire standard (pas Instant), Radar sur l'offre gratuite. Le solde à -0,27€ vient d'un test manuel à 1€ + remboursement fait par l'utilisateur le 2026-06-02 (frais Stripe non rendus sur remboursement — normal, pas une erreur de config).
+- **Tarifs de prod vérifiés** : aucun résidu du test à 1€ du 2 juin, tous les tarifs (`tarifs`, `grilles_tarifaires`) sont à leurs vraies valeurs.
+- **Nouvelle fonctionnalité — remboursement admin** : `courses.stripe_payment_intent_id` (migration), webhook mis à jour pour le sauvegarder à la création (+ `mode_paiement='stripe'` qui n'était jamais renseigné, oubli préexistant), bouton "Rembourser ce client" sur `/admin/courses/[id]` (visible uniquement si paiement Stripe associé). Aucune course existante n'en bénéficie (toutes les 3 courses actuelles sont en `mode_paiement='cash'`, facturées à REHLKO) — seules les nouvelles réservations Stripe à partir de maintenant.
+- **Flux complet vérifié de bout en bout en conditions réelles** (mode test local, webhook réellement signé et envoyé) : réservation → paiement → webhook → course créée avec les bons champs → facture générée → **emails confirmés envoyés** (vérifié via l'API Resend : confirmation client "sent", notification admin "delivered") → remboursement testé sur cette vraie course → tout nettoyé.
