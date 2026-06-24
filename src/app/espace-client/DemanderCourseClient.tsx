@@ -29,7 +29,7 @@ type Collab = {
 const MODE_META: Record<string, { icon: string; label: string; desc: string }> = {
   stripe:   { icon: '💳', label: 'Carte bancaire', desc: 'Paiement en ligne sécurisé — vous serez redirigé vers notre interface de paiement.' },
   cash:     { icon: '💵', label: 'Espèces',         desc: 'Le chauffeur encaissera le montant au moment de la course.' },
-  cheque:   { icon: '📝', label: 'Chèque',          desc: "Chèque à l'ordre de OWISE SAS remis au chauffeur le jour de la course." },
+  cheque:   { icon: '📝', label: 'Chèque',          desc: "Chèque à l'ordre de OWISE remis au chauffeur le jour de la course." },
   virement: { icon: '🏦', label: 'Virement',        desc: 'Virement bancaire à effectuer avant la course. Coordonnées transmises par email.' },
 }
 
@@ -613,7 +613,7 @@ export default function DemanderCourseClient({
                     <div style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.6 }}>{meta.desc}</div>
                     {payMode === 'virement' && (
                       <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {[['Bénéficiaire', 'OWISE SAS'], ['IBAN', 'FR76 3000 4000 0100 0000 0000 000'], ['BIC', 'BNPAFRPPXXX']].map(([k, v]) => (
+                        {[['Bénéficiaire', 'OWISE'], ['IBAN', 'FR76 1741 8000 0100 0119 4573 952'], ['BIC', 'SNNNFR22XXX']].map(([k, v]) => (
                           <div key={k} style={{ display: 'flex', gap: 12, fontSize: 11 }}>
                             <span style={{ color: 'var(--t3)', minWidth: 80 }}>{k}</span>
                             <span style={{ color: 'var(--t1)', fontFamily: 'var(--font-jetbrains, monospace)' }}>{v}</span>

@@ -87,7 +87,7 @@ export default function ParametresForm({ data }: { data: Parametres }) {
         <div style={sectionTitle}>Informations société</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <Field name="societe_nom" label="Nom de la société" value={data.societe_nom} placeholder="OWISE SAS" />
+            <Field name="societe_nom" label="Nom de la société" value={data.societe_nom} placeholder="Owise" />
             <Field name="societe_email" label="Email" value={data.societe_email} placeholder="contact@owise.fr" />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>

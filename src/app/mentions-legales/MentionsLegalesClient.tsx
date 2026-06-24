@@ -170,11 +170,11 @@ export default function MentionsLegalesClient() {
                 borderRadius: 10, padding: '18px 20px', marginBottom: 4,
               }}>
                 {[
-                  ['Dénomination sociale', 'Owise SAS'],
-                  ['Forme juridique', 'Société par actions simplifiée'],
-                  ['Capital social', '10 000 €'],
-                  ['SIREN', 'En cours d\'immatriculation'],
-                  ['Siège social', 'Paris, Île-de-France'],
+                  ['Nom commercial', 'Owise'],
+                  ['Forme juridique', 'Entreprise individuelle (micro-entrepreneur)'],
+                  ['Code APE', '4932Z — Transports de voyageurs par taxis'],
+                  ['SIRET', '477 534 135 00041'],
+                  ['Siège social', 'Chantilly, Senlis, Paris'],
                   ['Contact', 'owise.entreprise@gmail.com'],
                 ].map(([label, value]) => (
                   <div key={label}>
@@ -200,7 +200,7 @@ export default function MentionsLegalesClient() {
             </Section>
 
             <Section title="Propriété intellectuelle">
-              <P>L&apos;ensemble des contenus présents sur le site owise.fr (textes, visuels, logo, interface, code source) est la propriété exclusive d&apos;Owise SAS ou de ses partenaires, et est protégé par le droit de la propriété intellectuelle français et international.</P>
+              <P>L&apos;ensemble des contenus présents sur le site owise.fr (textes, visuels, logo, interface, code source) est la propriété exclusive d&apos;Owise (entreprise individuelle) ou de ses partenaires, et est protégé par le droit de la propriété intellectuelle français et international.</P>
             </Section>
 
             <Section title="Responsabilité">
@@ -223,7 +223,7 @@ export default function MentionsLegalesClient() {
             <InfoBox>En accédant et en utilisant la plateforme Owise, vous acceptez sans réserve les présentes Conditions Générales d&apos;Utilisation.</InfoBox>
 
             <Section title="1 — Objet">
-              <P>Les présentes Conditions Générales d&apos;Utilisation (CGU) définissent les modalités et conditions dans lesquelles Owise SAS met à disposition ses services de mise en relation entre des utilisateurs et des prestataires de transport.</P>
+              <P>Les présentes Conditions Générales d&apos;Utilisation (CGU) définissent les modalités et conditions dans lesquelles Owise (entreprise individuelle) met à disposition ses services de mise en relation entre des utilisateurs et des prestataires de transport.</P>
             </Section>
 
             <Section title="2 — Accès à la plateforme">
@@ -341,7 +341,7 @@ export default function MentionsLegalesClient() {
             <InfoBox>Owise est attachée à la protection de vos données personnelles, conformément au RGPD (Règlement UE 2016/679).</InfoBox>
 
             <Section title="1 — Responsable du traitement">
-              <P><Strong>Owise SAS</Strong>, dont le siège est à Paris, est responsable du traitement de vos données personnelles. Contact DPO : <EM href="mailto:privacy@owise.fr">privacy@owise.fr</EM>.</P>
+              <P><Strong>Owise (entreprise individuelle)</Strong>, dont le siège est à Paris, est responsable du traitement de vos données personnelles. Contact DPO : <EM href="mailto:privacy@owise.fr">privacy@owise.fr</EM>.</P>
             </Section>
 
             <Section title="2 — Données collectées">
