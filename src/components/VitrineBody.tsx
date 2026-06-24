@@ -885,6 +885,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     ↺ Recalculer
                   </button>
                 )}
+                <button onClick={()=>scrollTo('#devis')} style={{fontSize:11,color:'var(--gold)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:8,padding:'8px 0',borderTop:'1px solid var(--gold-border)',fontFamily:'inherit'}}>
+                  Pas encore prêt à réserver ? Demandez un devis sans engagement →
+                </button>
               </div>
             </div>
           </div>{/* /hero-booking-wrap */}
