@@ -208,7 +208,7 @@ export default function MentionsLegalesClient() {
             </Section>
 
             <Section title="Médiation de la consommation">
-              <P>Conformément à l&apos;article L. 616-1 du Code de la consommation, Owise propose à ses clients consommateurs un dispositif de médiation de la consommation. Contact : <EM href="mailto:mediation@owise.fr">mediation@owise.fr</EM>.</P>
+              <P>Conformément à l&apos;article L. 616-1 du Code de la consommation, Owise propose à ses clients consommateurs un dispositif de médiation de la consommation. Contact : <EM href="mailto:owise.entreprise@gmail.com">owise.entreprise@gmail.com</EM>.</P>
             </Section>
 
             <Section title="Droit applicable">
@@ -341,7 +341,7 @@ export default function MentionsLegalesClient() {
             <InfoBox>Owise est attachée à la protection de vos données personnelles, conformément au RGPD (Règlement UE 2016/679).</InfoBox>
 
             <Section title="1 — Responsable du traitement">
-              <P><Strong>Owise (entreprise individuelle)</Strong>, dont le siège est à Paris, est responsable du traitement de vos données personnelles. Contact DPO : <EM href="mailto:privacy@owise.fr">privacy@owise.fr</EM>.</P>
+              <P><Strong>Owise (entreprise individuelle)</Strong>, dont le siège est à Paris, est responsable du traitement de vos données personnelles. Contact DPO : <EM href="mailto:owise.entreprise@gmail.com">owise.entreprise@gmail.com</EM>.</P>
             </Section>
 
             <Section title="2 — Données collectées">
@@ -397,7 +397,7 @@ export default function MentionsLegalesClient() {
                 <><Strong>Opposition</Strong> — s&apos;opposer à certains traitements</>,
                 <><Strong>Retrait du consentement</Strong> — révoquer un consentement à tout moment</>,
               ]} />
-              <P>Pour exercer ces droits : <EM href="mailto:privacy@owise.fr">privacy@owise.fr</EM>. Vous pouvez également introduire une réclamation auprès de la <Strong>CNIL</Strong> (<EM href="https://www.cnil.fr" target="_blank">cnil.fr</EM>).</P>
+              <P>Pour exercer ces droits : <EM href="mailto:owise.entreprise@gmail.com">owise.entreprise@gmail.com</EM>. Vous pouvez également introduire une réclamation auprès de la <Strong>CNIL</Strong> (<EM href="https://www.cnil.fr" target="_blank">cnil.fr</EM>).</P>
             </Section>
 
             <Section title="8 — Cookies">
@@ -417,7 +417,7 @@ export default function MentionsLegalesClient() {
             Dernière mise à jour : 26 mai 2026
           </span>
           <div style={{ display: 'flex', gap: 16 }}>
-            {[['Accueil', '/'], ['Contact DPO', 'mailto:privacy@owise.fr'], ['Support', 'mailto:owise.entreprise@gmail.com']].map(([label, href]) => (
+            {[['Accueil', '/'], ['Contact DPO', 'mailto:owise.entreprise@gmail.com'], ['Support', 'mailto:owise.entreprise@gmail.com']].map(([label, href]) => (
               <a key={href} href={href} style={{ fontSize: 11, color: '#9B9B9B', textDecoration: 'none' }}>{label}</a>
             ))}
           </div>
