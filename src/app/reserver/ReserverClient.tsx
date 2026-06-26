@@ -833,7 +833,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                       }}>
                       {/* Image véhicule */}
                       <div style={{
-                        width: 110, minWidth: 110, height: 72,
+                        width: 150, minWidth: 150, height: 96,
                         background: 'linear-gradient(135deg, #f0ede8 0%, #e8e4de 100%)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         overflow: 'hidden', flexShrink: 0,
