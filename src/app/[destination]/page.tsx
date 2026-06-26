@@ -256,6 +256,13 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
       url: `${BASE}/${dest.slug}`,
       locale: 'fr_FR',
       siteName: 'Owise',
+      images: [{ url: `${BASE}/brand_assets/hero-car.jpg`, width: 1672, height: 941, alt: dest.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dest.metaTitle,
+      description: dest.metaDesc,
+      images: [`${BASE}/brand_assets/hero-car.jpg`],
     },
   }
 }
@@ -364,6 +371,18 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
               <div style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', marginBottom: 6 }}>{item.q}</div>
               <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.7 }}>{item.a}</div>
             </div>
+          ))}
+        </div>
+
+        {/* Maillage interne — autres destinations */}
+        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginTop: 48, marginBottom: 20 }}>
+          Autres destinations desservies
+        </h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {Object.values(DESTINATIONS).filter(d => d.slug !== dest.slug).map(d => (
+            <Link key={d.slug} href={`/${d.slug}`} style={{ fontSize: 13, color: '#0A0A0A', background: '#F7F7F7', borderRadius: 8, padding: '10px 16px', textDecoration: 'none', border: '1px solid rgba(0,0,0,.06)' }}>
+              {d.title} →
+            </Link>
           ))}
         </div>
       </section>

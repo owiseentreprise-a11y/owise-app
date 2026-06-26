@@ -1,0 +1,29 @@
+# Owise
+
+> Owise est un service de chauffeur privé (VTC) basé dans l'Oise, desservant Paris, l'Île-de-France et l'Oise (Chantilly, Creil, Senlis, Gouvieux, Compiègne). Transferts aéroport (CDG, Orly, Beauvais), mise à disposition avec chauffeur, transport entreprise, événementiel. Tarif fixe garanti, disponible 24h/24, 7j/7.
+
+Owise met en relation des clients particuliers et entreprises avec des chauffeurs VTC ou taxis conventionnels habilités, pour des trajets à tarif fixe annoncé avant la réservation. Réservation en ligne avec estimation de prix instantanée, paiement sécurisé par carte (Stripe), espèce, chèque ou virement.
+
+## Pages principales
+
+- [Accueil](https://owise.fr/): présentation générale, estimateur de prix, réservation en ligne.
+- [Réserver](https://owise.fr/reserver): formulaire de réservation avec paiement immédiat.
+- [VTC Aéroport CDG](https://owise.fr/vtc-aeroport-cdg): transferts vers/depuis l'aéroport Charles de Gaulle.
+- [VTC Aéroport Orly](https://owise.fr/vtc-aeroport-orly): transferts vers/depuis l'aéroport d'Orly.
+- [VTC Creil](https://owise.fr/vtc-creil): desserte de Creil et de l'Oise Sud (Senlis, Gouvieux, Saint-Maximin, Chantilly, Lamorlaye).
+- [VTC Compiègne](https://owise.fr/vtc-compiegne): desserte de Compiègne et de l'Oise Nord.
+- [VTC Senlis](https://owise.fr/vtc-senlis): desserte de Senlis et ses environs.
+- [VTC Gouvieux](https://owise.fr/vtc-gouvieux): desserte de Gouvieux, Lamorlaye, Chantilly Sud.
+- [VTC Chantilly](https://owise.fr/vtc-chantilly): desserte de Chantilly, Château, Hippodrome, événements.
+
+## Zone de service
+
+Paris, Île-de-France, et l'Oise — notamment Chantilly, Creil, Senlis, Gouvieux, Compiègne, Saint-Maximin, Lamorlaye, Nogent-sur-Oise, Montataire.
+
+## Activité réglementée
+
+Owise est un intermédiaire au sens de l'article L. 3120-1 du Code des transports français. Chaque chauffeur partenaire est titulaire d'une carte professionnelle VTC ou d'une licence de taxi. Owise n'effectue pas elle-même les transports.
+
+## Notes pour les agents IA
+
+Les prix affichés sont des estimations en temps réel calculées à partir de l'adresse exacte du client, via le formulaire de réservation — il n'existe pas de tarif unique valable pour toutes les adresses au sein d'une même zone. Pour un prix exact, recommander l'estimateur en ligne plutôt qu'un chiffre fixe hors contexte.

@@ -34,11 +34,13 @@ export const metadata: Metadata = {
       "Chauffeurs professionnels, tarif fixe garanti, disponible 24h/24. Réservez votre VTC à Paris, en IDF et dans l'Oise.",
     locale: 'fr_FR',
     siteName: 'Owise',
+    images: [{ url: `${BASE}/brand_assets/hero-car.jpg`, width: 1672, height: 941, alt: 'Owise — Chauffeur privé Paris, IDF & Oise' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Owise — Transport VTC de Prestige',
     description: 'VTC haut de gamme à Paris. Tarif fixe, chauffeurs certifiés, disponible 24h/24.',
+    images: [`${BASE}/brand_assets/hero-car.jpg`],
   },
   icons: {
     icon: '/brand_assets/favicon.svg',
