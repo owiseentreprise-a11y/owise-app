@@ -8,6 +8,7 @@ import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout, fbLead, fbViewContent } from '@/lib/pixel'
+import ReservationSummary from './ReservationSummary'
 import {
   calculerPrix,
   calculerPrixKm,
@@ -534,7 +535,8 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         </div>
       </div>
 
-      <div style={{ maxWidth: 580, margin: '0 auto', padding: '40px 20px 100px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 20px 100px', display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 480px', minWidth: 0 }}>
 
         {/* ── STEP 1 ── */}
         {step === 1 && (
@@ -1073,6 +1075,20 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
             </div>
           </div>
         )}
+        </div>
+
+        <div style={{ flex: '1 1 320px', minWidth: 280, maxWidth: 360 }}>
+          <ReservationSummary
+            departLabel={depart.label}
+            arriveeLabel={arrivee.label}
+            dateOnly={dateOnly}
+            timeOnly={timeOnly}
+            vehiculeLabel={VEHICULE_NOM[vehicule] ?? vehicule}
+            passagers={passagers}
+            prix={prixFinal}
+            allerRetour={allerRetour}
+          />
+        </div>
       </div>
     </div>
   )
