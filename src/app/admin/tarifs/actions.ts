@@ -4,6 +4,14 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+// Rafraîchit immédiatement les pages publiques qui affichent des prix
+// (sans ça, /admin/tarifs se met à jour mais le site public garde le
+// prix en cache jusqu'à la prochaine revalidation ISR, jusqu'à 1h plus tard).
+function revalidatePagesPubliques() {
+  revalidatePath('/')
+  revalidatePath('/[destination]', 'page')
+}
+
 export async function updateTarifVehicule(
   id: string,
   data: { prise_en_charge: number; prix_km: number }
@@ -13,6 +21,7 @@ export async function updateTarifVehicule(
   const { error } = await supabase.from('tarifs').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
   return {}
 }
 
@@ -29,6 +38,7 @@ export async function updatePrixGrille(
     .eq('zone_depart_id', zoneDepart)
     .eq('zone_arrivee_id', zoneArrivee)
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
 }
 
 export async function updateParametresTarifs(formData: FormData): Promise<{ error?: string }> {
@@ -46,6 +56,7 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
   }).eq('id', true)
   if (error) return { error: error.message }
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
   return {}
 }
 
@@ -65,6 +76,7 @@ export async function updateZone(
     prefixes_postaux: prefixes,
   }).eq('id', id)
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
 }
 
 export async function toggleZoneActive(id: string, active: boolean): Promise<void> {
@@ -72,6 +84,7 @@ export async function toggleZoneActive(id: string, active: boolean): Promise<voi
   const supabase = createAdminClient()
   await supabase.from('zones').update({ active }).eq('id', id)
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
 }
 
 export async function deleteZone(id: string): Promise<void> {
@@ -83,6 +96,7 @@ export async function deleteZone(id: string): Promise<void> {
     .or(`zone_depart_id.eq.${id},zone_arrivee_id.eq.${id}`)
   await supabase.from('zones').delete().eq('id', id)
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
 }
 
 export async function addZone(formData: FormData): Promise<void> {
@@ -121,4 +135,5 @@ export async function addZone(formData: FormData): Promise<void> {
   }
 
   revalidatePath('/admin/tarifs')
+  revalidatePagesPubliques()
 }
