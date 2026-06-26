@@ -493,6 +493,11 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         .res-time::-webkit-datetime-edit-minute-field { color: #C9A84C !important; background: transparent; }
         .res-time:focus { border-color: rgba(201,168,76,.6) !important; box-shadow: 0 0 0 3px rgba(201,168,76,.12) !important; }
         @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
+        @media (max-width: 1024px) {
+          .reservation-summary-col { order: -1; width: 100%; max-width: none !important; }
+          .reservation-summary-panel { position: static !important; margin-bottom: 24px; }
+          .reservation-summary-detail { display: none !important; }
+        }
       `}</style>
 
       {/* Header */}
@@ -1077,7 +1082,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         )}
         </div>
 
-        <div style={{ flex: '1 1 320px', minWidth: 280, maxWidth: 360 }}>
+        <div className="reservation-summary-col" style={{ flex: '1 1 320px', minWidth: 280, maxWidth: 360 }}>
           <ReservationSummary
             departLabel={depart.label}
             arriveeLabel={arrivee.label}
