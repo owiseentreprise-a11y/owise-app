@@ -223,6 +223,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [allerRetour,  setAllerRetour] = useState(false)
   const [etapeOpen,    setEtapeOpen]   = useState(false)
   const [suppls,       setSuppls]      = useState<Record<string,number>>({})
+  // Adresses structurées pour le calcul de prix du devis (même type que bcDepart/bcArrivee)
+  const [devisOrig,    setDevisOrig]   = useState<BcAddr>({ label: '' })
+  const [desisDest,    setDesisDest]   = useState<BcAddr>({ label: '' })
+  const [devisPrix,    setDevisPrix]   = useState<number | null>(null)
+  const [devisIsKm,    setDevisIsKm]   = useState(false)
   const [form, setForm] = useState({
     origin:'', dest:'', date:'', time:'09:00', destType:'addr',
     dateRetour:'', heureRetour:'09:00',
@@ -238,6 +243,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const cursorRef    = useRef<HTMLDivElement>(null)
   const ringRef      = useRef<HTMLDivElement>(null)
   const mxRef        = useRef(0); const myRef = useRef(0)
+  const devisEstTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rxRef        = useRef(0); const ryRef = useRef(0)
   const rafRef       = useRef<number>(0)
   const autoEstTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -391,6 +397,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bcDepart.label, bcArrivee.label, bcPax, bcTime])
 
+  /* ── Estimation devis — même logique que le widget ──────── */
+  useEffect(() => {
+    const dep = devisOrig.label.trim()
+    const arr = desisDest.label.trim()
+    if (dep.length < 3 || arr.length < 3) { setDevisPrix(null); return }
+    if (devisEstTimer.current) clearTimeout(devisEstTimer.current)
+    devisEstTimer.current = setTimeout(async () => {
+      const result = await estimerPrixBase(devisOrig, desisDest, pax, form.date, form.time)
+      const suppTotal = Object.values(suppls).reduce((a, b) => a + b, 0)
+      setDevisPrix(Math.round(result.prix + suppTotal + (etapeOpen ? 10 : 0)))
+      setDevisIsKm(result.isKm)
+    }, 600)
+    return () => { if (devisEstTimer.current) clearTimeout(devisEstTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [devisOrig.label, desisDest.label, pax, form.date, form.time, suppls, etapeOpen])
+
   /* ── Parallax souris hero ───────────────────────────────── */
   useEffect(() => {
     const hero = document.getElementById('hero')
@@ -476,22 +498,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return Math.round(base + suppTotal)
   }
 
-  async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
-    const v     = getVehicle(bcPax)
+  // Source unique pour le calcul de prix — utilisée par le widget ET le devis
+  async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string): Promise<{ prix: number; isKm: boolean }> {
+    const v     = getVehicle(paxN)
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
 
-    // Géocode une adresse pour obtenir lat/lng + cp (résultats mis en cache par geocodeAddress)
     const gcFull = async (addr: BcAddr): Promise<BcAddr> => {
       if (addr.lat && addr.cp) return addr
       const gc = await geocodeAddress(addr.label)
       return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
     }
 
-    const realDate = bcDate ? `${bcDate}T${bcTime || '09:00'}` : ''
+    const realDate = date ? `${date}T${time || '09:00'}` : ''
 
-    if (tarif && bcDepart.label && bcArrivee.label) {
-      const [depGc, arrGc] = await Promise.all([gcFull(bcDepart), gcFull(bcArrivee)])
-      // Détection de zone via cp (couvre "Terminal 2E" → 95700 → CDG) puis label en fallback
+    if (tarif && dep.label && arr.label) {
+      const [depGc, arrGc] = await Promise.all([gcFull(dep), gcFull(arr)])
       const zoneDep = detectZone(depGc.cp ?? '', zonesProp, depGc.label)
       const zoneArr = detectZone(arrGc.cp ?? '', zonesProp, arrGc.label)
 
@@ -501,7 +522,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         if (px !== null) return { prix: Math.round(px), isKm: false }
       }
 
-      // Tarif km via Google Distance Matrix
       if (depGc.lat && depGc.lng && arrGc.lat && arrGc.lng) {
         const distKm = await fetchGoogleDist(depGc, arrGc)
         if (distKm !== null) {
@@ -512,13 +532,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       }
     }
 
-    // Fallback base price
-    const dest = bcArrivee.label.toLowerCase()
-    const dep  = bcDepart.label.toLowerCase()
+    const destL = arr.label.toLowerCase()
+    const depL  = dep.label.toLowerCase()
     let base = v.base
-    if (/aéroport|cdg|orly|roissy|beauvais/i.test(dest) || /aéroport|cdg|orly|roissy|beauvais/i.test(dep)) base += 25
-    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(dest)) base += 12
+    if (/aéroport|cdg|orly|roissy|beauvais/i.test(destL) || /aéroport|cdg|orly|roissy|beauvais/i.test(depL)) base += 25
+    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(destL)) base += 12
     return { prix: Math.round(base), isKm: false }
+  }
+
+  async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
+    return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime)
   }
 
   async function submitDevis() {
@@ -529,7 +552,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setSubmitErr('')
     setSubmitting(true)
     const v       = getVehicle(pax)
-    const price   = calcEstimate()
+    const price   = devisPrix
     const ref     = 'OW-' + Date.now().toString(36).toUpperCase()
     const supList = Object.keys(suppls)
 
@@ -575,6 +598,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   function resetDevis() {
     setStep(1); setSubmitted(false); setConfirmRef('')
     setForm({ origin:'', dest:'', date:'', time:'09:00', destType:'addr', dateRetour:'', heureRetour:'09:00', nom:'', tel:'', email:'', societe:'' })
+    setDevisOrig({ label: '' }); setDesisDest({ label: '' }); setDevisPrix(null)
     setPaxN(1); setSuppls({}); setEtapeOpen(false); setAllerRetour(false)
   }
 
@@ -587,7 +611,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setCookieVisible(false); setCookieDone(true)
   }
 
-  const currentEst = calcEstimate()
+  const currentEst = devisPrix
   const currentVeh = getVehicle(pax)
 
   /* ── JSX ─────────────────────────────────────────────────── */
@@ -1519,7 +1543,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     <div className="route-dot o"/>
                     <div className="field" style={{flex:1}}>
                       <label>Prise en charge</label>
-                      <VtAddressInput placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onSelect={v=>setForm(f=>({...f,origin:v.label}))}/>
+                      <VtAddressInput placeholder="Adresse de départ, hôtel, bureau…" value={form.origin} onSelect={v=>{setForm(f=>({...f,origin:v.label}));setDevisOrig(v)}}/>
                     </div>
                   </div>
                   <div className="route-sep"/>
@@ -1536,7 +1560,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     <div className="route-dot d"/>
                     <div className="field" style={{flex:1}}>
                       <label>Destination</label>
-                      <VtAddressInput placeholder="Destination, aéroport, gare…" value={form.dest} onSelect={v=>setForm(f=>({...f,dest:v.label}))}/>
+                      <VtAddressInput placeholder="Destination, aéroport, gare…" value={form.dest} onSelect={v=>{setForm(f=>({...f,dest:v.label}));setDesisDest(v)}}/>
                     </div>
                   </div>
                 </div>
