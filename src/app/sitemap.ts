@@ -15,12 +15,16 @@ const DESTINATIONS = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient()
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('slug, published_at')
-    .eq('statut', 'publie')
-    .order('published_at', { ascending: false })
-    .limit(60)
+  let posts: { slug: string; published_at: string | null }[] = []
+  try {
+    const { data } = await supabase
+      .from('blog_posts')
+      .select('slug, published_at')
+      .eq('statut', 'publie')
+      .order('published_at', { ascending: false })
+      .limit(60)
+    posts = data ?? []
+  } catch { /* table absente au build */ }
 
   return [
     { url: BASE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },

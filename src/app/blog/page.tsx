@@ -14,12 +14,16 @@ const BASE = 'https://owise.fr'
 
 export default async function BlogPage() {
   const supabase = createAdminClient()
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('slug, titre, meta_desc, categorie, published_at')
-    .eq('statut', 'publie')
-    .order('published_at', { ascending: false })
-    .limit(60)
+  let posts: { slug: string; titre: string; meta_desc: string | null; categorie: string | null; published_at: string | null }[] = []
+  try {
+    const { data } = await supabase
+      .from('blog_posts')
+      .select('slug, titre, meta_desc, categorie, published_at')
+      .eq('statut', 'publie')
+      .order('published_at', { ascending: false })
+      .limit(60)
+    posts = data ?? []
+  } catch { /* table absente au build — rendu vide */ }
 
   const categories: Record<string, string> = {
     transfert:  'Transferts',
