@@ -769,6 +769,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
+          <a href="/blog" className="nav-link">Blog</a>
         </div>
         <div className="nav-r">
           <Link href="/espace-client" className="nav-ghost">Espace client</Link>
@@ -1757,6 +1758,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div>
             <div className="footer-col-title">Informations</div>
             <div className="footer-links">
+              <Link href="/blog" className="footer-link">Blog & Guides VTC</Link>
               <Link href="/mentions-legales" className="footer-link">Conditions générales</Link>
               <Link href="/mentions-legales" className="footer-link">Politique de confidentialité</Link>
               <Link href="/mentions-legales" className="footer-link">Mentions légales</Link>
