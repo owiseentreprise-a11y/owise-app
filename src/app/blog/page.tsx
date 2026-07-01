@@ -43,6 +43,7 @@ export default async function BlogPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
+      <style>{`.blog-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.10)!important}`}</style>
 
       {/* Header */}
       <div style={{ background: '#09091A', padding: '48px 24px 40px', textAlign: 'center' }}>
@@ -74,18 +75,14 @@ export default async function BlogPage() {
                 : ''
               return (
                 <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
-                  <div style={{
+                  <div className="blog-card" style={{
                     background: '#fff', borderRadius: 14,
                     padding: '24px 22px', height: '100%',
                     border: '1px solid rgba(0,0,0,.06)',
                     boxShadow: '0 2px 12px rgba(0,0,0,.05)',
                     transition: 'transform .15s, box-shadow .15s',
-                    cursor: 'pointer',
                     display: 'flex', flexDirection: 'column', gap: 10,
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 24px rgba(0,0,0,.1)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(0,0,0,.05)' }}
-                  >
+                  }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{
                         fontSize: 9, fontWeight: 600, letterSpacing: '.12em',
