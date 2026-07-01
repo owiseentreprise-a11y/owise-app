@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'OWISE <noreply@owise.fr>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
-const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL ?? 'https://g.page/r/CjTmBFxmQWBREAE/review'
+const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL ?? 'https://g.page/r/CY0-ORyXWwpXEBM/review'
 
 async function send(to: string, subject: string, html: string) {
   if (!resend) return
@@ -435,6 +435,12 @@ export async function envoyerRecuClient(params: {
          style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.02em;">
         Laisser un avis Google →
       </a>
+      <div style="margin-top:16px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(GOOGLE_REVIEW_URL)}&bgcolor=ffffff&color=09091A&margin=4"
+             alt="QR code avis Google" width="120" height="120"
+             style="display:block;margin:0 auto;border-radius:8px;" />
+        <div style="font-size:10px;color:#848499;margin-top:6px;">Scanner pour laisser un avis</div>
+      </div>
     </div>
 
     <p style="margin:0;font-size:12px;color:#848499;text-align:center;">À bientôt sur OWISE — <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
