@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const BASE = 'https://owise.fr'
 
@@ -12,25 +13,30 @@ const DESTINATIONS = [
   'vtc-chantilly',
 ]
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const supabase = createAdminClient()
+  const { data: posts } = await supabase
+    .from('blog_posts')
+    .select('slug, published_at')
+    .eq('statut', 'publie')
+    .order('published_at', { ascending: false })
+    .limit(60)
+
   return [
-    {
-      url: BASE,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-    {
-      url: `${BASE}/reserver`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    ...DESTINATIONS.map((slug) => ({
+    { url: BASE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    { url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+    { url: `${BASE}/reserver`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+    ...DESTINATIONS.map(slug => ({
       url: `${BASE}/${slug}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+    })),
+    ...(posts ?? []).map(p => ({
+      url: `${BASE}/blog/${p.slug}`,
+      lastModified: new Date(p.published_at ?? Date.now()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
   ]
 }
