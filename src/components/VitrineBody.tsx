@@ -209,6 +209,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   /* booking widget */
   const [bcPax,      setBcPax]      = useState(1)
   const [bcEtape,    setBcEtape]    = useState(false)
+  const [bcEtapeAddr, setBcEtapeAddr] = useState<BcAddr>({ label: '' })
   const [bcPrice,    setBcPrice]    = useState<number|null>(null)
   const [bcIsKm,     setBcIsKm]     = useState(false)
   const [bcLoading,  setBcLoading]  = useState(false)
@@ -835,7 +836,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   {bcEtape && (
                     <div className="binput-row" style={{marginBottom:8}}>
                       <span className="binput-dot" style={{width:7,height:7,background:'#E8A030',border:'none',boxShadow:'0 0 5px rgba(232,160,48,.4)'}}/>
-                      <input className="binput" type="text" placeholder="Étape intermédiaire…"/>
+                      <VtAddressInput className="binput" placeholder="Étape intermédiaire…" value={bcEtapeAddr.label} onSelect={setBcEtapeAddr}/>
                     </div>
                   )}
                   <div className="binput-row">
@@ -843,7 +844,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     <VtAddressInput className="binput" placeholder="Destination, aéroport, gare…" value={bcArrivee.label} onSelect={setBcArrivee}/>
                   </div>
                 </div>
-                <button onClick={()=>setBcEtape(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:'2px 0 6px',transition:'color .15s'}}>
+                <button onClick={()=>{setBcEtape(v=>!v);setBcEtapeAddr({label:''})}} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:'2px 0 6px',transition:'color .15s'}}>
                   <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
                   {bcEtape ? "Retirer l'étape" : 'Ajouter une étape'}
                 </button>
