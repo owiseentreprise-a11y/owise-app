@@ -182,6 +182,8 @@ export default function NouvelleCourseForm({
   const [passagerPrenom, setPassagerPrenom] = useState('')
   const [passagerNom, setPassagerNom]       = useState('')
   const [passagerTel, setPassagerTel]       = useState('')
+  const [passagerEmail, setPassagerEmail]   = useState('')
+  const [creerCompte, setCreerCompte]       = useState(false)
   const [allerRetour, setAllerRetour] = useState(false)
   const [dateRetour, setDateRetour]   = useState('')
   const [numVolTrain, setNumVolTrain] = useState('')
@@ -251,6 +253,8 @@ export default function NouvelleCourseForm({
     fd.set('passager_prenom', passagerPrenom)
     fd.set('passager_nom', passagerNom)
     fd.set('passager_tel', passagerTel)
+    fd.set('passager_email', passagerEmail)
+    fd.set('creer_compte', creerCompte ? 'true' : 'false')
     fd.set('aller_retour', allerRetour ? 'true' : 'false')
     fd.set('date_retour', dateRetour)
     fd.set('num_vol_train', numVolTrain)
@@ -566,32 +570,54 @@ export default function NouvelleCourseForm({
               display: 'flex', flexDirection: 'column', gap: 12,
             }}>
               <div style={{ fontSize: 10, color: 'var(--t2)', marginBottom: 2 }}>
-                Client ponctuel ou passager différent du commanditaire — sans compte dans le système
+                Client ponctuel — renseignez l'email pour créer un compte automatiquement
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={lbl}>Prénom</label>
+                  <label style={lbl}>Prénom *</label>
                   <input
                     value={passagerPrenom} onChange={e => setPassagerPrenom(e.target.value)}
                     placeholder="Prénom du passager" style={inp}
                   />
                 </div>
                 <div>
-                  <label style={lbl}>Nom</label>
+                  <label style={lbl}>Nom *</label>
                   <input
                     value={passagerNom} onChange={e => setPassagerNom(e.target.value)}
                     placeholder="Nom du passager" style={inp}
                   />
                 </div>
               </div>
-              <div>
-                <label style={lbl}>Téléphone</label>
-                <input
-                  value={passagerTel} onChange={e => setPassagerTel(e.target.value)}
-                  placeholder="06 XX XX XX XX" type="tel"
-                  style={{ ...inp, fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.04em' }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={lbl}>Téléphone</label>
+                  <input
+                    value={passagerTel} onChange={e => setPassagerTel(e.target.value)}
+                    placeholder="06 XX XX XX XX" type="tel"
+                    style={{ ...inp, fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.04em' }}
+                  />
+                </div>
+                <div>
+                  <label style={lbl}>Email client</label>
+                  <input
+                    value={passagerEmail} onChange={e => { setPassagerEmail(e.target.value); if (!e.target.value) setCreerCompte(false) }}
+                    placeholder="client@email.com" type="email"
+                    style={inp}
+                  />
+                </div>
               </div>
+              {passagerEmail && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', background: creerCompte ? 'rgba(61,184,122,.08)' : 'rgba(201,168,76,.04)', borderRadius: 8, border: `1px solid ${creerCompte ? 'rgba(61,184,122,.3)' : 'rgba(201,168,76,.15)'}`, transition: 'all .15s' }}>
+                  <input
+                    type="checkbox" checked={creerCompte} onChange={e => setCreerCompte(e.target.checked)}
+                    style={{ width: 16, height: 16, accentColor: '#3DB87A', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>Créer un compte client et envoyer les identifiants par email</div>
+                    <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 2 }}>Un mot de passe temporaire sera généré automatiquement et envoyé à {passagerEmail}</div>
+                  </div>
+                </label>
+              )}
             </div>
           )}
         </fieldset>

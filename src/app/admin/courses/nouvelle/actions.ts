@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { requireAdminClient } from '@/lib/supabase/server'
-import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerNotificationChauffeur } from '@/lib/email'
+import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerNotificationChauffeur, envoyerBienvenueClient } from '@/lib/email'
 import { getUserEmail, createAdminClient } from '@/lib/supabase/admin'
 
 export async function creerCourseAction(formData: FormData): Promise<{ error?: string } | void> {
@@ -34,6 +34,8 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const passager_prenom = passager_mode === 'libre' ? ((formData.get('passager_prenom') as string) || null) : null
   const passager_nom    = passager_mode === 'libre' ? ((formData.get('passager_nom')    as string) || null) : null
   const passager_tel    = passager_mode === 'libre' ? ((formData.get('passager_tel')    as string) || null) : null
+  const passager_email  = passager_mode === 'libre' ? ((formData.get('passager_email')  as string) || null) : null
+  const creer_compte    = passager_mode === 'libre' && formData.get('creer_compte') === 'true' && !!passager_email
 
   if (!adresse_depart || !adresse_arrivee || !date_prevue || !type_vehicule) {
     return { error: 'Champs obligatoires manquants' }
@@ -68,6 +70,39 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   }).select('id').single()
 
   if (error) return { error: error.message }
+
+  // Création automatique du compte client si email fourni et case cochée
+  let nouveauClientId: string | null = null
+  if (creer_compte && passager_email && newCourse) {
+    try {
+      const adminClient = createAdminClient()
+      // Générer un mot de passe temporaire sécurisé
+      const motDePasse = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!2'
+      const { data: newUser } = await adminClient.auth.admin.createUser({
+        email: passager_email,
+        password: motDePasse,
+        email_confirm: true,
+        app_metadata: { role: 'client' },
+      })
+      if (newUser?.user?.id) {
+        nouveauClientId = newUser.user.id
+        await Promise.all([
+          adminClient.from('profiles').upsert({ id: nouveauClientId, prenom: passager_prenom ?? '', nom: passager_nom ?? '', telephone: passager_tel ?? null }, { onConflict: 'id' }),
+          adminClient.from('clients').upsert({ id: nouveauClientId, type_compte: 'particulier' }, { onConflict: 'id' }),
+        ])
+        // Lier la course au nouveau client
+        await supabase.from('courses').update({ client_id: nouveauClientId, passager_prenom: null, passager_nom: null, passager_tel: null }).eq('id', newCourse.id)
+        // Envoyer l'email de bienvenue avec le mot de passe temporaire
+        await envoyerBienvenueClient({
+          email: passager_email,
+          prenom: passager_prenom ?? '',
+          nom: passager_nom ?? '',
+          password: motDePasse,
+          typeCompte: 'particulier',
+        })
+      }
+    } catch { /* non bloquant */ }
+  }
 
   // Retour — adresses inversées
   if (allerRetour && dateRetourRaw && newCourse) {
