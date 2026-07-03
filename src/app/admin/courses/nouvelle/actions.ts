@@ -76,30 +76,45 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   if (creer_compte && passager_email && newCourse) {
     try {
       const adminClient = createAdminClient()
-      // Générer un mot de passe temporaire sécurisé
-      const motDePasse = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!2'
-      const { data: newUser } = await adminClient.auth.admin.createUser({
-        email: passager_email,
-        password: motDePasse,
-        email_confirm: true,
-        app_metadata: { role: 'client' },
-      })
-      if (newUser?.user?.id) {
-        nouveauClientId = newUser.user.id
-        await Promise.all([
-          adminClient.from('profiles').upsert({ id: nouveauClientId, prenom: passager_prenom ?? '', nom: passager_nom ?? '', telephone: passager_tel ?? null }, { onConflict: 'id' }),
-          adminClient.from('clients').upsert({ id: nouveauClientId, type_compte: 'particulier' }, { onConflict: 'id' }),
-        ])
-        // Lier la course au nouveau client
-        await supabase.from('courses').update({ client_id: nouveauClientId, passager_prenom: null, passager_nom: null, passager_tel: null }).eq('id', newCourse.id)
-        // Envoyer l'email de bienvenue avec le mot de passe temporaire
-        await envoyerBienvenueClient({
+
+      // Vérifier si le client existe déjà (email déjà enregistré)
+      const rpcResult = await adminClient.rpc('find_user_by_email', { p_email: passager_email })
+      const existingId: string | null = rpcResult.error ? null : (rpcResult.data as string | null)
+
+      if (existingId) {
+        // Client existant → lier simplement la course sans recréer de compte ni renvoyer d'email
+        nouveauClientId = existingId
+        await supabase.from('courses').update({
+          client_id: nouveauClientId,
+          passager_prenom: null, passager_nom: null, passager_tel: null,
+        }).eq('id', newCourse.id)
+      } else {
+        // Nouveau client → créer le compte et envoyer l'email de bienvenue
+        const motDePasse = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6).toUpperCase() + '!2'
+        const { data: newUser } = await adminClient.auth.admin.createUser({
           email: passager_email,
-          prenom: passager_prenom ?? '',
-          nom: passager_nom ?? '',
           password: motDePasse,
-          typeCompte: 'particulier',
+          email_confirm: true,
+          app_metadata: { role: 'client' },
         })
+        if (newUser?.user?.id) {
+          nouveauClientId = newUser.user.id
+          await Promise.all([
+            adminClient.from('profiles').upsert({ id: nouveauClientId, prenom: passager_prenom ?? '', nom: passager_nom ?? '', telephone: passager_tel ?? null }, { onConflict: 'id' }),
+            adminClient.from('clients').upsert({ id: nouveauClientId, type_compte: 'particulier' }, { onConflict: 'id' }),
+          ])
+          await supabase.from('courses').update({
+            client_id: nouveauClientId,
+            passager_prenom: null, passager_nom: null, passager_tel: null,
+          }).eq('id', newCourse.id)
+          await envoyerBienvenueClient({
+            email: passager_email,
+            prenom: passager_prenom ?? '',
+            nom: passager_nom ?? '',
+            password: motDePasse,
+            typeCompte: 'particulier',
+          })
+        }
       }
     } catch { /* non bloquant */ }
   }
