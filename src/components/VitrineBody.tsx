@@ -372,7 +372,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       setBcLoading(true)
       setBcPrice(null)
       const result = await bcEstimate()
-      setBcPrice(result.prix)
+      const prixAvecEtape = bcEtape ? result.prix + (paramsProp?.supplement_etape ?? 10) : result.prix
+      setBcPrice(prixAvecEtape)
       setBcIsKm(result.isKm)
       setBcLoading(false)
       const dep = bcDepart.label.trim()
@@ -396,7 +397,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     }, 900)
     return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime])
+  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime, bcEtape])
 
   /* ── Estimation devis — même logique que le widget ──────── */
   useEffect(() => {
@@ -407,7 +408,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     devisEstTimer.current = setTimeout(async () => {
       const result = await estimerPrixBase(devisOrig, desisDest, pax, form.date, form.time)
       const suppTotal = Object.values(suppls).reduce((a, b) => a + b, 0)
-      setDevisPrix(Math.round(result.prix + suppTotal + (etapeOpen ? 10 : 0)))
+      setDevisPrix(Math.round(result.prix + suppTotal + (etapeOpen ? (paramsProp?.supplement_etape ?? 10) : 0)))
       setDevisIsKm(result.isKm)
     }, 600)
     return () => { if (devisEstTimer.current) clearTimeout(devisEstTimer.current) }
@@ -488,14 +489,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       if (!base)           base = Number(tarif.prise_en_charge) + 30
       if (paramsProp?.tarif_pec_actif) base += paramsProp.tarif_frais_pec ?? 0
       base = appliquerSupplements(base, fakeDate, paramsProp)
-      if (etapeOpen) base += 10
+      if (etapeOpen) base += paramsProp?.supplement_etape ?? 10
       return Math.round(base + suppTotal)
     }
     // fallback hardcodé
     let base = v.base
     if (isCDG || isOrly || isBeauvais) base += 25
     else if (isGare)                   base += 12
-    if (etapeOpen)                     base += 10
+    if (etapeOpen)                     base += paramsProp?.supplement_etape ?? 10
     return Math.round(base + suppTotal)
   }
 

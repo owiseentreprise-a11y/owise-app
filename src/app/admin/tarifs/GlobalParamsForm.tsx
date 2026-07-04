@@ -58,6 +58,11 @@ export default function GlobalParamsForm({ p }: { p: any }) {
         <Field label="tarif_frais_pec"      name="tarif_frais_pec"      value={p?.tarif_frais_pec ?? 15} />
 
         <div style={{ gridColumn: '1/-1', fontSize: 10, color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase', paddingTop: 8, borderTop: '1px solid rgba(201,168,76,.07)' }}>
+          Frais étape (€ fixe)
+        </div>
+        <Field label="Frais par étape (€)" name="supplement_etape" value={p?.supplement_etape ?? 10} />
+
+        <div style={{ gridColumn: '1/-1', fontSize: 10, color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase', paddingTop: 8, borderTop: '1px solid rgba(201,168,76,.07)' }}>
           Suppléments (%)
         </div>
         <Field label="supplement_nuit"    name="supplement_nuit"    value={p?.supplement_nuit ?? 20} />

@@ -47,6 +47,7 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
   const { error } = await supabase.from('parametres').update({
     tarif_frais_pec:        Number(formData.get('tarif_frais_pec')),
     tarif_pec_actif:        formData.get('tarif_pec_actif') === 'true',
+    supplement_etape:       Number(formData.get('supplement_etape')),
     supplement_nuit:        Number(formData.get('supplement_nuit')),
     supplement_weekend:     Number(formData.get('supplement_weekend')),
     supplement_ferie:       Number(formData.get('supplement_ferie')),

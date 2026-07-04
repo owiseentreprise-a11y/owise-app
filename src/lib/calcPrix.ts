@@ -13,6 +13,7 @@ export type ParamsCalc = {
   coef_van?: number | null
   supplement_nuit?: number | null
   supplement_weekend?: number | null
+  supplement_etape?: number | null
   tarif_pec_actif?: boolean | null
   tarif_frais_pec?: number | null
 }
