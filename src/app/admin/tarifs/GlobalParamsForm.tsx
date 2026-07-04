@@ -119,19 +119,22 @@ export default function GlobalParamsForm({ p }: { p: any }) {
   return (
     <form onSubmit={handleSubmit}>
 
-      {/* Frais de prise en charge */}
-      <Section title="Frais de prise en charge">
+      {/* Frais administratif optionnel */}
+      <Section title="Frais de déplacement supplémentaire (optionnel)">
+        <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 8, padding: '8px 12px', background: 'rgba(132,132,153,.06)', borderRadius: 8 }}>
+          ⚠ Ce frais est différent de la "Prise en charge" dans les tarifs véhicules ci-dessus. Il s'ajoute en plus si vous souhaitez facturer un surcoût fixe séparé pour chaque course.
+        </div>
         <Row
-          label="Activation des frais de prise en charge"
-          desc="Si activé, un montant fixe est ajouté à chaque course en plus du calcul kilométrique ou forfaitaire."
+          label="Activer un frais fixe additionnel"
+          desc="Si activé, un montant fixe supplémentaire est ajouté à chaque course, en plus du prix calculé (km ou forfait)."
           name="tarif_pec_actif"
           value={pecActif}
           isBoolean
           onChange={v => setPecActif(v)}
         />
         <Row
-          label="Montant des frais de prise en charge"
-          desc={pecActif === 'true' ? `Actuellement actif : +${fraisPec}€ ajoutés à chaque course.` : 'Inactif — ce montant ne sera pas appliqué tant que l\'option ci-dessus est désactivée.'}
+          label="Montant du frais additionnel"
+          desc={pecActif === 'true' ? `Actif : +${fraisPec}€ ajoutés à chaque course.` : 'Inactif — aucun frais additionnel appliqué pour l\'instant.'}
           name="tarif_frais_pec"
           value={p?.tarif_frais_pec ?? 0}
           isActive={pecActif === 'true'}

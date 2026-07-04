@@ -80,10 +80,13 @@ export default async function TarifsPage() {
           <ZonesSection zones={zones} />
         </div>
 
-        {/* Paramètres globaux */}
+        {/* Suppléments & options de calcul */}
         <div className="tarif-section">
-          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 20 }}>
-            Paramètres globaux
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 4 }}>
+            Suppléments & options de calcul
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 20 }}>
+            Majorations appliquées sur les prix de base ci-dessus. Les tarifs par véhicule (prise en charge + km) sont configurés dans les cartes véhicules ci-dessus.
           </div>
           <GlobalParamsForm p={paramsRes.data} />
         </div>
