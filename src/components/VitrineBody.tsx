@@ -381,20 +381,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
         // Calculer en parallèle : prix direct A→B + leg A→étape + leg étape→B
         const [direct, leg1, leg2] = await Promise.all([
-          estimerPrixBase(bcDepart, bcArrivee,  bcPax, bcDate, bcTime), // direct A→B
-          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime), // A→étape
-          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime), // étape→B
+          estimerPrixBase(bcDepart, bcArrivee,  bcPax, bcDate, bcTime),
+          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime),
+          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime),
         ])
 
         if (!direct.isKm) {
           // A→B est un FORFAIT → prix = forfait(A→B) + km_détour(A→étape) + frais étape
-          // Pour le détour : si leg1 est km, on prend seulement la part km (sans prise en charge)
-          // Si leg1 est forfait (étape en zone), on prend le forfait complet du leg1
           const prixDetour = leg1.isKm ? Math.max(0, leg1.prix - pec) : leg1.prix
           prixFinal = direct.prix + prixDetour + fraisEtape
           isKmFinal = false
         } else {
-          // A→B est per-km → 1 seule prise en charge sur les deux tronçons
+          // A→B est per-km → 1 seule prise en charge
           const priseEnCharge = (leg1.isKm && leg2.isKm) ? pec : 0
           prixFinal = leg1.prix + leg2.prix - priseEnCharge + fraisEtape
           isKmFinal = true
