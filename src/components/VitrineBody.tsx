@@ -414,7 +414,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     }, 900)
     return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime, bcEtape])
+  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime, bcEtape, bcEtapeAddr.cp, bcEtapeAddr.lat])
 
   /* ── Estimation devis — même logique que le widget ──────── */
   useEffect(() => {
