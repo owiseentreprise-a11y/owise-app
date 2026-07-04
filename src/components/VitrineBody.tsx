@@ -371,16 +371,33 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
       setBcPrice(null)
-      const result = await bcEstimate()
-      const prixAvecEtape = bcEtape ? result.prix + (paramsProp?.supplement_etape ?? 10) : result.prix
-      setBcPrice(prixAvecEtape)
-      setBcIsKm(result.isKm)
+      const fraisEtape = paramsProp?.supplement_etape ?? 10
+      let prixFinal: number
+      let isKmFinal: boolean
+
+      if (bcEtape && bcEtapeAddr.label.trim().length >= 3) {
+        // Deux tronçons en parallèle : A→étape + étape→B
+        const [leg1, leg2] = await Promise.all([
+          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime),
+          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime),
+        ])
+        prixFinal = leg1.prix + leg2.prix + fraisEtape
+        isKmFinal = leg1.isKm || leg2.isKm
+      } else {
+        // Pas d'étape ou adresse étape non résolue → comportement simple
+        const result = await bcEstimate()
+        prixFinal = bcEtape ? result.prix + fraisEtape : result.prix
+        isKmFinal = result.isKm
+      }
+
+      setBcPrice(prixFinal)
+      setBcIsKm(isKmFinal)
       setBcLoading(false)
       const dep = bcDepart.label.trim()
       const arr = bcArrivee.label.trim()
       const vh  = NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline'
       const key = `${dep}|${arr}|${vh}`
-      if (result.prix > 0 && dep.length >= 8 && arr.length >= 8 && key !== lastEstimRef.current) {
+      if (prixFinal > 0 && dep.length >= 8 && arr.length >= 8 && key !== lastEstimRef.current) {
         lastEstimRef.current = key
         fetch('/api/estimations', {
           method: 'POST',
@@ -389,7 +406,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             adresse_depart:  dep,
             adresse_arrivee: arr,
             vehicule:        vh,
-            prix:            result.prix,
+            prix:            prixFinal,
             source:          'vitrine',
           }),
         }).catch(() => {})
@@ -908,7 +925,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <span style={{fontSize:10,color:'var(--t2)'}}>✓ Annulation gratuite</span>
                 </div>
                 {bcPrice !== null && (
-                  <button onClick={async()=>{setBcLoading(true);setBcPrice(null);const r=await bcEstimate();setBcPrice(r.prix);setBcIsKm(r.isKm);setBcLoading(false)}} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
+                  <button onClick={async()=>{
+                    setBcLoading(true);setBcPrice(null);
+                    const frais=paramsProp?.supplement_etape??10;
+                    if(bcEtape&&bcEtapeAddr.label.trim().length>=3){
+                      const[l1,l2]=await Promise.all([estimerPrixBase(bcDepart,bcEtapeAddr,bcPax,bcDate,bcTime),estimerPrixBase(bcEtapeAddr,bcArrivee,bcPax,bcDate,bcTime)]);
+                      setBcPrice(l1.prix+l2.prix+frais);setBcIsKm(l1.isKm||l2.isKm);
+                    }else{const r=await bcEstimate();setBcPrice(bcEtape?r.prix+frais:r.prix);setBcIsKm(r.isKm);}
+                    setBcLoading(false);
+                  }} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
                     ↺ Recalculer
                   </button>
                 )}
