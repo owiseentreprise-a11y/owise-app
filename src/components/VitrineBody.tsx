@@ -376,17 +376,29 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       let isKmFinal: boolean
 
       if (bcEtape && bcEtapeAddr.label.trim().length >= 3) {
-        // Deux tronçons en parallèle : A→étape + étape→B
-        const [leg1, leg2] = await Promise.all([
-          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime),
-          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime),
-        ])
-        // Si les deux tronçons sont au km, la prise en charge a été comptée deux fois.
-        // Le chauffeur ne reprend le client qu'une seule fois — on soustrait une prise en charge.
         const tarifVeh = bcTarifs.find(t => t.vehicule === getVehicle(bcPax).name)
-        const priseEnCharge = (leg1.isKm && leg2.isKm && tarifVeh) ? Number(tarifVeh.prise_en_charge) : 0
-        prixFinal = leg1.prix + leg2.prix - priseEnCharge + fraisEtape
-        isKmFinal = leg1.isKm || leg2.isKm
+        const pec = tarifVeh ? Number(tarifVeh.prise_en_charge) : 0
+
+        // Calculer en parallèle : prix direct A→B + leg A→étape + leg étape→B
+        const [direct, leg1, leg2] = await Promise.all([
+          estimerPrixBase(bcDepart, bcArrivee,  bcPax, bcDate, bcTime), // direct A→B
+          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime), // A→étape
+          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime), // étape→B
+        ])
+
+        if (!direct.isKm) {
+          // A→B est un FORFAIT → prix = forfait(A→B) + km_détour(A→étape) + frais étape
+          // Pour le détour : si leg1 est km, on prend seulement la part km (sans prise en charge)
+          // Si leg1 est forfait (étape en zone), on prend le forfait complet du leg1
+          const prixDetour = leg1.isKm ? Math.max(0, leg1.prix - pec) : leg1.prix
+          prixFinal = direct.prix + prixDetour + fraisEtape
+          isKmFinal = false
+        } else {
+          // A→B est per-km → 1 seule prise en charge sur les deux tronçons
+          const priseEnCharge = (leg1.isKm && leg2.isKm) ? pec : 0
+          prixFinal = leg1.prix + leg2.prix - priseEnCharge + fraisEtape
+          isKmFinal = true
+        }
       } else {
         // Pas d'étape ou adresse étape non résolue → comportement simple
         const result = await bcEstimate()
@@ -933,9 +945,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     setBcLoading(true);setBcPrice(null);
                     const frais=paramsProp?.supplement_etape??10;
                     if(bcEtape&&bcEtapeAddr.label.trim().length>=3){
-                      const[l1,l2]=await Promise.all([estimerPrixBase(bcDepart,bcEtapeAddr,bcPax,bcDate,bcTime),estimerPrixBase(bcEtapeAddr,bcArrivee,bcPax,bcDate,bcTime)]);
-                      const tv=bcTarifs.find(t=>t.vehicule===getVehicle(bcPax).name);const pec=(l1.isKm&&l2.isKm&&tv)?Number(tv.prise_en_charge):0;
-                      setBcPrice(l1.prix+l2.prix-pec+frais);setBcIsKm(l1.isKm||l2.isKm);
+                      const tv=bcTarifs.find(t=>t.vehicule===getVehicle(bcPax).name);const pec=tv?Number(tv.prise_en_charge):0;
+                      const[d,l1,l2]=await Promise.all([estimerPrixBase(bcDepart,bcArrivee,bcPax,bcDate,bcTime),estimerPrixBase(bcDepart,bcEtapeAddr,bcPax,bcDate,bcTime),estimerPrixBase(bcEtapeAddr,bcArrivee,bcPax,bcDate,bcTime)]);
+                      if(!d.isKm){const det=l1.isKm?Math.max(0,l1.prix-pec):l1.prix;setBcPrice(d.prix+det+frais);setBcIsKm(false);}
+                      else{const p=(l1.isKm&&l2.isKm)?pec:0;setBcPrice(l1.prix+l2.prix-p+frais);setBcIsKm(true);}
                     }else{const r=await bcEstimate();setBcPrice(bcEtape?r.prix+frais:r.prix);setBcIsKm(r.isKm);}
                     setBcLoading(false);
                   }} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
