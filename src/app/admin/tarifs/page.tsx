@@ -4,6 +4,7 @@ import TarifsMatrix from './TarifsMatrix'
 import TarifsVehicules from './TarifsVehicules'
 import ZonesSection from './ZonesSection'
 import CoherenceAlert from './CoherenceAlert'
+import GlobalParamsForm from './GlobalParamsForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,10 +12,11 @@ export default async function TarifsPage() {
   await requireAdminClient()
   const supabase = createAdminClient()
 
-  const [zonesRes, grilleRes, tarifsRes] = await Promise.all([
+  const [zonesRes, grilleRes, tarifsRes, paramsRes] = await Promise.all([
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
     supabase.from('tarifs').select('*'),
+    supabase.from('parametres').select('*').single(),
   ])
 
   const zones  = zonesRes.data ?? []
@@ -76,6 +78,14 @@ export default async function TarifsPage() {
             Zones définies
           </div>
           <ZonesSection zones={zones} />
+        </div>
+
+        {/* Paramètres globaux */}
+        <div className="tarif-section">
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 20 }}>
+            Paramètres globaux
+          </div>
+          <GlobalParamsForm p={paramsRes.data} />
         </div>
       </div>
     </>
