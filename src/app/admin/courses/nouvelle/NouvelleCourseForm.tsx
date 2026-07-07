@@ -172,7 +172,7 @@ export default function NouvelleCourseForm({
 
   const [depart,  setDepart]  = useState<AdresseVal>({ label: '', codePostal: '' })
   const [arrivee, setArrivee] = useState<AdresseVal>({ label: '', codePostal: '' })
-  const [etapes,  setEtapes]  = useState<string[]>([])
+  const [etapes,  setEtapes]  = useState<AdresseVal[]>([])
   const [dateHeure, setDateHeure] = useState(defaultDatetime)
   const [vehicule, setVehicule]   = useState('berline')
   const [prixManuel, setPrixManuel] = useState<string>('')
@@ -247,7 +247,7 @@ export default function NouvelleCourseForm({
     const fd = new FormData(e.currentTarget)
     fd.set('adresse_depart', depart.label || (fd.get('adresse_depart') as string))
     fd.set('adresse_arrivee', arrivee.label || (fd.get('adresse_arrivee') as string))
-    fd.set('etapes', JSON.stringify(etapes.filter(e => e.trim())))
+    fd.set('etapes', JSON.stringify(etapes.map(e => e.label).filter(e => e.trim())))
     if (prixFinal !== null) fd.set('prix_estime', String(prixFinal))
     fd.set('passager_mode', passagerMode)
     fd.set('passager_prenom', passagerPrenom)
@@ -286,17 +286,13 @@ export default function NouvelleCourseForm({
             {etapes.map((etape, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ flex: 1 }}>
-                  <input
-                    type="text"
-                    value={etape}
-                    onChange={e => setEtapes(prev => prev.map((v, j) => j === i ? e.target.value : v))}
+                  <AddressInput
+                    name={`etape_${i}`}
                     placeholder={`Étape ${i + 1} — adresse intermédiaire`}
-                    style={{
-                      width: '100%', padding: '10px 14px', borderRadius: 9, boxSizing: 'border-box' as const,
-                      background: 'var(--elevated)', border: '1px solid rgba(201,168,76,.25)',
-                      color: 'var(--t1)', fontSize: 13, outline: 'none',
-                      fontFamily: 'var(--font-dm-sans), sans-serif',
-                    }}
+                    dotColor="var(--amber)"
+                    dotShape="circle"
+                    value={etape}
+                    onChange={v => setEtapes(prev => prev.map((old, j) => j === i ? v : old))}
                   />
                 </div>
                 <button
@@ -314,7 +310,7 @@ export default function NouvelleCourseForm({
             {etapes.length < 2 && (
               <button
                 type="button"
-                onClick={() => setEtapes(prev => [...prev, ''])}
+                onClick={() => setEtapes(prev => [...prev, { label: '', codePostal: '' }])}
                 style={{
                   alignSelf: 'flex-start', padding: '5px 12px', borderRadius: 7,
                   background: 'transparent', border: '1px dashed rgba(201,168,76,.35)',
