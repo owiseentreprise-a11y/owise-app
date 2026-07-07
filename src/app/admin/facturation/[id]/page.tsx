@@ -216,7 +216,7 @@ export default async function FactureDetailPage({
                       )}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                      {new Date(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                      {new Date(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                       {course.nb_passagers}

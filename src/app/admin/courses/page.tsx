@@ -330,9 +330,9 @@ export default async function CoursesPage({
                     fontSize: 11, color: 'var(--t2)',
                     position: 'relative', zIndex: 2,
                   }}>
-                    {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                    {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
                     {' · '}
-                    {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
                   </div>
 
                   {/* Statut */}
