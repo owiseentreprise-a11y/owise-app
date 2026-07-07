@@ -387,9 +387,26 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         ])
 
         if (!direct.isKm) {
-          // A→B est un FORFAIT → prix = forfait(A→B) + km_détour(A→étape) + frais étape
-          const prixDetour = leg1.isKm ? Math.max(0, leg1.prix - pec) : leg1.prix
-          prixFinal = direct.prix + prixDetour + fraisEtape
+          // A→B est un FORFAIT
+          if (leg1.isKm && leg2.isKm) {
+            // Les deux tronçons sont au km → overhead réel = km(A→étape)+km(étape→B) - km(A→B)
+            // Calculé depuis les prix (pec déjà déduit) puis arrondi au km supérieur
+            const pk = tarifVeh ? Number(tarifVeh.prix_km) : 1.25
+            const dDirect = await fetchGoogleDist(bcDepart, bcArrivee)
+            if (dDirect !== null) {
+              const dLeg1 = (leg1.prix - pec) / pk
+              const dLeg2 = (leg2.prix - pec) / pk
+              const extraKm = Math.ceil(Math.max(0, dLeg1 + dLeg2 - dDirect))
+              prixFinal = direct.prix + extraKm * pk + fraisEtape
+            } else {
+              // Fallback si distance directe non disponible : km du premier tronçon
+              prixFinal = direct.prix + Math.max(0, leg1.prix - pec) + fraisEtape
+            }
+          } else {
+            // Un des tronçons est lui-même un forfait (étape en zone) → ajouter son prix complet
+            const prixDetour = leg1.isKm ? Math.max(0, leg1.prix - pec) : leg1.prix
+            prixFinal = direct.prix + prixDetour + fraisEtape
+          }
           isKmFinal = false
         } else {
           // A→B est per-km → 1 seule prise en charge
@@ -945,8 +962,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     if(bcEtape&&bcEtapeAddr.label.trim().length>=3){
                       const tv=bcTarifs.find(t=>t.vehicule===getVehicle(bcPax).name);const pec=tv?Number(tv.prise_en_charge):0;
                       const[d,l1,l2]=await Promise.all([estimerPrixBase(bcDepart,bcArrivee,bcPax,bcDate,bcTime),estimerPrixBase(bcDepart,bcEtapeAddr,bcPax,bcDate,bcTime),estimerPrixBase(bcEtapeAddr,bcArrivee,bcPax,bcDate,bcTime)]);
-                      if(!d.isKm){const det=l1.isKm?Math.max(0,l1.prix-pec):l1.prix;setBcPrice(d.prix+det+frais);setBcIsKm(false);}
-                      else{const p=(l1.isKm&&l2.isKm)?pec:0;setBcPrice(l1.prix+l2.prix-p+frais);setBcIsKm(true);}
+                      if(!d.isKm){
+                        const pk=tv?Number(tv.prix_km):1.25;
+                        if(l1.isKm&&l2.isKm){
+                          const dd=await fetchGoogleDist(bcDepart,bcArrivee);
+                          if(dd!==null){const ek=Math.ceil(Math.max(0,(l1.prix-pec)/pk+(l2.prix-pec)/pk-dd));setBcPrice(d.prix+ek*pk+frais);}
+                          else setBcPrice(d.prix+Math.max(0,l1.prix-pec)+frais);
+                        }else{setBcPrice(d.prix+(l1.isKm?Math.max(0,l1.prix-pec):l1.prix)+frais);}
+                        setBcIsKm(false);
+                      }else{const p=(l1.isKm&&l2.isKm)?pec:0;setBcPrice(l1.prix+l2.prix-p+frais);setBcIsKm(true);}
                     }else{const r=await bcEstimate();setBcPrice(bcEtape?r.prix+frais:r.prix);setBcIsKm(r.isKm);}
                     setBcLoading(false);
                   }} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
