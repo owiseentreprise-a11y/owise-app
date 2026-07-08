@@ -159,6 +159,9 @@ export async function createReservationCheckout(data: {
           notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
           mode_paiement:   'stripe',
           statut:          'en_attente',
+          passager_prenom: data.prenom || null,
+          passager_nom:    data.nom || null,
+          passager_tel:    data.telephone || null,
         })
       }
     } catch { /* non-bloquant */ }
