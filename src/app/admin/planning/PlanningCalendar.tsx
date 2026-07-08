@@ -130,13 +130,26 @@ function SemaineCourseCard({
         display: 'block', padding: '4px 6px 2px',
         textDecoration: 'none',
       }}>
-        <div style={{
-          fontFamily: 'var(--font-jetbrains), monospace',
-          fontSize: 10, fontWeight: 700, color, lineHeight: 1,
-        }}>
-          {date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, lineHeight: 1 }}>
+          <span style={{
+            fontFamily: 'var(--font-jetbrains), monospace',
+            fontSize: 10, fontWeight: 700, color,
+          }}>
+            {date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+          </span>
+          {course.nb_passagers && course.nb_passagers > 0 && (
+            <span style={{
+              fontSize: 8, padding: '1px 4px', borderRadius: 3,
+              background: `${color}20`, color, fontWeight: 600,
+            }}>
+              {course.nb_passagers}p
+            </span>
+          )}
         </div>
-        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--t1)', marginTop: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text)', marginTop: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {clientNom(course) !== '—' ? clientNom(course) : course.adresse_depart.split(',')[0]}
+        </div>
+        <div style={{ fontSize: 9, color: 'var(--t1)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
           {course.adresse_depart.split(',')[0]}
         </div>
         <div style={{ fontSize: 9, color: 'var(--t2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -354,14 +367,21 @@ function VueMois({ date, courses, today }: {
                   {dCourses.slice(0, 3).map(c => {
                     const color = STATUT_COURSE_COLOR[c.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t3)'
                     const time  = parseAsLocal(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+                    const nom   = clientNom(c)
                     return (
                       <div key={c.id} style={{
                         fontSize: 9, padding: '2px 5px', borderRadius: 4,
-                        background: `${color}18`, border: `1px solid ${color}30`,
-                        color, fontWeight: 500,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        background: `${color}18`, border: `1px solid ${color}35`,
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        overflow: 'hidden',
                       }}>
-                        {time} {c.adresse_depart.split(',')[0]}
+                        <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, color, flexShrink: 0 }}>{time}</span>
+                        <span style={{ color: '#EDE8DF', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                          {nom !== '—' ? nom : c.adresse_depart.split(',')[0]}
+                        </span>
+                        {c.nb_passagers && c.nb_passagers > 0 && (
+                          <span style={{ color, fontWeight: 600, flexShrink: 0 }}>{c.nb_passagers}p</span>
+                        )}
                       </div>
                     )
                   })}
@@ -393,18 +413,24 @@ function VueMois({ date, courses, today }: {
                     const time  = parseAsLocal(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
                     return (
                       <a key={c.id} href={`/admin/courses/${c.id}`} style={{
-                        display: 'grid', gridTemplateColumns: '50px 1fr 120px',
+                        display: 'grid', gridTemplateColumns: '54px 1fr auto 130px',
                         padding: '8px 10px', borderRadius: 7, textDecoration: 'none',
-                        background: 'var(--surface)', border: `1px solid ${color}25`,
+                        background: 'var(--surface)', border: `1px solid ${color}30`,
                         alignItems: 'center', gap: 10,
                       }}>
                         <div style={{ fontFamily:'var(--font-jetbrains), monospace', fontSize:13, fontWeight:700, color }}>{time}</div>
                         <div>
-                          <div style={{ fontSize:11, fontWeight:600, color:'var(--t1)' }}>{c.adresse_depart.split(',')[0]}</div>
+                          <div style={{ fontSize:11, fontWeight:700, color:'#EDE8DF' }}>{clientNom(c)}</div>
+                          <div style={{ fontSize:10, color:'var(--t1)', marginTop: 1 }}>{c.adresse_depart.split(',')[0]}</div>
                           <div style={{ fontSize:10, color:'var(--t2)' }}>→ {c.adresse_arrivee.split(',')[0]}</div>
                         </div>
+                        <div style={{ fontSize:10, color:'var(--t2)', textAlign:'center' }}>
+                          {c.nb_passagers && c.nb_passagers > 0
+                            ? <span style={{ padding:'2px 6px', borderRadius:4, background:'rgba(201,168,76,.1)', color:'var(--gold)', fontWeight:600, fontSize:9 }}>{c.nb_passagers} pax</span>
+                            : null}
+                        </div>
                         <div style={{ fontSize:10, color:'var(--t2)', textAlign:'right' }}>
-                          {chauffeurNom(c) ?? <span style={{color:'var(--gold)'}}>Sans chauffeur</span>}
+                          {chauffeurNom(c) ?? <span style={{color:'var(--gold)', fontWeight:600}}>Sans chauffeur</span>}
                         </div>
                       </a>
                     )
@@ -473,7 +499,7 @@ function VueListe({ courses, chauffeurs, today }: {
                 const chNom = chauffeurNom(c)
                 return (
                   <div key={c.id} style={{
-                    display:'grid', gridTemplateColumns:'56px 1fr 160px 170px 80px',
+                    display:'grid', gridTemplateColumns:'56px 1fr 180px 80px 170px 80px',
                     padding:'10px 14px', background:'var(--surface)',
                     border:`1px solid ${isToday?'rgba(201,168,76,.1)':'var(--gb)'}`,
                     borderRadius:9, alignItems:'center', gap:14,
@@ -485,7 +511,12 @@ function VueListe({ courses, chauffeurs, today }: {
                       <div style={{ fontSize:12, fontWeight:500, color:'var(--t1)', marginBottom:2 }}>{c.adresse_depart}</div>
                       <div style={{ fontSize:11, color:'var(--t2)' }}>→ {c.adresse_arrivee}</div>
                     </a>
-                    <div style={{ fontSize:11, color:'var(--t2)' }}>{clientNom(c)}</div>
+                    <div style={{ fontSize:11, fontWeight:600, color:'#EDE8DF' }}>{clientNom(c)}</div>
+                    <div style={{ fontSize:11, color:'var(--t2)', textAlign:'center' }}>
+                      {c.nb_passagers && c.nb_passagers > 0
+                        ? <span style={{ padding:'2px 6px', borderRadius:4, background:'rgba(201,168,76,.1)', color:'var(--gold)', fontWeight:600, fontSize:10 }}>{c.nb_passagers} pax</span>
+                        : <span style={{color:'var(--t3)'}}>—</span>}
+                    </div>
                     <div onClick={e=>e.stopPropagation()}>
                       {['terminee','annulee'].includes(c.statut) ? (
                         <span style={{fontSize:11,color:'var(--t2)'}}>{chNom??'—'}</span>
