@@ -27,6 +27,7 @@ export default function DispatchRapideButton({
   const [pos, setPos] = useState({ top: 0, right: 0 })
   const [hovered, setHovered] = useState<string | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   function handleOpen(e: React.MouseEvent) {
     e.preventDefault()
@@ -47,7 +48,11 @@ export default function DispatchRapideButton({
 
   useEffect(() => {
     if (!open) return
-    const close = () => setOpen(false)
+    const close = (e: MouseEvent) => {
+      if (dropdownRef.current?.contains(e.target as Node)) return
+      if (btnRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
   }, [open])
@@ -84,6 +89,7 @@ export default function DispatchRapideButton({
 
       {open && (
         <div
+          ref={dropdownRef}
           onMouseDown={e => e.stopPropagation()}
           style={{
             position: 'fixed', top: pos.top, right: pos.right,
