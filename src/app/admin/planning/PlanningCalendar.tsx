@@ -312,8 +312,8 @@ function VueSemaine({ days, courses, chauffeurs, today }: {
 }
 
 // ── Vue Mois ──────────────────────────────────────────────────────────────────
-function VueMois({ date, courses, today }: {
-  date: Date; courses: CourseItem[]; today: Date
+function VueMois({ date, courses, today, chauffeurs }: {
+  date: Date; courses: CourseItem[]; today: Date; chauffeurs: ChauffeurItem[]
 }) {
   const [expandedDay, setExpandedDay] = useState<string|null>(null)
   const grid = monthGrid(date)
@@ -441,8 +441,17 @@ function VueMois({ date, courses, today }: {
                             ? <span style={{ padding:'2px 6px', borderRadius:4, background:'rgba(201,168,76,.1)', color:'var(--gold)', fontWeight:600, fontSize:9 }}>{c.nb_passagers} pax</span>
                             : null}
                         </div>
-                        <div style={{ fontSize:10, color:'var(--t2)', textAlign:'right' }}>
-                          {chauffeurNom(c) ?? <span style={{color:'var(--gold)', fontWeight:600}}>Sans chauffeur</span>}
+                        <div onClick={e => { e.preventDefault(); e.stopPropagation() }}>
+                          {['terminee','annulee'].includes(c.statut) ? (
+                            <span style={{ fontSize:10, color:'var(--t2)' }}>{chauffeurNom(c) ?? '—'}</span>
+                          ) : (
+                            <DispatchRapideButton
+                              courseId={c.id}
+                              chauffeurs={chauffeurs}
+                              currentChauffeurId={c.chauffeur_id}
+                              currentChauffeurNom={chauffeurNom(c)}
+                            />
+                          )}
                         </div>
                       </a>
                     )
@@ -687,7 +696,7 @@ export default function PlanningCalendar({
           <VueSemaine days={days} courses={visibleCourses} chauffeurs={chauffeurs} today={today} />
         )}
         {view==='mois' && (
-          <VueMois date={current} courses={visibleCourses} today={today} />
+          <VueMois date={current} courses={visibleCourses} today={today} chauffeurs={chauffeurs} />
         )}
         {view==='liste' && (
           <VueListe courses={visibleCourses} chauffeurs={chauffeurs} today={today} />
