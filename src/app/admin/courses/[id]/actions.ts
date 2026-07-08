@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutCourse } from '@/lib/types'
 import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
@@ -9,7 +10,10 @@ import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
-  const supabase = await requireAdminClient()
+  // Vérification admin via JWT (anon key)
+  await requireAdminClient()
+  // Toutes les écritures via service role (RLS ne bloque pas les admins sinon)
+  const supabase = createAdminClient()
 
   // Si le chauffeur appartient à un ST, auto-lier le ST à la course
   let chauffeurSousTraitantId: string | null = null
@@ -113,7 +117,8 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
 }
 
 export async function changerStatut(courseId: string, statut: StatutCourse, chauffeurId: string | null): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
   const updates: Record<string, unknown> = { statut }
   if (statut === 'en_route') updates.date_debut = new Date().toISOString()
   if (statut === 'terminee') updates.date_fin = new Date().toISOString()
@@ -218,14 +223,16 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
 }
 
 export async function setPrixFinal(courseId: string, prix: number | null): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
   await supabase.from('courses').update({ prix_final: prix }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin')
 }
 
 export async function modifierNotes(courseId: string, notes: string): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
   await supabase.from('courses').update({ notes: notes || null }).eq('id', courseId)
   revalidatePath(`/admin/courses/${courseId}`)
 }
@@ -240,7 +247,8 @@ export async function modifierCourseDetails(
     adresse_arrivee: string
   }
 ): Promise<{ error?: string } | void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
   if (!data.adresse_depart || !data.adresse_arrivee || !data.date_prevue) {
     return { error: 'Champs obligatoires manquants' }
   }
@@ -257,7 +265,8 @@ export async function modifierCourseDetails(
 }
 
 export async function supprimerCourse(courseId: string): Promise<{ error?: string }> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
   // Récupérer le chauffeur avant suppression pour remettre son statut
   const { data: courseData } = await supabase
     .from('courses')
@@ -284,7 +293,8 @@ export async function assignerSousTraitant(
   sousTraitantId: string | null,
   prixSousTraitant: number | null,
 ): Promise<void> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
 
   // Si on assigne un ST, on retire le chauffeur — remettre son statut disponible
   if (sousTraitantId) {
@@ -333,7 +343,8 @@ export async function assignerSousTraitant(
 }
 
 export async function rembourserCourseAction(courseId: string): Promise<{ error?: string; montant?: number }> {
-  const supabase = await requireAdminClient()
+  await requireAdminClient()
+  const supabase = createAdminClient()
 
   const { data: course } = await supabase
     .from('courses')
