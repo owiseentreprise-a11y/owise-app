@@ -22,6 +22,8 @@ type CourseItem = {
   date_prevue: string
   nb_passagers: number | null
   notes: string | null
+  passager_prenom: string | null
+  passager_nom: string | null
   clients: any
   chauffeurs: any
   collaborateurs: any
@@ -60,9 +62,14 @@ function topPx(date: Date): number {
   return ((date.getHours()-START_H) + date.getMinutes()/60) * HOUR_H
 }
 function clientNom(c: CourseItem): string {
-  const cl = c.clients; if (!cl) return '—'
-  return cl.type_compte==='entreprise' ? (cl.entreprise_nom??'—')
-    : cl.profiles ? `${cl.profiles.prenom} ${cl.profiles.nom}` : '—'
+  const cl = c.clients
+  if (cl) {
+    return cl.type_compte === 'entreprise'
+      ? (cl.entreprise_nom ?? '—')
+      : cl.profiles ? `${cl.profiles.prenom} ${cl.profiles.nom}` : '—'
+  }
+  const passager = `${c.passager_prenom ?? ''} ${c.passager_nom ?? ''}`.trim()
+  return passager || '—'
 }
 function chauffeurNom(c: CourseItem): string|null {
   return c.chauffeurs?.profiles

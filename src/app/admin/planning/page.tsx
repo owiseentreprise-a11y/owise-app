@@ -16,6 +16,7 @@ export default async function PlanningPage() {
       .select(`
         id, statut, chauffeur_id,
         adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes,
+        passager_prenom, passager_nom,
         clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone)),
         chauffeurs(profiles(prenom, nom)),
         collaborateurs(prenom, nom, tel)
