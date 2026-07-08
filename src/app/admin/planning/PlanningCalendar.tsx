@@ -7,7 +7,7 @@ import { STATUT_COURSE_COLOR, STATUT_COURSE_LABEL } from '@/lib/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const HOUR_H    = 60   // px par heure dans la vue semaine
-const START_H   = 5    // 05:00
+const START_H   = 3    // 03:00 (courses VTC souvent très tôt le matin)
 const END_H     = 23   // 23:00
 const HOURS     = Array.from({ length: END_H - START_H + 1 }, (_, i) => START_H + i)
 const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
