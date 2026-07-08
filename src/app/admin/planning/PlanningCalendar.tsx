@@ -400,6 +400,9 @@ function VueMois({ date, courses, today, chauffeurs }: {
                         <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
                           {nom !== '—' ? nom : c.adresse_depart.split(',')[0]}
                         </div>
+                        <div style={{ fontSize: 8, color: 'var(--t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {c.adresse_depart.split(',')[0]} → {c.adresse_arrivee.split(',')[0]}
+                        </div>
                       </div>
                     )
                   })}

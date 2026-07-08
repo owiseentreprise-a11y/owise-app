@@ -148,14 +148,14 @@ export async function createReservationCheckout(data: {
     try {
       const dateRetourParsed = new Date(data.date_retour)
       if (!isNaN(dateRetourParsed.getTime())) {
-        const supabase = await createClient()
-        await supabase.from('courses').insert({
+        const supabaseAdmin = createAdminClient()
+        await supabaseAdmin.from('courses').insert({
           adresse_depart:  data.adresse_arrivee,
           adresse_arrivee: data.adresse_depart,
           date_prevue:     dateRetourParsed.toISOString(),
           type_vehicule:   data.type_vehicule,
           nb_passagers:    data.nb_passagers,
-          prix_estime:     Math.round(data.prix / 2),
+          prix_estime:     Math.round(prixServeur / 2),
           notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
           mode_paiement:   'stripe',
           statut:          'en_attente',
