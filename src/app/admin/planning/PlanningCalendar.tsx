@@ -30,6 +30,14 @@ type ChauffeurItem = { id: string; statut: string; profiles: { prenom: string; n
 type View = 'semaine' | 'mois' | 'liste'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Les dates Supabase arrivent en UTC ("2026-07-18T04:00:00+00:00") mais l'heure
+// saisie par l'admin est déjà l'heure Paris — on retire le suffixe TZ pour
+// éviter que le navigateur convertisse en heure locale (+2h en été).
+function parseAsLocal(iso: string): Date {
+  return new Date(iso.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+}
+
 function dk(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
@@ -62,11 +70,11 @@ function chauffeurNom(c: CourseItem): string|null {
 }
 // Assignation de "tracks" pour éviter le chevauchement visuel dans la vue semaine
 function assignTracks(courses: CourseItem[]): Map<string,{track:number;total:number}> {
-  const sorted = [...courses].sort((a,b)=>new Date(a.date_prevue).getTime()-new Date(b.date_prevue).getTime())
+  const sorted = [...courses].sort((a,b)=>parseAsLocal(a.date_prevue).getTime()-parseAsLocal(b.date_prevue).getTime())
   const tracks: number[] = [] // chaque slot = fin estimée en ms
   const result = new Map<string,{track:number;total:number}>()
   for (const c of sorted) {
-    const start = new Date(c.date_prevue).getTime()
+    const start = parseAsLocal(c.date_prevue).getTime()
     const end   = start + 60*60*1000 // durée estimée 60min
     let t = tracks.findIndex(e => e <= start)
     if (t === -1) { t = tracks.length; tracks.push(end) } else tracks[t] = end
@@ -75,11 +83,11 @@ function assignTracks(courses: CourseItem[]): Map<string,{track:number;total:num
   // Calculer total par groupe (chevauchements réels)
   // Simple : recalcul sur chaque course
   for (const c of sorted) {
-    const start = new Date(c.date_prevue).getTime()
+    const start = parseAsLocal(c.date_prevue).getTime()
     const end   = start + 60*60*1000
     let maxTrack = 0
     for (const c2 of sorted) {
-      const s2 = new Date(c2.date_prevue).getTime()
+      const s2 = parseAsLocal(c2.date_prevue).getTime()
       const e2 = s2 + 60*60*1000
       if (start < e2 && end > s2) {
         const t2 = result.get(c2.id)?.track ?? 0
@@ -98,7 +106,7 @@ function SemaineCourseCard({
 }: {
   course: CourseItem; chauffeurs: ChauffeurItem[]; track: number; total: number
 }) {
-  const date   = new Date(course.date_prevue)
+  const date   = parseAsLocal(course.date_prevue)
   const top    = topPx(date)
   const color  = STATUT_COURSE_COLOR[course.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t3)'
   const unassigned = !course.chauffeur_id && !['terminee','annulee'].includes(course.statut)
@@ -166,7 +174,7 @@ function VueSemaine({ days, courses, chauffeurs, today }: {
   // Grouper les courses par jour
   const byDay = new Map<string, CourseItem[]>()
   for (const c of courses) {
-    const key = dk(new Date(c.date_prevue))
+    const key = dk(parseAsLocal(c.date_prevue))
     if (!byDay.has(key)) byDay.set(key, [])
     byDay.get(key)!.push(c)
   }
@@ -291,7 +299,7 @@ function VueMois({ date, courses, today }: {
 
   const byDay = new Map<string, CourseItem[]>()
   for (const c of courses) {
-    const key = dk(new Date(c.date_prevue))
+    const key = dk(parseAsLocal(c.date_prevue))
     if (!byDay.has(key)) byDay.set(key, [])
     byDay.get(key)!.push(c)
   }
@@ -345,7 +353,7 @@ function VueMois({ date, courses, today }: {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {dCourses.slice(0, 3).map(c => {
                     const color = STATUT_COURSE_COLOR[c.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t3)'
-                    const time  = new Date(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+                    const time  = parseAsLocal(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
                     return (
                       <div key={c.id} style={{
                         fontSize: 9, padding: '2px 5px', borderRadius: 4,
@@ -382,7 +390,7 @@ function VueMois({ date, courses, today }: {
                   </div>
                   {dCourses.map(c => {
                     const color = STATUT_COURSE_COLOR[c.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t3)'
-                    const time  = new Date(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+                    const time  = parseAsLocal(c.date_prevue).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
                     return (
                       <a key={c.id} href={`/admin/courses/${c.id}`} style={{
                         display: 'grid', gridTemplateColumns: '50px 1fr 120px',
@@ -417,7 +425,7 @@ function VueListe({ courses, chauffeurs, today }: {
 }) {
   const byDay = new Map<string, CourseItem[]>()
   for (const c of courses) {
-    const key = dk(new Date(c.date_prevue))
+    const key = dk(parseAsLocal(c.date_prevue))
     if (!byDay.has(key)) byDay.set(key, [])
     byDay.get(key)!.push(c)
   }
@@ -460,7 +468,7 @@ function VueListe({ courses, chauffeurs, today }: {
 
             <div style={{ marginLeft:46, display:'flex', flexDirection:'column', gap:4 }}>
               {dayCourses.map((c:any) => {
-                const date = new Date(c.date_prevue)
+                const date = parseAsLocal(c.date_prevue)
                 const color = STATUT_COURSE_COLOR[c.statut as keyof typeof STATUT_COURSE_COLOR]
                 const chNom = chauffeurNom(c)
                 return (
@@ -543,7 +551,7 @@ export default function PlanningCalendar({
       const from = days[0]; const to = days[6]
       to.setHours(23,59,59,999)
       return courses.filter(c => {
-        const d = new Date(c.date_prevue)
+        const d = parseAsLocal(c.date_prevue)
         return d >= from && d <= to
       })
     }
@@ -552,7 +560,7 @@ export default function PlanningCalendar({
       const from = grid[0]; const to = grid[grid.length-1]
       to.setHours(23,59,59,999)
       return courses.filter(c => {
-        const d = new Date(c.date_prevue)
+        const d = parseAsLocal(c.date_prevue)
         return d >= from && d <= to
       })
     }

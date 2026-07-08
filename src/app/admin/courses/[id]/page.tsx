@@ -17,7 +17,7 @@ const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: st
 
 function fmt(iso: string | null, opts: Intl.DateTimeFormatOptions) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', ...opts })
+  return new Date(iso).toLocaleString('fr-FR', opts)
 }
 
 function duree(debut: string | null, fin: string | null) {
