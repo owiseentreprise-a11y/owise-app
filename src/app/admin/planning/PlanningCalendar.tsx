@@ -146,9 +146,11 @@ function SemaineCourseCard({
             </span>
           )}
         </div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text)', marginTop: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {clientNom(course) !== '—' ? clientNom(course) : course.adresse_depart.split(',')[0]}
-        </div>
+        {clientNom(course) !== '—' && (
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gold)', marginTop: 2, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {clientNom(course)}
+          </div>
+        )}
         <div style={{ fontSize: 9, color: 'var(--t1)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
           {course.adresse_depart.split(',')[0]}
         </div>
@@ -370,18 +372,19 @@ function VueMois({ date, courses, today }: {
                     const nom   = clientNom(c)
                     return (
                       <div key={c.id} style={{
-                        fontSize: 9, padding: '2px 5px', borderRadius: 4,
+                        padding: '3px 5px', borderRadius: 4,
                         background: `${color}18`, border: `1px solid ${color}35`,
-                        display: 'flex', alignItems: 'center', gap: 4,
                         overflow: 'hidden',
                       }}>
-                        <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontWeight: 700, color, flexShrink: 0 }}>{time}</span>
-                        <span style={{ color: '#EDE8DF', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
+                          <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 9, fontWeight: 700, color }}>{time}</span>
+                          {c.nb_passagers && c.nb_passagers > 0 && (
+                            <span style={{ fontSize: 8, color, fontWeight: 700 }}>{c.nb_passagers}p</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
                           {nom !== '—' ? nom : c.adresse_depart.split(',')[0]}
-                        </span>
-                        {c.nb_passagers && c.nb_passagers > 0 && (
-                          <span style={{ color, fontWeight: 600, flexShrink: 0 }}>{c.nb_passagers}p</span>
-                        )}
+                        </div>
                       </div>
                     )
                   })}
@@ -420,8 +423,10 @@ function VueMois({ date, courses, today }: {
                       }}>
                         <div style={{ fontFamily:'var(--font-jetbrains), monospace', fontSize:13, fontWeight:700, color }}>{time}</div>
                         <div>
-                          <div style={{ fontSize:11, fontWeight:700, color:'#EDE8DF' }}>{clientNom(c)}</div>
-                          <div style={{ fontSize:10, color:'var(--t1)', marginTop: 1 }}>{c.adresse_depart.split(',')[0]}</div>
+                          {clientNom(c) !== '—' && (
+                            <div style={{ fontSize:12, fontWeight:700, color:'var(--gold)', marginBottom: 2 }}>{clientNom(c)}</div>
+                          )}
+                          <div style={{ fontSize:10, color:'var(--t1)' }}>{c.adresse_depart.split(',')[0]}</div>
                           <div style={{ fontSize:10, color:'var(--t2)' }}>→ {c.adresse_arrivee.split(',')[0]}</div>
                         </div>
                         <div style={{ fontSize:10, color:'var(--t2)', textAlign:'center' }}>
@@ -511,7 +516,7 @@ function VueListe({ courses, chauffeurs, today }: {
                       <div style={{ fontSize:12, fontWeight:500, color:'var(--t1)', marginBottom:2 }}>{c.adresse_depart}</div>
                       <div style={{ fontSize:11, color:'var(--t2)' }}>→ {c.adresse_arrivee}</div>
                     </a>
-                    <div style={{ fontSize:11, fontWeight:600, color:'#EDE8DF' }}>{clientNom(c)}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:'var(--gold)' }}>{clientNom(c)}</div>
                     <div style={{ fontSize:11, color:'var(--t2)', textAlign:'center' }}>
                       {c.nb_passagers && c.nb_passagers > 0
                         ? <span style={{ padding:'2px 6px', borderRadius:4, background:'rgba(201,168,76,.1)', color:'var(--gold)', fontWeight:600, fontSize:10 }}>{c.nb_passagers} pax</span>
