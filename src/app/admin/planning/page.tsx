@@ -56,6 +56,7 @@ export default async function PlanningPage() {
         courses={courses}
         chauffeurs={chauffeurs}
         initialCourses={courses}
+        todayISO={now.toISOString()}
       />
     </>
   )

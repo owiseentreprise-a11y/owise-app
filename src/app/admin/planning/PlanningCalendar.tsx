@@ -182,6 +182,10 @@ function VueSemaine({ days, courses, chauffeurs, today }: {
   days: Date[]; courses: CourseItem[]; chauffeurs: ChauffeurItem[]; today: Date
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Déférer "maintenant" au client pour éviter le mismatch d'hydratation
+  const [nowTop, setNowTop] = useState<number>(-1)
+  const isCurrentWeek = days.some(d => sameDay(d, today))
+
   useEffect(() => {
     if (!scrollRef.current) return
     const nowMinutes = (new Date().getHours()-START_H)*60 + new Date().getMinutes()
@@ -189,9 +193,13 @@ function VueSemaine({ days, courses, chauffeurs, today }: {
     scrollRef.current.scrollTop = Math.max(0, scrollTo)
   }, [])
 
-  const now = new Date()
-  const isCurrentWeek = days.some(d => sameDay(d, now))
-  const nowTop = isCurrentWeek ? topPx(now) : -1
+  useEffect(() => {
+    if (!isCurrentWeek) return
+    const update = () => setNowTop(topPx(new Date()))
+    update()
+    const id = setInterval(update, 60_000)
+    return () => clearInterval(id)
+  }, [isCurrentWeek])
 
   // Grouper les courses par jour
   const byDay = new Map<string, CourseItem[]>()
@@ -568,15 +576,16 @@ function VueListe({ courses, chauffeurs, today }: {
 
 // ── PlanningCalendar (main) ───────────────────────────────────────────────────
 export default function PlanningCalendar({
-  courses, chauffeurs, initialCourses,
+  courses, chauffeurs, initialCourses, todayISO,
 }: {
   courses: CourseItem[]
   chauffeurs: ChauffeurItem[]
   initialCourses: CourseItem[]
+  todayISO: string
 }) {
-  const today = new Date()
+  const today = new Date(todayISO)
   const [view, setView]       = useState<View>('semaine')
-  const [current, setCurrent] = useState(new Date())
+  const [current, setCurrent] = useState(() => new Date(todayISO))
 
   function prev() {
     setCurrent(d => {
