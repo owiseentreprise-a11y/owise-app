@@ -130,7 +130,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
         date_prevue:       dateRetourParsed.toISOString(),
         type_vehicule,
         nb_passagers,
-        prix_estime:       null,
+        prix_estime:       prix_estime,
         notes:             notes ? `Retour — ${notes}` : 'Retour',
         client_id: passager_mode === 'libre' ? null : client_id,
         collaborateur_id: passager_mode === 'libre' ? null : collaborateur_id,
