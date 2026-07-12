@@ -5,6 +5,7 @@ import { getUserEmail }  from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import ClientEditActions, { DeleteClientButton } from './ClientEditActions'
 import CollaborateursSection from './CollaborateursSection'
+import GenererFactureButton from './GenererFactureButton'
 import { togglePayerAbord } from './actions'
 
 export const dynamic = 'force-dynamic'
@@ -57,6 +58,18 @@ export default async function ClientDetailPage({
 
   const coursesTerminees = courses.filter(c => c.statut === 'terminee')
   const caTotal = coursesTerminees.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+
+  // Courses terminées sans facture (pour la facturation groupée)
+  const [coursesRes2] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('id, prix_final, prix_estime')
+      .eq('client_id', id)
+      .eq('statut', 'terminee')
+      .is('facture_id', null),
+  ])
+  const coursesNonFacturees = coursesRes2.data ?? []
+  const montantNonFacture = coursesNonFacturees.reduce((s, c) => s + ((c as any).prix_final ?? (c as any).prix_estime ?? 0), 0)
 
   return (
     <>
@@ -319,6 +332,12 @@ export default async function ClientDetailPage({
               collaborateurs={collaborateurs}
             />
           )}
+
+          <GenererFactureButton
+            clientId={id}
+            nbCoursesNonFacturees={coursesNonFacturees.length}
+            montantNonFacture={montantNonFacture}
+          />
 
           <DeleteClientButton clientId={id} nomAffiche={nomAffiche} />
         </div>

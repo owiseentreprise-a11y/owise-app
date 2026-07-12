@@ -5,6 +5,68 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient }   from '@/lib/supabase/admin'
 import { envoyerBienvenueCollaborateur } from '@/lib/email'
 
+export async function genererFactureGroupee(
+  clientId: string,
+): Promise<{ error?: string; factureId?: string }> {
+  await requireAdminClient()
+  const admin = createAdminClient()
+
+  // Courses terminées sans facture liée
+  const { data: courses, error: cErr } = await admin
+    .from('courses')
+    .select('id, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime, type_vehicule, nb_passagers')
+    .eq('client_id', clientId)
+    .eq('statut', 'terminee')
+    .is('facture_id', null)
+
+  if (cErr) return { error: cErr.message }
+  if (!courses?.length) return { error: 'Aucune course terminée non facturée' }
+
+  const montantTTC = courses.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  if (montantTTC <= 0) return { error: 'Montant total nul — vérifiez les prix des courses' }
+
+  const { data: params } = await admin.from('parametres').select('facture_taux_tva').eq('id', true).single()
+  const tauxTva   = (params as any)?.facture_taux_tva ?? 0
+  const montantHT = Math.round((montantTTC / (1 + tauxTva / 100)) * 100) / 100
+  const montantTVA = Math.round((montantTTC - montantHT) * 100) / 100
+
+  const year     = new Date().getFullYear()
+  const ts       = Date.now().toString(36).toUpperCase().slice(-5)
+  const numero   = `OW-${year}-${ts}`
+  const echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
+
+  const { data: facture, error: fErr } = await admin.from('factures').insert({
+    client_id:     clientId,
+    numero,
+    statut:        'en_attente',
+    montant_ht:    montantHT,
+    tva:           montantTVA,
+    montant_ttc:   montantTTC,
+    date_emission: new Date().toISOString().slice(0, 10),
+    date_echeance: echeance,
+    notes: JSON.stringify({
+      type:       'groupee',
+      nb_courses: courses.length,
+      courses: courses.map(c => ({
+        id:     c.id,
+        depart: c.adresse_depart,
+        arrivee: c.adresse_arrivee,
+        date:   c.date_prevue,
+        prix:   c.prix_final ?? c.prix_estime,
+      })),
+    }),
+  }).select('id').single()
+
+  if (fErr || !facture) return { error: fErr?.message ?? 'Erreur création facture' }
+
+  // Lier chaque course à la facture
+  await admin.from('courses').update({ facture_id: facture.id }).in('id', courses.map(c => c.id))
+
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin/facturation')
+  return { factureId: facture.id }
+}
+
 export async function addCollaborateur(
   clientId: string,
   data: { email: string; password: string; nom: string; prenom: string; telephone: string; poste: string; adresse?: string },
