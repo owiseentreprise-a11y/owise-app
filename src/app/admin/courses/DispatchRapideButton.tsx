@@ -24,7 +24,7 @@ export default function DispatchRapideButton({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
-  const [pos, setPos] = useState({ top: 0, right: 0 })
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number }>({ top: 0, right: 0 })
   const [hovered, setHovered] = useState<string | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -33,7 +33,16 @@ export default function DispatchRapideButton({
     e.preventDefault()
     e.stopPropagation()
     const rect = btnRef.current?.getBoundingClientRect()
-    if (rect) setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    if (rect) {
+      const dropdownH = 320
+      const spaceBelow = window.innerHeight - rect.bottom
+      if (spaceBelow < dropdownH && rect.top > dropdownH) {
+        // Pas assez de place en bas → ouvrir vers le haut
+        setPos({ bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right })
+      } else {
+        setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+      }
+    }
     setOpen(v => !v)
   }
 
@@ -92,7 +101,9 @@ export default function DispatchRapideButton({
           ref={dropdownRef}
           onMouseDown={e => e.stopPropagation()}
           style={{
-            position: 'fixed', top: pos.top, right: pos.right,
+            position: 'fixed',
+            ...(pos.bottom !== undefined ? { bottom: pos.bottom } : { top: pos.top }),
+            right: pos.right,
             zIndex: 9999, minWidth: 210,
             background: '#FFFFFF',
             border: '1px solid rgba(0,0,0,.1)',

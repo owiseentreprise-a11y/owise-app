@@ -113,6 +113,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
 
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin/courses')
+  revalidatePath('/admin/planning')
   revalidatePath('/admin')
 }
 
