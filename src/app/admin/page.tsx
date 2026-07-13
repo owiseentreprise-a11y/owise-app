@@ -234,7 +234,7 @@ export default async function AdminDashboard() {
                 const client = c.clients
                 const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || '—' : '—'
                 const entreprise = client?.entreprise_nom ?? '—'
-                const date = new Date(c.date_prevue)
+                const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
                 return (
                   <a key={c.id} href={`/admin/courses/${c.id}`} style={{
                     display: 'grid', gridTemplateColumns: '1fr 160px 120px',
@@ -257,8 +257,8 @@ export default async function AdminDashboard() {
                       fontFamily: 'var(--font-jetbrains), monospace',
                       fontSize: 10, color: 'var(--t3)', textAlign: 'right',
                     }}>
-                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
-                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
+                      {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                      {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </a>
                 )
@@ -487,7 +487,7 @@ export default async function AdminDashboard() {
                 const chauffeurNom = chauffeur?.profiles
                   ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
                   : '—'
-                const date = new Date(course.date_prevue)
+                const date = new Date(course.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
                 return (
                   <a key={course.id} href={`/admin/courses/${course.id}`} style={{
                     display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
@@ -505,8 +505,8 @@ export default async function AdminDashboard() {
                     <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
                       {isNaN(date.getTime()) ? '—' : (
                         <>
-                          {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}
-                          {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
+                          {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                          {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </>
                       )}
                     </div>

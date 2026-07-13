@@ -80,7 +80,7 @@ export default function PanierCourses({
           ? (client.entreprise_nom ?? '—')
           : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : 'Invité'
         const collabLabel = collab ? `${collab.prenom} ${collab.nom}`.trim() : null
-        const date = new Date(c.date_prevue)
+        const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
         const dateValid = !isNaN(date.getTime())
         const prix = c.prix_final ?? c.prix_estime
         const isLast = idx === courses.length - 1
@@ -122,8 +122,8 @@ export default function PanierCourses({
             }}>
               {dateValid ? (
                 <>
-                  <div>{date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Paris' })}</div>
-                  <div>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</div>
+                  <div>{date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</div>
+                  <div>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
                 </>
               ) : <div>—</div>}
             </div>
