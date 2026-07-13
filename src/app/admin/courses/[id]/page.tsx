@@ -133,6 +133,7 @@ export default async function CourseDetailPage({
     paiement_statut: (course as any).paiement_statut ?? null,
     stripe_payment_intent_id: (course as any).stripe_payment_intent_id ?? null,
     paiement_a_bord: (course as any).paiement_a_bord ?? false,
+    prix_chauffeur: (course as any).prix_chauffeur ?? null,
   }
 
   const chauffeursForActions = chauffeurs.map((c: any) => ({

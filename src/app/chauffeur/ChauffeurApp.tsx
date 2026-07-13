@@ -564,11 +564,11 @@ export default function ChauffeurApp({
                     </div>
                   )}
                 </div>
-                {activeCourse.paiement_a_bord && (activeCourse.prix_final ?? activeCourse.prix_estime) && (
+                {activeCourse.prix_chauffeur && (
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: 'var(--t3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Tarif</div>
-                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
-                      {activeCourse.prix_final ?? activeCourse.prix_estime} €
+                    <div style={{ fontSize: 9, color: 'var(--grn)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Votre rémunération</div>
+                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--grn)' }}>
+                      {activeCourse.prix_chauffeur} €
                     </div>
                   </div>
                 )}
@@ -703,9 +703,12 @@ export default function ChauffeurApp({
                     {pendingCourse.nb_passagers} pass.
                   </div>
                 </div>
-                {pendingCourse.paiement_a_bord && pendingCourse.prix_estime && (
-                  <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 22, fontWeight: 700, color: 'var(--amb)' }}>
-                    {pendingCourse.prix_estime} €
+                {pendingCourse.prix_chauffeur && (
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 9, color: 'var(--grn)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Votre rémunération</div>
+                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 22, fontWeight: 700, color: 'var(--grn)' }}>
+                      {pendingCourse.prix_chauffeur} €
+                    </div>
                   </div>
                 )}
               </div>
@@ -820,7 +823,7 @@ export default function ChauffeurApp({
               const date = new Date(c.date_prevue)
               const nom = clientNom(c)
               const tel = clientTel(c)
-              const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
+              const prix = c.prix_chauffeur ?? null
               const isExpanded = expandedId === c.id
 
               const statutBadge = {
@@ -939,8 +942,8 @@ export default function ChauffeurApp({
                           ) : <div />}
                           {prix && (
                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <div style={{ fontSize: 9, color: 'var(--t3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Tarif</div>
-                              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>{prix} €</div>
+                              <div style={{ fontSize: 9, color: 'var(--grn)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Votre rémunération</div>
+                              <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--grn)' }}>{prix} €</div>
                             </div>
                           )}
                         </div>
@@ -1147,7 +1150,7 @@ export default function ChauffeurApp({
                     const date = new Date(c.date_prevue)
                     const nom = clientNom(c)
                     const tel = clientTel(c)
-                    const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
+                    const prix = c.prix_chauffeur ?? null
                     const isExpanded = expandedId === c.id
 
                     const statutBadge = {
@@ -1300,7 +1303,7 @@ export default function ChauffeurApp({
             {historique.map((c: any, i: number) => {
               const date = new Date(c.date_prevue)
               const nom = clientNom(c)
-              const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
+              const prix = c.prix_chauffeur ?? null
               return (
                 <div key={c.id} style={{
                   padding: '11px 16px',

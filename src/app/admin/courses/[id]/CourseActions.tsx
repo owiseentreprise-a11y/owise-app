@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -54,6 +54,7 @@ export default function CourseActions({
     paiement_statut: string | null
     stripe_payment_intent_id: string | null
     paiement_a_bord: boolean
+    prix_chauffeur: number | null
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string }>
@@ -86,6 +87,7 @@ export default function CourseActions({
     }
   }, [selectedChauffeur])
   const [prixInput, setPrixInput] = useState(course.prix_final?.toString() ?? course.prix_estime?.toString() ?? '')
+  const [prixChauffeurInput, setPrixChauffeurInput] = useState(course.prix_chauffeur?.toString() ?? '')
   const [notesInput, setNotesInput] = useState(course.notes ?? '')
   const [notesSaved, setNotesSaved] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -553,6 +555,47 @@ export default function CourseActions({
             </div>
           )}
         </div>
+
+        {/* Rémunération chauffeur */}
+        {course.chauffeur_id && (
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(201,168,76,.08)' }}>
+            <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 6, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+              Rémunération chauffeur
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={prixChauffeurInput}
+                  onChange={e => setPrixChauffeurInput(e.target.value)}
+                  placeholder="0.00"
+                  style={{
+                    width: '100%', padding: '9px 28px 9px 10px', borderRadius: 8,
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    color: 'var(--t1)', fontSize: 13, outline: 'none',
+                    fontFamily: 'var(--font-jetbrains), monospace',
+                  }}
+                />
+                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: 'var(--t3)' }}>€</span>
+              </div>
+              <button
+                onClick={() => run(() => setPrixChauffeur(course.id, prixChauffeurInput ? parseFloat(prixChauffeurInput) : null))}
+                disabled={pending}
+                style={{
+                  padding: '9px 14px', borderRadius: 8,
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  color: 'var(--t2)', fontSize: 12, cursor: pending ? 'wait' : 'pointer',
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Sauver
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Bloc sous-traitant : coût + marge */}
         {course.sous_traitant_nom && (
