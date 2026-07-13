@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -53,6 +53,7 @@ export default function CourseActions({
     mode_paiement: string | null
     paiement_statut: string | null
     stripe_payment_intent_id: string | null
+    paiement_a_bord: boolean
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string }>
@@ -775,6 +776,44 @@ export default function CourseActions({
           }}
         >
           {notesSaved ? '✓ Sauvegardé' : 'Sauvegarder les notes'}
+        </button>
+      </div>
+
+      {/* Paiement à bord */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid rgba(201,168,76,.15)',
+        borderRadius: 12, padding: '14px 20px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
+            Paiement à bord
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--t3)' }}>
+            {course.paiement_a_bord
+              ? 'Le chauffeur voit le montant et encaisse en cours de route'
+              : 'Le montant est masqué au chauffeur'}
+          </div>
+        </div>
+        <button
+          onClick={() => startTransition(async () => {
+            await togglePaiementABord(course.id, !course.paiement_a_bord)
+            router.refresh()
+          })}
+          disabled={pending}
+          style={{
+            position: 'relative', width: 40, height: 22, borderRadius: 11,
+            background: course.paiement_a_bord ? 'var(--gold)' : 'var(--t3)',
+            border: 'none', cursor: pending ? 'default' : 'pointer',
+            transition: 'background .2s', flexShrink: 0,
+            opacity: pending ? 0.6 : 1,
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: course.paiement_a_bord ? 21 : 3,
+            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+            transition: 'left .2s', display: 'block',
+          }} />
         </button>
       </div>
 

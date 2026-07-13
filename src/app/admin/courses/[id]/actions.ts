@@ -223,6 +223,13 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
   revalidatePath('/admin')
 }
 
+export async function togglePaiementABord(courseId: string, value: boolean): Promise<void> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  await supabase.from('courses').update({ paiement_a_bord: value }).eq('id', courseId)
+  revalidatePath(`/admin/courses/${courseId}`)
+}
+
 export async function setPrixFinal(courseId: string, prix: number | null): Promise<void> {
   await requireAdminClient()
   const supabase = createAdminClient()

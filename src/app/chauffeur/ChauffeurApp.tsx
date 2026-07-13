@@ -564,7 +564,7 @@ export default function ChauffeurApp({
                     </div>
                   )}
                 </div>
-                {(activeCourse.prix_final ?? activeCourse.prix_estime) && (
+                {activeCourse.paiement_a_bord && (activeCourse.prix_final ?? activeCourse.prix_estime) && (
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 9, color: 'var(--t3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 2 }}>Tarif</div>
                     <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
@@ -703,7 +703,7 @@ export default function ChauffeurApp({
                     {pendingCourse.nb_passagers} pass.
                   </div>
                 </div>
-                {pendingCourse.prix_estime && (
+                {pendingCourse.paiement_a_bord && pendingCourse.prix_estime && (
                   <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 22, fontWeight: 700, color: 'var(--amb)' }}>
                     {pendingCourse.prix_estime} €
                   </div>
@@ -820,7 +820,7 @@ export default function ChauffeurApp({
               const date = new Date(c.date_prevue)
               const nom = clientNom(c)
               const tel = clientTel(c)
-              const prix = c.prix_final ?? c.prix_estime
+              const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
               const isExpanded = expandedId === c.id
 
               const statutBadge = {
@@ -1147,7 +1147,7 @@ export default function ChauffeurApp({
                     const date = new Date(c.date_prevue)
                     const nom = clientNom(c)
                     const tel = clientTel(c)
-                    const prix = c.prix_final ?? c.prix_estime
+                    const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
                     const isExpanded = expandedId === c.id
 
                     const statutBadge = {
@@ -1300,7 +1300,7 @@ export default function ChauffeurApp({
             {historique.map((c: any, i: number) => {
               const date = new Date(c.date_prevue)
               const nom = clientNom(c)
-              const prix = c.prix_final ?? c.prix_estime
+              const prix = c.paiement_a_bord ? (c.prix_final ?? c.prix_estime) : null
               return (
                 <div key={c.id} style={{
                   padding: '11px 16px',
