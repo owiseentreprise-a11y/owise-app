@@ -26,6 +26,8 @@ type CourseItem = {
   passager_nom: string | null
   clients: any
   chauffeurs: any
+  sous_traitant_id: string | null
+  sous_traitants: { nom: string } | null
   collaborateurs: any
 }
 type ChauffeurItem = { id: string; statut: string; profiles: { prenom: string; nom: string } | null }
@@ -72,8 +74,11 @@ function clientNom(c: CourseItem): string {
   return passager || '—'
 }
 function chauffeurNom(c: CourseItem): string|null {
-  return c.chauffeurs?.profiles
-    ? `${c.chauffeurs.profiles.prenom} ${c.chauffeurs.profiles.nom}` : null
+  if (c.chauffeurs?.profiles)
+    return `${c.chauffeurs.profiles.prenom} ${c.chauffeurs.profiles.nom}`
+  if (c.sous_traitants?.nom)
+    return c.sous_traitants.nom
+  return null
 }
 // Assignation de "tracks" pour éviter le chevauchement visuel dans la vue semaine
 function assignTracks(courses: CourseItem[]): Map<string,{track:number;total:number}> {
@@ -116,7 +121,7 @@ function SemaineCourseCard({
   const date   = parseAsLocal(course.date_prevue)
   const top    = topPx(date)
   const color  = STATUT_COURSE_COLOR[course.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t3)'
-  const unassigned = !course.chauffeur_id && !['terminee','annulee'].includes(course.statut)
+  const unassigned = !course.chauffeur_id && !course.sous_traitant_id && !['terminee','annulee'].includes(course.statut)
   const width  = total > 1 ? `calc(${100/total}% - 3px)` : 'calc(100% - 6px)'
   const left   = total > 1 ? `calc(${(track/total)*100}% + 3px)` : '3px'
   const chNom  = chauffeurNom(course)
@@ -353,7 +358,7 @@ function VueMois({ date, courses, today, chauffeurs }: {
           const inMonth  = day.getMonth() === month
           const isToday  = sameDay(day, today)
           const expanded = expandedDay === key
-          const unassigned = dCourses.filter(c => !c.chauffeur_id && !['terminee','annulee'].includes(c.statut)).length
+          const unassigned = dCourses.filter(c => !c.chauffeur_id && !c.sous_traitant_id && !['terminee','annulee'].includes(c.statut)).length
 
           return (
             <div key={i}>
@@ -632,7 +637,7 @@ export default function PlanningCalendar({
   })()
 
   const days     = weekDays(current)
-  const unassigned = courses.filter(c => !c.chauffeur_id && !['terminee','annulee'].includes(c.statut)).length
+  const unassigned = courses.filter(c => !c.chauffeur_id && !c.sous_traitant_id && !['terminee','annulee'].includes(c.statut)).length
 
   // Label de navigation
   const navLabel = (() => {

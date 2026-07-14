@@ -65,7 +65,7 @@ export default async function AdminDashboard() {
   const coursesActives       = courses.filter(c => ['en_route', 'prise_en_charge', 'acceptee'].includes(c.statut))
   const coursesEnAttente     = courses.filter(c => c.statut === 'en_attente')
   const demandesCollaborateur = coursesEnAttente.filter(c => !!(c as any).collaborateur_id && !c.chauffeur_id)
-  const nonAssignees         = coursesEnAttente.filter(c => !c.chauffeur_id)
+  const nonAssignees         = coursesEnAttente.filter(c => !c.chauffeur_id && !(c as any).sous_traitant_id)
 
   // CA jour : terminée (prix_final) + en attente (prix_estime)
   const caJourTerminee = coursesAujourdHui

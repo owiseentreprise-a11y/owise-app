@@ -14,11 +14,12 @@ export default async function PlanningPage() {
     supabase
       .from('courses')
       .select(`
-        id, statut, chauffeur_id,
+        id, statut, chauffeur_id, sous_traitant_id,
         adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes,
         passager_prenom, passager_nom,
         clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone)),
         chauffeurs(profiles(prenom, nom)),
+        sous_traitants(nom),
         collaborateurs(prenom, nom, tel)
       `)
       .gte('date_prevue', from.toISOString())
