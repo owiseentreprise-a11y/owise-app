@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')
+const BASE = 'https://www.owise.fr'
 
 const DESTINATIONS = [
   'vtc-aeroport-cdg',

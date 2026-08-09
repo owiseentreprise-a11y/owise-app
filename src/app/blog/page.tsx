@@ -7,10 +7,10 @@ export const revalidate = 3600
 export const metadata: Metadata = {
   title: 'Blog VTC Owise — Conseils, guides et tarifs chauffeur privé',
   description: 'Guides pratiques, conseils et tarifs pour vos transferts VTC en Île-de-France et Oise. Chantilly, Creil, Senlis, CDG, Orly — tout ce qu\'il faut savoir avec Owise.',
-  alternates: { canonical: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')}/blog` },
+  alternates: { canonical: 'https://www.owise.fr/blog' },
 }
 
-const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')
+const BASE = 'https://www.owise.fr'
 
 export default async function BlogPage() {
   const supabase = createAdminClient()

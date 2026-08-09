@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
 
-const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')
+const BASE = 'https://www.owise.fr'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),

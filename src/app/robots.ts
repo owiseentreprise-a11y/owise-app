@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/espace-client/', '/chauffeur/', '/sous-traitant/', '/api/', '/login'],
       },
     ],
-    sitemap: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')}/sitemap.xml`,
+    sitemap: 'https://www.owise.fr/sitemap.xml',
   }
 }

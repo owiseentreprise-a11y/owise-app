@@ -244,7 +244,7 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
   const { destination } = await params
   const dest = DESTINATIONS[destination]
   if (!dest) return {}
-  const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')
+  const BASE = 'https://www.owise.fr'
   return {
     title: dest.metaTitle,
     description: dest.metaDesc,
@@ -291,7 +291,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
     '@type': 'Service',
     name: dest.title,
     description: dest.metaDesc,
-    provider: { '@type': 'LocalBusiness', name: 'Owise', url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr', telephone: '+33619106356' },
+    provider: { '@type': 'LocalBusiness', name: 'Owise', url: 'https://www.owise.fr', telephone: '+33619106356' },
     areaServed: { '@type': 'Country', name: 'FR' },
     offers: { '@type': 'Offer', priceCurrency: 'EUR', description: dest.prix },
   }
