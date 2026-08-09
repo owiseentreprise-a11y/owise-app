@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: data.meta_titre,
     description: data.meta_desc,
-    alternates: { canonical: `https://owise.fr/blog/${slug}` },
-    openGraph: { title: data.meta_titre, description: data.meta_desc, url: `https://owise.fr/blog/${slug}`, siteName: 'Owise' },
+    alternates: { canonical: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')}/blog/${slug}` },
+    openGraph: { title: data.meta_titre, description: data.meta_desc, url: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')}/blog/${slug}`, siteName: 'Owise' },
   }
 }
 
@@ -48,8 +48,8 @@ export default async function BlogPostPage({ params }: Props) {
     description: post.meta_desc,
     datePublished: post.published_at,
     author: { '@type': 'Organization', name: 'Owise' },
-    publisher: { '@type': 'Organization', name: 'Owise', url: 'https://owise.fr' },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://owise.fr/blog/${slug}` },
+    publisher: { '@type': 'Organization', name: 'Owise', url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr' },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.owise.fr').replace(/\/$/, '')}/blog/${slug}` },
   }
 
   const faqLd = faq.length > 0 ? {
