@@ -11,6 +11,10 @@ const DESTINATIONS = [
   'vtc-senlis',
   'vtc-gouvieux',
   'vtc-chantilly',
+  'vtc-aeroport-beauvais',
+  'vtc-lamorlaye',
+  'vtc-pontoise',
+  'vtc-versailles',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

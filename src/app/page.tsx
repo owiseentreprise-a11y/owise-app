@@ -51,7 +51,7 @@ export const metadata: Metadata = {
 // JSON-LD structuré pour les moteurs de recherche
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'TaxiService',
+  '@type': ['TaxiService', 'LocalBusiness'],
   name: 'Owise — Chauffeur Privé VTC',
   description: 'Service VTC de prestige à Paris, Île-de-France et Oise. Transferts aéroport CDG, Orly, Beauvais. Tarif fixe garanti, disponible 24h/24. Creil, Chantilly, Senlis, Compiègne.',
   url: BASE,
@@ -63,15 +63,15 @@ const jsonLd = {
   paymentAccepted: 'Cash, Credit Card, Stripe',
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Paris',
-    addressRegion: 'Île-de-France',
-    postalCode: '75000',
+    addressLocality: 'Creil',
+    addressRegion: 'Oise',
+    postalCode: '60100',
     addressCountry: 'FR',
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 48.8566,
-    longitude: 2.3522,
+    latitude: 49.2583,
+    longitude: 2.4797,
   },
   areaServed: [
     { '@type': 'City', name: 'Paris' },
@@ -82,7 +82,12 @@ const jsonLd = {
     { '@type': 'City', name: 'Compiègne' },
     { '@type': 'City', name: 'Beauvais' },
     { '@type': 'City', name: 'Gouvieux' },
+    { '@type': 'City', name: 'Lamorlaye' },
+    { '@type': 'City', name: 'Pontoise' },
+    { '@type': 'City', name: 'Cergy' },
+    { '@type': 'City', name: 'Versailles' },
     { '@type': 'AdministrativeArea', name: 'Oise' },
+    { '@type': 'AdministrativeArea', name: 'Val-d\'Oise' },
   ],
   priceRange: '€€',
   openingHoursSpecification: {
@@ -91,13 +96,26 @@ const jsonLd = {
     opens: '00:00',
     closes: '23:59',
   },
+  potentialAction: {
+    '@type': 'ReserveAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${BASE}/reserver`,
+      actionPlatform: [
+        'http://schema.org/DesktopWebPlatform',
+        'http://schema.org/MobileWebPlatform',
+      ],
+    },
+    result: { '@type': 'Reservation', name: 'Réservation VTC Owise' },
+  },
   hasOfferCatalog: {
     '@type': 'OfferCatalog',
     name: 'Services VTC Owise',
     itemListElement: [
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris CDG depuis 85€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris Orly depuis 75€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise CDG', description: 'Creil → CDG depuis 80€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG dès 45€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris → Orly dès 50€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Beauvais', description: 'Oise → BVA dès 40€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise → CDG', description: 'Creil → CDG dès 65€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Compte entreprise VTC', description: 'Facturation mensuelle, multi-collaborateurs' } },
     ],
   },

@@ -91,6 +91,17 @@ export const SUJETS: Sujet[] = [
   { id: 'saint-leu-cdg', type: 'transfert', depart: "Saint-Leu-d'Esserent", arrivee: 'CDG' },
   { id: 'verneuil-cdg', type: 'transfert', depart: 'Verneuil-en-Halatte', arrivee: 'CDG' },
   { id: 'liancourt-cdg', type: 'transfert', depart: 'Liancourt', arrivee: 'CDG' },
+  // Nouvelles destinations 2026
+  { id: 'pontoise-cdg', type: 'transfert', depart: 'Pontoise', arrivee: 'CDG' },
+  { id: 'pontoise-orly', type: 'transfert', depart: 'Pontoise', arrivee: 'Orly' },
+  { id: 'cergy-cdg', type: 'transfert', depart: 'Cergy', arrivee: 'CDG' },
+  { id: 'versailles-cdg', type: 'transfert', depart: 'Versailles', arrivee: 'CDG' },
+  { id: 'versailles-orly', type: 'transfert', depart: 'Versailles', arrivee: 'Orly' },
+  { id: 'lamorlaye-orly', type: 'transfert', depart: 'Lamorlaye', arrivee: 'Orly' },
+  { id: 'lamorlaye-beauvais', type: 'transfert', depart: 'Lamorlaye', arrivee: 'Beauvais' },
+  { id: 'guide-chateau-versailles', type: 'guide', theme: "Château de Versailles et Domaine Royal" },
+  { id: 'guide-pontoise-val-oise', type: 'guide', theme: "Pontoise et Cergy-Pontoise" },
+  { id: 'entreprise-versailles', type: 'entreprise', theme: "Versailles et les Yvelines" },
 ]
 
 // ── Données de référence pour le contenu factuel ─────────────────────────
@@ -119,6 +130,9 @@ const COMMUNES: Record<string, { zone: string; dist_cdg: number; desc: string }>
   'CDG':                  { zone: 'Aéroport', dist_cdg: 0, desc: 'Aéroport Paris Charles de Gaulle' },
   'Orly':                 { zone: 'Aéroport', dist_cdg: 35, desc: 'Aéroport Paris Orly' },
   'Gare du Nord':         { zone: 'Gare', dist_cdg: 27, desc: 'principale gare internationale de Paris, terminus Eurostar et Thalys' },
+  'Pontoise':             { zone: 'Val-d\'Oise', dist_cdg: 40, desc: 'préfecture du Val-d\'Oise (95), à la confluence de l\'Oise et de la Viosne' },
+  'Cergy':                { zone: 'Val-d\'Oise', dist_cdg: 38, desc: 'ville nouvelle de Cergy-Pontoise, pôle économique du Val-d\'Oise' },
+  'Versailles':           { zone: 'Yvelines', dist_cdg: 55, desc: 'préfecture des Yvelines, célèbre pour son Château Royal et son Domaine classé UNESCO' },
 }
 
 // ── Générateur principal ──────────────────────────────────────────────────
