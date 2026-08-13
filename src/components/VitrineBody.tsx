@@ -622,7 +622,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         supplements: supList.length ? supList : null,
         dest_type:   form.destType,
       })
-      fbLead({ content_category: 'devis', content_name: v.name })
       fbContact()
       // Préparer l'URL /reserver avec toutes les infos pré-remplies
       const params = new URLSearchParams()
