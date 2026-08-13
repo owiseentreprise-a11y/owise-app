@@ -140,6 +140,46 @@ export default async function VitrinePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} />
+
+      {/* Section maillage interne — server-rendered, visible par Google */}
+      <section style={{ background: '#F8F6F1', padding: '64px 24px 48px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 36, fontWeight: 500, color: '#09091A', marginBottom: 8, textAlign: 'center' }}>
+            Nos zones desservies
+          </h2>
+          <p style={{ textAlign: 'center', color: '#848499', fontSize: 15, marginBottom: 40, maxWidth: 560, margin: '0 auto 40px' }}>
+            Chauffeur privé disponible 24h/24 à Paris, en Île-de-France et dans l&apos;Oise. Tarif fixe garanti depuis votre adresse.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {[
+              { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 45€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
+              { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 50€',  desc: 'Transfert Paris-Orly, tous terminaux' },
+              { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 40€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
+              { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 65€',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
+              { slug: 'vtc-chantilly',         title: 'VTC Chantilly',                  prix: 'dès 70€',  desc: 'Château, Hippodrome, hôtels de prestige' },
+              { slug: 'vtc-senlis',            title: 'VTC Senlis & Environs',          prix: 'dès 70€',  desc: 'Cité médiévale, Forêt de Chantilly' },
+              { slug: 'vtc-gouvieux',          title: 'VTC Gouvieux & Lamorlaye',       prix: 'dès 70€',  desc: 'Coye-la-Forêt, Orry-la-Ville, Précy' },
+              { slug: 'vtc-lamorlaye',         title: 'VTC Lamorlaye',                  prix: 'dès 70€',  desc: 'Forêt de Chantilly, Boran-sur-Oise' },
+              { slug: 'vtc-compiegne',         title: 'VTC Compiègne',                  prix: 'dès 100€', desc: 'Margny, Venette, Oise Nord' },
+              { slug: 'vtc-pontoise',          title: 'VTC Pontoise & Cergy',           prix: 'dès 55€',  desc: 'Val-d\'Oise, Saint-Ouen-l\'Aumône' },
+              { slug: 'vtc-versailles',        title: 'VTC Versailles & Yvelines',      prix: 'dès 80€',  desc: 'Château, Vélizy, Saint-Quentin-en-Yvelines' },
+            ].map(d => (
+              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#09091A' }}>{d.title}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap', marginLeft: 8 }}>{d.prix}</span>
+                </div>
+                <span style={{ fontSize: 12, color: '#848499', lineHeight: 1.5 }}>{d.desc}</span>
+              </a>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 32 }}>
+            <a href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none', fontWeight: 500 }}>
+              Voir nos guides et conseils VTC →
+            </a>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
