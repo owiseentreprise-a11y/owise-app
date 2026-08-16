@@ -1,8 +1,10 @@
+import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
+import { capiPurchase } from '@/lib/capi'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -198,7 +200,17 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     await enregistrerParrainage(meta.code_parrainage, email).catch(() => {})
   }
 
-  // 5. Emails
+  // 5. CAPI Purchase + Emails (en parallèle, ne bloquent pas si l'un échoue)
+  capiPurchase({
+    eventId   : randomUUID(),
+    value     : prix,
+    currency  : 'EUR',
+    email,
+    phone     : telephone ?? undefined,
+    firstName : prenom,
+    lastName  : nom,
+  }).catch(() => {})
+
   await Promise.all([
     envoyerConfirmationClient({
       clientEmail: email,

@@ -1,7 +1,9 @@
 'use server'
 
+import { randomUUID } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerNouveauDevis } from '@/lib/email'
+import { capiLead } from '@/lib/capi'
 
 export async function soumettreDevis(params: {
   nom: string
@@ -37,6 +39,16 @@ export async function soumettreDevis(params: {
   })
 
   if (error) throw new Error(error.message)
+
+  // CAPI Lead — en arrière-plan, ne bloque pas la réponse
+  capiLead({
+    eventId   : randomUUID(),
+    email     : params.email,
+    phone     : params.tel,
+    firstName : params.nom,
+    value     : params.price ?? undefined,
+    currency  : 'EUR',
+  }).catch(() => {})
 
   // Email en arrière-plan — ne bloque pas la réponse
   envoyerNouveauDevis(params).catch(() => {})
