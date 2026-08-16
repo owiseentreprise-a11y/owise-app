@@ -30,7 +30,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
   return null
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
-import { fbLead, fbContact } from '@/lib/pixel'
+import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { calculerPrix, calculerPrixKm, detectZone, appliquerSupplements, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
@@ -291,12 +291,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   /* ── cookie banner ──────────────────────────────────────── */
   useEffect(() => {
-    if (!localStorage.getItem('ow_cookie')) {
+    const consent = localStorage.getItem(COOKIE_KEY) || localStorage.getItem('ow_cookie')
+    if (!consent) {
       const t = setTimeout(() => setCookieVisible(true), 2500)
       return () => clearTimeout(t)
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCookieDone(true)
+      if (consent === 'accepted' || consent === '1') initFbPixel()
     }
   }, [])
 
@@ -623,6 +625,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         dest_type:   form.destType,
       })
       fbContact()
+      fbLead({ value: price ?? undefined, currency: 'EUR', content_category: 'VTC' })
       // Préparer l'URL /reserver avec toutes les infos pré-remplies
       const params = new URLSearchParams()
       if (form.origin)  params.set('depart',  form.origin)
@@ -652,10 +655,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   }
 
   function acceptCookie() {
+    localStorage.setItem(COOKIE_KEY, 'accepted')
     localStorage.setItem('ow_cookie', '1')
     setCookieVisible(false); setCookieDone(true)
+    initFbPixel()
   }
   function refuseCookie() {
+    localStorage.setItem(COOKIE_KEY, 'refused')
     localStorage.setItem('ow_cookie', '0')
     setCookieVisible(false); setCookieDone(true)
   }

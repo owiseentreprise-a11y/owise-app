@@ -1,57 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-const STORAGE_KEY = 'owise_cookie_consent'
-const FB_PIXEL_ID = '1688600002292509'
-
-type FbqWindow = { fbq?: (...args: unknown[]) => void; _fbq?: unknown }
-
-function initPixel() {
-  if (typeof window === 'undefined') return
-  const w = window as unknown as FbqWindow
-  if (w.fbq) return
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fbq: any = function (...args: unknown[]) {
-    fbq.callMethod ? fbq.callMethod(...args) : fbq.queue.push(args)
-  }
-  if (!w._fbq) w._fbq = fbq
-  fbq.push = fbq
-  fbq.loaded = true
-  fbq.version = '2.0'
-  fbq.queue = []
-  w.fbq = fbq
-
-  const script = document.createElement('script')
-  script.async = true
-  script.src = 'https://connect.facebook.net/en_US/fbevents.js'
-  document.head.appendChild(script)
-
-  w.fbq!('init', FB_PIXEL_ID)
-  w.fbq!('track', 'PageView')
-}
+import { COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(COOKIE_KEY)
     if (stored === 'accepted') {
-      initPixel()
+      initFbPixel()
     } else if (!stored) {
       setVisible(true)
     }
   }, [])
 
   function accept() {
-    localStorage.setItem(STORAGE_KEY, 'accepted')
+    localStorage.setItem(COOKIE_KEY, 'accepted')
     setVisible(false)
-    initPixel()
+    initFbPixel()
   }
 
   function refuse() {
-    localStorage.setItem(STORAGE_KEY, 'refused')
+    localStorage.setItem(COOKIE_KEY, 'refused')
     setVisible(false)
   }
 
