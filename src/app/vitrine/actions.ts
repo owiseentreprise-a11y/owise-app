@@ -1,6 +1,7 @@
 'use server'
 
 import { randomUUID } from 'crypto'
+import { cookies, headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerNouveauDevis } from '@/lib/email'
 import { capiLead } from '@/lib/capi'
@@ -40,6 +41,14 @@ export async function soumettreDevis(params: {
 
   if (error) throw new Error(error.message)
 
+  // Extraire les signaux navigateur pour améliorer le taux de correspondance CAPI
+  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()])
+  const fbp       = cookieStore.get('_fbp')?.value
+  const fbc       = cookieStore.get('_fbc')?.value
+  const rawIp     = headerStore.get('x-forwarded-for')
+  const clientIp  = rawIp ? rawIp.split(',')[0].trim() : undefined
+  const userAgent = headerStore.get('user-agent') ?? undefined
+
   // CAPI Lead — en arrière-plan, ne bloque pas la réponse
   capiLead({
     eventId   : randomUUID(),
@@ -48,6 +57,10 @@ export async function soumettreDevis(params: {
     firstName : params.nom,
     value     : params.price ?? undefined,
     currency  : 'EUR',
+    fbp,
+    fbc,
+    clientIp,
+    userAgent,
   }).catch(() => {})
 
   // Email en arrière-plan — ne bloque pas la réponse

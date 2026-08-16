@@ -79,13 +79,17 @@ export async function sendCapiEvent(params: CapiEventParams): Promise<void> {
 }
 
 export function capiLead(params: {
-  eventId  : string
-  email?   : string
-  phone?   : string
+  eventId   : string
+  email?    : string
+  phone?    : string
   firstName?: string
-  lastName?: string
-  value?   : number
-  currency?: string
+  lastName? : string
+  value?    : number
+  currency? : string
+  fbp?      : string
+  fbc?      : string
+  clientIp? : string
+  userAgent?: string
 }) {
   return sendCapiEvent({
     eventName : 'Lead',
@@ -96,6 +100,10 @@ export function capiLead(params: {
       phone     : params.phone,
       firstName : params.firstName,
       lastName  : params.lastName,
+      fbp       : params.fbp,
+      fbc       : params.fbc,
+      clientIp  : params.clientIp,
+      userAgent : params.userAgent,
     },
     customData: {
       ...(params.value    !== undefined && { value: params.value }),
