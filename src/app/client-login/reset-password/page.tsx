@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { clientResetPasswordAction } from '@/app/client-login/actions'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 const L = {
   bg: '#F8F6F1', card: '#FFFFFF', border: 'rgba(0,0,0,.1)',

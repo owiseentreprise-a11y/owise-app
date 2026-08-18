@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PurchaseEvent from './PurchaseEvent'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 async function getStripeAmount(sessionId: string): Promise<number> {
   try {

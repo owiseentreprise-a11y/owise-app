@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: BASE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+    ...(posts.length > 0 ? [{ url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.7 }] : []),
     { url: `${BASE}/reserver`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
     ...DESTINATIONS.map(slug => ({
       url: `${BASE}/${slug}`,
