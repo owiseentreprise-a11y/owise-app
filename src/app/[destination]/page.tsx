@@ -543,6 +543,68 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           ))}
         </div>
       </section>
+
+      {/* Avis clients */}
+      <section style={{ background: '#09091A', padding: '56px 24px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 12 }}>
+            Avis clients
+          </div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 500, color: '#EDE8DF', margin: '0 0 8px' }}>
+            Ils nous font confiance
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
+            <span style={{ fontSize: 22, letterSpacing: 2, color: '#C9A84C' }}>★★★★★</span>
+            <span style={{ fontSize: 14, color: '#848499' }}>
+              <span style={{ color: '#EDE8DF', fontWeight: 600 }}>5 / 5</span>
+              {' · '}4 avis Google vérifiés
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 40 }}>
+            {[
+              { text: 'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !', auteur: 'Nabila B.' },
+              { text: 'Très bonne prestation, chauffeur ponctuel et serviable.', auteur: 'Joëlle P.' },
+              { text: 'Excellentes prestations. Ponctualité. À recommander.', auteur: 'Michèle M.' },
+              { text: 'Impeccable, un service au top.', auteur: 'Khacim D.' },
+            ].map((avis, i) => (
+              <div key={i} style={{
+                background: '#111128', borderRadius: 12, padding: '22px 24px',
+                border: '1px solid rgba(201,168,76,.1)',
+                maxWidth: 260, textAlign: 'left', flex: '1 1 220px',
+              }}>
+                <div style={{ fontSize: 14, color: '#C9A84C', marginBottom: 10, letterSpacing: 1 }}>★★★★★</div>
+                <p style={{ fontSize: 13, color: '#EDE8DF', lineHeight: 1.7, margin: '0 0 14px' }}>&ldquo;{avis.text}&rdquo;</p>
+                <div style={{ fontSize: 11, color: '#848499' }}>{avis.auteur} · Google</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="https://g.page/r/CY0-ORyXWwpXEAE/review"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-block', background: '#C9A84C', color: '#09091A',
+                textDecoration: 'none', padding: '12px 28px', borderRadius: 8,
+                fontSize: 13, fontWeight: 700,
+              }}
+            >
+              Laisser un avis →
+            </a>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Owise+VTC"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'inline-block', background: 'transparent', color: '#EDE8DF',
+                textDecoration: 'none', padding: '12px 28px', borderRadius: 8,
+                fontSize: 13, fontWeight: 500,
+                border: '1px solid rgba(237,232,223,.15)',
+              }}
+            >
+              Voir tous les avis
+            </a>
+          </div>
+        </div>
+      </section>
     </>
   )
 }
