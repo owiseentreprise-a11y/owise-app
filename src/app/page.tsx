@@ -120,6 +120,13 @@ const jsonLd = {
     ],
   },
   sameAs: ['https://owise.fr', 'https://facebook.com/Owise.vtc', 'https://www.tiktok.com/@owise857'],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5',
+    reviewCount: '4',
+    bestRating: '5',
+    worstRating: '1',
+  },
 }
 
 export const revalidate = 3600

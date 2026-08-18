@@ -430,6 +430,13 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
       '@type': 'ReserveAction',
       target: { '@type': 'EntryPoint', urlTemplate: `${BASE}/reserver` },
     },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5',
+      reviewCount: '4',
+      bestRating: '5',
+      worstRating: '1',
+    },
   }
 
   const breadcrumbLd = {
