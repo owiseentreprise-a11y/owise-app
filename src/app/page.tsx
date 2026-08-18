@@ -199,18 +199,19 @@ export default async function VitrinePage() {
           </div>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 40 }}>
             {[
-              { text: 'Chauffeur ponctuel et très professionnel pour notre transfert CDG. Je recommande vivement Owise.', auteur: 'Client vérifié', ville: 'Creil' },
-              { text: 'Service impeccable, véhicule propre et confortable. Votre chauffeur Owise était là 5 minutes avant l\'heure.', auteur: 'Client vérifié', ville: 'Chantilly' },
-              { text: 'Très bonne expérience pour un transfert Orly. Prix fixe respecté, aucune mauvaise surprise.', auteur: 'Client vérifié', ville: 'Senlis' },
+              { text: 'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !', auteur: 'Nabila B.' },
+              { text: 'Très bonne prestation, chauffeur ponctuel et serviable.', auteur: 'Joëlle P.' },
+              { text: 'Excellentes prestations. Ponctualité. À recommander.', auteur: 'Michèle M.' },
+              { text: 'Impeccable, un service au top.', auteur: 'Khacim D.' },
             ].map((avis, i) => (
               <div key={i} style={{
                 background: '#111128', borderRadius: 12, padding: '22px 24px',
                 border: '1px solid rgba(201,168,76,.1)',
-                maxWidth: 280, textAlign: 'left', flex: '1 1 240px',
+                maxWidth: 260, textAlign: 'left', flex: '1 1 220px',
               }}>
                 <div style={{ fontSize: 14, color: '#C9A84C', marginBottom: 10, letterSpacing: 1 }}>★★★★★</div>
                 <p style={{ fontSize: 13, color: '#EDE8DF', lineHeight: 1.7, margin: '0 0 14px' }}>&ldquo;{avis.text}&rdquo;</p>
-                <div style={{ fontSize: 11, color: '#848499' }}>{avis.auteur} · {avis.ville}</div>
+                <div style={{ fontSize: 11, color: '#848499' }}>{avis.auteur} · Google</div>
               </div>
             ))}
           </div>
