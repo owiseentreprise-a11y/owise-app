@@ -5,6 +5,20 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export const revalidate = 3600
 
+export async function generateStaticParams() {
+  try {
+    const supabase = createAdminClient()
+    const { data } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('statut', 'publie')
+      .limit(100)
+    return (data ?? []).map(p => ({ slug: p.slug }))
+  } catch {
+    return []
+  }
+}
+
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
