@@ -3,6 +3,31 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
+  'vtc-paris-senlis':             [{ label: 'VTC Senlis', href: '/vtc-senlis' }],
+  'vtc-paris-chantilly':          [{ label: 'VTC Chantilly', href: '/vtc-chantilly' }],
+  'vtc-paris-creil':              [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }],
+  'vtc-compiegne-beauvais':       [{ label: 'VTC Compiègne', href: '/vtc-compiegne' }, { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' }],
+  'vtc-chantilly-beauvais':       [{ label: 'VTC Chantilly', href: '/vtc-chantilly' }, { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' }],
+  'vtc-senlis-beauvais':          [{ label: 'VTC Senlis', href: '/vtc-senlis' }, { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' }],
+  'vtc-creil-beauvais':           [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' }],
+  'vtc-gouvieux-orly':            [{ label: 'VTC Gouvieux', href: '/vtc-gouvieux' }, { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' }],
+  'vtc-compiegne-orly':           [{ label: 'VTC Compiègne', href: '/vtc-compiegne' }, { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' }],
+  'vtc-senlis-orly':              [{ label: 'VTC Senlis', href: '/vtc-senlis' }, { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' }],
+  'vtc-chantilly-orly':           [{ label: 'VTC Chantilly', href: '/vtc-chantilly' }, { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' }],
+  'vtc-creil-orly':               [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' }],
+  'vtc-pont-sainte-maxence-cdg':  [{ label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-montataire-cdg':           [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-nogent-sur-oise-cdg':      [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-saint-maximin-cdg':        [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-compiegne-cdg':            [{ label: 'VTC Compiègne', href: '/vtc-compiegne' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-lamorlaye-cdg':            [{ label: 'VTC Lamorlaye', href: '/vtc-lamorlaye' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-gouvieux-cdg':             [{ label: 'VTC Gouvieux', href: '/vtc-gouvieux' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-chantilly-cdg':            [{ label: 'VTC Chantilly', href: '/vtc-chantilly' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-senlis-cdg':               [{ label: 'VTC Senlis', href: '/vtc-senlis' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+  'vtc-creil-cdg':                [{ label: 'VTC Creil & Oise Sud', href: '/vtc-creil' }, { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' }],
+}
+
 export const revalidate = 3600
 
 export async function generateStaticParams() {
@@ -159,6 +184,26 @@ export default async function BlogPostPage({ params }: Props) {
             {mots.map(m => (
               <span key={m} style={{ fontSize: 10, color: '#9B9B9B', background: '#f0ede8', borderRadius: 20, padding: '4px 12px' }}>{m}</span>
             ))}
+          </div>
+        )}
+
+        {/* Pages associées */}
+        {(DESTINATIONS[slug] ?? []).length > 0 && (
+          <div style={{ marginTop: 40, padding: '20px 22px', background: '#fff', borderRadius: 10, border: '1px solid rgba(0,0,0,.06)' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 12 }}>
+              Pages associées
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {(DESTINATIONS[slug] ?? []).map(d => (
+                <Link key={d.href} href={d.href} style={{
+                  fontSize: 12, fontWeight: 500, color: '#09091A',
+                  background: '#F8F6F1', border: '1px solid rgba(201,168,76,.2)',
+                  borderRadius: 6, padding: '6px 14px', textDecoration: 'none',
+                }}>
+                  {d.label} →
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

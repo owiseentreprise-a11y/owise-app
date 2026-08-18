@@ -337,7 +337,7 @@ export default async function CoursesPage({
 
                   {/* Statut */}
                   <div style={{ position: 'relative', zIndex: 3 }}>
-                    <UpdateStatutButton courseId={course.id} statut={course.statut} />
+                    <UpdateStatutButton courseId={course.id} statut={course.statut} chauffeurId={course.chauffeur_id ?? null} />
                   </div>
 
                   {/* Prix */}

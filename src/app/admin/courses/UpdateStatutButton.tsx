@@ -2,8 +2,8 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { STATUT_COURSE_LABEL, type StatutCourse } from '@/lib/types'
+import { changerStatut } from './[id]/actions'
 
 const PROGRESSION: Record<StatutCourse, StatutCourse | null> = {
   en_attente:      'acceptee',
@@ -29,9 +29,11 @@ const style = (statut: StatutCourse) => {
 export default function UpdateStatutButton({
   courseId,
   statut,
+  chauffeurId,
 }: {
   courseId: string
   statut: StatutCourse
+  chauffeurId?: string | null
 }) {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
@@ -42,11 +44,7 @@ export default function UpdateStatutButton({
     e.stopPropagation()
     if (!nextStatut) return
     startTransition(async () => {
-      const supabase = createClient()
-      await supabase
-        .from('courses')
-        .update({ statut: nextStatut })
-        .eq('id', courseId)
+      await changerStatut(courseId, nextStatut, chauffeurId ?? null)
       router.refresh()
     })
   }
