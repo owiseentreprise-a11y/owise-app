@@ -338,6 +338,25 @@ function CourseCard({ course, highlight = false }: { course: any; highlight?: bo
           nbPassagers={(course as any).nb_passagers ?? 1}
         />
       )}
+      {/* Rebooking — courses terminées ou annulées */}
+      {(course.statut === 'terminee' || course.statut === 'annulee') && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--gb)' }}>
+          <a
+            href={`/reserver?depart=${encodeURIComponent(course.adresse_depart)}&arrivee=${encodeURIComponent(course.adresse_arrivee)}&pax=${(course as any).nb_passagers ?? 1}`}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 600, color: 'var(--gold)',
+              textDecoration: 'none',
+              padding: '6px 14px', borderRadius: 6,
+              border: '1px solid rgba(201,168,76,.2)',
+              background: 'rgba(201,168,76,.06)',
+              transition: 'background .15s',
+            }}
+          >
+            ↻ Réserver à nouveau
+          </a>
+        </div>
+      )}
     </div>
   )
 }
