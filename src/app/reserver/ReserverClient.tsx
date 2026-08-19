@@ -555,6 +555,13 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                 Réservez votre course
               </h1>
               <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
+              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, color: '#C9A84C', letterSpacing: 1 }}>★★★★★</span>
+                <span style={{ fontSize: 12, color: '#9B9B9B' }}>
+                  <span style={{ color: '#09091A', fontWeight: 600 }}>5 / 5</span>
+                  {' · '}4 avis Google vérifiés
+                </span>
+              </div>
             </div>
 
             {/* ── Carte Trajet ── */}
