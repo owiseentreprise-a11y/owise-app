@@ -371,7 +371,7 @@ const DESTINATIONS: Record<string, {
   'vtc-coye-la-foret': {
     slug: 'vtc-coye-la-foret',
     title: 'VTC Coye-la-Forêt & Forêt de Chantilly',
-    metaTitle: 'VTC Coye-la-Forêt → CDG, Paris dès 75€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Coye-la-Forêt → CDG, Paris dès 65€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville et la Forêt de Chantilly vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc coye-la-foret','chauffeur privé coye-la-forêt cdg','taxi coye la forêt aéroport',
@@ -405,7 +405,7 @@ const DESTINATIONS: Record<string, {
   'vtc-orry-la-ville': {
     slug: 'vtc-orry-la-ville',
     title: 'VTC Orry-la-Ville & Région de Chantilly',
-    metaTitle: 'VTC Orry-la-Ville → CDG, Paris dès 70€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Orry-la-Ville → CDG, Paris dès 60€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Orry-la-Ville, La Chapelle-en-Serval, Coye-la-Forêt vers CDG, Orly et Paris. Entre Chantilly et Roissy, tarif fixe garanti, disponible 24h/24.',
     keywords: [
       'vtc orry-la-ville','chauffeur privé orry la ville cdg','taxi orry-la-ville aéroport',
@@ -439,7 +439,7 @@ const DESTINATIONS: Record<string, {
   'vtc-la-chapelle-en-serval': {
     slug: 'vtc-la-chapelle-en-serval',
     title: 'VTC La Chapelle-en-Serval & Mortefontaine',
-    metaTitle: 'VTC La Chapelle-en-Serval → CDG dès 65€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC La Chapelle-en-Serval → CDG dès 60€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis La Chapelle-en-Serval, Mortefontaine, Plailly vers CDG, Orly et Paris. Proche de l\'A1, trajet rapide vers Roissy. Tarif fixe garanti, disponible 24h/24.',
     keywords: [
       'vtc la chapelle en serval','chauffeur privé chapelle-en-serval cdg','taxi chapelle serval aéroport',
@@ -507,7 +507,7 @@ const DESTINATIONS: Record<string, {
   'vtc-precy-sur-oise': {
     slug: 'vtc-precy-sur-oise',
     title: 'VTC Précy-sur-Oise & Oise Nord',
-    metaTitle: 'VTC Précy-sur-Oise → CDG, Paris dès 80€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Précy-sur-Oise → CDG, Paris dès 85€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Crouy-en-Thelle vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc precy-sur-oise','chauffeur privé précy sur oise cdg','taxi précy oise aéroport',
