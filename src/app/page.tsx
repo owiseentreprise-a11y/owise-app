@@ -176,6 +176,8 @@ export default async function VitrinePage() {
               { slug: 'vtc-boran-sur-oise',    title: 'VTC Boran-sur-Oise',            prix: 'dès 80€',  desc: 'Vallée de l\'Oise, Précy, Mesnil-en-Thelle' },
               { slug: 'vtc-precy-sur-oise',    title: 'VTC Précy-sur-Oise',            prix: 'dès 85€',  desc: 'Oise Nord, Boran, Villeneuve-sur-Verberie' },
               { slug: 'vtc-luzarches',         title: 'VTC Luzarches',                 prix: 'dès 65€',  desc: 'Pays de France, Asnières-sur-Oise, Val-d\'Oise' },
+              { slug: 'vtc-clermont',          title: 'VTC Clermont (Oise)',           prix: 'dès 105€', desc: 'Clermontois, Agnetz, Breuil-le-Vert, Étouy' },
+              { slug: 'vtc-liancourt',         title: 'VTC Liancourt · Rantigny',      prix: 'dès 100€', desc: 'Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi' },
             ].map(d => (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>

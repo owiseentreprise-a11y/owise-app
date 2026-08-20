@@ -21,6 +21,8 @@ const DESTINATIONS = [
   'vtc-boran-sur-oise',
   'vtc-precy-sur-oise',
   'vtc-luzarches',
+  'vtc-clermont',
+  'vtc-liancourt',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
