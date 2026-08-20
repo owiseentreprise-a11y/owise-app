@@ -35,7 +35,7 @@ import { calculerPrix, calculerPrixKm, detectZone, appliquerSupplements, NOM_VER
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
-  { min:1,max:3, name:'Berline',         sub:'1–3 passagers · confort premium',   from:'dès 45 €', base:45 },
+  { min:1,max:3, name:'Berline',         sub:'1–3 passagers · confort premium',   from:'dès 65 €', base:65 },
   { min:4,max:4, name:'Berline Premium', sub:'4 passagers · haut de gamme',        from:'dès 65 €', base:65 },
   { min:5,max:7, name:'Van 7 places',    sub:'5–7 passagers · transfert groupe',   from:'dès 75 €', base:75 },
   { min:8,max:8, name:'Grand Van',       sub:'8 passagers · sur réservation',      from:'dès 95 €', base:95 },
@@ -68,7 +68,7 @@ const SERVICES = [
 
 /* ── vehicles display ──────────────────────────────────── */
 const VEH_DISPLAY = [
-  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'45 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Berline VTC Owise' },
+  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Berline VTC Owise' },
   { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Berline Premium VTC Owise' },
   { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Van 7 places VTC Owise' },
   { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Grand Van 8 places VTC Owise' },

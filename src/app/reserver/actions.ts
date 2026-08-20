@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix, calculerPrixKm } from '@/lib/calcPrix'
+import { capiLead } from '@/lib/capi'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -183,6 +184,17 @@ export async function createReservationCheckout(data: {
       console.error('[Stripe] API error:', json?.error?.message)
       return { error: json?.error?.message ?? `HTTP ${res.status}` }
     }
+
+    // Événement Lead CAPI server-side — indépendant du consentement cookie
+    capiLead({
+      eventId:   `lead-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      email:     data.email     || undefined,
+      phone:     data.telephone || undefined,
+      firstName: data.prenom    || undefined,
+      lastName:  data.nom       || undefined,
+      value:     prixFinal,
+      currency:  'EUR',
+    }).catch(() => {})
 
     redirect(json.url)
   } catch (err: unknown) {
