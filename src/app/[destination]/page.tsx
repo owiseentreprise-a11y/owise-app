@@ -5,6 +5,24 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import '../vitrine.css'
 
+// Communes qui ont leur propre page destination → liens cliquables dans la grille zones
+const NOM_VERS_SLUG: Record<string, string> = {
+  'Chantilly':              'vtc-chantilly',
+  'Gouvieux':               'vtc-gouvieux',
+  'Lamorlaye':              'vtc-lamorlaye',
+  'Senlis':                 'vtc-senlis',
+  'Creil':                  'vtc-creil',
+  'Pontoise':               'vtc-pontoise',
+  'Cergy':                  'vtc-pontoise',
+  'Versailles':             'vtc-versailles',
+  'Coye-la-Forêt':          'vtc-coye-la-foret',
+  'Orry-la-Ville':          'vtc-orry-la-ville',
+  'La Chapelle-en-Serval':  'vtc-la-chapelle-en-serval',
+  'Boran-sur-Oise':         'vtc-boran-sur-oise',
+  'Précy-sur-Oise':         'vtc-precy-sur-oise',
+  'Luzarches':              'vtc-luzarches',
+}
+
 const DESTINATIONS: Record<string, {
   slug: string
   title: string
@@ -716,15 +734,22 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
               Communes desservies
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8, marginBottom: 48 }}>
-              {dest.zones.map((z, i) => (
-                <div key={i} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>{z.nom}</div>
-                    <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{z.cp}</div>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, fontFamily: 'monospace' }}>{z.km === 0 ? 'centre' : `${z.km} km`}</div>
-                </div>
-              ))}
+              {dest.zones.map((z, i) => {
+                const lienSlug = NOM_VERS_SLUG[z.nom]
+                const hasLink = lienSlug && lienSlug !== dest.slug
+                const inner = (
+                  <>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: hasLink ? '#C9A84C' : '#0A0A0A' }}>{z.nom}</div>
+                      <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{z.cp}</div>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, fontFamily: 'monospace' }}>{z.km === 0 ? 'centre' : `${z.km} km`}</div>
+                  </>
+                )
+                return hasLink
+                  ? <Link key={i} href={`/${lienSlug}`} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', border: '1px solid rgba(201,168,76,.18)' }}>{inner}</Link>
+                  : <div key={i} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>{inner}</div>
+              })}
             </div>
           </>
         )}
