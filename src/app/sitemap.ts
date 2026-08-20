@@ -15,6 +15,12 @@ const DESTINATIONS = [
   'vtc-lamorlaye',
   'vtc-pontoise',
   'vtc-versailles',
+  'vtc-coye-la-foret',
+  'vtc-orry-la-ville',
+  'vtc-la-chapelle-en-serval',
+  'vtc-boran-sur-oise',
+  'vtc-precy-sur-oise',
+  'vtc-luzarches',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

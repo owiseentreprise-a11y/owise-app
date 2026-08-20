@@ -170,6 +170,12 @@ export default async function VitrinePage() {
               { slug: 'vtc-compiegne',         title: 'VTC Compiègne',                  prix: 'dès 100€', desc: 'Margny, Venette, Oise Nord' },
               { slug: 'vtc-pontoise',          title: 'VTC Pontoise & Cergy',           prix: 'dès 55€',  desc: 'Val-d\'Oise, Saint-Ouen-l\'Aumône' },
               { slug: 'vtc-versailles',        title: 'VTC Versailles & Yvelines',      prix: 'dès 80€',  desc: 'Château, Vélizy, Saint-Quentin-en-Yvelines' },
+              { slug: 'vtc-coye-la-foret',     title: 'VTC Coye-la-Forêt',             prix: 'dès 75€',  desc: 'Forêt de Chantilly, Lamorlaye, Orry-la-Ville' },
+              { slug: 'vtc-orry-la-ville',     title: 'VTC Orry-la-Ville',             prix: 'dès 70€',  desc: 'Entre Chantilly et CDG, Mortefontaine' },
+              { slug: 'vtc-la-chapelle-en-serval', title: 'VTC La Chapelle-en-Serval', prix: 'dès 65€',  desc: 'Proche A1, Mortefontaine, Plailly' },
+              { slug: 'vtc-boran-sur-oise',    title: 'VTC Boran-sur-Oise',            prix: 'dès 80€',  desc: 'Vallée de l\'Oise, Précy, Mesnil-en-Thelle' },
+              { slug: 'vtc-precy-sur-oise',    title: 'VTC Précy-sur-Oise',            prix: 'dès 80€',  desc: 'Oise Nord, Boran, Villeneuve-sur-Verberie' },
+              { slug: 'vtc-luzarches',         title: 'VTC Luzarches',                 prix: 'dès 65€',  desc: 'Pays de France, Asnières-sur-Oise, Val-d\'Oise' },
             ].map(d => (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
