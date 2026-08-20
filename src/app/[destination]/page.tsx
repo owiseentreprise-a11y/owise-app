@@ -380,7 +380,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Coye-la-Forêt & Forêt de Chantilly',
     intro: 'Votre chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard et toute la Forêt de Chantilly. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
-    prix: 'dès 75€ vers CDG',
+    prix: 'dès 65€ vers CDG',
     duree: '45–55 min vers CDG',
     zones: [
       { nom: 'Coye-la-Forêt', cp: '60580', km: 0 },
@@ -395,7 +395,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Thiers-sur-Thève', cp: '60520', km: 8.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Coye-la-Forêt vers CDG ?', a: 'Le forfait Coye-la-Forêt → CDG est d\'environ 75 à 85€ en berline, prix fixe garanti. Depuis Lamorlaye ou Orry-la-Ville, le tarif est similaire selon votre adresse exacte. Utilisez notre estimateur pour un prix instantané.' },
+      { q: 'Quel est le tarif depuis Coye-la-Forêt vers CDG ?', a: 'Le forfait Coye-la-Forêt → CDG est d\'environ 65 à 75€ en berline, prix fixe garanti. Depuis Lamorlaye ou Orry-la-Ville, le tarif est similaire selon votre adresse exacte. Utilisez notre estimateur pour un prix instantané.' },
       { q: 'Combien de temps pour aller de Coye-la-Forêt à CDG ?', a: 'Environ 45 à 55 minutes selon les conditions de circulation. Via l\'A1 depuis la Forêt de Chantilly, le trajet est direct. Tôt le matin (avant 6h), comptez 40 à 45 minutes.' },
       { q: 'Desservez-vous Lamorlaye et Orry-la-Ville depuis Coye-la-Forêt ?', a: 'Oui. Nous couvrons toutes les communes autour de Coye-la-Forêt : Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard, Chantilly, Gouvieux, Boran-sur-Oise, Luzarches et leurs environs.' },
       { q: 'Proposez-vous des courses vers Paris depuis la Forêt de Chantilly ?', a: 'Absolument. Depuis Coye-la-Forêt, Paris (porte Maillot, gare du Nord, etc.) est à environ 55 à 70 minutes pour un tarif de 80 à 100€. Idéal pour les déplacements professionnels depuis la région de Chantilly.' },
@@ -414,7 +414,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Orry-la-Ville & Environs',
     intro: 'Votre chauffeur VTC depuis Orry-la-Ville, La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt et les communes situées entre Chantilly et l\'aéroport CDG. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 70€ vers CDG',
+    prix: 'dès 60€ vers CDG',
     duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Orry-la-Ville', cp: '60560', km: 0 },
@@ -429,7 +429,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Le forfait Orry-la-Ville → CDG est d\'environ 70 à 80€ en berline, prix fixe garanti. Depuis La Chapelle-en-Serval ou Coye-la-Forêt, le tarif est similaire selon votre adresse. Utilisez notre estimateur pour un prix exact.' },
+      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Le forfait Orry-la-Ville → CDG est d\'environ 60 à 70€ en berline, prix fixe garanti. Depuis La Chapelle-en-Serval ou Coye-la-Forêt, le tarif est similaire selon votre adresse. Utilisez notre estimateur pour un prix exact.' },
       { q: 'Combien de temps pour aller d\'Orry-la-Ville à CDG ?', a: 'Environ 35 à 50 minutes via l\'A1. Orry-la-Ville est idéalement situé entre Chantilly et l\'aéroport CDG. Tôt le matin, comptez 30 à 35 minutes.' },
       { q: 'Desservez-vous La Chapelle-en-Serval depuis Orry-la-Ville ?', a: 'Oui. Nous couvrons toutes les communes autour d\'Orry-la-Ville : La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt, Lamorlaye, Avilly-Saint-Léonard, Survilliers, Luzarches et Chantilly.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Orry-la-Ville ?', a: 'Absolument. Depuis Orry-la-Ville, Paris est à environ 50 à 65 minutes pour un tarif de 80 à 100€. Votre chauffeur vous prend en charge directement à votre adresse, 24h/24.' },
@@ -448,7 +448,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC La Chapelle-en-Serval & Mortefontaine',
     intro: 'Votre chauffeur VTC depuis La Chapelle-en-Serval, Mortefontaine, Plailly, Orry-la-Ville et les communes proches de l\'A1 entre Chantilly et CDG. Accès direct à l\'autoroute A1 — l\'un des trajets les plus rapides vers Roissy depuis l\'Oise. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 65€ vers CDG',
+    prix: 'dès 60€ vers CDG',
     duree: '30–40 min vers CDG',
     zones: [
       { nom: 'La Chapelle-en-Serval', cp: '60520', km: 0 },
@@ -463,7 +463,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'Le forfait La Chapelle-en-Serval → CDG est d\'environ 65 à 75€ en berline, prix fixe garanti. La proximité de l\'A1 permet un trajet particulièrement rapide. Depuis Mortefontaine ou Plailly, le tarif est identique selon l\'adresse exacte.' },
+      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'Le forfait La Chapelle-en-Serval → CDG est d\'environ 60 à 70€ en berline, prix fixe garanti. La proximité de l\'A1 permet un trajet particulièrement rapide. Depuis Mortefontaine ou Plailly, le tarif est identique selon l\'adresse exacte.' },
       { q: 'La Chapelle-en-Serval est-elle proche de CDG ?', a: 'Oui, c\'est l\'une des communes les plus proches de CDG dans l\'Oise. Via l\'A1 (accès Survilliers ou Louvres), La Chapelle-en-Serval est à seulement 30 à 40 minutes de l\'aéroport — bien moins que depuis Paris.' },
       { q: 'Combien de temps pour aller de La Chapelle-en-Serval à CDG ?', a: 'Environ 30 à 40 minutes en conditions normales. Tôt le matin (avant 6h), le trajet descend à 25 minutes. L\'accès à l\'A1 depuis La Chapelle-en-Serval est direct, sans traverser aucune zone urbaine dense.' },
       { q: 'Desservez-vous Mortefontaine et Plailly ?', a: 'Oui. Nous couvrons La Chapelle-en-Serval et ses environs : Mortefontaine, Plailly, Orry-la-Ville, Thiers-sur-Thève, Pontarmé, Ermenonville et Survilliers. Même tarif depuis chacune de ces communes.' },
@@ -516,7 +516,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Précy-sur-Oise & Oise Nord',
     intro: 'Votre chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie, Le Mesnil-en-Thelle et les communes de l\'Oise Nord entre Creil et la Vallée de l\'Oise. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 80€ vers CDG',
+    prix: 'dès 85€ vers CDG',
     duree: '50–65 min vers CDG',
     zones: [
       { nom: 'Précy-sur-Oise', cp: '60460', km: 0 },
@@ -531,7 +531,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Chantilly', cp: '60500', km: 12.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Le forfait Précy-sur-Oise → CDG est d\'environ 80 à 95€ en berline, prix fixe garanti. Depuis Boran-sur-Oise ou Villeneuve-sur-Verberie, le tarif est similaire. Utilisez notre estimateur pour votre adresse exacte.' },
+      { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Le forfait Précy-sur-Oise → CDG est d\'environ 85 à 100€ en berline, prix fixe garanti. Depuis Boran-sur-Oise ou Villeneuve-sur-Verberie, le tarif est similaire. Utilisez notre estimateur pour votre adresse exacte.' },
       { q: 'Combien de temps pour aller de Précy-sur-Oise à CDG ?', a: 'Environ 50 à 65 minutes selon les conditions de circulation. Le trajet passe par l\'A1 via Gouvieux ou Survilliers. Tôt le matin (avant 6h), comptez 45 à 50 minutes.' },
       { q: 'Desservez-vous Boran-sur-Oise et Le Mesnil-en-Thelle depuis Précy ?', a: 'Oui. Nous couvrons toutes les communes autour de Précy-sur-Oise : Boran-sur-Oise, Villeneuve-sur-Verberie, Bury, Le Mesnil-en-Thelle, Crouy-en-Thelle, Gouvieux et Saint-Leu-d\'Esserent.' },
       { q: 'Proposez-vous des courses vers Creil depuis Précy-sur-Oise ?', a: 'Oui. Nous effectuons tous types de transferts locaux : Précy-sur-Oise → gare de Creil, Creil → CDG et toutes destinations depuis Précy. Le tarif local est calculé au kilomètre depuis votre adresse.' },
