@@ -13,7 +13,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
   {
     id: 'cdg-tarif',
     summary:
-      '✈️ VTC Aéroport CDG — Tarif fixe garanti dès 45€\n\n' +
+      '✈️ VTC Aéroport CDG — Tarif fixe garanti dès 65€\n\n' +
       'Votre vol décolle tôt le matin ? Nous assurons vos transferts vers Roissy-Charles-de-Gaulle 24h/24, 7j/7.\n\n' +
       '• Berline ou Van jusqu\'à 7 passagers\n' +
       '• Suivi de vol en temps réel\n' +
@@ -93,7 +93,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '🏡 VTC Chantilly & Gouvieux — CDG et Orly en toute sérénité\n\n' +
       'Habitant de Chantilly, Gouvieux ou Lamorlaye ? Owise assure vos transferts aéroport depuis l\'Oise.\n\n' +
-      '• Creil → CDG dès 45€\n' +
+      '• Creil → CDG dès 110€\n' +
       '• Chantilly → Orly dès 75€\n' +
       '• Beauvais → tarif sur devis\n' +
       '• Disponible à toute heure\n\n' +

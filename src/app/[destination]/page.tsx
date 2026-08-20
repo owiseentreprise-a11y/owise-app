@@ -43,12 +43,12 @@ const DESTINATIONS: Record<string, {
   'vtc-aeroport-cdg': {
     slug: 'vtc-aeroport-cdg',
     title: 'VTC Aéroport CDG',
-    metaTitle: 'VTC Aéroport CDG dès 45€ — Tarif Fixe Garanti | Owise',
-    metaDesc: 'VTC vers CDG depuis Paris et IDF. Tarif fixe dès 45€, suivi de vol en temps réel, chauffeur dans le hall. Disponible 24h/24. Réservez en 30 secondes.',
+    metaTitle: 'VTC Aéroport CDG dès 65€ — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC vers CDG depuis Paris et IDF. Tarif fixe dès 65€, suivi de vol en temps réel, chauffeur dans le hall. Disponible 24h/24. Réservez en 30 secondes.',
     keywords: ['vtc cdg','transfert aéroport cdg','chauffeur privé charles de gaulle','vtc roissy','taxi cdg paris'],
     h1: 'VTC Aéroport Charles de Gaulle (CDG)',
     intro: 'Votre transfert vers l\'aéroport Paris-CDG avec un chauffeur professionnel. Tarif fixe garanti, suivi de vol en temps réel, prise en charge dans le hall d\'arrivée.',
-    prix: 'dès 45€',
+    prix: 'dès 65€',
     duree: '25–55 min selon votre départ',
     faq: [
       { q: 'Combien coûte un VTC de Paris vers CDG ?', a: 'Le tarif est fixe et calculé à l\'avance. Depuis Paris intramuros, comptez entre 55€ et 75€ selon le véhicule. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },

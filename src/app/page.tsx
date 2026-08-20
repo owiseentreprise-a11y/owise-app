@@ -112,7 +112,7 @@ const jsonLd = {
     '@type': 'OfferCatalog',
     name: 'Services VTC Owise',
     itemListElement: [
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG dès 45€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG dès 65€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris → Orly dès 50€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Beauvais', description: 'Oise → BVA dès 40€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise → CDG', description: 'Creil → CDG dès 65€' } },
@@ -159,7 +159,7 @@ export default async function VitrinePage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {[
-              { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 45€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
+              { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 65€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
               { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 50€',  desc: 'Transfert Paris-Orly, tous terminaux' },
               { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 40€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
               { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 65€',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
