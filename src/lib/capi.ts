@@ -90,11 +90,12 @@ export function capiLead(params: {
   fbc?      : string
   clientIp? : string
   userAgent?: string
+  sourceUrl?: string
 }) {
   return sendCapiEvent({
     eventName : 'Lead',
     eventId   : params.eventId,
-    sourceUrl : 'https://owise.fr',
+    sourceUrl : params.sourceUrl ?? 'https://owise.fr/reserver',
     userData  : {
       email     : params.email,
       phone     : params.phone,
