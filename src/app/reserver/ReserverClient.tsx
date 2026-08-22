@@ -937,9 +937,26 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
               </div>
             )}
 
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+              {[
+                { icon: '✓', text: 'Tarif fixe garanti' },
+                { icon: '✓', text: 'Annulation gratuite 24h avant' },
+                { icon: '✓', text: 'Confirmation immédiate' },
+              ].map(({ icon, text }) => (
+                <span key={text} style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: '#3DB87A', fontWeight: 700 }}>{icon}</span> {text}
+                </span>
+              ))}
+            </div>
             <button type="button" onClick={handleStep1} className="pay-btn"
-              style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s' }}>
-              Continuer →
+              style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <span>Continuer</span>
+              {prixTotal !== null && (
+                <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>
+                  — {Math.round(prixTotal)} €
+                </span>
+              )}
+              <span>→</span>
             </button>
           </div>
         )}
@@ -1012,7 +1029,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
             </div>
             {[
               { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'jean.dupont@email.com' },
-              { label: 'Téléphone', val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 00 00 00 00' },
+              { label: 'Téléphone (optionnel)', val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 00 00 00 00' },
             ].map(f => (
               <div key={f.label} style={{ marginBottom: 14 }}>
                 <FieldLabel>{f.label}</FieldLabel>
@@ -1084,6 +1101,12 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
 
             <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: '#9B9B9B' }}>
               Paiement sécurisé par Stripe · SSL/TLS · Aucune donnée bancaire stockée
+            </div>
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
+              <span style={{ fontSize: 12, color: '#9B9B9B' }}>Vous préférez réserver par téléphone ?{' '}</span>
+              <a href="tel:+33619106356" style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600 }}>
+                +33 6 19 10 63 56
+              </a>
             </div>
           </div>
         )}
