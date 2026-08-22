@@ -430,7 +430,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const arr = bcArrivee.label.trim()
       const vh  = NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline'
       const key = `${dep}|${arr}|${vh}`
-      if (prixFinal > 0 && dep.length >= 8 && arr.length >= 8 && key !== lastEstimRef.current) {
+      const depResolved = bcDepart.lat != null || !!bcDepart.cp
+      const arrResolved = bcArrivee.lat != null || !!bcArrivee.cp
+      if (prixFinal > 0 && depResolved && arrResolved && key !== lastEstimRef.current) {
         lastEstimRef.current = key
         fetch('/api/estimations', {
           method: 'POST',
