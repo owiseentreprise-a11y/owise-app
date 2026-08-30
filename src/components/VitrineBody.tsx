@@ -31,6 +31,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
+import { gtagEvent } from '@/lib/ga'
 import { calculerPrix, calculerPrixKm, detectZone, appliquerSupplements, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
@@ -628,6 +629,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       })
       fbContact()
       fbLead({ value: price ?? undefined, currency: 'EUR', content_category: 'VTC' })
+      gtagEvent('generate_lead', { value: price ?? undefined, currency: 'EUR' })
       // Préparer l'URL /reserver avec toutes les infos pré-remplies
       const params = new URLSearchParams()
       if (form.origin)  params.set('depart',  form.origin)
