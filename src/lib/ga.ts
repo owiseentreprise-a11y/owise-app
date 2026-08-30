@@ -5,7 +5,7 @@ declare global {
   }
 }
 
-export const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ''
+export const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-4396NMMFQM'
 
 export function initGA() {
   if (!GA_ID || typeof window === 'undefined') return
