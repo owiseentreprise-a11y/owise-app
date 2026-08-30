@@ -8,12 +8,7 @@ declare global {
 export const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-4396NMMFQM'
 
 export function initGA() {
-  if (!GA_ID || typeof window === 'undefined') return
-  window.dataLayer = window.dataLayer || []
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer.push(args)
-  }
-  window.gtag('js', new Date())
+  if (!GA_ID || typeof window === 'undefined' || !window.gtag) return
   window.gtag('config', GA_ID, { anonymize_ip: true })
 }
 
