@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { COOKIE_KEY, initFbPixel } from '@/lib/pixel'
+import { initGA } from '@/lib/ga'
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
@@ -10,6 +11,7 @@ export default function CookieBanner() {
     const stored = localStorage.getItem(COOKIE_KEY)
     if (stored === 'accepted') {
       initFbPixel()
+      initGA()
     } else if (!stored) {
       setVisible(true)
     }
@@ -19,6 +21,7 @@ export default function CookieBanner() {
     localStorage.setItem(COOKIE_KEY, 'accepted')
     setVisible(false)
     initFbPixel()
+    initGA()
   }
 
   function refuse() {
@@ -39,7 +42,7 @@ export default function CookieBanner() {
       boxShadow: '0 -4px 32px rgba(0,0,0,.3)',
     }}>
       <p style={{ fontSize: 13, color: 'rgba(237,232,223,.7)', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-        Nous utilisons des cookies pour mesurer l&apos;audience et améliorer nos services (Meta Pixel).
+        Nous utilisons des cookies pour mesurer l&apos;audience et améliorer nos services (Meta Pixel, Google Analytics).
         En continuant, vous acceptez leur utilisation.{' '}
         <a href="/mentions-legales" style={{ color: '#C9A84C', textDecoration: 'none' }}>
           En savoir plus

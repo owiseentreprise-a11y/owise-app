@@ -3,6 +3,7 @@ import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from '
 import { Analytics } from '@vercel/analytics/next'
 import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PHProvider>
           {children}
         </PHProvider>
+        <GoogleAnalytics />
         <CookieBanner />
         <Analytics />
       </body>
