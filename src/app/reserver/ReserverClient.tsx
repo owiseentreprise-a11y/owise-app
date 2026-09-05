@@ -308,6 +308,12 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
 
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [step2Error, setStep2Error] = useState<string | null>(null)
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false)
+
+  useEffect(() => {
+    const ua = navigator.userAgent
+    setIsInAppBrowser(/FBAN|FBAV|Instagram|Line\/|MicroMessenger/i.test(ua))
+  }, [])
 
   // Code parrainage
   const [codeParrain,  setCodeParrain]  = useState('')
@@ -443,7 +449,8 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         heure_arrivee_vol: heureArrivee || undefined,
         code_parrainage: codeValide ? codeParrain.toUpperCase().trim() : undefined,
       })
-      if (result?.error) setStep2Error(`Erreur Stripe: ${result.error}`)
+      if (result?.error) setStep2Error(`Erreur de paiement : ${result.error}`)
+      else if (result?.checkoutUrl) window.location.href = result.checkoutUrl
     })
   }
 
@@ -539,6 +546,18 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
           <div style={{ fontSize: 10, color: step === 2 ? '#09091A' : '#9B9B9B', marginLeft: 2 }}>Paiement</div>
         </div>
       </div>
+
+      {isInAppBrowser && (
+        <div style={{ background: '#FFF8E1', borderBottom: '1px solid #F9A825', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#5D4037' }}>
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <span>
+            <strong>Navigateur intégré détecté.</strong> Pour finaliser votre paiement en sécurité, ouvrez cette page dans votre navigateur.{' '}
+            <a href={typeof window !== 'undefined' ? window.location.href : ''} target="_blank" rel="noopener noreferrer" style={{ color: '#C9A84C', fontWeight: 600, textDecoration: 'underline' }}>
+              Ouvrir dans Chrome / Safari
+            </a>
+          </span>
+        </div>
+      )}
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 20px 100px', display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 480px', minWidth: 0 }}>

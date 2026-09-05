@@ -1,6 +1,5 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix, calculerPrixKm } from '@/lib/calcPrix'
@@ -57,7 +56,7 @@ export async function createReservationCheckout(data: {
   heure_arrivee_vol?: string
   code_parrainage?: string
   distance_km?: number
-}): Promise<{ error?: string } | void> {
+}): Promise<{ error?: string; checkoutUrl?: string }> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
   if (!key) return { error: 'Clé Stripe manquante' }
@@ -196,12 +195,11 @@ export async function createReservationCheckout(data: {
       currency:  'EUR',
     }).catch(() => {})
 
-    redirect(json.url)
+    return { checkoutUrl: json.url }
   } catch (err: unknown) {
-    // redirect() de Next.js lance une erreur NEXT_REDIRECT — la laisser passer
-    const e = err as { digest?: string; message?: string }
-    if (e?.digest?.startsWith('NEXT_REDIRECT') || e?.message === 'NEXT_REDIRECT') throw err
+    const e = err as { message?: string }
     console.error('[Stripe] fetch error:', e?.message)
     return { error: `Connexion: ${e?.message}` }
   }
+  return { error: 'Erreur inattendue' }
 }
