@@ -8,24 +8,29 @@ export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(COOKIE_KEY)
-    if (stored === 'accepted') {
-      initFbPixel()
-      initGA()
-    } else if (!stored) {
+    try {
+      const stored = localStorage.getItem(COOKIE_KEY)
+      if (stored === 'accepted') {
+        initFbPixel()
+        initGA()
+      } else if (!stored) {
+        setVisible(true)
+      }
+    } catch {
+      // localStorage inaccessible (WebView restrictif, mode incognito) — afficher la bannière
       setVisible(true)
     }
   }, [])
 
   function accept() {
-    localStorage.setItem(COOKIE_KEY, 'accepted')
+    try { localStorage.setItem(COOKIE_KEY, 'accepted') } catch { /* ignore */ }
     setVisible(false)
     initFbPixel()
     initGA()
   }
 
   function refuse() {
-    localStorage.setItem(COOKIE_KEY, 'refused')
+    try { localStorage.setItem(COOKIE_KEY, 'refused') } catch { /* ignore */ }
     setVisible(false)
   }
 
