@@ -715,12 +715,13 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: dest.title,
+    '@type': ['LocalBusiness', 'TaxiService'],
+    name: 'Owise — Chauffeur Privé VTC',
     description: dest.metaDesc,
-    provider: { '@type': 'LocalBusiness', name: 'Owise', url: BASE, telephone: '+33619106356' },
+    url: BASE,
+    telephone: '+33619106356',
     areaServed: { '@type': 'Country', name: 'FR' },
-    offers: { '@type': 'Offer', priceCurrency: 'EUR', description: dest.prix },
+    makesOffer: { '@type': 'Offer', priceCurrency: 'EUR', description: dest.prix, name: dest.title },
     potentialAction: {
       '@type': 'ReserveAction',
       target: { '@type': 'EntryPoint', urlTemplate: `${BASE}/reserver` },
