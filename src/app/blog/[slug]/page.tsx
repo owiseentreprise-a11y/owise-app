@@ -487,6 +487,75 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: 'Paris 8e CDG', href: '/blog/vtc-paris-8-cdg' },
     { label: 'Entreprise Chantilly CDG', href: '/blog/vtc-entreprise-chantilly-cdg' },
   ],
+  // ── Vague 6 : Val-d'Oise & communes CDG ──
+  'vtc-cergy-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'VTC Pontoise', href: '/vtc-pontoise' },
+    { label: 'Pontoise CDG', href: '/blog/vtc-pontoise-cdg' },
+    { label: 'Herblay CDG', href: '/blog/vtc-herblay-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+  ],
+  'vtc-pontoise-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'VTC Pontoise', href: '/vtc-pontoise' },
+    { label: 'Cergy CDG', href: '/blog/vtc-cergy-cdg' },
+    { label: 'Herblay CDG', href: '/blog/vtc-herblay-cdg' },
+  ],
+  'vtc-herblay-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Cergy CDG', href: '/blog/vtc-cergy-cdg' },
+    { label: 'Sarcelles CDG', href: '/blog/vtc-sarcelles-cdg' },
+    { label: 'Gonesse CDG', href: '/blog/vtc-gonesse-cdg' },
+  ],
+  'vtc-sarcelles-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Gonesse CDG', href: '/blog/vtc-gonesse-cdg' },
+    { label: 'Villepinte CDG', href: '/blog/vtc-villepinte-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+  ],
+  'vtc-roissy-paris': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'CDG → Chantilly', href: '/blog/vtc-cdg-chantilly' },
+    { label: 'Gonesse CDG', href: '/blog/vtc-gonesse-cdg' },
+  ],
+  'vtc-villepinte-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Gonesse CDG', href: '/blog/vtc-gonesse-cdg' },
+    { label: 'Sarcelles CDG', href: '/blog/vtc-sarcelles-cdg' },
+    { label: 'Roissy → Paris', href: '/blog/vtc-roissy-paris' },
+    { label: 'Entreprise Chantilly CDG', href: '/blog/vtc-entreprise-chantilly-cdg' },
+  ],
+  'vtc-gonesse-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Villepinte CDG', href: '/blog/vtc-villepinte-cdg' },
+    { label: 'Sarcelles CDG', href: '/blog/vtc-sarcelles-cdg' },
+    { label: 'Roissy → Paris', href: '/blog/vtc-roissy-paris' },
+  ],
+  'vtc-versailles-cdg': [
+    { label: 'VTC Versailles', href: '/vtc-versailles' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Paris 16e CDG', href: '/blog/vtc-paris-16-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+  ],
+  'vtc-compiegne-cdg-avis': [
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'Meilleur VTC Compiègne', href: '/blog/meilleur-vtc-compiegne' },
+    { label: 'Meilleur VTC Oise CDG', href: '/blog/meilleur-vtc-oise-cdg' },
+  ],
+  'meilleur-vtc-senlis': [
+    { label: 'VTC Senlis', href: '/vtc-senlis' },
+    { label: '→ CDG depuis Senlis', href: '/blog/vtc-senlis-cdg' },
+    { label: 'Meilleur VTC Oise CDG', href: '/blog/meilleur-vtc-oise-cdg' },
+    { label: 'Avis Owise Chantilly CDG', href: '/blog/vtc-chantilly-cdg-avis' },
+  ],
+  'meilleur-vtc-compiegne': [
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'Meilleur VTC Oise CDG', href: '/blog/meilleur-vtc-oise-cdg' },
+    { label: 'Avis Owise Compiègne CDG', href: '/blog/vtc-compiegne-cdg-avis' },
+  ],
 }
 
 export const revalidate = 3600
