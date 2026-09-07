@@ -615,6 +615,81 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
     { label: 'Guide famille Chantilly CDG', href: '/blog/vtc-chantilly-cdg-groupe-famille' },
   ],
+  // ── Vague 8 — Longue distance ──
+  'vtc-longue-distance-guide': [
+    { label: 'VTC CDG Province', href: '/blog/vtc-cdg-province' },
+    { label: 'Paris → Bruxelles', href: '/blog/vtc-paris-bruxelles' },
+    { label: 'Paris → Lyon', href: '/blog/vtc-paris-lyon' },
+    { label: 'Paris → Normandie', href: '/blog/vtc-paris-normandie' },
+    { label: 'Paris → Lille', href: '/blog/vtc-paris-lille' },
+    { label: 'Paris → Reims', href: '/blog/vtc-paris-reims' },
+  ],
+  'vtc-paris-lille': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'Paris → Bruxelles', href: '/blog/vtc-paris-bruxelles' },
+    { label: 'Paris → Amiens', href: '/blog/vtc-paris-amiens' },
+    { label: 'CDG → Bruxelles', href: '/blog/vtc-cdg-bruxelles' },
+  ],
+  'vtc-paris-lyon': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'CDG → Lyon', href: '/blog/vtc-cdg-lyon' },
+    { label: 'Paris → Bordeaux', href: '/blog/vtc-oise-bordeaux' },
+    { label: 'Paris → Normandie', href: '/blog/vtc-paris-normandie' },
+  ],
+  'vtc-paris-normandie': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+    { label: 'Paris → Bruxelles', href: '/blog/vtc-paris-bruxelles' },
+    { label: 'Paris → Amiens', href: '/blog/vtc-paris-amiens' },
+  ],
+  'vtc-paris-bruxelles': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'CDG → Bruxelles', href: '/blog/vtc-cdg-bruxelles' },
+    { label: 'Paris → Lille', href: '/blog/vtc-paris-lille' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+  ],
+  'vtc-cdg-lyon': [
+    { label: 'Paris → Lyon', href: '/blog/vtc-paris-lyon' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+  ],
+  'vtc-cdg-province': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'CDG → Lyon', href: '/blog/vtc-cdg-lyon' },
+    { label: 'CDG → Bruxelles', href: '/blog/vtc-cdg-bruxelles' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+  ],
+  'vtc-oise-bordeaux': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'Paris → Lyon', href: '/blog/vtc-paris-lyon' },
+    { label: 'Paris → Normandie', href: '/blog/vtc-paris-normandie' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+  ],
+  'vtc-oise-strasbourg': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'Paris → Reims', href: '/blog/vtc-paris-reims' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+    { label: 'Paris → Lyon', href: '/blog/vtc-paris-lyon' },
+  ],
+  'vtc-paris-reims': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'Paris → Amiens', href: '/blog/vtc-paris-amiens' },
+    { label: 'Paris → Strasbourg', href: '/blog/vtc-oise-strasbourg' },
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+  ],
+  'vtc-paris-amiens': [
+    { label: 'Guide longue distance', href: '/blog/vtc-longue-distance-guide' },
+    { label: 'Paris → Lille', href: '/blog/vtc-paris-lille' },
+    { label: 'Paris → Normandie', href: '/blog/vtc-paris-normandie' },
+    { label: 'Paris → Reims', href: '/blog/vtc-paris-reims' },
+  ],
+  'vtc-cdg-bruxelles': [
+    { label: 'CDG Province', href: '/blog/vtc-cdg-province' },
+    { label: 'Paris → Bruxelles', href: '/blog/vtc-paris-bruxelles' },
+    { label: 'Paris → Lille', href: '/blog/vtc-paris-lille' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+  ],
 }
 
 export const revalidate = 3600
