@@ -407,6 +407,86 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: 'Alternative Uber Chantilly', href: '/blog/vtc-uber-alternative-chantilly' },
     { label: 'Taxi vs VTC Chantilly', href: '/blog/taxi-vs-vtc-chantilly-cdg' },
   ],
+  // ── Paris arrondissements vague 5 ──
+  'vtc-paris-1-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 2e/3e/4e CDG', href: '/blog/vtc-paris-2-cdg' },
+    { label: 'Paris 9e CDG', href: '/blog/vtc-paris-9-cdg' },
+  ],
+  'vtc-paris-5-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 7e CDG', href: '/blog/vtc-paris-7-cdg' },
+    { label: 'Paris 14e/13e CDG', href: '/blog/vtc-paris-13-cdg' },
+  ],
+  'vtc-paris-7-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 8e CDG', href: '/blog/vtc-paris-8-cdg' },
+    { label: 'Paris 15e CDG', href: '/blog/vtc-paris-15-cdg' },
+    { label: 'Paris 5e/6e CDG', href: '/blog/vtc-paris-5-cdg' },
+  ],
+  'vtc-paris-8-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 17e CDG', href: '/blog/vtc-paris-17-cdg' },
+    { label: 'Paris 16e CDG', href: '/blog/vtc-paris-16-cdg' },
+    { label: 'La Défense CDG', href: '/blog/vtc-la-defense-cdg' },
+  ],
+  'vtc-paris-9-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 18e CDG', href: '/blog/vtc-paris-18-cdg' },
+    { label: 'Paris 10e CDG', href: '/blog/vtc-paris-10-cdg' },
+    { label: 'Paris 1er CDG', href: '/blog/vtc-paris-1-cdg' },
+  ],
+  'vtc-paris-10-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 18e CDG', href: '/blog/vtc-paris-18-cdg' },
+    { label: 'Paris 19e CDG', href: '/blog/vtc-paris-19-cdg' },
+    { label: 'Paris 9e CDG', href: '/blog/vtc-paris-9-cdg' },
+  ],
+  'vtc-paris-11-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 20e CDG', href: '/blog/vtc-paris-20-cdg' },
+    { label: 'Paris 19e CDG', href: '/blog/vtc-paris-19-cdg' },
+  ],
+  'vtc-paris-13-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 15e CDG', href: '/blog/vtc-paris-15-cdg' },
+    { label: 'Paris 5e/6e CDG', href: '/blog/vtc-paris-5-cdg' },
+  ],
+  'vtc-paris-16-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 17e CDG', href: '/blog/vtc-paris-17-cdg' },
+    { label: 'Paris 8e CDG', href: '/blog/vtc-paris-8-cdg' },
+    { label: 'Paris 15e CDG', href: '/blog/vtc-paris-15-cdg' },
+  ],
+  'vtc-paris-17-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 18e CDG', href: '/blog/vtc-paris-18-cdg' },
+    { label: 'Paris 8e CDG', href: '/blog/vtc-paris-8-cdg' },
+    { label: 'La Défense CDG', href: '/blog/vtc-la-defense-cdg' },
+  ],
+  'vtc-paris-20-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 19e CDG', href: '/blog/vtc-paris-19-cdg' },
+    { label: 'Paris 11e/12e CDG', href: '/blog/vtc-paris-11-cdg' },
+  ],
+  'vtc-la-defense-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+    { label: 'Paris 17e CDG', href: '/blog/vtc-paris-17-cdg' },
+    { label: 'Paris 8e CDG', href: '/blog/vtc-paris-8-cdg' },
+    { label: 'Entreprise Chantilly CDG', href: '/blog/vtc-entreprise-chantilly-cdg' },
+  ],
 }
 
 export const revalidate = 3600

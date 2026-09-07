@@ -113,10 +113,22 @@
 - [Avis Owise Creil CDG](https://www.owise.fr/blog/vtc-creil-cdg-avis): avis clients 5/5 Google depuis Creil, tarif fixe 69 €.
 
 ### Trajets Paris arrondissements → CDG
-- [VTC Paris 15e CDG](https://www.owise.fr/blog/vtc-paris-15-cdg): chauffeur privé depuis Montparnasse/Vaugirard vers CDG.
+- [VTC Paris 1er CDG](https://www.owise.fr/blog/vtc-paris-1-cdg): Louvre, Châtelet, Les Halles → CDG, 40-55 min.
+- [VTC Paris 2e/3e/4e CDG](https://www.owise.fr/blog/vtc-paris-2-cdg): Marais, Bourse, Temple → CDG.
+- [VTC Paris 5e/6e CDG](https://www.owise.fr/blog/vtc-paris-5-cdg): Quartier Latin, Saint-Germain-des-Prés → CDG.
+- [VTC Paris 7e CDG](https://www.owise.fr/blog/vtc-paris-7-cdg): Tour Eiffel, Invalides, Champ de Mars → CDG.
+- [VTC Paris 8e CDG](https://www.owise.fr/blog/vtc-paris-8-cdg): Champs-Élysées, Arc de Triomphe, Madeleine → CDG.
+- [VTC Paris 9e CDG](https://www.owise.fr/blog/vtc-paris-9-cdg): Opéra, Pigalle, Grands Boulevards → CDG.
+- [VTC Paris 10e CDG](https://www.owise.fr/blog/vtc-paris-10-cdg): Gare du Nord, Gare de l'Est, République → CDG, 30-45 min.
+- [VTC Paris 11e/12e CDG](https://www.owise.fr/blog/vtc-paris-11-cdg): Bastille, Nation, Gare de Lyon → CDG.
+- [VTC Paris 13e/14e CDG](https://www.owise.fr/blog/vtc-paris-13-cdg): Montparnasse, Denfert, Chinatown → CDG.
+- [VTC Paris 15e CDG](https://www.owise.fr/blog/vtc-paris-15-cdg): Montparnasse/Vaugirard → CDG.
+- [VTC Paris 16e CDG](https://www.owise.fr/blog/vtc-paris-16-cdg): Trocadéro, Passy, Auteuil → CDG.
+- [VTC Paris 17e CDG](https://www.owise.fr/blog/vtc-paris-17-cdg): Batignolles, Wagram, Porte Maillot → CDG, 35-50 min.
 - [VTC Paris 18e CDG](https://www.owise.fr/blog/vtc-paris-18-cdg): le trajet le plus court depuis Paris vers CDG (Porte de la Chapelle → A1).
-- [VTC Paris 19e CDG](https://www.owise.fr/blog/vtc-paris-19-cdg): chauffeur privé depuis La Villette vers CDG.
-- [VTC Paris 2e/3e/4e CDG](https://www.owise.fr/blog/vtc-paris-2-cdg): chauffeur privé depuis le Marais et centre de Paris vers CDG.
+- [VTC Paris 19e CDG](https://www.owise.fr/blog/vtc-paris-19-cdg): La Villette, Buttes-Chaumont → CDG.
+- [VTC Paris 20e CDG](https://www.owise.fr/blog/vtc-paris-20-cdg): Belleville, Père Lachaise, Ménilmontant → CDG.
+- [VTC La Défense CDG](https://www.owise.fr/blog/vtc-la-defense-cdg): premier quartier d'affaires européen → CDG, facturation entreprise, 35-55 min.
 
 ### Retours Oise → Paris
 - [VTC Gouvieux Paris](https://www.owise.fr/blog/vtc-gouvieux-paris): chauffeur privé depuis Gouvieux/Lamorlaye vers Paris, tarif fixe.
