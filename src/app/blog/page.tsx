@@ -21,7 +21,7 @@ export default async function BlogPage() {
       .select('slug, titre, meta_desc, categorie, published_at')
       .eq('statut', 'publie')
       .order('published_at', { ascending: false })
-      .limit(100)
+      .limit(200)
     posts = data ?? []
   } catch { /* table absente au build — rendu vide */ }
 
