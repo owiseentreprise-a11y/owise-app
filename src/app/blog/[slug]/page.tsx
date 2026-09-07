@@ -556,6 +556,65 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: 'Meilleur VTC Oise CDG', href: '/blog/meilleur-vtc-oise-cdg' },
     { label: 'Avis Owise Compiègne CDG', href: '/blog/vtc-compiegne-cdg-avis' },
   ],
+  // ── Vague 7 : Disneyland, Seine-et-Marne, guides thématiques ──
+  'vtc-marne-la-vallee-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ Orly depuis Disneyland', href: '/blog/vtc-marne-la-vallee-orly' },
+    { label: 'Meaux CDG', href: '/blog/vtc-meaux-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+  ],
+  'vtc-marne-la-vallee-orly': [
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ CDG depuis Disneyland', href: '/blog/vtc-marne-la-vallee-cdg' },
+    { label: 'Orly → Paris', href: '/blog/vtc-orly-paris' },
+  ],
+  'vtc-meaux-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Marne-la-Vallée CDG', href: '/blog/vtc-marne-la-vallee-cdg' },
+    { label: 'Villepinte CDG', href: '/blog/vtc-villepinte-cdg' },
+    { label: 'CDG → Paris', href: '/blog/vtc-cdg-paris' },
+  ],
+  'vtc-fontainebleau-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Versailles CDG', href: '/blog/vtc-versailles-cdg' },
+    { label: 'Saint-Quentin-en-Yvelines CDG', href: '/blog/vtc-saint-quentin-en-yvelines-cdg' },
+  ],
+  'vtc-noyon-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'Meilleur VTC Compiègne', href: '/blog/meilleur-vtc-compiegne' },
+  ],
+  'vtc-saint-quentin-en-yvelines-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Versailles CDG', href: '/blog/vtc-versailles-cdg' },
+    { label: 'La Défense CDG', href: '/blog/vtc-la-defense-cdg' },
+    { label: 'Paris 16e CDG', href: '/blog/vtc-paris-16-cdg' },
+  ],
+  'vtc-mariage-oise': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'Van Chantilly CDG', href: '/blog/vtc-van-chantilly-cdg' },
+    { label: 'Transport groupe Oise CDG', href: '/blog/vtc-groupe-oise-cdg' },
+    { label: 'Guide Château de Chantilly', href: '/blog/guide-transport-chateau-de-chantilly' },
+  ],
+  'vtc-soiree-paris-oise': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'Départ de nuit CDG', href: '/blog/vtc-chantilly-nuit-cdg' },
+    { label: 'Paris → Chantilly', href: '/blog/vtc-paris-chantilly' },
+    { label: 'Paris → Creil', href: '/blog/vtc-paris-creil' },
+  ],
+  'vtc-medical-oise-paris': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'Chantilly → Paris', href: '/blog/vtc-gouvieux-paris' },
+    { label: 'Creil → Paris', href: '/blog/vtc-creil-paris' },
+    { label: 'Senlis → Paris', href: '/blog/vtc-senlis-paris' },
+  ],
+  'vtc-groupe-oise-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Van Chantilly CDG', href: '/blog/vtc-van-chantilly-cdg' },
+    { label: 'Van Creil CDG', href: '/blog/vtc-van-creil-cdg' },
+    { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
+    { label: 'Guide famille Chantilly CDG', href: '/blog/vtc-chantilly-cdg-groupe-famille' },
+  ],
 }
 
 export const revalidate = 3600
