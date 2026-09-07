@@ -110,7 +110,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Pont-Sainte-Maxence', cp: '60700', km: 12.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est à partir de 75€ en berline, prix fixe garanti. Depuis Senlis, Gouvieux ou Chantilly, comptez également entre 70€ et 80€. Obtenez votre prix exact avec notre estimateur.' },
+      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est à partir de 75€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
       { q: 'Desservez-vous Senlis, Gouvieux et Saint-Maximin ?', a: 'Oui. Nous couvrons toutes les communes dans un rayon de 10 km autour de Creil : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Verneuil-en-Halatte, Saint-Leu-d\'Esserent, Liancourt, Rantigny, Fleurines et plus encore.' },
       { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
       { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux, le forfait CDG est d\'environ 75€ en berline. Le prix est identique dans un rayon de 10-12 km autour de Creil — même tarif, même qualité de service.' },
@@ -246,15 +246,15 @@ const DESTINATIONS: Record<string, {
   'vtc-chantilly': {
     slug: 'vtc-chantilly',
     title: 'VTC Chantilly — Aéroport & Paris',
-    metaTitle: 'VTC Chantilly → CDG, Orly, Paris dès 70€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Chantilly vers CDG, Orly et Paris. Tarif fixe dès 70€, véhicule premium, disponible 24h/24. Château de Chantilly, hippodrome, événements.',
+    metaTitle: 'VTC Chantilly → CDG, Orly, Paris dès 59€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Chantilly vers CDG, Orly et Paris. Tarif fixe dès 59€, véhicule premium, disponible 24h/24. Château de Chantilly, hippodrome, événements.',
     keywords: ['vtc chantilly','chauffeur privé chantilly','vtc chantilly cdg','taxi chantilly aéroport','vtc chantilly paris'],
     h1: 'VTC Chantilly — Chauffeur Privé',
     intro: 'Chauffeur VTC depuis Chantilly et ses environs vers CDG, Orly, Paris et toute l\'Île-de-France. Idéal pour le Château de Chantilly, l\'hippodrome, les hôtels de luxe et les événements.',
-    prix: 'dès 70€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '40–55 min vers CDG',
     faq: [
-      { q: 'Quel est le prix d\'un VTC Chantilly → CDG ?', a: 'Le forfait Chantilly → CDG est d\'environ 75€ en berline, prix fixe garanti. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
+      { q: 'Quel est le prix d\'un VTC Chantilly → CDG ?', a: 'Le forfait Chantilly → CDG est de 59€ en berline, prix fixe garanti. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
       { q: 'Proposez-vous des transferts pour le Château de Chantilly ?', a: 'Oui. Nous sommes disponibles pour les événements privés, séminaires et visites du Château et du Domaine de Chantilly. Tarif sur devis pour les groupes.' },
       { q: 'Desservez-vous l\'hippodrome de Chantilly ?', a: 'Oui, pour les jours de course et les événements. Réservez à l\'avance, surtout pour le Prix de Diane et le Prix du Jockey Club.' },
       { q: 'Puis-je réserver un aller-retour Chantilly–Paris ?', a: 'Absolument. L\'option aller-retour est disponible dès la réservation avec un tarif préférentiel. Indiquez votre heure de retour souhaitée.' },
