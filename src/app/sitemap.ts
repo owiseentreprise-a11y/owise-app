@@ -40,8 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: BASE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    ...(posts.length > 0 ? [{ url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.7 }] : []),
+    { url: `${BASE}/faq`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/reserver`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+    ...(posts.length > 0 ? [{ url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.7 }] : []),
     ...DESTINATIONS.map(slug => ({
       url: `${BASE}/${slug}`,
       lastModified: new Date(),

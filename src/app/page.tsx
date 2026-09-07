@@ -115,7 +115,7 @@ const jsonLd = {
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG dès 65€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris → Orly dès 50€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Beauvais', description: 'Oise → BVA dès 40€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise → CDG', description: 'Creil → CDG dès 65€' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise → CDG', description: 'Creil → CDG dès 69€' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Compte entreprise VTC', description: 'Facturation mensuelle, multi-collaborateurs' } },
     ],
   },
@@ -127,6 +127,43 @@ const jsonLd = {
     bestRating: '5',
     worstRating: '1',
   },
+}
+
+const jsonLdWebSite = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Owise',
+  url: BASE,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: `${BASE}/reserver?q={search_term_string}` },
+    'query-input': 'required name=search_term_string',
+  },
+}
+
+const jsonLdOrganization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Owise',
+  legalName: 'Owise',
+  url: BASE,
+  logo: `${BASE}/brand_assets/logo.svg`,
+  telephone: '+33619106356',
+  email: 'owise.entreprise@gmail.com',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Creil',
+    addressRegion: 'Oise',
+    postalCode: '60100',
+    addressCountry: 'FR',
+  },
+  sameAs: [
+    'https://owise.fr',
+    'https://www.owise.fr',
+    'https://facebook.com/Owise.vtc',
+    'https://www.tiktok.com/@owise857',
+  ],
+  description: 'Plateforme de chauffeur privé VTC — Oise, Île-de-France et Paris. Tarif fixe garanti, disponible 24h/24.',
 }
 
 export const revalidate = 3600
@@ -145,6 +182,14 @@ export default async function VitrinePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
       />
       <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} />
 
