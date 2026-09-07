@@ -690,6 +690,70 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: 'Paris → Lille', href: '/blog/vtc-paris-lille' },
     { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
   ],
+  // ── Vague 9 — Assurance, assistance, médical, B2B ──
+  'vtc-remplacement-vehicule-assurance': [
+    { label: 'VTC assistance routière', href: '/blog/vtc-assistance-routiere' },
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+    { label: 'VTC médical Oise→Paris', href: '/blog/vtc-medical-oise-paris' },
+    { label: 'VTC Chantilly CDG', href: '/blog/vtc-chantilly-cdg' },
+  ],
+  'vtc-assistance-routiere': [
+    { label: 'VTC remplacement véhicule assurance', href: '/blog/vtc-remplacement-vehicule-assurance' },
+    { label: 'VTC nuit Chantilly CDG', href: '/blog/vtc-chantilly-nuit-cdg' },
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+  ],
+  'vtc-dialyse-chimio-rdv-medical': [
+    { label: 'VTC médical Oise→Paris', href: '/blog/vtc-medical-oise-paris' },
+    { label: 'VTC sortie hôpital', href: '/blog/vtc-sortie-hopital-convalescence' },
+    { label: 'VTC personnes âgées', href: '/blog/vtc-personnes-agees-mobilite' },
+    { label: 'VTC PMR Oise', href: '/blog/vtc-pmr-handicap-oise' },
+  ],
+  'vtc-personnes-agees-mobilite': [
+    { label: 'VTC dialyse/chimio', href: '/blog/vtc-dialyse-chimio-rdv-medical' },
+    { label: 'VTC sortie hôpital', href: '/blog/vtc-sortie-hopital-convalescence' },
+    { label: 'VTC PMR Oise', href: '/blog/vtc-pmr-handicap-oise' },
+    { label: 'VTC Chantilly CDG', href: '/blog/vtc-chantilly-cdg' },
+  ],
+  'vtc-pmr-handicap-oise': [
+    { label: 'VTC personnes âgées', href: '/blog/vtc-personnes-agees-mobilite' },
+    { label: 'VTC dialyse/chimio', href: '/blog/vtc-dialyse-chimio-rdv-medical' },
+    { label: 'VTC médical Oise→Paris', href: '/blog/vtc-medical-oise-paris' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+  ],
+  'vtc-conducteur-designe-oise': [
+    { label: 'VTC soirée Paris→Oise', href: '/blog/vtc-soiree-paris-oise' },
+    { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
+    { label: 'VTC nuit Chantilly CDG', href: '/blog/vtc-chantilly-nuit-cdg' },
+    { label: 'Van groupe Oise CDG', href: '/blog/vtc-groupe-oise-cdg' },
+  ],
+  'vtc-entreprise-compte-b2b': [
+    { label: 'VTC séminaire entreprise', href: '/blog/vtc-seminaire-evenement-entreprise' },
+    { label: 'VTC remplacement assurance', href: '/blog/vtc-remplacement-vehicule-assurance' },
+    { label: 'VTC abonnement Oise-Paris', href: '/blog/vtc-teletravail-abonnement-oise-paris' },
+    { label: 'VTC La Défense CDG', href: '/blog/vtc-la-defense-cdg' },
+  ],
+  'vtc-sortie-hopital-convalescence': [
+    { label: 'VTC médical Oise→Paris', href: '/blog/vtc-medical-oise-paris' },
+    { label: 'VTC dialyse/chimio', href: '/blog/vtc-dialyse-chimio-rdv-medical' },
+    { label: 'VTC personnes âgées', href: '/blog/vtc-personnes-agees-mobilite' },
+  ],
+  'vtc-seminaire-evenement-entreprise': [
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+    { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
+    { label: 'Van groupe Oise CDG', href: '/blog/vtc-groupe-oise-cdg' },
+    { label: 'Guide Château de Chantilly', href: '/blog/guide-transport-chateau-de-chantilly' },
+  ],
+  'vtc-transport-scolaire-oise': [
+    { label: 'VTC famille Chantilly CDG', href: '/blog/vtc-chantilly-cdg-groupe-famille' },
+    { label: 'VTC abonnement Oise-Paris', href: '/blog/vtc-teletravail-abonnement-oise-paris' },
+    { label: 'VTC personnes âgées', href: '/blog/vtc-personnes-agees-mobilite' },
+  ],
+  'vtc-teletravail-abonnement-oise-paris': [
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+    { label: 'VTC transport scolaire Oise', href: '/blog/vtc-transport-scolaire-oise' },
+    { label: '→ CDG depuis Chantilly', href: '/blog/vtc-chantilly-cdg' },
+    { label: 'Paris → Chantilly', href: '/blog/vtc-paris-chantilly' },
+  ],
 }
 
 export const revalidate = 3600
