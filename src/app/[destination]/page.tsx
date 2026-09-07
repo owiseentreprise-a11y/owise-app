@@ -113,7 +113,7 @@ const DESTINATIONS: Record<string, {
       { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est de 69€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
       { q: 'Desservez-vous Senlis, Gouvieux et Saint-Maximin ?', a: 'Oui. Nous couvrons toutes les communes dans un rayon de 10 km autour de Creil : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Verneuil-en-Halatte, Saint-Leu-d\'Esserent, Liancourt, Rantigny, Fleurines et plus encore.' },
       { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
-      { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux, le forfait CDG est d\'environ 75€ en berline. Le prix est identique dans un rayon de 10-12 km autour de Creil — même tarif, même qualité de service.' },
+      { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux (secteur Chantilly), le forfait CDG est de 59€ en berline, prix fixe garanti. C\'est le même tarif que depuis Chantilly, ces communes étant dans la même zone.' },
       { q: 'Proposez-vous des courses vers Orly depuis l\'Oise ?', a: 'Oui. Depuis Creil et ses environs, le forfait Orly est d\'environ 100€ en berline. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis toute l\'Oise Sud.' },
       { q: 'Couvrez-vous Pont-Sainte-Maxence et Verneuil-en-Halatte ?', a: 'Oui, ces communes sont dans notre zone de desserte. Pont-Sainte-Maxence, Verneuil-en-Halatte, Liancourt et toutes les localités de l\'Oise Sud sont couvertes avec le même niveau de service premium.' },
     ],
@@ -162,8 +162,8 @@ const DESTINATIONS: Record<string, {
   'vtc-senlis': {
     slug: 'vtc-senlis',
     title: 'VTC Senlis & Environs',
-    metaTitle: 'VTC Senlis → CDG, Orly, Paris dès 70€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Senlis, Aumont-en-Halatte, Fleurines et environs vers CDG, Orly et Paris. Tarif fixe dès 70€, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Senlis → CDG, Orly, Paris dès 65€ | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Senlis, Aumont-en-Halatte, Fleurines et environs vers CDG, Orly et Paris. Tarif fixe dès 65€, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc senlis','chauffeur privé senlis cdg','vtc senlis aéroport',
       'taxi senlis paris','vtc aumont-en-halatte','vtc fleurines',
@@ -172,7 +172,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Senlis & Environs',
     intro: 'Chauffeur VTC depuis Senlis et ses communes voisines : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant, Courteuil et toutes les localités dans un rayon de 10 km. Tarif fixe vers CDG, Orly et Paris.',
-    prix: 'dès 70€ vers CDG',
+    prix: 'dès 65€ vers CDG',
     duree: '45–60 min vers CDG',
     zones: [
       { nom: 'Senlis', cp: '60300', km: 0 },
@@ -193,18 +193,18 @@ const DESTINATIONS: Record<string, {
       { nom: 'Saint-Maximin', cp: '60740', km: 9.8 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Le forfait Senlis → CDG est d\'environ 75€ en berline, prix fixe garanti quelle que soit la durée du trajet.' },
+      { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Le forfait Senlis → CDG est de 65€ en berline, prix fixe garanti quelle que soit la durée du trajet. Pas de surprise, le prix est confirmé dès la réservation.' },
       { q: 'Combien de temps pour aller de Senlis à l\'aéroport CDG ?', a: 'Environ 45 à 60 minutes depuis Senlis centre. Tôt le matin (avant 6h), comptez 40 à 45 minutes sans circulation.' },
       { q: 'Desservez-vous Aumont-en-Halatte et Fleurines ?', a: 'Oui. Toutes les communes autour de Senlis sont couvertes : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant et leurs alentours.' },
       { q: 'Peut-on réserver un VTC Senlis depuis le Château ?', a: 'Oui. Nous intervenons pour les événements au Château Royal de Senlis, les séminaires et les sorties touristiques. Réservation possible à l\'avance ou le jour même.' },
-      { q: 'Quel est le prix Senlis → Paris ?', a: 'Le trajet Senlis → Paris (intramuros) est calculé au kilomètre via OSRM, soit environ 80 à 90€. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
+      { q: 'Quel est le prix Senlis → Paris ?', a: 'Le trajet Senlis → Paris intramuros est d\'environ 80 à 90€ en berline. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
     ],
   },
   'vtc-gouvieux': {
     slug: 'vtc-gouvieux',
     title: 'VTC Gouvieux, Lamorlaye & Chantilly',
-    metaTitle: 'VTC Gouvieux, Lamorlaye, Coye-la-Forêt → CDG dès 70€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt et environs de Chantilly. Tarif fixe dès 70€ vers CDG, Orly, Paris. Disponible 24h/24, 7j/7.',
+    metaTitle: 'VTC Gouvieux, Lamorlaye, Coye-la-Forêt → CDG dès 59€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt et environs de Chantilly. Tarif fixe dès 59€ vers CDG, Orly, Paris. Disponible 24h/24, 7j/7.',
     keywords: [
       'vtc gouvieux','vtc lamorlaye','vtc coye-la-forêt','vtc orry-la-ville',
       'chauffeur privé gouvieux cdg','vtc gouvieux aéroport',
@@ -213,7 +213,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Gouvieux, Lamorlaye & Chantilly Sud',
     intro: 'Votre chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Saint-Leu-d\'Esserent, Précy-sur-Oise et toutes les communes du secteur Chantilly Sud. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24, 7j/7.',
-    prix: 'dès 70€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '40–55 min vers CDG',
     zones: [
       { nom: 'Gouvieux', cp: '60270', km: 0 },
@@ -236,10 +236,10 @@ const DESTINATIONS: Record<string, {
       { nom: 'Crouy-en-Thelle', cp: '60530', km: 9.1 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Gouvieux ou Lamorlaye vers CDG ?', a: 'Le forfait Gouvieux/Lamorlaye → CDG est d\'environ 75€ en berline, prix fixe garanti. Le tarif est identique depuis tout le secteur Chantilly Sud.' },
+      { q: 'Quel est le tarif depuis Gouvieux ou Lamorlaye vers CDG ?', a: 'Le forfait Gouvieux → CDG est de 59€ en berline, prix fixe garanti. Depuis Lamorlaye ou Coye-la-Forêt, le tarif est identique : 59€ depuis tout le secteur Chantilly Sud.' },
       { q: 'Desservez-vous Coye-la-Forêt et Orry-la-Ville ?', a: 'Oui. Toutes les communes du secteur sont couvertes : Coye-la-Forêt, Orry-la-Ville, Précy-sur-Oise, Boran-sur-Oise, Luzarches et toutes les localités dans un rayon de 10 km autour de Gouvieux.' },
       { q: 'Pouvez-vous me prendre à Lamorlaye tôt le matin ?', a: 'Oui, 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) est intégré dans le prix affiché par notre estimateur.' },
-      { q: 'Quel est le prix depuis Gouvieux vers Paris ?', a: 'Le trajet Gouvieux → Paris est calculé via OSRM selon votre adresse exacte, environ 80 à 90€ en berline. Utilisez notre estimateur pour un prix instantané.' },
+      { q: 'Quel est le prix depuis Gouvieux vers Paris ?', a: 'Le trajet Gouvieux → Paris intramuros est calculé selon votre adresse exacte, environ 80 à 90€ en berline. Utilisez notre estimateur pour un prix instantané.' },
       { q: 'Desservez-vous l\'Hippodrome de Chantilly depuis Gouvieux ?', a: 'Oui. Nous assurons les transferts pour l\'Hippodrome, le Château de Chantilly et les événements privés du secteur. Réservez à l\'avance pour les grands événements (Prix de Diane, etc.).' },
     ],
   },
@@ -286,8 +286,8 @@ const DESTINATIONS: Record<string, {
   'vtc-lamorlaye': {
     slug: 'vtc-lamorlaye',
     title: 'VTC Lamorlaye & Coye-la-Forêt',
-    metaTitle: 'VTC Lamorlaye, Coye-la-Forêt → CDG, Paris dès 70€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville et la forêt de Chantilly vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
+    metaTitle: 'VTC Lamorlaye, Coye-la-Forêt → CDG, Paris dès 59€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville et la forêt de Chantilly vers CDG, Orly et Paris. Tarif fixe dès 59€, disponible 24h/24.',
     keywords: [
       'vtc lamorlaye','chauffeur privé lamorlaye cdg','vtc lamorlaye aéroport',
       'taxi lamorlaye paris','vtc coye-la-forêt','vtc orry-la-ville',
@@ -296,7 +296,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Lamorlaye, Coye-la-Forêt & Forêt de Chantilly',
     intro: 'Votre chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Luzarches et toutes les communes de la forêt de Chantilly. Tarif fixe garanti vers CDG, Orly, Paris et Beauvais. Service premium, prise en charge à domicile, disponible 24h/24, 7j/7.',
-    prix: 'dès 70€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '40–55 min vers CDG',
     zones: [
       { nom: 'Lamorlaye', cp: '60260', km: 0 },
@@ -312,7 +312,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Précy-sur-Oise', cp: '60460', km: 7.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Lamorlaye vers CDG ?', a: 'Le forfait Lamorlaye → CDG est d\'environ 75€ en berline, prix fixe garanti quelle que soit la circulation. Depuis Coye-la-Forêt ou Orry-la-Ville, le tarif est similaire.' },
+      { q: 'Quel est le tarif depuis Lamorlaye vers CDG ?', a: 'Le forfait Lamorlaye → CDG est de 59€ en berline, prix fixe garanti quelle que soit la circulation. Depuis Coye-la-Forêt, Gouvieux ou Orry-la-Ville, le tarif est identique : 59€.' },
       { q: 'Desservez-vous Coye-la-Forêt et Orry-la-Ville ?', a: 'Oui. Toutes les communes autour de Lamorlaye sont couvertes : Coye-la-Forêt, Orry-la-Ville, Avilly-Saint-Léonard, Gouvieux, Chantilly, Luzarches, Boran-sur-Oise et leurs environs forestiers.' },
       { q: 'Combien de temps pour aller de Lamorlaye à CDG ?', a: 'Environ 40 à 55 minutes selon les conditions de circulation. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Le trajet via l\'A104 est direct.' },
       { q: 'Puis-je réserver depuis un gîte ou une résidence dans la forêt ?', a: 'Absolument. Précisez votre adresse exacte lors de la réservation. Votre chauffeur se rend directement à votre point de prise en charge, même en chemin forestier.' },
@@ -713,15 +713,27 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
 
   const BASE = 'https://www.owise.fr'
 
+  // Extraire le prix numérique depuis dest.prix (ex: "dès 59€ vers CDG" → "59")
+  const prixMatch = dest.prix.match(/(\d+)/)
+  const prixNum = prixMatch ? prixMatch[1] : null
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': ['LocalBusiness', 'TaxiService'],
     name: 'Owise — Chauffeur Privé VTC',
     description: dest.metaDesc,
-    url: BASE,
+    url: `${BASE}/${dest.slug}`,
     telephone: '+33619106356',
-    areaServed: { '@type': 'Country', name: 'FR' },
-    makesOffer: { '@type': 'Offer', priceCurrency: 'EUR', description: dest.prix, name: dest.title },
+    areaServed: dest.zones && dest.zones.length > 0
+      ? dest.zones.map(z => ({ '@type': 'City', name: z.nom, postalCode: z.cp }))
+      : [{ '@type': 'City', name: dest.title.replace(/VTC\s+/, '').split(' &')[0] }],
+    makesOffer: {
+      '@type': 'Offer',
+      priceCurrency: 'EUR',
+      description: dest.prix,
+      name: dest.title,
+      ...(prixNum ? { price: prixNum, priceSpecification: { '@type': 'PriceSpecification', price: prixNum, priceCurrency: 'EUR', description: `Tarif fixe ${dest.title}` } } : {}),
+    },
     potentialAction: {
       '@type': 'ReserveAction',
       target: { '@type': 'EntryPoint', urlTemplate: `${BASE}/reserver` },
