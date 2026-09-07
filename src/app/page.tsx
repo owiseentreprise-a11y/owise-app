@@ -162,7 +162,7 @@ export default async function VitrinePage() {
               { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 65€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
               { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 50€',  desc: 'Transfert Paris-Orly, tous terminaux' },
               { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 40€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
-              { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 65€',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
+              { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 69€',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
               { slug: 'vtc-chantilly',         title: 'VTC Chantilly',                  prix: 'dès 59€',  desc: 'Château, Hippodrome, hôtels de prestige' },
               { slug: 'vtc-senlis',            title: 'VTC Senlis & Environs',          prix: 'dès 70€',  desc: 'Cité médiévale, Forêt de Chantilly' },
               { slug: 'vtc-gouvieux',          title: 'VTC Gouvieux & Lamorlaye',       prix: 'dès 70€',  desc: 'Coye-la-Forêt, Orry-la-Ville, Précy' },

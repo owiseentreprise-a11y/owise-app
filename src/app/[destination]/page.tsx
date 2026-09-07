@@ -77,8 +77,8 @@ const DESTINATIONS: Record<string, {
   'vtc-creil': {
     slug: 'vtc-creil',
     title: 'VTC Creil & Oise Sud',
-    metaTitle: 'VTC Creil & Oise Sud → CDG, Orly, Paris dès 65€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Creil, Senlis, Gouvieux, Chantilly, Lamorlaye et toute l\'Oise Sud. Tarif fixe dès 65€ vers CDG, Orly et Paris. Disponible 24h/24.',
+    metaTitle: 'VTC Creil & Oise Sud → CDG, Orly, Paris dès 69€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Creil, Senlis, Gouvieux, Chantilly, Lamorlaye et toute l\'Oise Sud. Tarif fixe dès 69€ vers CDG, Orly et Paris. Disponible 24h/24.',
     keywords: [
       'vtc creil','vtc senlis','vtc gouvieux','vtc saint-maximin','vtc lamorlaye',
       'vtc chantilly cdg','vtc nogent-sur-oise','chauffeur privé creil cdg',
@@ -88,7 +88,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Creil, Senlis, Gouvieux & Oise Sud',
     intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers CDG, Orly, Beauvais et Paris. Disponible 24h/24.',
-    prix: 'dès 65€ vers CDG',
+    prix: 'dès 69€ vers CDG',
     duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Creil', cp: '60100', km: 0 },
@@ -110,7 +110,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Pont-Sainte-Maxence', cp: '60700', km: 12.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est à partir de 75€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
+      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est de 69€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
       { q: 'Desservez-vous Senlis, Gouvieux et Saint-Maximin ?', a: 'Oui. Nous couvrons toutes les communes dans un rayon de 10 km autour de Creil : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Verneuil-en-Halatte, Saint-Leu-d\'Esserent, Liancourt, Rantigny, Fleurines et plus encore.' },
       { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
       { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux, le forfait CDG est d\'environ 75€ en berline. Le prix est identique dans un rayon de 10-12 km autour de Creil — même tarif, même qualité de service.' },
