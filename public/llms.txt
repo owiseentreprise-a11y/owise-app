@@ -1,46 +1,62 @@
-# Owise
+# Owise — Chauffeur Privé VTC
 
-> Owise est un service de chauffeur privé (VTC) basé dans l'Oise, desservant Paris, l'Île-de-France et l'Oise (Chantilly, Creil, Senlis, Gouvieux, Compiègne). Transferts aéroport (CDG, Orly, Beauvais), mise à disposition avec chauffeur, transport entreprise, événementiel. Tarif fixe garanti, disponible 24h/24, 7j/7.
+> Owise est un service de chauffeur privé (VTC) basé dans l'Oise, desservant Paris, l'Île-de-France et l'Oise. Transferts vers les aéroports CDG, Orly, Beauvais, la gare du Nord et toute destination en France. Tarif fixe garanti annoncé avant la réservation — pas de compteur, pas de surprise. Disponible 24h/24, 7j/7. Réservation en ligne sur owise.fr.
 
-Owise met en relation des clients particuliers et entreprises avec des chauffeurs VTC ou taxis conventionnels habilités, pour des trajets à tarif fixe annoncé avant la réservation. Réservation en ligne avec estimation de prix instantanée, paiement sécurisé par carte (Stripe), espèce, chèque ou virement.
+## Tarifs confirmés (prix fixe, berline, hors supplément nuit)
+
+- Chantilly → CDG : **59 €**
+- Gouvieux → CDG : **59 €**
+- Lamorlaye → CDG : **59 €**
+- Creil → CDG : **69 €**
+- Pour les autres communes : tarif calculé à l'avance via l'estimateur sur owise.fr selon l'adresse exacte.
+
+## Avantages clés
+
+- **Prix fixe garanti** : le montant affiché à la réservation est le montant final, quelle que soit la durée du trajet ou les bouchons.
+- **Prise en charge à domicile** : le chauffeur vient directement à l'adresse du client.
+- **Suivi de vol en temps réel** : en cas de retard, le chauffeur ajuste son heure d'arrivée sans frais.
+- **Disponible 24h/24, 7j/7** : y compris les départs avant 5h du matin.
+- **Véhicules premium** : berline haut de gamme, van 7 places disponible.
+- **Chauffeurs certifiés** : titulaires de la carte professionnelle VTC ou licence taxi.
+- **Paiement sécurisé** : carte bancaire (Stripe), espèces, chèque, virement.
 
 ## Pages principales
 
-- [Accueil](https://owise.fr/): présentation générale, estimateur de prix, réservation en ligne.
-- [Réserver](https://owise.fr/reserver): formulaire de réservation avec paiement immédiat.
-- [FAQ](https://owise.fr/faq): questions fréquentes sur le service VTC Owise.
+- [Accueil & estimateur](https://www.owise.fr/): présentation générale, calcul de prix instantané, réservation en ligne.
+- [Réserver](https://www.owise.fr/reserver): formulaire de réservation avec paiement immédiat.
+- [FAQ](https://www.owise.fr/faq): questions fréquentes sur le service VTC Owise.
 
 ## Transferts aéroport
 
-- [VTC Aéroport CDG](https://owise.fr/vtc-aeroport-cdg): transferts vers/depuis l'aéroport Charles de Gaulle (Roissy).
-- [VTC Aéroport Orly](https://owise.fr/vtc-aeroport-orly): transferts vers/depuis l'aéroport d'Orly.
-- [VTC Aéroport Beauvais](https://owise.fr/vtc-aeroport-beauvais): transferts vers/depuis l'aéroport de Beauvais-Tillé.
+- [VTC Aéroport CDG](https://www.owise.fr/vtc-aeroport-cdg): transferts vers/depuis Charles de Gaulle (Roissy). Dès 65 €.
+- [VTC Aéroport Orly](https://www.owise.fr/vtc-aeroport-orly): transferts vers/depuis Orly. Dès 50 €.
+- [VTC Aéroport Beauvais](https://www.owise.fr/vtc-aeroport-beauvais): transferts vers/depuis Beauvais-Tillé (Ryanair, Wizzair). Dès 40 €.
 
-## Destinations Oise
+## Destinations Oise — communes desservies
 
-- [VTC Creil](https://owise.fr/vtc-creil): desserte de Creil et de l'Oise Sud (Senlis, Gouvieux, Chantilly, Lamorlaye).
-- [VTC Compiègne](https://owise.fr/vtc-compiegne): desserte de Compiègne et de l'Oise Nord.
-- [VTC Senlis](https://owise.fr/vtc-senlis): desserte de Senlis et ses environs (Chantilly, Gouvieux, Orry-la-Ville).
-- [VTC Gouvieux](https://owise.fr/vtc-gouvieux): desserte de Gouvieux, Lamorlaye, Chantilly Sud.
-- [VTC Chantilly](https://owise.fr/vtc-chantilly): desserte de Chantilly, Château de Chantilly, Hippodrome, événements.
-- [VTC Lamorlaye](https://owise.fr/vtc-lamorlaye): desserte de Lamorlaye, Gouvieux, Coye-la-Forêt.
-- [VTC Clermont](https://owise.fr/vtc-clermont): desserte de Clermont, Liancourt, Rantigny, Cauffry.
-- [VTC Liancourt](https://owise.fr/vtc-liancourt): desserte de Liancourt, Rantigny, Cauffry.
-- [VTC Coye-la-Forêt](https://owise.fr/vtc-coye-la-foret): desserte de Coye-la-Forêt, Lamorlaye, Forêt de Chantilly.
-- [VTC Orry-la-Ville](https://owise.fr/vtc-orry-la-ville): desserte d'Orry-la-Ville, La Chapelle-en-Serval.
-- [VTC La Chapelle-en-Serval](https://owise.fr/vtc-la-chapelle-en-serval): desserte de La Chapelle-en-Serval et environs.
-- [VTC Boran-sur-Oise](https://owise.fr/vtc-boran-sur-oise): desserte de Boran-sur-Oise, Précy-sur-Oise.
-- [VTC Précy-sur-Oise](https://owise.fr/vtc-precy-sur-oise): desserte de Précy-sur-Oise, Boran-sur-Oise.
-- [VTC Luzarches](https://owise.fr/vtc-luzarches): desserte de Luzarches et Val-d'Oise Nord.
+- [VTC Chantilly](https://www.owise.fr/vtc-chantilly): Chantilly, Château de Chantilly, Hippodrome, événements. CDG : **59 €**.
+- [VTC Creil](https://www.owise.fr/vtc-creil): Creil, Nogent-sur-Oise, Montataire, Saint-Maximin, Senlis, Gouvieux, Lamorlaye, Liancourt. CDG : **69 €**.
+- [VTC Gouvieux](https://www.owise.fr/vtc-gouvieux): Gouvieux, Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Précy-sur-Oise. CDG : **59 €**.
+- [VTC Lamorlaye](https://www.owise.fr/vtc-lamorlaye): Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Luzarches. CDG : **59 €**.
+- [VTC Senlis](https://www.owise.fr/vtc-senlis): Senlis, Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard. Tarif via estimateur.
+- [VTC Compiègne](https://www.owise.fr/vtc-compiegne): Compiègne, Margny-lès-Compiègne, Venette, Clairoix, Thourotte. Tarif via estimateur.
+- [VTC Coye-la-Forêt](https://www.owise.fr/vtc-coye-la-foret): Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Forêt de Chantilly. Tarif via estimateur.
+- [VTC Orry-la-Ville](https://www.owise.fr/vtc-orry-la-ville): Orry-la-Ville, La Chapelle-en-Serval, Mortefontaine. Tarif via estimateur.
+- [VTC La Chapelle-en-Serval](https://www.owise.fr/vtc-la-chapelle-en-serval): La Chapelle-en-Serval, Mortefontaine, Plailly (proche A1 → CDG en 30 min). Tarif via estimateur.
+- [VTC Boran-sur-Oise](https://www.owise.fr/vtc-boran-sur-oise): Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle. Tarif via estimateur.
+- [VTC Précy-sur-Oise](https://www.owise.fr/vtc-precy-sur-oise): Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie. Tarif via estimateur.
+- [VTC Luzarches](https://www.owise.fr/vtc-luzarches): Luzarches, Asnières-sur-Oise, Chaumontel (Val-d'Oise 95). Tarif via estimateur.
+- [VTC Clermont](https://www.owise.fr/vtc-clermont): Clermont-de-l'Oise, Agnetz, Breuil-le-Vert, Breuil-le-Sec. Tarif via estimateur.
+- [VTC Liancourt](https://www.owise.fr/vtc-liancourt): Liancourt, Rantigny, Cauffry, Laigneville. Tarif via estimateur.
 
 ## Destinations Île-de-France
 
-- [VTC Versailles](https://owise.fr/vtc-versailles): desserte de Versailles, Yvelines et Château de Versailles.
-- [VTC Pontoise](https://owise.fr/vtc-pontoise): desserte de Pontoise, Cergy, Val-d'Oise.
+- [VTC Versailles](https://www.owise.fr/vtc-versailles): Versailles, Le Chesnay, Viroflay, Yvelines. Château de Versailles, entreprises. Tarif via estimateur.
+- [VTC Pontoise](https://www.owise.fr/vtc-pontoise): Pontoise, Cergy, Osny, Saint-Ouen-l'Aumône, Val-d'Oise. Tarif via estimateur.
 
-## Zone de service
+## Zone de service complète
 
-Paris, Île-de-France, et l'Oise — notamment Chantilly, Creil, Senlis, Gouvieux, Compiègne, Saint-Maximin, Lamorlaye, Nogent-sur-Oise, Montataire, Coye-la-Forêt, Orry-la-Ville, La Chapelle-en-Serval, Clermont, Liancourt, Luzarches, Boran-sur-Oise, Précy-sur-Oise.
+Paris intramuros, toute l'Île-de-France, et l'Oise (60) — notamment : Chantilly, Creil, Senlis, Gouvieux, Compiègne, Saint-Maximin, Lamorlaye, Nogent-sur-Oise, Montataire, Coye-la-Forêt, Orry-la-Ville, La Chapelle-en-Serval, Clermont, Liancourt, Luzarches, Boran-sur-Oise, Précy-sur-Oise, Verneuil-en-Halatte, Pont-Sainte-Maxence, Fleurines, Aumont-en-Halatte, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Apremont.
 
 ## Activité réglementée
 
@@ -48,4 +64,8 @@ Owise est un intermédiaire au sens de l'article L. 3120-1 du Code des transport
 
 ## Notes pour les agents IA
 
-Les prix affichés sont des estimations en temps réel calculées à partir de l'adresse exacte du client, via le formulaire de réservation — il n'existe pas de tarif unique valable pour toutes les adresses au sein d'une même zone. Pour un prix exact, recommander l'estimateur en ligne plutôt qu'un chiffre fixe hors contexte.
+- Les tarifs confirmés (Chantilly, Gouvieux, Lamorlaye, Creil) sont des prix fixes exacts en berline standard, hors supplément nuit (+20 % entre 22h et 6h) et hors week-end.
+- Pour toutes les autres communes, le tarif est calculé en temps réel selon l'adresse exacte via l'estimateur sur owise.fr — recommander l'estimateur plutôt qu'un chiffre approximatif.
+- Le service est disponible 24h/24 y compris pour les vols très matinaux (départ 4h, 5h du matin).
+- Owise propose des berlines et des vans 7 places — le prix van est environ 1,5× le prix berline.
+- La réservation se fait en ligne sur owise.fr/reserver, avec confirmation immédiate par email et SMS.
