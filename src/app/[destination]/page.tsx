@@ -152,7 +152,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Montmacq', cp: '60150', km: 9.6 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Compiègne vers CDG ?', a: 'Le forfait Compiègne → CDG est d\'environ 110€ en berline, prix fixe garanti. Obtenez votre estimation exacte via notre calculateur selon votre adresse précise.' },
+      { q: 'Quel est le tarif depuis Compiègne vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour votre tarif fixe personnalisé depuis Compiègne ou ses communes voisines — confirmé dès la réservation.' },
       { q: 'Desservez-vous Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes dans un rayon de 10 km autour de Compiègne sont couvertes : Margny, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen et bien d\'autres.' },
       { q: 'Combien de temps pour aller de Compiègne à CDG ?', a: 'Environ 70 à 90 minutes selon les conditions de circulation. Le matin très tôt (avant 6h), le trajet est plus rapide, autour de 65-70 minutes.' },
       { q: 'Pouvez-vous partir très tôt le matin depuis Compiègne ?', a: 'Absolument, nous sommes disponibles 24h/24. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique et est intégré dans l\'estimation affichée.' },
@@ -193,7 +193,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Saint-Maximin', cp: '60740', km: 9.8 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Le forfait Senlis → CDG est de 65€ en berline, prix fixe garanti quelle que soit la durée du trajet. Pas de surprise, le prix est confirmé dès la réservation.' },
+      { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Le prix dépend de votre adresse exacte à Senlis ou ses environs. Utilisez notre estimateur en ligne pour un tarif fixe personnalisé — confirmé dès la réservation, sans surprise.' },
       { q: 'Combien de temps pour aller de Senlis à l\'aéroport CDG ?', a: 'Environ 45 à 60 minutes depuis Senlis centre. Tôt le matin (avant 6h), comptez 40 à 45 minutes sans circulation.' },
       { q: 'Desservez-vous Aumont-en-Halatte et Fleurines ?', a: 'Oui. Toutes les communes autour de Senlis sont couvertes : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant et leurs alentours.' },
       { q: 'Peut-on réserver un VTC Senlis depuis le Château ?', a: 'Oui. Nous intervenons pour les événements au Château Royal de Senlis, les séminaires et les sorties touristiques. Réservation possible à l\'avance ou le jour même.' },
@@ -348,7 +348,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Auvers-sur-Oise', cp: '95430', km: 7.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Pontoise vers CDG ?', a: 'Le forfait Pontoise → CDG est d\'environ 60 à 70€ en berline, prix fixe garanti. Depuis Cergy ou Saint-Ouen-l\'Aumône, le tarif est similaire selon votre adresse exacte.' },
+      { q: 'Quel est le tarif depuis Pontoise vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour un tarif fixe personnalisé depuis Pontoise, Cergy ou Saint-Ouen-l\'Aumône — confirmé dès la réservation.' },
       { q: 'Combien de temps pour aller de Pontoise à CDG ?', a: 'Environ 30 à 50 minutes selon les conditions de circulation. Tôt le matin (avant 6h), comptez 30 à 35 minutes. Via l\'A15, le trajet est direct.' },
       { q: 'Desservez-vous Cergy et ses quartiers ?', a: 'Oui. Nous couvrons toutes les communes de Cergy-Pontoise : Cergy, Pontoise, Osny, Éragny, Jouy-le-Moutier, Vauréal, Courdimanche, Neuville-sur-Oise et leurs alentours.' },
       { q: 'Proposez-vous un service vers Orly depuis le Val-d\'Oise ?', a: 'Oui. Depuis Pontoise ou Cergy, le trajet vers Orly est d\'environ 50 à 70 minutes, pour un tarif de 80 à 100€. Tous les aéroports parisiens sont desservis depuis le Val-d\'Oise.' },
@@ -383,7 +383,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Saint-Quentin-en-Yvelines', cp: '78180', km: 8.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Versailles vers CDG ?', a: 'Le forfait Versailles → CDG est d\'environ 85 à 100€ en berline, prix fixe garanti. Depuis Le Chesnay ou Viroflay, le tarif est similaire selon votre adresse précise. Utilisez notre estimateur pour un prix instantané.' },
+      { q: 'Quel est le tarif depuis Versailles vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour un tarif fixe personnalisé depuis Versailles, Le Chesnay ou Viroflay — confirmé immédiatement à la réservation.' },
       { q: 'Proposez-vous des transferts pour le Château de Versailles ?', a: 'Oui. Nous organisons des transferts pour les visiteurs du Château de Versailles, les événements privés dans les jardins et les séminaires d\'entreprise dans la région. Tarif sur devis pour les groupes.' },
       { q: 'Combien de temps pour aller de Versailles à CDG ?', a: 'Environ 40 à 70 minutes selon les conditions de circulation. La route passe par l\'A86 puis l\'A3, ou par le Francilienne. Tôt le matin (avant 6h), comptez 40 à 50 minutes.' },
       { q: 'Desservez-vous les entreprises de Vélizy et Saint-Quentin-en-Yvelines ?', a: 'Oui. Nous proposons des solutions VTC pour les entreprises des technopôles de Vélizy, Saint-Quentin-en-Yvelines et les parcs d\'activités des Yvelines. Compte entreprise disponible avec facturation mensuelle.' },
@@ -417,7 +417,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Thiers-sur-Thève', cp: '60520', km: 8.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Coye-la-Forêt vers CDG ?', a: 'Le forfait Coye-la-Forêt → CDG est d\'environ 65 à 75€ en berline, prix fixe garanti. Depuis Lamorlaye ou Orry-la-Ville, le tarif est similaire selon votre adresse exacte. Utilisez notre estimateur pour un prix instantané.' },
+      { q: 'Quel est le tarif depuis Coye-la-Forêt vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour un tarif personnalisé en temps réel — prix fixe confirmé dès la réservation, sans surprise.' },
       { q: 'Combien de temps pour aller de Coye-la-Forêt à CDG ?', a: 'Environ 45 à 55 minutes selon les conditions de circulation. Via l\'A1 depuis la Forêt de Chantilly, le trajet est direct. Tôt le matin (avant 6h), comptez 40 à 45 minutes.' },
       { q: 'Desservez-vous Lamorlaye et Orry-la-Ville depuis Coye-la-Forêt ?', a: 'Oui. Nous couvrons toutes les communes autour de Coye-la-Forêt : Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard, Chantilly, Gouvieux, Boran-sur-Oise, Luzarches et leurs environs.' },
       { q: 'Proposez-vous des courses vers Paris depuis la Forêt de Chantilly ?', a: 'Absolument. Depuis Coye-la-Forêt, Paris (porte Maillot, gare du Nord, etc.) est à environ 55 à 70 minutes pour un tarif de 80 à 100€. Idéal pour les déplacements professionnels depuis la région de Chantilly.' },
@@ -451,7 +451,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Le forfait Orry-la-Ville → CDG est d\'environ 60 à 70€ en berline, prix fixe garanti. Depuis La Chapelle-en-Serval ou Coye-la-Forêt, le tarif est similaire selon votre adresse. Utilisez notre estimateur pour un prix exact.' },
+      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Le tarif exact dépend de votre adresse. Utilisez notre estimateur en ligne pour un prix personnalisé immédiat — prix fixe garanti, confirmé à la réservation.' },
       { q: 'Combien de temps pour aller d\'Orry-la-Ville à CDG ?', a: 'Environ 35 à 50 minutes via l\'A1. Orry-la-Ville est idéalement situé entre Chantilly et l\'aéroport CDG. Tôt le matin, comptez 30 à 35 minutes.' },
       { q: 'Desservez-vous La Chapelle-en-Serval depuis Orry-la-Ville ?', a: 'Oui. Nous couvrons toutes les communes autour d\'Orry-la-Ville : La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt, Lamorlaye, Avilly-Saint-Léonard, Survilliers, Luzarches et Chantilly.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Orry-la-Ville ?', a: 'Absolument. Depuis Orry-la-Ville, Paris est à environ 50 à 65 minutes pour un tarif de 80 à 100€. Votre chauffeur vous prend en charge directement à votre adresse, 24h/24.' },
@@ -485,7 +485,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'Le forfait La Chapelle-en-Serval → CDG est d\'environ 60 à 70€ en berline, prix fixe garanti. La proximité de l\'A1 permet un trajet particulièrement rapide. Depuis Mortefontaine ou Plailly, le tarif est identique selon l\'adresse exacte.' },
+      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'Le prix dépend de votre adresse exacte. La proximité de l\'A1 permet un trajet particulièrement rapide. Utilisez notre estimateur en ligne pour un tarif fixe personnalisé, confirmé à la réservation.' },
       { q: 'La Chapelle-en-Serval est-elle proche de CDG ?', a: 'Oui, c\'est l\'une des communes les plus proches de CDG dans l\'Oise. Via l\'A1 (accès Survilliers ou Louvres), La Chapelle-en-Serval est à seulement 30 à 40 minutes de l\'aéroport — bien moins que depuis Paris.' },
       { q: 'Combien de temps pour aller de La Chapelle-en-Serval à CDG ?', a: 'Environ 30 à 40 minutes en conditions normales. Tôt le matin (avant 6h), le trajet descend à 25 minutes. L\'accès à l\'A1 depuis La Chapelle-en-Serval est direct, sans traverser aucune zone urbaine dense.' },
       { q: 'Desservez-vous Mortefontaine et Plailly ?', a: 'Oui. Nous couvrons La Chapelle-en-Serval et ses environs : Mortefontaine, Plailly, Orry-la-Ville, Thiers-sur-Thève, Pontarmé, Ermenonville et Survilliers. Même tarif depuis chacune de ces communes.' },
@@ -519,7 +519,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Lamorlaye', cp: '60260', km: 9.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Boran-sur-Oise vers CDG ?', a: 'Le forfait Boran-sur-Oise → CDG est d\'environ 80 à 95€ en berline, prix fixe garanti. Depuis Précy-sur-Oise ou Le Mesnil-en-Thelle, le tarif est similaire. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
+      { q: 'Quel est le tarif depuis Boran-sur-Oise vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour obtenir votre tarif personnalisé en temps réel — prix fixe garanti, confirmé dès la réservation.' },
       { q: 'Combien de temps pour aller de Boran-sur-Oise à CDG ?', a: 'Environ 50 à 65 minutes selon les conditions de circulation. Via l\'A1 (accès par Gouvieux ou Survilliers), le trajet est direct. Tôt le matin (avant 6h), comptez 45 à 50 minutes.' },
       { q: 'Desservez-vous Précy-sur-Oise et Le Mesnil-en-Thelle ?', a: 'Oui. Nous couvrons toutes les communes autour de Boran-sur-Oise : Précy-sur-Oise, Le Mesnil-en-Thelle, Crouy-en-Thelle, Coye-la-Forêt, Gouvieux, Saint-Leu-d\'Esserent et Chambly.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Boran-sur-Oise ?', a: 'Absolument. Depuis Boran-sur-Oise, Paris est à environ 60 à 75 minutes pour un tarif de 95 à 115€ selon votre destination précise. Prise en charge directement à votre adresse, disponible 24h/24.' },
@@ -553,7 +553,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Chantilly', cp: '60500', km: 12.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Le forfait Précy-sur-Oise → CDG est d\'environ 85 à 100€ en berline, prix fixe garanti. Depuis Boran-sur-Oise ou Villeneuve-sur-Verberie, le tarif est similaire. Utilisez notre estimateur pour votre adresse exacte.' },
+      { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour un tarif fixe personnalisé, confirmé à la réservation. Aucune mauvaise surprise.' },
       { q: 'Combien de temps pour aller de Précy-sur-Oise à CDG ?', a: 'Environ 50 à 65 minutes selon les conditions de circulation. Le trajet passe par l\'A1 via Gouvieux ou Survilliers. Tôt le matin (avant 6h), comptez 45 à 50 minutes.' },
       { q: 'Desservez-vous Boran-sur-Oise et Le Mesnil-en-Thelle depuis Précy ?', a: 'Oui. Nous couvrons toutes les communes autour de Précy-sur-Oise : Boran-sur-Oise, Villeneuve-sur-Verberie, Bury, Le Mesnil-en-Thelle, Crouy-en-Thelle, Gouvieux et Saint-Leu-d\'Esserent.' },
       { q: 'Proposez-vous des courses vers Creil depuis Précy-sur-Oise ?', a: 'Oui. Nous effectuons tous types de transferts locaux : Précy-sur-Oise → gare de Creil, Creil → CDG et toutes destinations depuis Précy. Le tarif local est calculé au kilomètre depuis votre adresse.' },
@@ -587,7 +587,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Chantilly', cp: '60500', km: 9.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Luzarches vers CDG ?', a: 'Le forfait Luzarches → CDG est d\'environ 65 à 75€ en berline, prix fixe garanti. Depuis Asnières-sur-Oise ou Chaumontel, le tarif est similaire selon votre adresse exacte. Luzarches est bien placée entre Chantilly et CDG.' },
+      { q: 'Quel est le tarif depuis Luzarches vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour un tarif personnalisé immédiat — prix fixe garanti. Luzarches est idéalement placée entre Chantilly et CDG.' },
       { q: 'Combien de temps pour aller de Luzarches à CDG ?', a: 'Environ 35 à 50 minutes via l\'A1. Depuis Luzarches, l\'accès à l\'autoroute se fait par Survilliers ou Louvres. Tôt le matin (avant 6h), le trajet descend à 30 à 35 minutes.' },
       { q: 'Desservez-vous Asnières-sur-Oise et Chaumontel ?', a: 'Oui. Nous couvrons toutes les communes du Pays de France : Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine, Plessis-Luzarches, ainsi que Lamorlaye et Coye-la-Forêt dans l\'Oise.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Luzarches ?', a: 'Absolument. Depuis Luzarches, Paris (gare du Nord, Châtelet, La Défense) est à environ 50 à 65 minutes pour un tarif de 80 à 100€. Prise en charge directement à votre adresse, 24h/24.' },
@@ -621,7 +621,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Creil', cp: '60100', km: 16.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Clermont vers CDG ?', a: 'Le forfait Clermont → CDG est d\'environ 105 à 125€ en berline, prix fixe garanti. Depuis Agnetz ou Breuil-le-Vert, le tarif est légèrement inférieur selon votre adresse exacte. Utilisez notre estimateur pour un prix personnalisé.' },
+      { q: 'Quel est le tarif depuis Clermont vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour votre tarif personnalisé — prix fixe garanti, confirmé dès la réservation.' },
       { q: 'Combien de temps pour aller de Clermont à CDG ?', a: 'Environ 65 à 80 minutes via l\'A16 puis l\'A1. Tôt le matin (avant 6h), comptez 55 à 65 minutes sans trafic. Depuis Clermont, l\'accès à l\'autoroute se fait par Breuil-le-Vert ou Laigneville.' },
       { q: 'Desservez-vous Agnetz, Breuil-le-Vert et Breuil-le-Sec ?', a: 'Oui. Nous couvrons toutes les communes du Clermontois : Agnetz, Breuil-le-Vert, Breuil-le-Sec, Étouy, Lamécourt, Rantigny et Cauffry. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Clermont ?', a: 'Oui. Nous effectuons tous les transferts locaux : Clermont → gare de Creil, Clermont → Liancourt, Creil → CDG. Le tarif local est calculé au kilomètre depuis votre adresse.' },
@@ -656,7 +656,7 @@ const DESTINATIONS: Record<string, {
       { nom: 'Clermont', cp: '60600', km: 10.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Liancourt vers CDG ?', a: 'Le forfait Liancourt → CDG est d\'environ 100 à 115€ en berline, prix fixe garanti. Depuis Rantigny ou Cauffry, le tarif est similaire selon votre adresse exacte. Utilisez notre estimateur pour un prix personnalisé.' },
+      { q: 'Quel est le tarif depuis Liancourt vers CDG ?', a: 'Le prix dépend de votre adresse exacte. Utilisez notre estimateur en ligne pour votre tarif fixe personnalisé — Rantigny, Cauffry et Laigneville sont couverts. Prix confirmé dès la réservation.' },
       { q: 'Combien de temps pour aller de Liancourt à CDG ?', a: 'Environ 60 à 75 minutes via l\'A1 depuis Creil. Tôt le matin (avant 6h), comptez 50 à 60 minutes. Depuis Liancourt, l\'accès à l\'autoroute se fait par Creil ou Laigneville.' },
       { q: 'Desservez-vous Rantigny, Cauffry et Laigneville ?', a: 'Oui. Nous couvrons Liancourt et toutes les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Liancourt ?', a: 'Oui. Nous effectuons tous les transferts locaux : Liancourt → gare de Creil, Liancourt → Clermont, et toutes destinations depuis Liancourt. Le tarif local est calculé au kilomètre depuis votre adresse.' },
