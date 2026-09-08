@@ -663,6 +663,123 @@ const DESTINATIONS: Record<string, {
       { q: 'Proposez-vous un service vers Paris depuis Liancourt ?', a: 'Oui. Depuis Liancourt, Paris (gare du Nord, Châtelet, La Défense) est à environ 70 à 90 minutes pour un tarif de 110 à 130€. Prise en charge directement à votre adresse, disponible 24h/24, 7j/7.' },
     ],
   },
+
+  // ── PAGES DE TRAJETS SPÉCIFIQUES (Ville → Aéroport) ──────────────────────
+  // Prix vérifiés sur /admin/tarifs le 08/09/2026
+
+  'vtc-chantilly-cdg': {
+    slug: 'vtc-chantilly-cdg',
+    title: 'VTC Chantilly → CDG',
+    metaTitle: 'VTC Chantilly CDG — Tarif Fixe 59€ | Owise',
+    metaDesc: 'VTC de Chantilly à l\'aéroport CDG. Tarif fixe 59€, suivi de vol inclus, prise en charge à domicile. Chauffeur professionnel disponible 24h/24. Réservez en ligne.',
+    keywords: ['vtc chantilly cdg','taxi chantilly aéroport cdg','chauffeur chantilly charles de gaulle','vtc chantilly roissy','chantilly cdg prix','vtc gouvieux cdg','chauffeur privé chantilly cdg 59'],
+    h1: 'VTC Chantilly → CDG — Tarif Fixe 59€',
+    intro: 'Votre transfert VTC depuis Chantilly (et Gouvieux, Lamorlaye, Coye-la-Forêt) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur professionnel, suivi de vol en temps réel. Prise en charge à votre domicile, disponible 24h/24.',
+    prix: '59€ vers CDG',
+    duree: '40–55 min',
+    faq: [
+      { q: 'Quel est le tarif exact d\'un VTC de Chantilly à CDG ?', a: 'Le tarif fixe garanti est de 59€ en berline depuis Chantilly et Gouvieux. Ce prix est confirmé avant le départ, ne varie pas selon la circulation et inclut la prise en charge à domicile ainsi que le suivi de vol.' },
+      { q: 'Combien de temps prend le trajet Chantilly → CDG ?', a: 'Environ 40 à 55 minutes selon les conditions de circulation, via l\'A1 ou la N16. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Votre chauffeur calcule l\'heure de départ au plus juste pour respecter votre embarquement.' },
+      { q: 'Mon chauffeur attend-il si mon vol est retardé à CDG ?', a: 'Oui. Owise suit votre vol en temps réel. En cas de retard, votre chauffeur ajuste automatiquement son heure d\'arrivée sans frais supplémentaires. Vous n\'avez rien à faire.' },
+      { q: 'Le tarif 59€ couvre-t-il aussi Gouvieux et Lamorlaye ?', a: 'Oui. Le tarif de 59€ vers CDG couvre Chantilly, Gouvieux, Lamorlaye et toutes les communes dans un rayon de 5 km autour de Chantilly. Prise en charge directement à votre adresse.' },
+      { q: 'Peut-on réserver un VTC Chantilly–CDG la veille ou à la dernière minute ?', a: 'Oui, la réservation est possible à l\'avance (jours ou semaines) ou le jour même. Pour les départs tôt le matin, une réservation la veille est recommandée pour garantir la disponibilité.' },
+    ],
+  },
+
+  'vtc-creil-cdg': {
+    slug: 'vtc-creil-cdg',
+    title: 'VTC Creil → CDG',
+    metaTitle: 'VTC Creil CDG — Tarif Fixe 65€ | Chauffeur Privé | Owise',
+    metaDesc: 'VTC de Creil à l\'aéroport CDG. Tarif fixe 65€, suivi de vol, prise en charge à domicile. Chauffeur professionnel disponible 24h/24 depuis Creil et l\'Oise Sud.',
+    keywords: ['vtc creil cdg','taxi creil aéroport','chauffeur creil charles de gaulle','vtc creil roissy','creil cdg prix','vtc nogent oise cdg','chauffeur privé creil cdg 65'],
+    h1: 'VTC Creil → CDG — Tarif Fixe 65€',
+    intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 65€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
+    prix: '65€ vers CDG',
+    duree: '40–55 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Creil à CDG ?', a: 'Le tarif fixe est de 65€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Prix garanti à la réservation, sans compteur — aucune mauvaise surprise en cas de bouchon ou de retard de vol.' },
+      { q: 'Combien de temps met-on de Creil à CDG ?', a: 'Environ 40 à 55 minutes via l\'A1 depuis Creil. Tôt le matin (avant 6h), le trajet prend 35 à 40 minutes. Votre chauffeur part à l\'heure calculée pour respecter votre vol.' },
+      { q: 'Le tarif 65€ inclut-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise et Montataire sont dans la même zone tarifaire. Le forfait de 65€ vers CDG couvre toutes ces communes et leurs alentours immédiats.' },
+      { q: 'Owise suit-il les vols retardés depuis CDG ?', a: 'Oui, le suivi de vol en temps réel est inclus dans chaque course. En cas de retard, votre chauffeur ajuste son heure d\'arrivée automatiquement — vous attendez le moins longtemps possible à l\'aéroport.' },
+      { q: 'Comment se fait la prise en charge à CDG pour un retour ?', a: 'À l\'arrivée à CDG, votre chauffeur vous attend dans le hall des arrivées avec une pancarte à votre nom, au terminal indiqué dans votre confirmation de réservation.' },
+    ],
+  },
+
+  'vtc-senlis-cdg': {
+    slug: 'vtc-senlis-cdg',
+    title: 'VTC Senlis → CDG',
+    metaTitle: 'VTC Senlis CDG — Tarif Fixe Garanti | Chauffeur Privé | Owise',
+    metaDesc: 'VTC de Senlis à l\'aéroport CDG. Tarif fixe garanti, suivi de vol, prise en charge à domicile depuis Senlis et environs (Aumont, Fleurines). Disponible 24h/24.',
+    keywords: ['vtc senlis cdg','taxi senlis aéroport','chauffeur senlis charles de gaulle','vtc senlis roissy','senlis cdg prix','vtc aumont halatte cdg','chauffeur privé senlis aéroport'],
+    h1: 'VTC Senlis → CDG — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Disponible 24h/24.',
+    prix: 'dès 69€ vers CDG',
+    duree: '45–60 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Senlis à CDG ?', a: 'Le tarif fixe est calculé selon votre adresse précise à Senlis ou dans ses environs. Owise garantit le prix affiché à la réservation — sans compteur, sans surprise. Estimez votre course en 30 secondes sur owise.fr.' },
+      { q: 'Combien de temps prend le trajet Senlis → CDG ?', a: 'Environ 45 à 60 minutes depuis Senlis, via l\'A1 (sortie Survilliers ou Roissy). Tôt le matin, comptez 40 à 45 minutes. Senlis est bien desservi par l\'A1 — l\'un des accès les plus rapides vers CDG depuis l\'Oise.' },
+      { q: 'Le tarif couvre-t-il Aumont-en-Halatte et Fleurines ?', a: 'Oui. Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil, Chamant, Pontarmé et toutes les communes dans un rayon de 10 km autour de Senlis sont couvertes. Prise en charge à domicile.' },
+      { q: 'Y a-t-il un supplément pour un départ nocturne depuis Senlis ?', a: 'Oui, un supplément de 20% s\'applique pour les départs entre 20h et 6h (supplément nuit), ainsi que les dimanches et jours fériés. Ce supplément est toujours inclus dans l\'estimation affichée sur owise.fr — aucune surprise.' },
+      { q: 'Peut-on réserver depuis la gare de Senlis ou le musée de la Chasse ?', a: 'Oui, la prise en charge peut se faire à n\'importe quelle adresse à Senlis — domicile, hôtel, restaurant, site touristique. Il vous suffit de renseigner l\'adresse exacte lors de la réservation.' },
+    ],
+  },
+
+  'vtc-compiegne-cdg': {
+    slug: 'vtc-compiegne-cdg',
+    title: 'VTC Compiègne → CDG',
+    metaTitle: 'VTC Compiègne CDG — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Compiègne à l\'aéroport CDG. Tarif fixe garanti, prise en charge à domicile depuis Compiègne et Oise Nord. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc compiègne cdg','taxi compiègne aéroport','chauffeur compiègne charles de gaulle','vtc compiègne roissy','compiègne cdg prix','vtc margny compiègne cdg','chauffeur privé compiègne aéroport'],
+    h1: 'VTC Compiègne → CDG — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Compiègne et l\'Oise Nord (Margny-lès-Compiègne, Venette, Lacroix-Saint-Ouen, Thourotte) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
+    prix: 'dès 100€ vers CDG',
+    duree: '70–90 min',
+    faq: [
+      { q: 'Quel est le tarif d\'un VTC de Compiègne à CDG ?', a: 'Depuis Compiègne, le tarif vers CDG est calculé à l\'avance et garanti. Owise est l\'une des rares plateformes à proposer un forfait fixe depuis Compiègne — le prix ne change pas selon la circulation. Estimez votre course sur owise.fr.' },
+      { q: 'Combien de temps prend le trajet Compiègne → CDG ?', a: 'Environ 70 à 90 minutes via l\'A1. Tôt le matin (avant 6h), comptez 65 à 75 minutes. Depuis Compiègne, l\'accès à l\'A1 se fait par Verberie ou Lacroix-Saint-Ouen.' },
+      { q: 'Y a-t-il des alternatives moins chères depuis Compiègne pour aller à CDG ?', a: 'Les bus et navettes collectifs existent mais ont des horaires fixes et des trajets avec arrêts multiples. Le VTC Owise depuis Compiègne offre la prise en charge directe à domicile, à l\'heure voulue, sans correspondance — avec un chauffeur dédié.' },
+      { q: 'Le service couvre-t-il Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes de l\'agglomération de Compiègne sont couvertes : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen et leurs environs.' },
+      { q: 'Peut-on réserver un VTC Compiègne–CDG pour plusieurs personnes ?', a: 'Oui. Owise propose des berlines (jusqu\'à 4 passagers) et des vans 7 places pour les groupes. Réservez le véhicule adapté à votre groupe sur owise.fr.' },
+    ],
+  },
+
+  'vtc-chantilly-orly': {
+    slug: 'vtc-chantilly-orly',
+    title: 'VTC Chantilly → Orly',
+    metaTitle: 'VTC Chantilly Orly — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Chantilly à l\'aéroport d\'Orly. Tarif fixe garanti, prise en charge à domicile depuis Chantilly et Gouvieux. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc chantilly orly','taxi chantilly aéroport orly','chauffeur chantilly orly','chantilly orly prix','vtc gouvieux orly','chauffeur privé chantilly orly','transfert chantilly orly'],
+    h1: 'VTC Chantilly → Orly — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Chantilly et Gouvieux jusqu\'à l\'aéroport d\'Orly (ORY). Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Trajet plus long qu\'à CDG mais entièrement sécurisé — prise en charge à domicile, disponible 24h/24.',
+    prix: 'dès 139€ vers Orly',
+    duree: '60–80 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Chantilly à Orly ?', a: 'Le tarif depuis Chantilly vers l\'aéroport d\'Orly est de 139€ en berline, prix fixe garanti. Orly est situé au sud de Paris — le trajet depuis Chantilly est plus long qu\'à CDG (environ 60 à 80 minutes), ce qui explique le tarif. Le prix est confirmé avant le départ et ne change pas.' },
+      { q: 'Combien de temps prend le trajet Chantilly → Orly ?', a: 'Environ 60 à 80 minutes selon la circulation, en traversant ou en contournant Paris. Tôt le matin (avant 6h), le trajet peut descendre à 55 minutes via la francilienne.' },
+      { q: 'Est-il possible d\'aller à Orly depuis Chantilly par l\'A86 ?', a: 'Oui. Selon l\'heure et les conditions de circulation, votre chauffeur choisit l\'itinéraire optimal : A1 + A86, Francilienne, ou via Paris. L\'objectif est toujours d\'arriver à temps pour votre vol.' },
+      { q: 'CDG est-il moins cher depuis Chantilly ?', a: 'Oui. CDG est à 59€ depuis Chantilly contre 139€ pour Orly, car CDG est situé directement sur l\'axe Chantilly–Paris, à seulement 40 minutes. Si vous avez le choix de l\'aéroport, CDG est logistiquement et financièrement plus avantageux depuis Chantilly.' },
+      { q: 'Proposez-vous aussi le retour Orly → Chantilly ?', a: 'Oui. Le tarif est identique dans les deux sens : 139€ depuis ou vers Orly. Votre chauffeur vous attend dans le hall des arrivées à Orly avec une pancarte à votre nom, au terminal précisé dans votre confirmation.' },
+    ],
+  },
+
+  'vtc-creil-orly': {
+    slug: 'vtc-creil-orly',
+    title: 'VTC Creil → Orly',
+    metaTitle: 'VTC Creil Orly — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Creil à l\'aéroport d\'Orly. Tarif fixe garanti, prise en charge à domicile depuis Creil et l\'Oise Sud. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc creil orly','taxi creil aéroport orly','chauffeur creil orly','creil orly prix','vtc oise orly','chauffeur privé creil orly','transfert creil orly'],
+    h1: 'VTC Creil → Orly — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Creil (et Nogent-sur-Oise, Montataire) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti en berline, chauffeur habilité, suivi de vol inclus. Prise en charge à votre domicile, disponible 24h/24.',
+    prix: 'dès 145€ vers Orly',
+    duree: '65–85 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Creil à Orly ?', a: 'Le tarif fixe est de 145€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Le trajet traverse ou contourne Paris (Orly est au sud) — c\'est la raison de ce tarif. Le prix est garanti à la réservation et ne varie pas.' },
+      { q: 'Combien de temps prend le trajet Creil → Orly ?', a: 'Environ 65 à 85 minutes selon la circulation. Tôt le matin (avant 6h), comptez 60 minutes via la Francilienne ou l\'A86. Votre chauffeur choisit l\'itinéraire le plus rapide selon les conditions du moment.' },
+      { q: 'Quel aéroport est plus économique depuis Creil : CDG ou Orly ?', a: 'CDG est plus proche et moins cher (65€ contre 145€ pour Orly). Si votre vol vous laisse le choix de l\'aéroport, CDG est nettement plus avantageux depuis Creil — 40 minutes de trajet contre plus d\'une heure pour Orly.' },
+      { q: 'Le service couvre-t-il Nogent-sur-Oise et Montataire pour aller à Orly ?', a: 'Oui. La prise en charge est possible depuis Creil, Nogent-sur-Oise, Montataire, Saint-Maximin et toutes les communes voisines. Le tarif varie légèrement selon votre adresse exacte.' },
+      { q: 'Proposez-vous le retour Orly → Creil ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte nominative, en suivant votre vol en temps réel pour s\'adapter aux retards éventuels.' },
+    ],
+  },
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }): Promise<Metadata> {

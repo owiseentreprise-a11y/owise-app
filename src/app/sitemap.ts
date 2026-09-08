@@ -23,6 +23,13 @@ const DESTINATIONS = [
   'vtc-luzarches',
   'vtc-clermont',
   'vtc-liancourt',
+  // Pages de trajets spécifiques (Ville → Aéroport)
+  'vtc-chantilly-cdg',
+  'vtc-creil-cdg',
+  'vtc-senlis-cdg',
+  'vtc-compiegne-cdg',
+  'vtc-chantilly-orly',
+  'vtc-creil-orly',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
