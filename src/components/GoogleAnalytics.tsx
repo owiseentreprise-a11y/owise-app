@@ -1,5 +1,5 @@
 import Script from 'next/script'
-import { GA_ID } from '@/lib/ga'
+import { GA_ID, AW_ID } from '@/lib/ga'
 
 export default function GoogleAnalytics() {
   if (!GA_ID) return null
@@ -15,6 +15,7 @@ export default function GoogleAnalytics() {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', '${GA_ID}', { anonymize_ip: true, send_page_view: false });
+          ${AW_ID ? `gtag('config', '${AW_ID}');` : ''}
         `}
       </Script>
     </>
