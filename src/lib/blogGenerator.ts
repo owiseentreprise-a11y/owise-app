@@ -99,6 +99,68 @@ export const SUJETS: Sujet[] = [
   { id: 'guide-chateau-versailles',  type: 'guide', theme: "Château de Versailles et Domaine Royal" },
   { id: 'guide-pontoise-val-oise',   type: 'guide', theme: "Pontoise et Cergy-Pontoise"             },
   { id: 'entreprise-versailles',     type: 'entreprise', theme: "Versailles et les Yvelines"        },
+  // Paris arrondissements → CDG
+  { id: 'paris-15-cdg',    type: 'transfert', depart: 'Paris 15e',  arrivee: 'CDG' },
+  { id: 'paris-16-cdg',    type: 'transfert', depart: 'Paris 16e',  arrivee: 'CDG' },
+  { id: 'paris-17-cdg',    type: 'transfert', depart: 'Paris 17e',  arrivee: 'CDG' },
+  { id: 'paris-18-cdg',    type: 'transfert', depart: 'Paris 18e',  arrivee: 'CDG' },
+  { id: 'paris-19-cdg',    type: 'transfert', depart: 'Paris 19e',  arrivee: 'CDG' },
+  { id: 'paris-1-cdg',     type: 'transfert', depart: 'Paris 1er',  arrivee: 'CDG' },
+  { id: 'paris-5-cdg',     type: 'transfert', depart: 'Paris 5e',   arrivee: 'CDG' },
+  { id: 'paris-7-cdg',     type: 'transfert', depart: 'Paris 7e',   arrivee: 'CDG' },
+  { id: 'paris-8-cdg',     type: 'transfert', depart: 'Paris 8e',   arrivee: 'CDG' },
+  { id: 'paris-9-cdg',     type: 'transfert', depart: 'Paris 9e',   arrivee: 'CDG' },
+  { id: 'paris-10-cdg',    type: 'transfert', depart: 'Paris 10e',  arrivee: 'CDG' },
+  { id: 'paris-11-cdg',    type: 'transfert', depart: 'Paris 11e',  arrivee: 'CDG' },
+  { id: 'paris-13-cdg',    type: 'transfert', depart: 'Paris 13e',  arrivee: 'CDG' },
+  { id: 'paris-20-cdg',    type: 'transfert', depart: 'Paris 20e',  arrivee: 'CDG' },
+  { id: 'la-defense-cdg',  type: 'transfert', depart: 'La Défense', arrivee: 'CDG' },
+  // Val-d'Oise proches CDG
+  { id: 'herblay-cdg',    type: 'transfert', depart: 'Herblay',    arrivee: 'CDG' },
+  { id: 'sarcelles-cdg',  type: 'transfert', depart: 'Sarcelles',  arrivee: 'CDG' },
+  { id: 'gonesse-cdg',    type: 'transfert', depart: 'Gonesse',    arrivee: 'CDG' },
+  { id: 'villepinte-cdg', type: 'transfert', depart: 'Villepinte', arrivee: 'CDG' },
+  // Seine-et-Marne
+  { id: 'marne-la-vallee-cdg',  type: 'transfert', depart: 'Marne-la-Vallée', arrivee: 'CDG'  },
+  { id: 'marne-la-vallee-orly', type: 'transfert', depart: 'Marne-la-Vallée', arrivee: 'Orly' },
+  { id: 'meaux-cdg',            type: 'transfert', depart: 'Meaux',            arrivee: 'CDG'  },
+  { id: 'fontainebleau-cdg',    type: 'transfert', depart: 'Fontainebleau',    arrivee: 'CDG'  },
+  // Oise Nord étendu
+  { id: 'noyon-cdg',   type: 'transfert', depart: 'Noyon', arrivee: 'CDG' },
+  { id: 'roissy-paris', type: 'transfert', depart: 'CDG',   arrivee: 'Paris' },
+  // Longue distance
+  { id: 'paris-lille',      type: 'transfert', depart: 'Paris', arrivee: 'Lille'     },
+  { id: 'paris-lyon',       type: 'transfert', depart: 'Paris', arrivee: 'Lyon'      },
+  { id: 'paris-bruxelles',  type: 'transfert', depart: 'Paris', arrivee: 'Bruxelles' },
+  { id: 'paris-reims',      type: 'transfert', depart: 'Paris', arrivee: 'Reims'     },
+  { id: 'paris-amiens',     type: 'transfert', depart: 'Paris', arrivee: 'Amiens'    },
+  { id: 'paris-normandie',  type: 'guide',     theme: "transfert VTC Paris vers la Normandie (Caen, Rouen)" },
+  { id: 'cdg-lyon',         type: 'transfert', depart: 'CDG',   arrivee: 'Lyon'      },
+  { id: 'cdg-bruxelles',    type: 'transfert', depart: 'CDG',   arrivee: 'Bruxelles' },
+  { id: 'cdg-province',     type: 'guide',     theme: "transfert VTC depuis CDG vers les régions de France" },
+  { id: 'oise-bordeaux',    type: 'transfert', depart: 'Paris', arrivee: 'Bordeaux'  },
+  { id: 'oise-strasbourg',  type: 'transfert', depart: 'Paris', arrivee: 'Strasbourg'},
+  // Guides thématiques manquants
+  { id: 'guide-vans-groupe-oise',     type: 'conseils', theme: "déplacement en groupe avec van 7 places depuis l'Oise vers CDG, Orly, Beauvais" },
+  { id: 'guide-medical-oise-paris',   type: 'conseils', theme: "transport médical Oise-Paris : dialyse, chimiothérapie, rendez-vous spécialiste" },
+  { id: 'guide-nuit-cdg-oise',        type: 'conseils', theme: "vol de nuit ou tôt le matin au départ de CDG depuis l'Oise" },
+  { id: 'guide-personnes-agees',      type: 'conseils', theme: "transport de personnes âgées et à mobilité réduite en VTC" },
+  { id: 'guide-remplacement-assurance', type: 'conseils', theme: "remplacement de véhicule via assurance : recours au VTC" },
+  { id: 'guide-mariage-oise',         type: 'guide',    theme: "transport mariage dans l'Oise : Chantilly, Compiègne, Senlis" },
+  { id: 'guide-sortie-hopital',       type: 'conseils', theme: "transport sortie d'hôpital et convalescence en Île-de-France" },
+  { id: 'guide-longue-distance',      type: 'guide',    theme: "VTC longue distance depuis Paris et l'Oise" },
+  { id: 'guide-terminal-cdg',         type: 'guide',    theme: "terminaux de l'aéroport CDG : T1, T2, T2E, T2F, T3 — guide pratique" },
+  { id: 'guide-retard-vol-cdg',       type: 'conseils', theme: "que faire en cas de retard de vol à CDG ou Orly" },
+  { id: 'guide-teletravail-oise',     type: 'conseils', theme: "VTC abonnement télétravail Oise-Paris : navettes régulières" },
+  { id: 'guide-seminaire-oise',       type: 'entreprise', theme: "séminaires et team buildings dans l'Oise (Chantilly, Compiègne)" },
+  { id: 'guide-conducteur-designe',   type: 'conseils', theme: "conducteur désigné en soirée : VTC retour fête ou mariage" },
+  { id: 'comparatif-taxi-vtc-oise',   type: 'comparatif', theme: "taxi vs VTC pour CDG depuis l'Oise : tarifs et fiabilité comparés" },
+  { id: 'comparatif-meilleur-vtc-oise', type: 'comparatif', theme: "meilleur VTC Oise CDG : comparatif Owise vs alternatives" },
+  { id: 'comparatif-reservation-anticipee', type: 'conseils', theme: "réservation VTC à l'avance pour vols et événements" },
+  { id: 'guide-assistance-routiere',  type: 'conseils', theme: "VTC en cas de panne ou d'assistance routière" },
+  { id: 'guide-soiree-paris-oise',    type: 'conseils', theme: "retour de soirée Paris vers l'Oise en VTC" },
+  { id: 'guide-transport-scolaire',   type: 'conseils', theme: "transport scolaire et périscolaire en VTC dans l'Oise" },
+  { id: 'guide-pmr-oise',             type: 'conseils', theme: "transport PMR et personnes en situation de handicap dans l'Oise" },
 ]
 
 // ── Données de référence ──────────────────────────────────────────────────
@@ -130,6 +192,41 @@ const COMMUNES: Record<string, { zone: string; dist_cdg: number; desc: string }>
   'Pontoise':             { zone: 'Val-d\'Oise', dist_cdg: 38, desc: 'préfecture du Val-d\'Oise (95), à la confluence de l\'Oise et de la Viosne' },
   'Cergy':                { zone: 'Val-d\'Oise', dist_cdg: 38, desc: 'ville nouvelle de Cergy-Pontoise, pôle économique du Val-d\'Oise' },
   'Versailles':           { zone: 'Yvelines',    dist_cdg: 55, desc: 'préfecture des Yvelines, célèbre pour son Château Royal classé UNESCO et son domaine de 800 hectares' },
+  // Paris arrondissements
+  'Paris 1er':  { zone: 'Paris', dist_cdg: 27, desc: 'centre historique de Paris, quartier du Louvre et des Halles' },
+  'Paris 5e':   { zone: 'Paris', dist_cdg: 28, desc: 'Quartier Latin et Panthéon, cœur estudiantin de Paris' },
+  'Paris 7e':   { zone: 'Paris', dist_cdg: 30, desc: 'quartier de la Tour Eiffel et des ambassades, rive gauche chic' },
+  'Paris 8e':   { zone: 'Paris', dist_cdg: 28, desc: 'Champs-Élysées et Triangle d\'or, hub d\'affaires parisien' },
+  'Paris 9e':   { zone: 'Paris', dist_cdg: 26, desc: 'Opéra Garnier et Grands Boulevards, quartier animé de Paris' },
+  'Paris 10e':  { zone: 'Paris', dist_cdg: 24, desc: 'Gare du Nord et Gare de l\'Est, quartier cosmopolite et vivant' },
+  'Paris 11e':  { zone: 'Paris', dist_cdg: 26, desc: 'Bastille et Nation, quartier branché et populaire de l\'Est parisien' },
+  'Paris 13e':  { zone: 'Paris', dist_cdg: 30, desc: 'quartier asiatique et Bibliothèque Nationale, secteur en pleine mutation' },
+  'Paris 15e':  { zone: 'Paris', dist_cdg: 33, desc: 'arrondissement résidentiel du sud-ouest parisien, le plus peuplé de Paris' },
+  'Paris 16e':  { zone: 'Paris', dist_cdg: 35, desc: 'quartier chic de l\'ouest parisien, Trocadéro et Bois de Boulogne' },
+  'Paris 17e':  { zone: 'Paris', dist_cdg: 29, desc: 'quartier résidentiel et commerçant proche des Batignolles' },
+  'Paris 18e':  { zone: 'Paris', dist_cdg: 23, desc: 'Montmartre et Sacré-Cœur, butte emblématique du nord parisien' },
+  'Paris 19e':  { zone: 'Paris', dist_cdg: 22, desc: 'La Villette et Buttes-Chaumont, quartier populaire du nord-est de Paris' },
+  'Paris 20e':  { zone: 'Paris', dist_cdg: 25, desc: 'Belleville et Père-Lachaise, quartier populaire et multiculturel' },
+  'La Défense': { zone: 'Paris', dist_cdg: 34, desc: 'premier quartier d\'affaires européen, à l\'ouest de Paris' },
+  // Val-d'Oise proche CDG
+  'Herblay':    { zone: 'Val-d\'Oise', dist_cdg: 32, desc: 'commune du Val-d\'Oise en bord de Seine, entre Cergy et Paris' },
+  'Sarcelles':  { zone: 'Val-d\'Oise', dist_cdg: 18, desc: 'commune du Val-d\'Oise, limitrophe de la Seine-Saint-Denis' },
+  'Gonesse':    { zone: 'Val-d\'Oise', dist_cdg: 12, desc: 'commune à 12 km de CDG, porte d\'entrée de l\'aéroport côté ouest' },
+  'Villepinte': { zone: 'Seine-Saint-Denis', dist_cdg: 10, desc: 'commune adjacente à CDG, site du Parc des Expositions de Paris Nord Villepinte' },
+  // Seine-et-Marne
+  'Marne-la-Vallée': { zone: 'Seine-et-Marne', dist_cdg: 40, desc: 'ville nouvelle francilienne, site de Disneyland Paris et de Val d\'Europe' },
+  'Meaux':           { zone: 'Seine-et-Marne', dist_cdg: 52, desc: 'sous-préfecture de Seine-et-Marne, cité épiscopale sur la Marne' },
+  'Fontainebleau':   { zone: 'Seine-et-Marne', dist_cdg: 72, desc: 'ville royale classée UNESCO, célèbre pour son château et sa forêt domaniale' },
+  // Oise Nord étendu
+  'Noyon':      { zone: 'Oise Nord', dist_cdg: 120, desc: 'ville historique de l\'Oise, ancienne cité épiscopale au nord de Compiègne' },
+  // Longue distance
+  'Lille':      { zone: 'Nord',       dist_cdg: 220, desc: 'métropole du Nord, capitale des Flandres françaises' },
+  'Lyon':       { zone: 'Rhône',      dist_cdg: 460, desc: 'capitale des Gaules, deuxième métropole française' },
+  'Bruxelles':  { zone: 'Belgique',   dist_cdg: 300, desc: 'capitale de la Belgique et siège de l\'Union Européenne' },
+  'Reims':      { zone: 'Marne',      dist_cdg: 145, desc: 'cité du champagne, cité royale du sacre des rois de France' },
+  'Amiens':     { zone: 'Somme',      dist_cdg: 130, desc: 'préfecture de la Somme, ville de la cathédrale gothique UNESCO' },
+  'Bordeaux':   { zone: 'Gironde',    dist_cdg: 580, desc: 'métropole viticole du Sud-Ouest, classée UNESCO' },
+  'Strasbourg': { zone: 'Bas-Rhin',   dist_cdg: 490, desc: 'capitale alsacienne, siège du Parlement européen' },
 }
 
 // ── Distances réelles par itinéraire (km) ─────────────────────────────────
@@ -184,6 +281,32 @@ const DISTANCES: Record<string, number> = {
   'Pontoise-CDG': 38,  'Pontoise-Orly': 58,
   'Cergy-CDG': 38,     'Cergy-Orly': 58,
   'Versailles-CDG': 55, 'Versailles-Orly': 32,
+  // Paris arrondissements → CDG (distances en km, via A1/A3)
+  'Paris 1er-CDG': 27,  'Paris 5e-CDG': 28,  'Paris 7e-CDG': 30,
+  'Paris 8e-CDG': 28,   'Paris 9e-CDG': 26,  'Paris 10e-CDG': 24,
+  'Paris 11e-CDG': 26,  'Paris 13e-CDG': 30, 'Paris 15e-CDG': 33,
+  'Paris 16e-CDG': 35,  'Paris 17e-CDG': 29, 'Paris 18e-CDG': 23,
+  'Paris 19e-CDG': 22,  'Paris 20e-CDG': 25,
+  'La Défense-CDG': 34,
+  // Val-d'Oise proches CDG
+  'Herblay-CDG': 32, 'Sarcelles-CDG': 18, 'Gonesse-CDG': 12, 'Villepinte-CDG': 10,
+  // Seine-et-Marne
+  'Marne-la-Vallée-CDG': 40,  'Marne-la-Vallée-Orly': 55,
+  'Meaux-CDG': 52,
+  'Fontainebleau-CDG': 72, 'Fontainebleau-Orly': 58,
+  // Oise Nord étendu
+  'Noyon-CDG': 120,
+  // Longue distance depuis Paris
+  'Paris-Lille': 220,      'Lille-Paris': 220,
+  'Paris-Lyon': 460,       'Lyon-Paris': 460,
+  'Paris-Bruxelles': 300,  'Bruxelles-Paris': 300,
+  'Paris-Reims': 145,      'Reims-Paris': 145,
+  'Paris-Amiens': 130,     'Amiens-Paris': 130,
+  'Paris-Bordeaux': 580,   'Bordeaux-Paris': 580,
+  'Paris-Strasbourg': 490, 'Strasbourg-Paris': 490,
+  // Depuis CDG vers province
+  'CDG-Lyon': 462,     'Lyon-CDG': 462,
+  'CDG-Bruxelles': 285, 'Bruxelles-CDG': 285,
 }
 
 function getRouteDist(dep: string, arr: string): number {
