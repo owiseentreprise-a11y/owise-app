@@ -30,6 +30,10 @@ const DESTINATIONS = [
   'vtc-compiegne-cdg',
   'vtc-chantilly-orly',
   'vtc-creil-orly',
+  'vtc-senlis-orly',
+  'vtc-compiegne-orly',
+  'vtc-chantilly-beauvais',
+  'vtc-creil-beauvais',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

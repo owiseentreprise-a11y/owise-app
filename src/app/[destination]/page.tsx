@@ -780,6 +780,82 @@ const DESTINATIONS: Record<string, {
       { q: 'Proposez-vous le retour Orly → Creil ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte nominative, en suivant votre vol en temps réel pour s\'adapter aux retards éventuels.' },
     ],
   },
+
+  'vtc-senlis-orly': {
+    slug: 'vtc-senlis-orly',
+    title: 'VTC Senlis → Orly',
+    metaTitle: 'VTC Senlis Orly — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Senlis à l\'aéroport d\'Orly. Tarif fixe garanti, prise en charge à domicile depuis Senlis et environs. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc senlis orly','taxi senlis aéroport orly','chauffeur senlis orly','senlis orly prix','vtc aumont halatte orly','chauffeur privé senlis orly','transfert senlis orly'],
+    h1: 'VTC Senlis → Orly — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti en berline, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
+    prix: 'dès 149€ vers Orly',
+    duree: '70–90 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Senlis à Orly ?', a: 'Depuis Senlis, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet traverse ou contourne Paris, ce qui explique le tarif plus élevé que vers CDG. Estimez votre course sur owise.fr.' },
+      { q: 'Combien de temps prend le trajet Senlis → Orly ?', a: 'Environ 70 à 90 minutes selon la circulation. Tôt le matin (avant 6h), comptez 60 à 70 minutes via la Francilienne ou l\'A86. Votre chauffeur sélectionne l\'itinéraire optimal selon les conditions en temps réel.' },
+      { q: 'Quel aéroport choisir depuis Senlis : CDG ou Orly ?', a: 'Si votre vol vous laisse le choix, CDG est nettement plus avantageux depuis Senlis — il est situé directement sur l\'axe Senlis-Paris, à 45-60 minutes, contre 70-90 minutes pour Orly et un tarif plus bas. Owise dessert les deux aéroports 24h/24.' },
+      { q: 'Le tarif couvre-t-il Aumont-en-Halatte et Fleurines ?', a: 'Oui. Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil et toutes les communes proches de Senlis sont couvertes. Le tarif varie légèrement selon votre adresse précise — estimez en 30 secondes sur owise.fr.' },
+      { q: 'Proposez-vous le retour Orly → Senlis ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte à votre nom, en suivant votre vol en temps réel pour s\'adapter à tout retard.' },
+    ],
+  },
+
+  'vtc-compiegne-orly': {
+    slug: 'vtc-compiegne-orly',
+    title: 'VTC Compiègne → Orly',
+    metaTitle: 'VTC Compiègne Orly — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Compiègne à l\'aéroport d\'Orly. Tarif fixe garanti, prise en charge à domicile depuis Compiègne et l\'Oise Nord. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc compiègne orly','taxi compiègne aéroport orly','chauffeur compiègne orly','compiègne orly prix','vtc margny compiègne orly','chauffeur privé compiègne orly','transfert compiègne orly'],
+    h1: 'VTC Compiègne → Orly — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Compiègne (et Margny-lès-Compiègne, Venette, Lacroix-Saint-Ouen) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
+    prix: 'dès 165€ vers Orly',
+    duree: '80–100 min',
+    faq: [
+      { q: 'Quel est le tarif d\'un VTC de Compiègne à Orly ?', a: 'Depuis Compiègne, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet depuis Compiègne traverse ou contourne Paris, ce qui représente environ 80 à 100 minutes. Le prix est confirmé avant le départ, sans surprise.' },
+      { q: 'Combien de temps prend le trajet Compiègne → Orly ?', a: 'Environ 80 à 100 minutes selon la circulation. Tôt le matin (avant 6h), comptez 70 à 80 minutes. L\'itinéraire passe par l\'A1 puis l\'A86 ou la Francilienne selon les conditions. Votre chauffeur optimise en temps réel.' },
+      { q: 'CDG est-il moins cher depuis Compiègne qu\'Orly ?', a: 'Oui. CDG est situé directement sur l\'axe Compiègne–Paris via l\'A1, ce qui le rend plus proche et moins coûteux. Si votre vol vous laisse le choix de l\'aéroport, CDG est logistiquement plus avantageux depuis Compiègne — environ 70 à 90 minutes et un tarif inférieur.' },
+      { q: 'Le service couvre-t-il Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes de l\'agglomération compiégnoise sont couvertes : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen. Le tarif est calculé depuis votre adresse exacte.' },
+      { q: 'Proposez-vous le retour Orly → Compiègne ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte à votre nom, en suivant votre vol en temps réel pour s\'adapter aux retards.' },
+    ],
+  },
+
+  'vtc-chantilly-beauvais': {
+    slug: 'vtc-chantilly-beauvais',
+    title: 'VTC Chantilly → Beauvais',
+    metaTitle: 'VTC Chantilly Beauvais — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Chantilly à l\'aéroport de Beauvais-Tillé. Tarif fixe garanti, prise en charge à domicile depuis Chantilly et Gouvieux. Disponible 24h/24.',
+    keywords: ['vtc chantilly beauvais','taxi chantilly aéroport beauvais','chauffeur chantilly beauvais tillé','chantilly beauvais prix','vtc gouvieux beauvais','chauffeur privé chantilly beauvais','transfert chantilly ryanair'],
+    h1: 'VTC Chantilly → Beauvais-Tillé — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Chantilly et Gouvieux jusqu\'à l\'aéroport de Beauvais-Tillé (BVA), principal hub Ryanair en Île-de-France. Tarif fixe garanti, chauffeur professionnel, prise en charge à domicile. Disponible 24h/24.',
+    prix: 'dès 65€ vers Beauvais',
+    duree: '40–55 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Chantilly à l\'aéroport de Beauvais ?', a: 'Le tarif fixe depuis Chantilly vers l\'aéroport de Beauvais-Tillé est estimé dès 65€ en berline. Le prix exact dépend de votre adresse précise et est confirmé avant le départ — sans compteur, sans surprise.' },
+      { q: 'Combien de temps prend le trajet Chantilly → Beauvais ?', a: 'Environ 40 à 55 minutes via la N31 ou la D1016. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Beauvais est situé à l\'ouest de Chantilly — le trajet est plus direct que vers CDG ou Orly, sans traverser Paris.' },
+      { q: 'Y a-t-il un bus direct Chantilly–Beauvais pour l\'aéroport ?', a: 'Aucune navette directe Chantilly–Beauvais n\'existe. Les navettes Ryanair partent de Paris Beauvais ou de quelques gares RER — avec des horaires contraints et du temps de rabattement. Le VTC Owise part de votre domicile à l\'heure de votre choix, sans correspondance.' },
+      { q: 'Le tarif couvre-t-il aussi Gouvieux et Lamorlaye ?', a: 'Oui. La prise en charge est possible depuis Chantilly, Gouvieux, Lamorlaye, Coye-la-Forêt et les communes voisines. Le tarif final est calculé selon votre adresse exacte lors de la réservation.' },
+      { q: 'Proposez-vous le retour Beauvais → Chantilly ?', a: 'Oui. Le tarif retour est identique. Votre chauffeur vous attend à l\'aéroport de Beauvais-Tillé avec une pancarte nominative. Pour les vols Ryanair avec des horaires tardifs ou matinaux, Owise est disponible 24h/24.' },
+    ],
+  },
+
+  'vtc-creil-beauvais': {
+    slug: 'vtc-creil-beauvais',
+    title: 'VTC Creil → Beauvais',
+    metaTitle: 'VTC Creil Beauvais — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC de Creil à l\'aéroport de Beauvais-Tillé. Tarif fixe garanti, prise en charge à domicile depuis Creil et l\'Oise Sud. Chauffeur professionnel disponible 24h/24.',
+    keywords: ['vtc creil beauvais','taxi creil aéroport beauvais','chauffeur creil beauvais tillé','creil beauvais prix','vtc nogent oise beauvais','chauffeur privé creil beauvais','transfert creil ryanair'],
+    h1: 'VTC Creil → Beauvais-Tillé — Tarif Fixe Garanti',
+    intro: 'Votre transfert VTC depuis Creil (et Nogent-sur-Oise, Montataire, Saint-Maximin) jusqu\'à l\'aéroport de Beauvais-Tillé, hub Ryanair. Tarif fixe garanti, chauffeur habilité, prise en charge à domicile. Disponible 24h/24.',
+    prix: 'dès 65€ vers Beauvais',
+    duree: '45–60 min',
+    faq: [
+      { q: 'Quel est le prix d\'un VTC de Creil à l\'aéroport de Beauvais ?', a: 'Le tarif fixe depuis Creil vers l\'aéroport de Beauvais-Tillé est estimé dès 65€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Le prix exact est confirmé avant le départ selon votre adresse précise.' },
+      { q: 'Combien de temps prend le trajet Creil → Beauvais ?', a: 'Environ 45 à 60 minutes selon les conditions, via la N31 ou la D1016. Beauvais est à l\'ouest de Creil — le trajet est direct, sans traverser Paris, ce qui le rend plus prévisible que vers CDG ou Orly.' },
+      { q: 'Peut-on aller à Beauvais-Tillé en train depuis Creil ?', a: 'Aucune liaison ferroviaire directe n\'existe entre Creil et Beauvais pour l\'aéroport. Les alternatives (bus Ryanair depuis Paris, RER puis correspondance) nécessitent plusieurs heures de trajet total. Le VTC Owise part directement de votre adresse en 45-60 minutes.' },
+      { q: 'Le service couvre-t-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville et leurs environs sont dans la zone de desserte. Le tarif est calculé depuis votre adresse exacte.' },
+      { q: 'Proposez-vous le retour Beauvais → Creil ?', a: 'Oui. Le tarif retour est identique. Pour les vols Ryanair dont les horaires sont souvent très tôt le matin ou tard le soir, Owise est disponible 24h/24 — votre chauffeur sera là, quelle que soit l\'heure d\'arrivée.' },
+    ],
+  },
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }): Promise<Metadata> {
