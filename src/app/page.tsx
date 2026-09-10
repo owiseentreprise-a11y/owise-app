@@ -233,6 +233,33 @@ export default async function VitrinePage() {
               </a>
             ))}
           </div>
+          {/* Trajets Oise → Aéroports */}
+          <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 20, fontWeight: 600, color: '#09091A', margin: '40px 0 16px', paddingTop: 32, borderTop: '1px solid rgba(9,9,26,.06)' }}>
+            Trajets Oise → Aéroports
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {[
+              { slug: 'vtc-chantilly-cdg',     title: 'VTC Chantilly → CDG',       prix: '59€',      desc: 'Gouvieux, Lamorlaye — suivi de vol inclus' },
+              { slug: 'vtc-creil-cdg',         title: 'VTC Creil → CDG',           prix: '65€',      desc: 'Nogent-sur-Oise, Montataire, 40–55 min via A1' },
+              { slug: 'vtc-senlis-cdg',        title: 'VTC Senlis → CDG',          prix: 'dès 69€',  desc: 'Aumont-en-Halatte, Fleurines, 45–60 min' },
+              { slug: 'vtc-compiegne-cdg',     title: 'VTC Compiègne → CDG',       prix: 'dès 100€', desc: 'Margny, Venette, 70–90 min via A1' },
+              { slug: 'vtc-chantilly-orly',    title: 'VTC Chantilly → Orly',      prix: 'dès 139€', desc: 'Gouvieux, Lamorlaye, 60–80 min' },
+              { slug: 'vtc-creil-orly',        title: 'VTC Creil → Orly',          prix: 'dès 145€', desc: 'Nogent-sur-Oise, Montataire, 65–85 min' },
+              { slug: 'vtc-senlis-orly',       title: 'VTC Senlis → Orly',         prix: 'dès 149€', desc: 'Aumont-en-Halatte, Fleurines, 70–90 min' },
+              { slug: 'vtc-compiegne-orly',    title: 'VTC Compiègne → Orly',      prix: 'dès 165€', desc: 'Margny, Venette, 80–100 min' },
+              { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais',  prix: 'dès 65€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
+              { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais',      prix: 'dès 65€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
+            ].map(d => (
+              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#09091A' }}>{d.title}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap', marginLeft: 8 }}>{d.prix}</span>
+                </div>
+                <span style={{ fontSize: 12, color: '#848499', lineHeight: 1.5 }}>{d.desc}</span>
+              </a>
+            ))}
+          </div>
+
           <div style={{ textAlign: 'center', marginTop: 32 }}>
             <a href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none', fontWeight: 500 }}>
               Voir nos guides et conseils VTC →
