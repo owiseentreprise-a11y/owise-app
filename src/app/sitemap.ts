@@ -23,6 +23,10 @@ const DESTINATIONS = [
   'vtc-luzarches',
   'vtc-clermont',
   'vtc-liancourt',
+  'vtc-chambly',
+  'vtc-meru',
+  'vtc-verberie',
+  'vtc-noyon',
   // Pages de trajets spécifiques (Ville → Aéroport)
   'vtc-chantilly-cdg',
   'vtc-creil-cdg',
