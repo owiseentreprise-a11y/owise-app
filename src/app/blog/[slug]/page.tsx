@@ -754,6 +754,173 @@ const DESTINATIONS: Record<string, { label: string; href: string }[]> = {
     { label: '→ CDG depuis Chantilly', href: '/blog/vtc-chantilly-cdg' },
     { label: 'Paris → Chantilly', href: '/blog/vtc-paris-chantilly' },
   ],
+  // ── Vague 10 — Nouvelles communes Oise ciblées en campagne ──
+  'vtc-chambly-cdg': [
+    { label: 'VTC Chambly', href: '/vtc-chambly' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Creil', href: '/blog/vtc-creil-cdg' },
+    { label: 'VTC Bornel · Oise Sud', href: '/vtc-chambly' },
+  ],
+  'vtc-chambly-orly': [
+    { label: 'VTC Chambly', href: '/vtc-chambly' },
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ Orly depuis Creil', href: '/blog/vtc-creil-orly' },
+  ],
+  'vtc-meru-cdg': [
+    { label: 'VTC Méru', href: '/vtc-meru' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' },
+    { label: 'VTC Noailles · Oise Ouest', href: '/vtc-meru' },
+  ],
+  'vtc-meru-orly': [
+    { label: 'VTC Méru', href: '/vtc-meru' },
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ Beauvais depuis Méru', href: '/blog/vtc-meru-beauvais' },
+  ],
+  'vtc-meru-beauvais': [
+    { label: 'VTC Méru', href: '/vtc-meru' },
+    { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' },
+    { label: '→ Beauvais depuis Creil', href: '/blog/vtc-creil-beauvais' },
+    { label: 'VTC Noailles · Oise Ouest', href: '/vtc-meru' },
+  ],
+  'vtc-verberie-cdg': [
+    { label: 'VTC Verberie', href: '/vtc-verberie' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'VTC Longueil-Sainte-Marie', href: '/vtc-verberie' },
+  ],
+  'vtc-verberie-orly': [
+    { label: 'VTC Verberie', href: '/vtc-verberie' },
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ Orly depuis Compiègne', href: '/blog/vtc-compiegne-orly' },
+  ],
+  'vtc-noyon-orly': [
+    { label: 'VTC Noyon', href: '/vtc-noyon' },
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ CDG depuis Noyon', href: '/blog/vtc-noyon-cdg' },
+  ],
+  'vtc-noyon-beauvais': [
+    { label: 'VTC Noyon', href: '/vtc-noyon' },
+    { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' },
+    { label: '→ CDG depuis Noyon', href: '/blog/vtc-noyon-cdg' },
+  ],
+  'vtc-compiegne-gare-nord': [
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'VTC Verberie', href: '/vtc-verberie' },
+  ],
+  'vtc-compiegne-gare-du-nord': [
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+    { label: 'VTC Verberie', href: '/vtc-verberie' },
+  ],
+  'vtc-creil-gare-du-nord': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: '→ CDG depuis Creil', href: '/blog/vtc-creil-cdg' },
+    { label: 'Creil → Paris en VTC', href: '/blog/vtc-creil-paris' },
+  ],
+  'vtc-chantilly-gare-du-nord': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: '→ CDG depuis Chantilly', href: '/blog/vtc-chantilly-cdg' },
+    { label: 'Chantilly → Paris en VTC', href: '/blog/vtc-paris-chantilly' },
+  ],
+  'vtc-senlis-gare-du-nord': [
+    { label: 'VTC Senlis', href: '/vtc-senlis' },
+    { label: '→ CDG depuis Senlis', href: '/blog/vtc-senlis-cdg' },
+    { label: 'Senlis → Paris en VTC', href: '/blog/vtc-paris-senlis' },
+  ],
+  'vtc-lamorlaye-beauvais': [
+    { label: 'VTC Lamorlaye', href: '/vtc-lamorlaye' },
+    { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' },
+    { label: '→ Beauvais depuis Chantilly', href: '/blog/vtc-chantilly-beauvais' },
+  ],
+  'vtc-lacroix-saint-ouen-cdg': [
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: 'VTC Verberie', href: '/vtc-verberie' },
+    { label: '→ CDG depuis Compiègne', href: '/blog/vtc-compiegne-cdg' },
+  ],
+  'vtc-noailles-beauvais': [
+    { label: 'VTC Méru · Oise Ouest', href: '/vtc-meru' },
+    { label: 'VTC Aéroport Beauvais', href: '/vtc-aeroport-beauvais' },
+    { label: '→ Beauvais depuis Méru', href: '/blog/vtc-meru-beauvais' },
+  ],
+  'vtc-precy-cdg': [
+    { label: 'VTC Précy-sur-Oise', href: '/vtc-precy-sur-oise' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Creil', href: '/blog/vtc-creil-cdg' },
+  ],
+  'vtc-precy-orly': [
+    { label: 'VTC Précy-sur-Oise', href: '/vtc-precy-sur-oise' },
+    { label: 'VTC Aéroport Orly', href: '/vtc-aeroport-orly' },
+    { label: '→ Orly depuis Creil', href: '/blog/vtc-creil-orly' },
+  ],
+  'vtc-boran-cdg': [
+    { label: 'VTC Boran-sur-Oise', href: '/vtc-boran-sur-oise' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Senlis', href: '/blog/vtc-senlis-cdg' },
+  ],
+  'vtc-guide-mariage-oise': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: 'VTC Senlis', href: '/vtc-senlis' },
+    { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
+  ],
+  'vtc-guide-terminal-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Creil', href: '/blog/vtc-creil-cdg' },
+    { label: '→ CDG depuis Chantilly', href: '/blog/vtc-chantilly-cdg' },
+  ],
+  'vtc-guide-medical-oise': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: 'Transport PMR Oise', href: '/blog/vtc-pmr-oise' },
+  ],
+  'vtc-guide-pmr-oise': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'Transport médical Oise', href: '/blog/vtc-guide-medical-oise' },
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+  ],
+  'vtc-guide-conducteur-designe': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'VTC mariage Oise', href: '/blog/vtc-mariage-oise' },
+    { label: 'VTC Senlis', href: '/vtc-senlis' },
+  ],
+  'vtc-guide-teletravail-oise': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'VTC abonnement Oise-Paris', href: '/blog/vtc-teletravail-abonnement-oise-paris' },
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+  ],
+  'vtc-guide-nuit-cdg-oise': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Chantilly', href: '/blog/vtc-chantilly-cdg' },
+    { label: 'VTC vol de nuit CDG', href: '/blog/vtc-vol-nuit-cdg' },
+  ],
+  'vtc-guide-soiree-paris-oise': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'Paris → Chantilly', href: '/blog/vtc-paris-chantilly' },
+  ],
+  'vtc-entreprise-seminaire-oise': [
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+    { label: 'VTC entreprise B2B', href: '/blog/vtc-entreprise-compte-b2b' },
+    { label: 'VTC Senlis', href: '/vtc-senlis' },
+  ],
+  'vtc-comparatif-taxi-vtc-oise': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: 'Tarif fixe vs compteur taxi', href: '/blog/vtc-tarif-fixe-vs-compteur' },
+  ],
+  'vtc-comparatif-meilleur-vtc-oise': [
+    { label: 'VTC Creil & Oise Sud', href: '/vtc-creil' },
+    { label: 'VTC Chantilly', href: '/vtc-chantilly' },
+    { label: 'VTC Compiègne', href: '/vtc-compiegne' },
+  ],
+  'vtc-comparatif-vtc-train-oise-cdg': [
+    { label: 'VTC Aéroport CDG', href: '/vtc-aeroport-cdg' },
+    { label: '→ CDG depuis Creil', href: '/blog/vtc-creil-cdg' },
+    { label: 'Tarif fixe vs compteur taxi', href: '/blog/vtc-tarif-fixe-vs-compteur' },
+  ],
 }
 
 export const revalidate = 3600

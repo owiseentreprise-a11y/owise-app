@@ -223,6 +223,10 @@ export default async function VitrinePage() {
               { slug: 'vtc-luzarches',         title: 'VTC Luzarches',                 prix: 'dès 65€',  desc: 'Pays de France, Asnières-sur-Oise, Val-d\'Oise' },
               { slug: 'vtc-clermont',          title: 'VTC Clermont (Oise)',           prix: 'dès 105€', desc: 'Clermontois, Agnetz, Breuil-le-Vert, Étouy' },
               { slug: 'vtc-liancourt',         title: 'VTC Liancourt · Rantigny',      prix: 'dès 100€', desc: 'Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi' },
+              { slug: 'vtc-chambly',           title: 'VTC Chambly',                   prix: 'dès 55€',  desc: 'Bornel, Balagny, Neuilly-en-Thelle — proche CDG' },
+              { slug: 'vtc-meru',              title: 'VTC Méru · Oise Ouest',         prix: 'dès 80€',  desc: 'Noailles, Saint-Crépin, Bornel — accès Beauvais 35 km' },
+              { slug: 'vtc-verberie',          title: 'VTC Verberie',                  prix: 'dès 95€',  desc: 'Longueil-Ste-Marie, Pont-Ste-Maxence, vallée de l\'Oise' },
+              { slug: 'vtc-noyon',             title: 'VTC Noyon · Oise Nord',         prix: 'dès 165€', desc: 'Ribécourt, Sempigny, Guiscard — CDG en 80–100 min' },
             ].map(d => (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>

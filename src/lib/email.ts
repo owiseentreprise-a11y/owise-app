@@ -791,9 +791,13 @@ export async function envoyerRelanceDevisJ1(params: {
       </a>
     </div>
 
-    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+    <p style="margin:0 0 12px;font-size:12px;color:#848499;text-align:center;">
       Une question ? <a href="https://wa.me/33619106356" style="color:#25D366;">WhatsApp</a>
       ou <a href="tel:+33619106356" style="color:#C9A84C;">06 19 10 63 56</a>
+    </p>
+    <p style="margin:0;font-size:11px;color:#CCCCCC;text-align:center;">
+      Vous ne souhaitez plus recevoir nos emails ?
+      <a href="${siteUrl}/api/desinscription?email=${encodeURIComponent(email)}" style="color:#C9A84C;">Se désinscrire</a>
     </p>
   `)
   await send(email, `${prenom}, votre VTC ${origin.split(',')[0]} → ${destination.split(',')[0]} est disponible`, html)
@@ -836,8 +840,12 @@ export async function envoyerRelanceDevisJ4(params: {
       </a>
     </div>
 
-    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+    <p style="margin:0 0 12px;font-size:12px;color:#848499;text-align:center;">
       Vous préférez appeler ? <a href="tel:+33619106356" style="color:#C9A84C;">06 19 10 63 56</a>
+    </p>
+    <p style="margin:0;font-size:11px;color:#CCCCCC;text-align:center;">
+      Vous ne souhaitez plus recevoir nos emails ?
+      <a href="${siteUrl}/api/desinscription?email=${encodeURIComponent(email)}" style="color:#C9A84C;">Se désinscrire</a>
     </p>
   `)
   await send(email, `Owise — Avez-vous trouvé un VTC pour ${destination.split(',')[0]} ?`, html)
