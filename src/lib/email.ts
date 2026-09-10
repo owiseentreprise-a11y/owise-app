@@ -749,6 +749,146 @@ export async function envoyerNouveauDevis(params: {
   await send(email, 'OWISE — Votre demande de devis a bien été reçue', htmlClient)
 }
 
+// ── 7. Relances devis non-convertis (séquence J+1 / J+4 / J+7) ──────────────
+
+export async function envoyerRelanceDevisJ1(params: {
+  email: string
+  nom: string
+  origin: string
+  destination: string
+  price?: number | null
+  vehicle?: string | null
+  date_course?: string | null
+}) {
+  const { email, nom, origin, destination, price, vehicle, date_course } = params
+  const prenom = nom.split(' ')[0]
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre trajet est toujours disponible</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom},<br>
+      Vous avez demandé un tarif hier pour votre transfert VTC.<br>
+      Votre estimation est toujours valable — réservez en 2 minutes, avant que votre créneau ne soit pris.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <p style="margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#848499;font-weight:600;">Votre trajet</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Départ', origin)}
+        ${row('Arrivée', destination)}
+        ${date_course ? row('Date', fmtDate(date_course)) : ''}
+        ${vehicle ? row('Véhicule', vehicle) : ''}
+        ${price ? row('Estimation', `<strong style="color:#09091A">${price} €</strong> tarif fixe garanti`) : ''}
+      </table>
+    </div>
+
+    <div style="background:#09091A;border-radius:10px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;color:#848499;">Tarif fixe · Suivi de vol · Disponible 24h/24</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#EDE8DF;">Pas de compteur, pas de surprise. Le prix affiché est le prix payé.</p>
+      <a href="${siteUrl}/reserver"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Réserver maintenant →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Une question ? <a href="https://wa.me/33619106356" style="color:#25D366;">WhatsApp</a>
+      ou <a href="tel:+33619106356" style="color:#C9A84C;">06 19 10 63 56</a>
+    </p>
+  `)
+  await send(email, `${prenom}, votre VTC ${origin.split(',')[0]} → ${destination.split(',')[0]} est disponible`, html)
+}
+
+export async function envoyerRelanceDevisJ4(params: {
+  email: string
+  nom: string
+  origin: string
+  destination: string
+  price?: number | null
+  date_course?: string | null
+}) {
+  const { email, nom, origin, destination, price, date_course } = params
+  const prenom = nom.split(' ')[0]
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre transfert VTC — avez-vous trouvé une solution ?</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom},<br>
+      Vous avez consulté nos tarifs il y a quelques jours pour ${origin.split(',')[0]} → ${destination.split(',')[0]}.
+      Si vous n'avez pas encore réservé, nous sommes toujours disponibles.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#09091A;">Pourquoi choisir Owise ?</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Tarif fixe', 'Prix garanti à la réservation, jamais de compteur')}
+        ${row('Suivi de vol', 'Votre chauffeur s\'adapte si votre vol est retardé')}
+        ${row('Ponctualité', '100% des clients satisfaits · 5⭐ sur Google')}
+        ${row('Disponibilité', '24h/24, 7j/7, départs très tôt le matin')}
+        ${price ? row('Votre estimation', `${price} € en berline`) : ''}
+      </table>
+    </div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${siteUrl}/reserver"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
+        Confirmer ma réservation →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
+      Vous préférez appeler ? <a href="tel:+33619106356" style="color:#C9A84C;">06 19 10 63 56</a>
+    </p>
+  `)
+  await send(email, `Owise — Avez-vous trouvé un VTC pour ${destination.split(',')[0]} ?`, html)
+}
+
+export async function envoyerRelanceDevisJ7(params: {
+  email: string
+  nom: string
+  origin: string
+  destination: string
+  price?: number | null
+}) {
+  const { email, nom, origin, destination, price } = params
+  const prenom = nom.split(' ')[0]
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Un dernier mot de la part d'Owise</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour ${prenom},<br>
+      Il y a une semaine, vous nous avez contactés pour un transfert VTC.<br>
+      C'est notre dernier message — nous ne voulons pas vous importuner.
+    </p>
+
+    <div style="background:#09091A;border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;color:#848499;text-transform:uppercase;letter-spacing:.1em;">Pour vous, une offre directe</p>
+      <p style="margin:0 0 16px;font-size:16px;color:#EDE8DF;font-weight:600;">
+        ${origin.split(',')[0]} → ${destination.split(',')[0]}
+        ${price ? `<br><span style="color:#C9A84C;font-size:22px;">${price} €</span> tarif fixe` : ''}
+      </p>
+      <p style="margin:0 0 20px;font-size:13px;color:#848499;">
+        Réservez via WhatsApp ou téléphone — nous confirmons immédiatement.
+      </p>
+      <a href="https://wa.me/33619106356?text=Bonjour%2C%20je%20voudrais%20réserver%20un%20VTC%20${encodeURIComponent(origin.split(',')[0])}%20vers%20${encodeURIComponent(destination.split(',')[0])}"
+         style="display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:10px;">
+        Réserver via WhatsApp →
+      </a>
+      <br>
+      <a href="${siteUrl}/reserver"
+         style="display:inline-block;background:transparent;color:#EDE8DF;text-decoration:none;padding:10px 24px;border-radius:8px;font-size:13px;border:1px solid rgba(237,232,223,.2);">
+        Réserver en ligne →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:11px;color:#CCCCCC;text-align:center;">
+      Vous ne souhaitez plus recevoir nos emails ?
+      <a href="${siteUrl}/desinscription?email=${encodeURIComponent(email)}" style="color:#C9A84C;">Se désinscrire</a>
+    </p>
+  `)
+  await send(email, `Owise — Dernière chance pour votre transfert VTC`, html)
+}
+
 // ── 6. Annulation ────────────────────────────────────────────────────────────
 
 export async function envoyerAnnulation(params: {

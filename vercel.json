@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/gbp-post",
       "schedule": "0 9 * * 2,4"
+    },
+    {
+      "path": "/api/cron/relance-devis",
+      "schedule": "0 9 * * *"
     }
   ]
 }
