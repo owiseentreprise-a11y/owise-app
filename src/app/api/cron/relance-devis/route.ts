@@ -21,6 +21,10 @@ export async function GET(req: Request) {
     return d.toISOString()
   }
 
+  // Charger la liste des emails opt-out
+  const { data: optouts } = await supabase.from('email_optout').select('email')
+  const optoutSet = new Set((optouts ?? []).map(o => o.email.toLowerCase()))
+
   // Fenêtre de 24h pour chaque palier (J+1 = entre 1 et 2 jours, etc.)
   const [j1sent, j4sent, j7sent] = await Promise.all([
     // J+1 : créés il y a entre 1 et 2 jours, relance J+1 pas encore envoyée
@@ -54,6 +58,7 @@ export async function GET(req: Request) {
     // Relances J+1
     ...(j1sent.data ?? []).map(async (d) => {
       if (!d.email || !d.nom) return
+      if (optoutSet.has(d.email.toLowerCase())) return
       await envoyerRelanceDevisJ1({
         email: d.email,
         nom: d.nom,
@@ -70,6 +75,7 @@ export async function GET(req: Request) {
     // Relances J+4
     ...(j4sent.data ?? []).map(async (d) => {
       if (!d.email || !d.nom) return
+      if (optoutSet.has(d.email.toLowerCase())) return
       await envoyerRelanceDevisJ4({
         email: d.email,
         nom: d.nom,
@@ -85,6 +91,7 @@ export async function GET(req: Request) {
     // Relances J+7
     ...(j7sent.data ?? []).map(async (d) => {
       if (!d.email || !d.nom) return
+      if (optoutSet.has(d.email.toLowerCase())) return
       await envoyerRelanceDevisJ7({
         email: d.email,
         nom: d.nom,

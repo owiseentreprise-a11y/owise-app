@@ -883,7 +883,7 @@ export async function envoyerRelanceDevisJ7(params: {
 
     <p style="margin:0;font-size:11px;color:#CCCCCC;text-align:center;">
       Vous ne souhaitez plus recevoir nos emails ?
-      <a href="${siteUrl}/desinscription?email=${encodeURIComponent(email)}" style="color:#C9A84C;">Se désinscrire</a>
+      <a href="${siteUrl}/api/desinscription?email=${encodeURIComponent(email)}" style="color:#C9A84C;">Se désinscrire</a>
     </p>
   `)
   await send(email, `Owise — Dernière chance pour votre transfert VTC`, html)
