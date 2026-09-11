@@ -56,6 +56,8 @@ export async function createReservationCheckout(data: {
   heure_arrivee_vol?: string
   code_parrainage?: string
   distance_km?: number
+  gclid?: string
+  ads_consent?: 'accepted' | 'refused' | 'unknown'
 }): Promise<{ error?: string; checkoutUrl?: string }> {
   const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
   const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
@@ -141,6 +143,12 @@ export async function createReservationCheckout(data: {
   }
   if (data.code_parrainage) {
     params.set('metadata[code_parrainage]', data.code_parrainage)
+  }
+  if (data.gclid) {
+    // Identifiant de clic Google Ads — permet de remonter la conversion côté
+    // serveur après paiement confirmé, indépendamment du consentement cookie.
+    params.set('metadata[gclid]', data.gclid.slice(0, 499))
+    params.set('metadata[ads_consent]', data.ads_consent ?? 'unknown')
   }
 
   // Créer le retour immédiatement en_attente si aller-retour demandé

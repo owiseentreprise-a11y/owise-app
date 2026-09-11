@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
+import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -200,7 +201,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     await enregistrerParrainage(meta.code_parrainage, email).catch(() => {})
   }
 
-  // 5. CAPI Purchase + Emails (en parallèle, ne bloquent pas si l'un échoue)
+  // 5. CAPI Purchase + conversion Google Ads + Emails (en parallèle, ne bloquent pas si l'un échoue)
   capiPurchase({
     eventId   : randomUUID(),
     value     : prix,
@@ -210,6 +211,17 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     firstName : prenom,
     lastName  : nom,
   }).catch(() => {})
+
+  if (meta.gclid) {
+    uploadGoogleAdsConversion({
+      gclid             : meta.gclid,
+      value             : prix,
+      currency          : 'EUR',
+      conversionDateTime: new Date(),
+      orderId           : course.id,
+      consent           : (meta.ads_consent as AdsConsent) ?? 'unknown',
+    }).catch(() => {})
+  }
 
   await Promise.all([
     envoyerConfirmationClient({

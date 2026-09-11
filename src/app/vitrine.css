@@ -584,6 +584,13 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 .wa-pulse{position:absolute;top:0;right:0;width:10px;height:10px;border-radius:50%;background:#ff4444;border:2px solid #fff;animation:waPulse 2.5s infinite}
 @keyframes waPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
 
+/* CALL FLOATING */
+.call-float{position:fixed;bottom:88px;left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s;pointer-events:none}
+.call-float.show{opacity:1;transform:translateY(0);pointer-events:all}
+.call-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;border-radius:50px;background:#C9A84C;color:#09091A;font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 28px rgba(201,168,76,.38);transition:transform .15s,box-shadow .2s}
+.call-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(201,168,76,.48)}
+@media(max-width:640px){.call-float{bottom:88px;left:16px}.wa-float{left:16px}}
+
 /* FLOATING CTA */
 .float-cta{position:fixed;bottom:28px;right:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s;pointer-events:none}
 .float-cta.show{opacity:1;transform:translateY(0);pointer-events:all}

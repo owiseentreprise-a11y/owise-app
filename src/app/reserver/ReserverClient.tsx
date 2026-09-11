@@ -7,7 +7,7 @@ import { createReservationCheckout } from './actions'
 import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
-import { fbInitCheckout, fbLead, fbViewContent } from '@/lib/pixel'
+import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import ReservationSummary from './ReservationSummary'
 import {
   calculerPrix,
@@ -261,6 +261,9 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
 
   const [depart,    setDepart]   = useState<AdresseVal>({ label: searchParams.get('depart') || '', codePostal: '' })
   const [arrivee,   setArrivee]  = useState<AdresseVal>({ label: searchParams.get('arrivee') || '', codePostal: '' })
+  // Capturé une seule fois au montage : identifiant de clic Google Ads, transmis
+  // au paiement pour permettre la remontée serveur de la conversion (voir actions.ts).
+  const [gclid] = useState(() => searchParams.get('gclid') || '')
 
   // Auto-résolution des adresses pré-remplies depuis l'URL
   useEffect(() => {
@@ -430,6 +433,11 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
     if (prixFinal === null) return setStep2Error('Erreur de tarification.')
     setStep2Error(null)
     fbLead({ value: prixFinal, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
+    let adsConsent: 'accepted' | 'refused' | 'unknown' = 'unknown'
+    try {
+      const v = localStorage.getItem(COOKIE_KEY)
+      if (v === 'accepted' || v === 'refused') adsConsent = v
+    } catch {}
     startTransition(async () => {
       const result = await createReservationCheckout({
         adresse_depart:  depart.label,
@@ -448,6 +456,8 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         terminal:        terminal || undefined,
         heure_arrivee_vol: heureArrivee || undefined,
         code_parrainage: codeValide ? codeParrain.toUpperCase().trim() : undefined,
+        gclid:           gclid || undefined,
+        ads_consent:     adsConsent,
       })
       if (result?.error) setStep2Error(`Erreur de paiement : ${result.error}`)
       else if (result?.checkoutUrl) window.location.href = result.checkoutUrl

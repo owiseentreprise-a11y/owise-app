@@ -1,13 +1,34 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { initGA } from '@/lib/ga'
 
+// Routes qui NE rendent PAS VitrineBody (lequel a sa propre bannière cookies,
+// avec en plus un panneau de préférences détaillé). Sur toutes les autres
+// routes — home "/" et pages de destination "/vtc-*" — VitrineBody gère déjà
+// le consentement : afficher aussi celle-ci ferait doublon.
+const ROUTES_SANS_VITRINE_BODY = new Set([
+  '/admin', '/blog', '/chauffeur', '/client-login', '/desinscription',
+  '/espace-client', '/faq', '/login', '/mentions-legales', '/paiement',
+  '/reserver', '/sous-traitant', '/sous-traitant-login', '/auth',
+])
+
+function hasOwnCookieBanner(pathname: string): boolean {
+  if (pathname === '/') return true
+  const first = '/' + pathname.split('/')[1]
+  if (ROUTES_SANS_VITRINE_BODY.has(first)) return false
+  // Segment unique inconnu de la liste ci-dessus → page de destination [destination]/page.tsx
+  return pathname.split('/').filter(Boolean).length === 1
+}
+
 export default function CookieBanner() {
+  const pathname = usePathname()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    if (hasOwnCookieBanner(pathname)) return
     try {
       const stored = localStorage.getItem(COOKIE_KEY)
       if (stored === 'accepted') {
@@ -20,7 +41,7 @@ export default function CookieBanner() {
       // localStorage inaccessible (WebView restrictif, mode incognito) — afficher la bannière
       setVisible(true)
     }
-  }, [])
+  }, [pathname])
 
   function accept() {
     try { localStorage.setItem(COOKIE_KEY, 'accepted') } catch { /* ignore */ }

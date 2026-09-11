@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import GAPageView from '@/components/GAPageView'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </PHProvider>
         <GoogleAnalytics />
+        <GAPageView />
         <CookieBanner />
         <Analytics />
       </body>

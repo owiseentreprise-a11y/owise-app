@@ -294,7 +294,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_KEY) || localStorage.getItem('ow_cookie')
     if (!consent) {
-      const t = setTimeout(() => setCookieVisible(true), 2500)
+      // Re-vérifier au déclenchement du timer (pas seulement au montage) : la
+      // bannière globale (CookieBanner.tsx, montée dans layout.tsx) peut avoir
+      // déjà obtenu une réponse entre-temps — sans ça, une deuxième bannière
+      // s'affichait même après que l'utilisateur ait déjà répondu à la première.
+      const t = setTimeout(() => {
+        const stillNoConsent = !(localStorage.getItem(COOKIE_KEY) || localStorage.getItem('ow_cookie'))
+        if (stillNoConsent) setCookieVisible(true)
+        else setCookieDone(true)
+      }, 2500)
       return () => clearTimeout(t)
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -515,44 +523,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  function calcEstimate(overrides?: Partial<typeof form>, overridePax?: number, overrideSuppls?: Record<string,number>): number {
-    const f   = { ...form, ...overrides }
-    const p   = overridePax   ?? pax
-    const sup = overrideSuppls ?? suppls
-    const v   = getVehicle(p)
-    const h   = parseInt((f.time || '09:00').split(':')[0])
-    const suppTotal = Object.values(sup).reduce((a,b)=>a+b,0)
-    // Détection aéroport/gare depuis label OU destType (même logique que le widget)
-    const dest = (f.dest || '').toLowerCase()
-    const orig = (f.origin || '').toLowerCase()
-    const isCDG      = /cdg|roissy|charles de gaulle/i.test(dest) || /cdg|roissy|charles de gaulle/i.test(orig) || f.destType === 'airport'
-    const isOrly     = /orly/i.test(dest) || /orly/i.test(orig)
-    const isBeauvais = /beauvais/i.test(dest) || /beauvais/i.test(orig)
-    const isGare     = /\bgare\b|gare du nord|gare de lyon|montparnasse|saint-lazare/i.test(dest) || f.destType === 'gare'
-    const tarif = bcTarifs.find(t => t.vehicule === v.name)
-    const dateStr  = f.date || new Date().toISOString().slice(0, 10)
-    const fakeDate = `${dateStr}T${String(h).padStart(2,'0')}:00`
-    if (tarif) {
-      let base = 0
-      if (isOrly)          base = Number(tarif.orly_fixe)
-      else if (isBeauvais) base = Number(tarif.beauvais_fixe)
-      else if (isCDG)      base = Number(tarif.cdg_fixe)
-      else if (isGare)     base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 15
-      else                 base = Number(tarif.prise_en_charge) + Number(tarif.prix_km) * 20
-      if (!base)           base = Number(tarif.prise_en_charge) + 30
-      if (paramsProp?.tarif_pec_actif) base += paramsProp.tarif_frais_pec ?? 0
-      base = appliquerSupplements(base, fakeDate, paramsProp)
-      if (etapeOpen) base += paramsProp?.supplement_etape ?? 10
-      return Math.round(base + suppTotal)
-    }
-    // fallback hardcodé
-    let base = v.base
-    if (isCDG || isOrly || isBeauvais) base += 25
-    else if (isGare)                   base += 12
-    if (etapeOpen)                     base += paramsProp?.supplement_etape ?? 10
-    return Math.round(base + suppTotal)
-  }
-
   // Source unique pour le calcul de prix — utilisée par le widget ET le devis
   async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string): Promise<{ prix: number; isKm: boolean }> {
     const v     = getVehicle(paxN)
@@ -640,6 +610,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       if (form.nom)     params.set('nom',     form.nom)
       if (form.tel)     params.set('tel',     form.tel)
       if (form.email)   params.set('email',   form.email)
+      // Reporter gclid/UTM de la page d'atterrissage vers /reserver,
+      // sinon l'origine publicitaire du clic est perdue avant paiement.
+      const currentParams = new URLSearchParams(window.location.search)
+      for (const key of ['gclid','utm_source','utm_campaign','utm_content','utm_medium']) {
+        const v = currentParams.get(key)
+        if (v) params.set(key, v)
+      }
       setReserverUrl('/reserver?' + params.toString())
       setConfirmRef(ref)
       setStep(4)
@@ -790,6 +767,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
           </a>
         </div>
+      </div>
+
+      {/* Call float */}
+      <div className={`call-float${showFloating?' show':''}`}>
+        <a href="tel:+33619106356" className="call-btn" aria-label="Appeler Owise">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          Appeler
+        </a>
       </div>
 
       {/* WhatsApp float */}
@@ -949,6 +934,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   if (bcDate)    p.set('date',    bcDate)
                   if (bcTime)    p.set('time',    bcTime)
                   p.set('pax', String(bcPax))
+                  // Reporter gclid/UTM de la page d'atterrissage vers /reserver,
+                  // sinon l'origine publicitaire du clic est perdue avant paiement.
+                  const current = new URLSearchParams(window.location.search)
+                  for (const key of ['gclid','utm_source','utm_campaign','utm_content','utm_medium']) {
+                    const v = current.get(key)
+                    if (v) p.set(key, v)
+                  }
                   router.push('/reserver?' + p.toString())
                 }}>
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
