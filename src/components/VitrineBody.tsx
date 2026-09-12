@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
 
@@ -280,7 +280,8 @@ type TarifRow  = TarifRow2
 type GrilleMin = GrilleCalc
 
 export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string }) {
-  const router = useRouter()
+  const router   = useRouter()
+  const pathname = usePathname()
 
   /* ── state ─────────────────────────────────────────────── */
   const [navScrolled,     setNavScrolled]     = useState(false)
@@ -916,7 +917,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
       {/* NAV */}
       <nav className={`${navScrolled ? 'scrolled' : ''}${heroTitle ? ' nav-with-bar' : ''}`}>
-        <Link href="/" className="nav-logo" style={{textDecoration:'none'}}>
+        <Link
+          href="/"
+          className="nav-logo"
+          style={{textDecoration:'none'}}
+          onClick={e=>{
+            // Sur la home, un Link vers "/" ne fait rien (route déjà active) — le clic
+            // paraît cassé pour qui a scrollé loin. On remonte en haut à la place.
+            if (pathname === '/') { e.preventDefault(); window.scrollTo({top:0, behavior:'smooth'}) }
+          }}
+        >
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
             <rect width="36" height="36" rx="8" fill="#09091A"/>
             <circle cx="18" cy="18" r="10" stroke="rgba(255,255,255,0.88)" strokeWidth="1.8" fill="none"/>
