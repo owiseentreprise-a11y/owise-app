@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
@@ -7,7 +8,7 @@ const BASE = 'https://www.owise.fr'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),
-  title: 'Owise — Transport VTC de Prestige · Paris, IDF & Oise',
+  title: 'Owise — Chauffeur Privé VTC · Paris, IDF & Oise',
   description:
     'Chauffeurs VTC professionnels à Paris, Île-de-France et Oise. Transferts aéroport CDG, Orly, Beauvais. Tarif fixe garanti, disponible 24h/24. Réservation en ligne immédiate.',
   keywords: [
@@ -29,18 +30,18 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: `${BASE}/`,
-    title: 'Owise — Transport VTC de Prestige · Paris & IDF',
+    title: 'Owise — Chauffeur Privé VTC · Paris & IDF',
     description:
       "Chauffeurs professionnels, tarif fixe garanti, disponible 24h/24. Réservez votre VTC à Paris, en IDF et dans l'Oise.",
     locale: 'fr_FR',
     siteName: 'Owise',
-    images: [{ url: `${BASE}/brand_assets/hero-car.jpg`, width: 1672, height: 941, alt: 'Owise — Chauffeur privé Paris, IDF & Oise' }],
+    images: [{ url: `${BASE}/brand_assets/hero-car.webp`, width: 1672, height: 941, alt: 'Owise — Chauffeur privé Paris, IDF & Oise' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Owise — Transport VTC de Prestige',
+    title: 'Owise — Chauffeur Privé VTC',
     description: 'VTC haut de gamme à Paris. Tarif fixe, chauffeurs certifiés, disponible 24h/24.',
-    images: [`${BASE}/brand_assets/hero-car.jpg`],
+    images: [`${BASE}/brand_assets/hero-car.webp`],
   },
   icons: {
     icon: '/brand_assets/favicon.svg',
@@ -265,9 +266,9 @@ export default async function VitrinePage() {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 32 }}>
-            <a href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none', fontWeight: 500 }}>
               Voir nos guides et conseils VTC →
-            </a>
+            </Link>
           </div>
         </div>
       </section>

@@ -37,8 +37,9 @@ const jetbrains = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Owise — Transport VTC de Prestige',
-  description: 'Plateforme de gestion VTC · Paris & Île-de-France',
+  metadataBase: new URL('https://www.owise.fr'),
+  title: 'Owise — Chauffeur privé VTC',
+  description: 'Chauffeur privé VTC à Paris, Île-de-France et dans l\'Oise. Tarif fixe garanti, disponible 24h/24.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -244,6 +244,11 @@ const baseInput: React.CSSProperties = {
   fontSize: 14, color: '#09091A', outline: 'none', fontFamily: 'inherit',
 }
 
+// Bornes du sélecteur de date — calculées une fois au chargement du module,
+// pas à chaque rendu (Date.now() pendant le rendu est une fonction impure).
+const DATE_MIN = new Date().toISOString().slice(0, 10)
+const DATE_MAX = new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10)
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
@@ -708,8 +713,8 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                           boxShadow: datePast ? '0 0 0 3px rgba(217,84,84,.1)' : 'none',
                         }}
                         value={dateOnly}
-                        min={new Date().toISOString().slice(0, 10)}
-                        max={new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10)}
+                        min={DATE_MIN}
+                        max={DATE_MAX}
                         onChange={e => handleDateChange(e.target.value)} />
                     </div>
                   </div>

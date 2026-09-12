@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
@@ -32,7 +33,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { gtagEvent } from '@/lib/ga'
-import { calculerPrix, calculerPrixKm, detectZone, appliquerSupplements, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ZoneCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, detectZone, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -277,7 +278,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [devisOrig,    setDevisOrig]   = useState<BcAddr>({ label: '' })
   const [desisDest,    setDesisDest]   = useState<BcAddr>({ label: '' })
   const [devisPrix,    setDevisPrix]   = useState<number | null>(null)
-  const [devisIsKm,    setDevisIsKm]   = useState(false)
   const [form, setForm] = useState({
     origin:'', dest:'', date:'', time:'09:00', destType:'addr',
     dateRetour:'', heureRetour:'09:00',
@@ -339,12 +339,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   /* ── hauteur bandeau cookies : évite que les boutons flottants (Appeler,
      WhatsApp, Réserver) se retrouvent masqués derrière le bandeau ── */
   useEffect(() => {
-    if (!cookieVisible) { setCookieBannerH(0); return }
+    if (!cookieVisible) return
     const measure = () => setCookieBannerH(cookieBannerRef.current?.offsetHeight || 0)
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
   }, [cookieVisible])
+  // Valeur effective : 0 tant que le bandeau n'est pas visible, même si une
+  // mesure précédente est restée en mémoire.
+  const cookieOffset = cookieVisible ? cookieBannerH : 0
 
   const bcTarifs = tarifsProp
 
@@ -528,7 +531,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const result = await estimerPrixBase(devisOrig, desisDest, pax, form.date, form.time)
       const suppTotal = Object.values(suppls).reduce((a, b) => a + b, 0)
       setDevisPrix(Math.round(result.prix + suppTotal + (etapeOpen ? (paramsProp?.supplement_etape ?? 10) : 0)))
-      setDevisIsKm(result.isKm)
     }, 600)
     return () => { if (devisEstTimer.current) clearTimeout(devisEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -839,7 +841,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Call float */}
-      <div className={`call-float${showFloating?' show':''}`} style={cookieBannerH?{bottom:88+cookieBannerH}:undefined}>
+      <div className={`call-float${showFloating?' show':''}`} style={cookieOffset?{bottom:88+cookieOffset}:undefined}>
         <a href="tel:+33619106356" className="call-btn" aria-label="Appeler Owise">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           Appeler
@@ -847,7 +849,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* WhatsApp float */}
-      <div className={`wa-float${showFloating?' show':''}`} style={cookieBannerH?{bottom:28+cookieBannerH}:undefined}>
+      <div className={`wa-float${showFloating?' show':''}`} style={cookieOffset?{bottom:28+cookieOffset}:undefined}>
         <a href="https://wa.me/33619106356" className="wa-btn" target="_blank" rel="noopener" aria-label="WhatsApp" style={{position:'relative'}}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
           WhatsApp
@@ -856,7 +858,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Floating CTA */}
-      <div className={`float-cta${showFloating?' show':''}`} style={cookieBannerH?{bottom:28+cookieBannerH}:undefined}>
+      <div className={`float-cta${showFloating?' show':''}`} style={cookieOffset?{bottom:28+cookieOffset}:undefined}>
         <a href="#devis" className="float-cta-btn" onClick={e=>{e.preventDefault();scrollTo('#devis')}}>
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
           Réserver maintenant
@@ -882,7 +884,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
-          <a href="/blog" className="nav-link">Blog</a>
+          <Link href="/blog" className="nav-link">Blog</Link>
         </div>
         <div className="nav-r">
           <Link href="/espace-client" className="nav-ghost">Espace client</Link>
@@ -1161,7 +1163,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}${v.dark?' vc-dark':''}`} style={v.badge?{borderColor:'rgba(255,255,255,.22)'}:{}}>
               <div className="vc-visual" style={{background:v.bg}}>
                 {v.badge && <span className="vc-badge" style={{position:'absolute',top:12,right:12,zIndex:5,color:'rgba(255,255,255,.82)',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.14)',backdropFilter:'blur(4px)'}}>{v.badge}</span>}
-                <img src={v.img} alt={v.alt} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center',display:'block'}}/>
+                <Image src={v.img} alt={v.alt} fill sizes="(max-width:900px) 50vw, 25vw" style={{objectFit:'cover',objectPosition:'center'}}/>
               </div>
               <div className="vc-name">{v.name}</div>
               <div className="vc-cap">
