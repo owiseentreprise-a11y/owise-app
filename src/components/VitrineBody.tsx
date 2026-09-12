@@ -33,6 +33,7 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { gtagEvent } from '@/lib/ga'
+import { logFunnel } from '@/lib/funnel'
 import { calculerPrix, calculerPrixKm, detectZone, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
@@ -674,12 +675,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   // Chemin direct : paiement immédiat, sans passer par la demande de rappel.
   function goToReserver() {
+    logFunnel('devis_cta_payer_click', { pax, price: devisPrix })
     router.push(buildReserverUrl())
   }
 
   async function submitDevis() {
+    logFunnel('devis_cta_rappel_click', { pax, price: devisPrix })
     if (!form.nom.trim() || !form.tel.trim() || !form.email.trim()) {
       setSubmitErr('Veuillez renseigner votre nom, téléphone et e-mail.')
+      logFunnel('devis_rappel_validation_error')
       return
     }
     setSubmitErr('')
@@ -708,12 +712,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       fbContact()
       fbLead({ value: price ?? undefined, currency: 'EUR', content_category: 'VTC' })
       gtagEvent('generate_lead', { value: price ?? undefined, currency: 'EUR' })
+      logFunnel('devis_rappel_submitted', { price })
       setReserverUrl(buildReserverUrl())
       setConfirmRef(ref)
       setStep(4)
       setSubmitted(true)
     } catch {
       setSubmitErr('Erreur lors de l\'envoi. Réessayez ou contactez-nous par WhatsApp.')
+      logFunnel('devis_rappel_submit_error')
     } finally {
       setSubmitting(false)
     }
@@ -1836,7 +1842,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </select>
                 </div>
                 <div className="form-nav">
-                  <button className="btn-next" onClick={()=>setStep(2)}>Suivant — Passagers <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                  <button className="btn-next" onClick={()=>{logFunnel('devis_step2_enter', {origin:form.origin, dest:form.dest}); setStep(2)}}>Suivant — Passagers <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                 </div>
               </div>
             )}
@@ -1875,7 +1881,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 </div>
                 <div className="form-nav">
                   <button className="btn-prev" onClick={()=>setStep(1)}>← Retour</button>
-                  <button className="btn-next" onClick={()=>setStep(3)}>Voir l&apos;estimation <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                  <button className="btn-next" onClick={()=>{logFunnel('devis_step3_enter', {pax, price:devisPrix}); setStep(3)}}>Voir l&apos;estimation <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                 </div>
               </div>
             )}

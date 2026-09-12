@@ -8,6 +8,7 @@ import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
 import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
+import { logFunnel } from '@/lib/funnel'
 import ReservationSummary from './ReservationSummary'
 import {
   calculerPrix,
@@ -296,6 +297,13 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
     if (dep) resolve(dep, setDepart)
     if (arr) resolve(arr, setArrivee)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Diagnostic tunnel : arrivée sur /reserver, avec ou sans trajet pré-rempli
+  // depuis le widget devis (voir funnel_events — audit 2026-09-12).
+  useEffect(() => {
+    logFunnel('reserver_page_view', { prefilled: Boolean(searchParams.get('depart') || searchParams.get('arrivee')) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [dateOnly, setDateOnly] = useState(() => searchParams.get('date') || '')
   const [timeOnly, setTimeOnly] = useState(() => searchParams.get('time') || '09:00')
   const date = dateOnly ? `${dateOnly}T${timeOnly}` : ''
@@ -416,26 +424,30 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
   }
 
   function handleStep1() {
-    if (!depart.label.trim())  return setStep1Error('Adresse de départ requise.')
-    if (!arrivee.label.trim()) return setStep1Error('Adresse d\'arrivée requise.')
-    if (!date)                                                                     return setStep1Error('Date et heure requises.')
-    if (isNaN(new Date(date).getTime()))                                           return setStep1Error('Date invalide.')
-    if (new Date(date) < new Date())                                               return setStep1Error('La date de prise en charge doit être dans le futur.')
-    if (new Date(date) > new Date(Date.now() + 730 * 86400000))                   return setStep1Error('Date trop lointaine (max 2 ans).')
+    const fail = (msg: string) => { logFunnel('reserver_step1_error', { reason: msg }); setStep1Error(msg) }
+    if (!depart.label.trim())  return fail('Adresse de départ requise.')
+    if (!arrivee.label.trim()) return fail('Adresse d\'arrivée requise.')
+    if (!date)                                                                     return fail('Date et heure requises.')
+    if (isNaN(new Date(date).getTime()))                                           return fail('Date invalide.')
+    if (new Date(date) < new Date())                                               return fail('La date de prise en charge doit être dans le futur.')
+    if (new Date(date) > new Date(Date.now() + 730 * 86400000))                   return fail('Date trop lointaine (max 2 ans).')
     // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
-    if (!depart.codePostal && !zoneDepart && !depart.lat)    return setStep1Error('Sélectionnez une adresse de départ dans la liste.')
-    if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return setStep1Error('Sélectionnez une adresse d\'arrivée dans la liste.')
-    if (prix === null && !loadingRoute) return setStep1Error('Prix non calculé — vérifiez les adresses.')
+    if (!depart.codePostal && !zoneDepart && !depart.lat)    return fail('Sélectionnez une adresse de départ dans la liste.')
+    if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return fail('Sélectionnez une adresse d\'arrivée dans la liste.')
+    if (prix === null && !loadingRoute) return fail('Prix non calculé — vérifiez les adresses.')
     setStep1Error(null)
+    logFunnel('reserver_step2_view', { prix: prixTotal })
     fbInitCheckout({ value: prixTotal ?? undefined, currency: 'EUR', content_category: 'VTC', num_items: 1 })
     setStep(2)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function handlePayer() {
-    if (!nom.trim() || !prenom.trim())        return setStep2Error('Nom et prénom requis.')
-    if (!email.trim() || !email.includes('@')) return setStep2Error('Email valide requis.')
-    if (prixFinal === null) return setStep2Error('Erreur de tarification.')
+    logFunnel('reserver_payer_click', { prix: prixFinal })
+    const fail = (msg: string) => { logFunnel('reserver_step2_error', { reason: msg }); setStep2Error(msg) }
+    if (!nom.trim() || !prenom.trim())        return fail('Nom et prénom requis.')
+    if (!email.trim() || !email.includes('@')) return fail('Email valide requis.')
+    if (prixFinal === null) return fail('Erreur de tarification.')
     setStep2Error(null)
     fbLead({ value: prixFinal, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
     let adsConsent: 'accepted' | 'refused' | 'unknown' = 'unknown'
@@ -464,8 +476,13 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         gclid:           gclid || undefined,
         ads_consent:     adsConsent,
       })
-      if (result?.error) setStep2Error(`Erreur de paiement : ${result.error}`)
-      else if (result?.checkoutUrl) window.location.href = result.checkoutUrl
+      if (result?.error) {
+        logFunnel('reserver_checkout_error', { error: result.error })
+        setStep2Error(`Erreur de paiement : ${result.error}`)
+      } else if (result?.checkoutUrl) {
+        logFunnel('reserver_checkout_created', { prix: prixFinal })
+        window.location.href = result.checkoutUrl
+      }
     })
   }
 
