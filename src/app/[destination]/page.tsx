@@ -1080,7 +1080,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '5',
-      reviewCount: '4',
+      reviewCount: '5',
       bestRating: '5',
       worstRating: '1',
     },
