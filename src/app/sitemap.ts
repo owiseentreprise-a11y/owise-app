@@ -7,6 +7,7 @@ const DESTINATIONS = [
   'vtc-aeroport-cdg',
   'vtc-aeroport-orly',
   'vtc-creil',
+  'vtc-saint-maximin',
   'vtc-compiegne',
   'vtc-senlis',
   'vtc-gouvieux',
