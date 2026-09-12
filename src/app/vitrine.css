@@ -176,27 +176,27 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .service-card{background:var(--surface);border-radius:18px;padding:22px 20px 20px 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:160px;overflow:hidden;cursor:pointer;transition:box-shadow .22s,transform .18s}
 .service-card:nth-child(5),.service-card:nth-child(6){grid-column:span 2}
 .service-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(-3px)}
-.sc-dark{background:rgba(29,29,43,0.82);backdrop-filter:blur(12px)}
-.sc-teal{background:rgba(116,192,200,0.78);backdrop-filter:blur(12px)}
-.sc-blue{background:rgba(91,143,212,0.78);backdrop-filter:blur(12px)}
-.sc-indigo{background:rgba(123,130,214,0.78);backdrop-filter:blur(12px)}
-.sc-navy{background:rgba(30,58,95,0.84);backdrop-filter:blur(12px)}
-.sc-gold{background:rgba(200,146,42,0.80);backdrop-filter:blur(12px)}
+/* Palette resserrée à nuit + or (au lieu des 6 teintes teal/bleu/indigo/marine
+   d'origine) — cohérent avec le reste de la charte. */
+.sc-dark{background:linear-gradient(160deg,var(--elevated,#181832),var(--surface,#111128));backdrop-filter:blur(12px)}
+.sc-gold{background:linear-gradient(160deg,#C9A84C,#B08A32);backdrop-filter:blur(12px)}
 .sc-left{flex:1;display:flex;flex-direction:column;min-height:100px}
 .sc-title{font-size:17px;font-weight:700;color:#0A0A0A;margin-bottom:6px;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2}
 .sc-desc{font-size:12.5px;color:#6B6B6B;line-height:1.55;flex:1}
 .sc-btn{display:inline-flex;align-items:center;margin-top:12px;padding:7px 14px;border:1px solid rgba(0,0,0,.22);border-radius:7px;font-size:12.5px;font-weight:500;color:#0A0A0A;background:transparent;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,border-color .15s;width:fit-content;letter-spacing:.01em}
 .sc-btn:hover{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.35)}
-.sc-dark .sc-title,.sc-blue .sc-title,.sc-indigo .sc-title,.sc-navy .sc-title{color:#FFFFFF}
-.sc-dark .sc-desc,.sc-blue .sc-desc,.sc-indigo .sc-desc,.sc-navy .sc-desc{color:rgba(255,255,255,.72)}
-.sc-dark .sc-btn,.sc-blue .sc-btn,.sc-indigo .sc-btn,.sc-navy .sc-btn{border-color:rgba(255,255,255,.45);color:#FFFFFF}
-.sc-dark .sc-btn:hover,.sc-blue .sc-btn:hover,.sc-indigo .sc-btn:hover,.sc-navy .sc-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.65)}
+.sc-dark .sc-title{color:#FFFFFF}
+.sc-dark .sc-desc{color:rgba(255,255,255,.72)}
+.sc-dark .sc-btn{border-color:rgba(255,255,255,.45);color:#FFFFFF}
+.sc-dark .sc-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.65)}
 .sc-gold .sc-title{color:#FFFFFF}
 .sc-gold .sc-desc{color:rgba(255,255,255,.78)}
 .sc-gold .sc-btn{border-color:rgba(255,255,255,.45);color:#FFFFFF}
 .sc-gold .sc-btn:hover{background:rgba(255,255,255,.15)}
-.sc-img{width:100px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:transform .38s cubic-bezier(.22,1,.36,1)}
-.service-card:hover .sc-img{transform:translateY(-12px) scale(1.1)}
+.sc-img{width:64px;height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(255,255,255,.08);transition:transform .38s cubic-bezier(.22,1,.36,1)}
+.sc-dark .sc-img{color:#C9A84C}
+.sc-gold .sc-img{color:#FFFFFF;background:rgba(255,255,255,.16)}
+.service-card:hover .sc-img{transform:translateY(-6px) scale(1.06)}
 .sc-btn-arrow{display:inline-block;transition:transform .2s cubic-bezier(.22,1,.36,1);margin-left:5px;opacity:.7}
 .sc-btn:hover .sc-btn-arrow{transform:translateX(5px);opacity:1}
 @media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr)}.service-card:nth-child(5),.service-card:nth-child(6){grid-column:span 1}}
@@ -674,7 +674,13 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 
 /* RESPONSIVE */
 @media(max-width:1100px){.hero-inner{grid-template-columns:1fr}.hero-right{max-width:520px}.vehicles-grid{grid-template-columns:repeat(2,1fr)}.stats-inner{grid-template-columns:repeat(2,1fr);gap:32px}.stat-item:nth-child(2)::after{display:none}}
-@media(max-width:768px){nav{padding:0 20px}.nav-links{display:none}.nav-cta{display:none !important}.nav-r{display:flex !important}.nav-hamburger{display:flex}.hero{padding:100px 20px 60px}.hero.hero-with-bar{padding-top:136px}.hero-title{font-size:clamp(44px,10vw,70px)}.vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}.process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(0,0,0,.08);padding-bottom:36px;margin-bottom:36px}.zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}.ent-actions{align-items:flex-start}.footer-inner{grid-template-columns:1fr 1fr;gap:28px}.bg2{grid-template-columns:1fr}.stats-section{padding:60px 20px}.stats-inner{grid-template-columns:1fr 1fr;gap:16px}.stat-item{padding:16px 8px}.stat-item::after{display:none}.stat-num{font-size:46px}.devis-body{padding:20px 20px}.vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}.marquee-section{height:40px}.services-section{padding:50px 20px 60px}}
+/* Bascule vers le menu hamburger dès la largeur tablette (iPad ≈ 820px) :
+   le menu complet n'a plus la place de tenir sur une ligne en dessous
+   de ce seuil ("Comment ça marche" repassait à la ligne et chevauchait
+   "Zones"). Isolé de l'ancien seuil 768px, qui reste pour le reste du
+   layout (grilles, hero, footer…). */
+@media(max-width:900px){.nav-links{display:none}.nav-cta{display:none !important}.nav-r{display:flex !important}.nav-hamburger{display:flex}}
+@media(max-width:768px){nav{padding:0 20px}.hero{padding:100px 20px 60px}.hero.hero-with-bar{padding-top:136px}.hero-title{font-size:clamp(44px,10vw,70px)}.vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}.process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(0,0,0,.08);padding-bottom:36px;margin-bottom:36px}.zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}.ent-actions{align-items:flex-start}.footer-inner{grid-template-columns:1fr 1fr;gap:28px}.bg2{grid-template-columns:1fr}.stats-section{padding:60px 20px}.stats-inner{grid-template-columns:1fr 1fr;gap:16px}.stat-item{padding:16px 8px}.stat-item::after{display:none}.stat-num{font-size:46px}.devis-body{padding:20px 20px}.vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}.marquee-section{height:40px}.services-section{padding:50px 20px 60px}}
 @media(max-width:640px){.cookie-banner{padding:18px 20px;flex-direction:column;align-items:flex-start}.cookie-modal{padding:26px 20px 36px}}
 @media(max-width:480px){.footer-inner{grid-template-columns:1fr}.hero-trust{gap:0;overflow:hidden}.trust-item{padding:0 10px}.hero-trust>span:nth-child(n+3){display:none !important}.hero{overflow-x:hidden}.hero-sub{padding-right:0}}
 

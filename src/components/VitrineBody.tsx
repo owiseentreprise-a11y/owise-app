@@ -58,14 +58,29 @@ const FAQS = [
 ]
 
 /* ── services ──────────────────────────────────────────── */
+// Palette resserrée à nuit + or (au lieu de 6 teintes hétérogènes) : 5 cartes
+// nuit identiques + la carte événements en or, seule mise en avant.
 const SERVICES = [
-  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-immediat.png',   alt:'Course immédiate' },
-  { cls:'sc-teal',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.',        cta:'Planifier',         href:'/reserver', img:'/brand_assets/service-avance.png',     alt:'Réserver à l\'avance' },
-  { cls:'sc-blue',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.',             cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-aeroport.png',   alt:'Transfert aéroport' },
-  { cls:'sc-indigo', title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.',          cta:'Réserver',         href:'/reserver', img:'/brand_assets/service-groupes.png',    alt:'Groupes et familles' },
-  { cls:'sc-navy',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.',           cta:'En savoir plus',   href:'#contact',  img:'/brand_assets/service-entreprise.png', alt:'Comptes entreprise' },
-  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.',   cta:'Demander un devis',href:'#devis',    img:'/brand_assets/service-evenements.png', alt:'Événements et soirées' },
+  { cls:'sc-dark',   title:'Course immédiate',     desc:'Réservez un chauffeur en quelques secondes. Prise en charge rapide, partout à Paris et en IDF.', cta:'Réserver',         href:'/reserver', icon:'bolt',      alt:'Course immédiate' },
+  { cls:'sc-dark',   title:'Réserver à l\'avance', desc:'Planifiez votre trajet des jours à l\'avance. Votre chauffeur sera là, à l\'heure exacte.',        cta:'Planifier',         href:'/reserver', icon:'calendar',  alt:'Réserver à l\'avance' },
+  { cls:'sc-dark',   title:'Transfert aéroport',   desc:'CDG, Orly, Beauvais — suivi de vol en temps réel, tarif fixe garanti, aucune attente.',             cta:'Réserver',         href:'/reserver', icon:'plane',     alt:'Transfert aéroport' },
+  { cls:'sc-dark',   title:'Groupes & familles',   desc:'Van 7 ou 8 places, grand coffre. Idéal pour les transferts en famille ou entre collègues.',          cta:'Réserver',         href:'/reserver', icon:'group',     alt:'Groupes et familles' },
+  { cls:'sc-dark',   title:'Comptes entreprise',   desc:'Facturation mensuelle centralisée, portail dédié, gestionnaire de compte. Zéro friction.',           cta:'En savoir plus',   href:'#contact',  icon:'briefcase', alt:'Comptes entreprise' },
+  { cls:'sc-gold',   title:'Événements & soirées', desc:'Mariages, galas, soirées privées. Un chauffeur élégant, disponible le temps de votre événement.',   cta:'Demander un devis',href:'#devis',    icon:'sparkle',   alt:'Événements et soirées' },
 ]
+
+function ServiceIcon({ name }: { name: string }) {
+  const common = { width: 40, height: 40, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  switch (name) {
+    case 'bolt':      return <svg {...common}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+    case 'calendar':  return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/></svg>
+    case 'plane':     return <svg {...common}><path d="M12 2v20M12 2l-4 4v5l-6 3.5V17l6-1.5V20l-3 2v1l5-1 5 1v-1l-3-2v-3.5l6 1.5v-2.5L16 11V6l-4-4z"/></svg>
+    case 'group':     return <svg {...common}><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.4"/><path d="M3.5 20c.6-3.6 3-5.5 5.5-5.5s4.9 1.9 5.5 5.5M14.5 20c.4-2.6 1.8-4.3 3.5-4.7"/></svg>
+    case 'briefcase': return <svg {...common}><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18"/></svg>
+    case 'sparkle':   return <svg {...common}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+    default: return null
+  }
+}
 
 /* ── vehicles display ──────────────────────────────────── */
 const VEH_DISPLAY = [
@@ -1041,8 +1056,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <div className="sc-desc">{s.desc}</div>
                   <button className="sc-btn" onClick={()=>s.href.startsWith('/')?router.push(s.href):scrollTo(s.href)}>{s.cta} <span className="sc-btn-arrow">→</span></button>
                 </div>
-                <div className="sc-img">
-                  <img src={s.img} alt={s.alt} style={{maxWidth:130,maxHeight:120,objectFit:'contain',display:'block'}}/>
+                <div className="sc-img" aria-hidden="true">
+                  <ServiceIcon name={s.icon} />
                 </div>
               </div>
             ))}
