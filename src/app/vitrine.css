@@ -305,14 +305,14 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 /* TESTIMONIALS */
 .testimonials-section{padding:100px 52px;background:var(--surface);border-top:1px solid rgba(0,0,0,.07)}
 .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;margin:60px auto 0}
-.testimonial-card{background:#FFFFFF;border:1px solid rgba(0,0,0,.09);border-radius:16px;padding:28px 26px;transition:border-color .2s,transform .2s}
-.testimonial-card:hover{border-color:rgba(0,0,0,.2);transform:translateY(-4px)}
-.t-quote-mark{font-family:'Plus Jakarta Sans',sans-serif;font-size:80px;line-height:.55;color:rgba(0,0,0,.1);font-weight:300;display:block;margin-bottom:14px}
+.testimonial-card{background:#FFFFFF;border:1px solid rgba(201,168,76,.14);border-top:2px solid rgba(201,168,76,.35);border-radius:16px;padding:28px 26px;transition:border-color .2s,transform .2s}
+.testimonial-card:hover{border-color:rgba(201,168,76,.32);transform:translateY(-4px)}
+.t-quote-mark{font-family:'Cormorant Garamond',serif;font-size:88px;line-height:.4;color:rgba(201,168,76,.28);font-weight:500;font-style:italic;display:block;margin-bottom:10px}
 .t-stars{display:flex;gap:3px;margin-bottom:14px}
-.t-star{color:#F59E0B;font-size:13px}
+.t-star{color:#C9A84C;font-size:13px;filter:drop-shadow(0 1px 2px rgba(201,168,76,.35))}
 .t-text{font-size:14.5px;color:#6B6B6B;line-height:1.85;font-style:italic;margin-bottom:22px}
 .t-author{display:flex;align-items:center;gap:12px}
-.t-avatar{width:62px;height:62px;border-radius:50%;flex-shrink:0;overflow:hidden;box-shadow:0 0 0 2px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.1);transition:transform .2s,box-shadow .2s}
+.t-avatar{width:62px;height:62px;border-radius:50%;flex-shrink:0;overflow:hidden;box-shadow:0 0 0 2px rgba(201,168,76,.22),0 4px 14px rgba(201,168,76,.12);transition:transform .2s,box-shadow .2s}
 .t-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .testimonial-card:hover .t-avatar{box-shadow:0 0 0 2px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.15);transform:scale(1.06)}
 .t-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
