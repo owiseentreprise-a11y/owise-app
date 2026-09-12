@@ -75,12 +75,32 @@ const SERVICES = [
 function ServiceIcon({ name }: { name: string }) {
   const common = { width: 40, height: 40, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   switch (name) {
-    case 'bolt':      return <svg {...common}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
-    case 'calendar':  return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/></svg>
-    case 'plane':     return <svg {...common}><path d="M12 2v20M12 2l-4 4v5l-6 3.5V17l6-1.5V20l-3 2v1l5-1 5 1v-1l-3-2v-3.5l6 1.5v-2.5L16 11V6l-4-4z"/></svg>
-    case 'group':     return <svg {...common}><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.4"/><path d="M3.5 20c.6-3.6 3-5.5 5.5-5.5s4.9 1.9 5.5 5.5M14.5 20c.4-2.6 1.8-4.3 3.5-4.7"/></svg>
-    case 'briefcase': return <svg {...common}><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18"/></svg>
-    case 'sparkle':   return <svg {...common}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+    case 'bolt':      return <svg {...common}><path className="icon-anim icon-bolt" d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+    case 'calendar':  return (
+      <svg {...common}>
+        <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
+        <path className="icon-anim icon-check" d="M8.5 14.5l2 2 4-4"/>
+      </svg>
+    )
+    case 'plane':     return <svg {...common}><path className="icon-anim icon-plane" d="M12 2v20M12 2l-4 4v5l-6 3.5V17l6-1.5V20l-3 2v1l5-1 5 1v-1l-3-2v-3.5l6 1.5v-2.5L16 11V6l-4-4z"/></svg>
+    case 'group':     return (
+      <svg {...common}>
+        <circle className="icon-anim icon-group-a" cx="9" cy="8" r="3.2"/><circle className="icon-anim icon-group-b" cx="17" cy="9.5" r="2.4"/>
+        <path d="M3.5 20c.6-3.6 3-5.5 5.5-5.5s4.9 1.9 5.5 5.5M14.5 20c.4-2.6 1.8-4.3 3.5-4.7"/>
+      </svg>
+    )
+    case 'briefcase': return (
+      <svg {...common}>
+        <rect x="3" y="8" width="18" height="12" rx="2"/>
+        <path className="icon-anim icon-handle" d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18"/>
+      </svg>
+    )
+    case 'sparkle':   return (
+      <svg {...common}>
+        <path className="icon-anim icon-sparkle-big" d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>
+        <path className="icon-anim icon-sparkle-small" d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/>
+      </svg>
+    )
     default: return null
   }
 }
