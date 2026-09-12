@@ -627,6 +627,34 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime)
   }
 
+  // Construit l'URL /reserver avec toutes les infos déjà saisies, pour que
+  // le parcours direct (paiement) et le parcours rappel partagent la même
+  // logique de pré-remplissage — pas de seconde implémentation qui diverge.
+  function buildReserverUrl() {
+    const params = new URLSearchParams()
+    if (form.origin)  params.set('depart',  form.origin)
+    if (form.dest)    params.set('arrivee', form.dest)
+    if (form.date)    params.set('date',    form.date)
+    if (form.time)    params.set('time',    form.time)
+    params.set('pax',   String(pax))
+    if (form.nom)     params.set('nom',     form.nom)
+    if (form.tel)     params.set('tel',     form.tel)
+    if (form.email)   params.set('email',   form.email)
+    // Reporter gclid/UTM de la page d'atterrissage vers /reserver,
+    // sinon l'origine publicitaire du clic est perdue avant paiement.
+    const currentParams = new URLSearchParams(window.location.search)
+    for (const key of ['gclid','utm_source','utm_campaign','utm_content','utm_medium']) {
+      const v = currentParams.get(key)
+      if (v) params.set(key, v)
+    }
+    return '/reserver?' + params.toString()
+  }
+
+  // Chemin direct : paiement immédiat, sans passer par la demande de rappel.
+  function goToReserver() {
+    router.push(buildReserverUrl())
+  }
+
   async function submitDevis() {
     if (!form.nom.trim() || !form.tel.trim() || !form.email.trim()) {
       setSubmitErr('Veuillez renseigner votre nom, téléphone et e-mail.')
@@ -658,24 +686,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       fbContact()
       fbLead({ value: price ?? undefined, currency: 'EUR', content_category: 'VTC' })
       gtagEvent('generate_lead', { value: price ?? undefined, currency: 'EUR' })
-      // Préparer l'URL /reserver avec toutes les infos pré-remplies
-      const params = new URLSearchParams()
-      if (form.origin)  params.set('depart',  form.origin)
-      if (form.dest)    params.set('arrivee', form.dest)
-      if (form.date)    params.set('date',    form.date)
-      if (form.time)    params.set('time',    form.time)
-      params.set('pax',   String(pax))
-      if (form.nom)     params.set('nom',     form.nom)
-      if (form.tel)     params.set('tel',     form.tel)
-      if (form.email)   params.set('email',   form.email)
-      // Reporter gclid/UTM de la page d'atterrissage vers /reserver,
-      // sinon l'origine publicitaire du clic est perdue avant paiement.
-      const currentParams = new URLSearchParams(window.location.search)
-      for (const key of ['gclid','utm_source','utm_campaign','utm_content','utm_medium']) {
-        const v = currentParams.get(key)
-        if (v) params.set(key, v)
-      }
-      setReserverUrl('/reserver?' + params.toString())
+      setReserverUrl(buildReserverUrl())
       setConfirmRef(ref)
       setStep(4)
       setSubmitted(true)
@@ -1858,7 +1869,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                 </div>
                 <p style={{fontSize:11,color:'var(--t2)',textAlign:'center',marginBottom:20,lineHeight:1.6}}>
-                  Estimation indicative — Prix fixe confirmé à la réservation. Aucune surprise en fin de course.
+                  Prix fixe garanti, confirmation immédiate. Coordonnées utiles pour votre réservation,
+                  ou pour être rappelé(e) si vous préférez en parler avant.
                 </p>
                 <div className="form-grid" style={{marginBottom:20}}>
                   <div className="field"><label>Prénom &amp; Nom</label><input type="text" placeholder="Jean Dupont" value={form.nom} onChange={e=>setForm(f=>({...f,nom:e.target.value}))}/></div>
@@ -1869,11 +1881,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 {submitErr && (
                   <div style={{display:'block',background:'rgba(217,80,80,.08)',border:'1px solid rgba(217,80,80,.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#D95454',marginBottom:12,textAlign:'center'}}>{submitErr}</div>
                 )}
+                <button className="btn-next" onClick={goToReserver} style={{width:'100%',padding:'15px 36px',fontSize:14.5,marginBottom:14}}>
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  Réserver et payer maintenant →
+                </button>
                 <div className="form-nav">
                   <button className="btn-prev" onClick={()=>setStep(2)}>← Retour</button>
-                  <button className="btn-next" onClick={submitDevis} disabled={submitting} style={{padding:'14px 36px',fontSize:14,opacity:submitting?.6:1}}>
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    {submitting ? 'Envoi…' : 'Envoyer ma demande'}
+                  <button onClick={submitDevis} disabled={submitting} style={{background:'none',border:'none',color:'var(--t2)',fontSize:12.5,textDecoration:'underline',cursor:'pointer',fontFamily:'inherit',opacity:submitting?.6:1}}>
+                    {submitting ? 'Envoi…' : 'Plutôt être rappelé(e) sous 30 min →'}
                   </button>
                 </div>
               </div>
