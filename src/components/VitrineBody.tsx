@@ -1351,7 +1351,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </div>
           ))}
           <a
-            href="https://www.google.com/maps/search/?api=1&query=Owise+VTC+chauffeur+priv%C3%A9"
+            href="https://g.page/r/CY0-ORyXWwpXEAE"
             target="_blank" rel="noopener"
             className="testimonial-card reveal rd2"
             style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:12,textDecoration:'none',cursor:'pointer'}}

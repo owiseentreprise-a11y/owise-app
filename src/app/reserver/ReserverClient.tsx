@@ -607,7 +607,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                 <span style={{ fontSize: 13, color: '#C9A84C', letterSpacing: 1 }}>★★★★★</span>
                 <span style={{ fontSize: 12, color: '#9B9B9B' }}>
                   <span style={{ color: '#09091A', fontWeight: 600 }}>5 / 5</span>
-                  {' · '}4 avis Google vérifiés
+                  {' · '}5 avis Google vérifiés
                 </span>
               </div>
             </div>
