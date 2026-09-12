@@ -114,10 +114,10 @@ function TrustIcon({ name }: { name: string }) {
 
 /* ── vehicles display ──────────────────────────────────── */
 const VEH_DISPLAY = [
-  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Berline VTC Owise' },
-  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Berline Premium VTC Owise' },
-  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Van 7 places VTC Owise' },
-  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Grand Van 8 places VTC Owise' },
+  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline-real.webp',          alt:'Berline noire élégante, illustration catégorie Berline Owise' },
+  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium-real.webp', alt:'Berline premium noire de type Mercedes Classe E, illustration catégorie Berline Premium Owise' },
+  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7-real.webp',             alt:'Van noir premium, illustration catégorie Van 7 places Owise' },
+  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van-real.webp',        alt:'Grand van noir premium, illustration catégorie Grand Van 8 places Owise' },
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
