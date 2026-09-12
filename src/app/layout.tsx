@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GAPageView />
         <CookieBanner />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
