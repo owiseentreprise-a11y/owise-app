@@ -110,6 +110,8 @@ export default function GlobalParamsForm({ p }: { p: any }) {
   const [panneauPrix,  setPanneauPrix]  = useState(Number(p?.supplement_panneau_prix ?? 8))
   const [animauxActif, setAnimauxActif] = useState(String(p?.supplement_animaux_actif ?? true))
   const [animauxPrix,  setAnimauxPrix]  = useState(Number(p?.supplement_animaux_prix ?? 15))
+  const [siegeActif, setSiegeActif] = useState(String(p?.supplement_siege_enfant_actif ?? true))
+  const [siegePrix,  setSiegePrix]  = useState(Number(p?.supplement_siege_enfant_prix ?? 10))
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -253,6 +255,22 @@ export default function GlobalParamsForm({ p }: { p: any }) {
           value={p?.supplement_animaux_prix ?? 15}
           isActive={animauxActif === 'true'}
           onChange={v => setAnimauxPrix(Number(v))}
+        />
+        <Row
+          label="Siège enfant"
+          desc={siegeActif === 'true' ? `Proposée aux visiteurs, +${siegePrix}€.` : 'Masquée — n\'apparaît plus dans le formulaire.'}
+          name="supplement_siege_enfant_actif"
+          value={siegeActif}
+          isBoolean
+          onChange={v => setSiegeActif(v)}
+        />
+        <Row
+          label="Prix — Siège enfant"
+          desc="Montant ajouté au devis si le visiteur sélectionne cette option."
+          name="supplement_siege_enfant_prix"
+          value={p?.supplement_siege_enfant_prix ?? 10}
+          isActive={siegeActif === 'true'}
+          onChange={v => setSiegePrix(Number(v))}
         />
       </Section>
 

@@ -1843,6 +1843,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     { key:'bagages', actif: paramsProp?.supplement_bagages_actif ?? true, prix: paramsProp?.supplement_bagages_prix ?? 10, label:'🧳 Bagages volumineux (ski, golf…)' },
                     { key:'panneau', actif: paramsProp?.supplement_panneau_actif ?? true, prix: paramsProp?.supplement_panneau_prix ?? 8,  label:'📋 Panneau nominatif à l\'arrivée' },
                     { key:'animaux', actif: paramsProp?.supplement_animaux_actif ?? true, prix: paramsProp?.supplement_animaux_prix ?? 15, label:'🐾 Animal de compagnie (cage requise)' },
+                    { key:'siege_enfant', actif: paramsProp?.supplement_siege_enfant_actif ?? true, prix: paramsProp?.supplement_siege_enfant_prix ?? 10, label:'👶 Siège enfant' },
                   ].filter(o => o.actif).map(({key:k, prix:p, label})=>(
                     <div key={k} className={`supp-row${suppls[k]?' on':''}`} onClick={()=>setSuppls(s=>{const n={...s};if(n[k]) delete n[k]; else n[k]=p; return n})}>
                       <div className="supp-lbl"><div className="supp-check"/>{label}</div>

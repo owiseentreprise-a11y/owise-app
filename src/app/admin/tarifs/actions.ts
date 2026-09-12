@@ -60,6 +60,8 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
     supplement_panneau_prix:  Number(formData.get('supplement_panneau_prix')),
     supplement_animaux_actif: formData.get('supplement_animaux_actif') === 'true',
     supplement_animaux_prix:  Number(formData.get('supplement_animaux_prix')),
+    supplement_siege_enfant_actif: formData.get('supplement_siege_enfant_actif') === 'true',
+    supplement_siege_enfant_prix:  Number(formData.get('supplement_siege_enfant_prix')),
   }).eq('id', true)
   if (error) return { error: error.message }
   revalidatePath('/admin/tarifs')
