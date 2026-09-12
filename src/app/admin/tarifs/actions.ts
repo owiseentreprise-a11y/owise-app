@@ -54,6 +54,12 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
     coef_berline:           Number(formData.get('coef_berline')),
     coef_berline_premium:   Number(formData.get('coef_berline_premium')),
     coef_van:               Number(formData.get('coef_van')),
+    supplement_bagages_actif: formData.get('supplement_bagages_actif') === 'true',
+    supplement_bagages_prix:  Number(formData.get('supplement_bagages_prix')),
+    supplement_panneau_actif: formData.get('supplement_panneau_actif') === 'true',
+    supplement_panneau_prix:  Number(formData.get('supplement_panneau_prix')),
+    supplement_animaux_actif: formData.get('supplement_animaux_actif') === 'true',
+    supplement_animaux_prix:  Number(formData.get('supplement_animaux_prix')),
   }).eq('id', true)
   if (error) return { error: error.message }
   revalidatePath('/admin/tarifs')

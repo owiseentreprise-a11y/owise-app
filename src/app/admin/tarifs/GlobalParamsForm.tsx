@@ -104,6 +104,12 @@ export default function GlobalParamsForm({ p }: { p: any }) {
   const [coefB, setCoefB]           = useState(Number(p?.coef_berline ?? 1))
   const [coefBP, setCoefBP]         = useState(Number(p?.coef_berline_premium ?? 1.25))
   const [coefV, setCoefV]           = useState(Number(p?.coef_van ?? 1.5))
+  const [bagagesActif, setBagagesActif] = useState(String(p?.supplement_bagages_actif ?? true))
+  const [bagagesPrix,  setBagagesPrix]  = useState(Number(p?.supplement_bagages_prix ?? 10))
+  const [panneauActif, setPanneauActif] = useState(String(p?.supplement_panneau_actif ?? true))
+  const [panneauPrix,  setPanneauPrix]  = useState(Number(p?.supplement_panneau_prix ?? 8))
+  const [animauxActif, setAnimauxActif] = useState(String(p?.supplement_animaux_actif ?? true))
+  const [animauxPrix,  setAnimauxPrix]  = useState(Number(p?.supplement_animaux_prix ?? 15))
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -193,6 +199,61 @@ export default function GlobalParamsForm({ p }: { p: any }) {
             Tous les suppléments sont à 0 — aucune majoration horaire appliquée.
           </div>
         )}
+      </Section>
+
+      {/* Options du formulaire de devis */}
+      <Section title="Options supplémentaires (formulaire de devis du site)">
+        <div style={{ fontSize: 11, color: 'var(--t2)', marginBottom: 4, padding: '8px 12px', background: 'rgba(201,168,76,.04)', borderRadius: 8 }}>
+          Options proposées aux visiteurs à l&apos;étape 2 du formulaire de devis (page d&apos;accueil et pages destinations). Désactiver une option la retire immédiatement du site.
+        </div>
+        <Row
+          label="Bagages volumineux (ski, golf…)"
+          desc={bagagesActif === 'true' ? `Proposée aux visiteurs, +${bagagesPrix}€.` : 'Masquée — n\'apparaît plus dans le formulaire.'}
+          name="supplement_bagages_actif"
+          value={bagagesActif}
+          isBoolean
+          onChange={v => setBagagesActif(v)}
+        />
+        <Row
+          label="Prix — Bagages volumineux"
+          desc="Montant ajouté au devis si le visiteur sélectionne cette option."
+          name="supplement_bagages_prix"
+          value={p?.supplement_bagages_prix ?? 10}
+          isActive={bagagesActif === 'true'}
+          onChange={v => setBagagesPrix(Number(v))}
+        />
+        <Row
+          label="Panneau nominatif à l'arrivée"
+          desc={panneauActif === 'true' ? `Proposée aux visiteurs, +${panneauPrix}€.` : 'Masquée — n\'apparaît plus dans le formulaire.'}
+          name="supplement_panneau_actif"
+          value={panneauActif}
+          isBoolean
+          onChange={v => setPanneauActif(v)}
+        />
+        <Row
+          label="Prix — Panneau nominatif"
+          desc="Montant ajouté au devis si le visiteur sélectionne cette option."
+          name="supplement_panneau_prix"
+          value={p?.supplement_panneau_prix ?? 8}
+          isActive={panneauActif === 'true'}
+          onChange={v => setPanneauPrix(Number(v))}
+        />
+        <Row
+          label="Animal de compagnie (cage requise)"
+          desc={animauxActif === 'true' ? `Proposée aux visiteurs, +${animauxPrix}€.` : 'Masquée — n\'apparaît plus dans le formulaire.'}
+          name="supplement_animaux_actif"
+          value={animauxActif}
+          isBoolean
+          onChange={v => setAnimauxActif(v)}
+        />
+        <Row
+          label="Prix — Animal de compagnie"
+          desc="Montant ajouté au devis si le visiteur sélectionne cette option."
+          name="supplement_animaux_prix"
+          value={p?.supplement_animaux_prix ?? 15}
+          isActive={animauxActif === 'true'}
+          onChange={v => setAnimauxPrix(Number(v))}
+        />
       </Section>
 
       {/* Coefficients véhicules */}

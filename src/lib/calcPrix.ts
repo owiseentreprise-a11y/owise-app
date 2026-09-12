@@ -16,6 +16,15 @@ export type ParamsCalc = {
   supplement_etape?: number | null
   tarif_pec_actif?: boolean | null
   tarif_frais_pec?: number | null
+  // Options du formulaire de devis (bagages/panneau/animaux) — non utilisées
+  // par les fonctions de calcul de ce fichier, juste transportées jusqu'à
+  // VitrineBody pour piloter l'affichage des cases à cocher.
+  supplement_bagages_actif?: boolean | null
+  supplement_bagages_prix?: number | null
+  supplement_panneau_actif?: boolean | null
+  supplement_panneau_prix?: number | null
+  supplement_animaux_actif?: boolean | null
+  supplement_animaux_prix?: number | null
 }
 
 // Valeurs par défaut si /admin/tarifs n'a jamais été configuré
