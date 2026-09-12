@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { Fragment, useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
@@ -48,6 +48,8 @@ const FAQS = [
   { q:'Comment réserver un VTC Owise ?', a:'Réservez directement via notre formulaire en ligne, disponible 24h/24. Renseignez votre trajet, vos passagers et l\'horaire souhaité, et recevez une confirmation immédiate par e-mail et SMS. Vous pouvez aussi nous joindre par téléphone ou WhatsApp pour une réservation assistée.' },
   { q:'Les tarifs sont-ils fixes et garantis ?', a:'Oui. Chaque devis est calculé à l\'avance et garanti — aucune majoration en cours de route, aucune surprise à l\'arrivée. Le tarif communiqué lors de la réservation est celui que vous payez, quelle que soit la durée du trajet ou les conditions de circulation.' },
   { q:'Quelles sont vos conditions d\'annulation ?', a:'L\'annulation est gratuite jusqu\'à 2 heures avant le départ prévu. Au-delà, des frais d\'annulation peuvent s\'appliquer. En cas d\'annulation tardive répétée, une empreinte bancaire peut être demandée à la réservation suivante.' },
+  { q:'Comment sont sélectionnés vos chauffeurs ?', a:'Tous nos chauffeurs sont titulaires de la carte professionnelle VTC, obligatoire en France, et justifient d\'un casier judiciaire vierge. Ils sont sélectionnés sur leur expérience de conduite et leur sens du service avant de rejoindre notre flotte, et nos véhicules disposent tous d\'une assurance transport de personnes en cours de validité.' },
+  { q:'Quels moyens de paiement acceptez-vous ?', a:'Carte bancaire, Apple Pay et Google Pay, via un paiement 100% sécurisé (Stripe, chiffrement SSL/TLS). Aucune donnée bancaire n\'est stockée sur nos serveurs. Les comptes entreprise peuvent également être facturés mensuellement sur facture unique.' },
   { q:'Quels aéroports desservez-vous ?', a:'Nous assurons les transferts vers et depuis Paris-CDG (Roissy), Paris-Orly, et Beauvais-Tillé. Nous intervenons également sur les héliports parisiens et les aéroports secondaires d\'Île-de-France sur demande. Pour CDG, nous suivons les retards de vol en temps réel.' },
   { q:'Que se passe-t-il si mon vol est retardé ?', a:'Nous surveillons les horaires de vol en temps réel. Si votre vol est retardé, votre chauffeur ajuste son arrivée en conséquence, sans frais supplémentaires pour des retards raisonnables. En cas de délai important, notre équipe vous contacte directement pour adapter la prise en charge.' },
   { q:'Puis-je réserver à l\'avance ?', a:'Absolument — et c\'est même recommandé pour les transferts aéroport, les événements ou les déplacements d\'entreprise. Vous pouvez réserver jusqu\'à 6 mois à l\'avance. Votre confirmation est immédiate et votre chauffeur est attribué dès la réservation.' },
@@ -78,6 +80,24 @@ function ServiceIcon({ name }: { name: string }) {
     case 'group':     return <svg {...common}><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.4"/><path d="M3.5 20c.6-3.6 3-5.5 5.5-5.5s4.9 1.9 5.5 5.5M14.5 20c.4-2.6 1.8-4.3 3.5-4.7"/></svg>
     case 'briefcase': return <svg {...common}><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18"/></svg>
     case 'sparkle':   return <svg {...common}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+    default: return null
+  }
+}
+
+const TRUST_POINTS = [
+  { icon:'shield',  title:'Chauffeurs vérifiés',       desc:'Carte professionnelle VTC et casier judiciaire vierge exigés avant la première course.' },
+  { icon:'car',     title:'Véhicules assurés',         desc:'Assurance transport de personnes et contrôle technique à jour sur l\'ensemble de la flotte.' },
+  { icon:'lock',    title:'Paiement 100% sécurisé',    desc:'Stripe, chiffrement SSL/TLS. Aucune donnée bancaire n\'est stockée sur nos serveurs.' },
+  { icon:'headset', title:'Assistance humaine 7j/7',   desc:'Un imprévu, une question ? Notre équipe répond par téléphone ou WhatsApp, à toute heure.' },
+]
+
+function TrustIcon({ name }: { name: string }) {
+  const common = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none' as const, stroke: '#C9A84C', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  switch (name) {
+    case 'shield':  return <svg {...common}><path d="M12 3l7 3v6c0 4.5-3 8.2-7 9-4-.8-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+    case 'car':     return <svg {...common}><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16a1.5 1.5 0 003 0M17 16a1.5 1.5 0 003 0M4 16h16M6 11h12"/></svg>
+    case 'lock':    return <svg {...common}><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+    case 'headset': return <svg {...common}><path d="M4 13v-1a8 8 0 0116 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19v1a2 2 0 01-2 2h-3"/></svg>
     default: return null
   }
 }
@@ -1012,13 +1032,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </div>
           </div>{/* /hero-booking-wrap */}
           <div className="hero-trust-bar">
-            <div className="htb-item">Paris · IDF · Oise</div>
-            <div className="htb-sep"/>
-            <div className="htb-item">Prix fixe garanti</div>
-            <div className="htb-sep"/>
-            <div className="htb-item">Disponible 24h/24</div>
-            <div className="htb-sep"/>
-            <div className="htb-item">Annulation gratuite</div>
+            {['Paris · IDF · Oise','Prix fixe garanti','Disponible 24h/24','Annulation gratuite','Paiement sécurisé'].map((label,i)=>(
+              <Fragment key={label}>
+                {i>0 && <div className="htb-sep"/>}
+                <div className="htb-item">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l4.5 4.5L19 7"/></svg>
+                  {label}
+                </div>
+              </Fragment>
+            ))}
           </div>
         </div>{/* /hero-center */}
 
@@ -1050,6 +1072,27 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           ))}
         </div>
       </div>
+
+      {/* TRUST / SÉCURITÉ */}
+      <section className="trust-section">
+        <div className="trust-inner">
+          <div className="section-header reveal" style={{marginBottom:40}}>
+            <div className="section-tag">Sécurité &amp; confiance</div>
+            <h2 className="section-title" style={{marginTop:10}}>Voyagez <em>l&apos;esprit tranquille</em></h2>
+          </div>
+          <div className="trust-grid">
+            {TRUST_POINTS.map((t,i)=>(
+              <div key={i} className={`trust-card reveal${i>0?' rd'+i:''}`}>
+                <div className="trust-card-icon"><TrustIcon name={t.icon} /></div>
+                <div>
+                  <div className="trust-card-title">{t.title}</div>
+                  <div className="trust-card-desc">{t.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* SERVICES */}
       <section className="services-section">
