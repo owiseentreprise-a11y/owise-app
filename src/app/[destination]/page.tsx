@@ -1020,13 +1020,13 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
       url: `${BASE}/${dest.slug}`,
       locale: 'fr_FR',
       siteName: 'Owise',
-      images: [{ url: `${BASE}/brand_assets/hero-car.webp`, width: 1672, height: 941, alt: dest.title }],
+      images: [{ url: `${BASE}/brand_assets/hero-paris-night.webp`, width: 1920, height: 1080, alt: dest.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: dest.metaTitle,
       description: dest.metaDesc,
-      images: [`${BASE}/brand_assets/hero-car.webp`],
+      images: [`${BASE}/brand_assets/hero-paris-night.webp`],
     },
   }
 }
