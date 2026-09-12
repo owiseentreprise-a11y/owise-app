@@ -525,6 +525,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const arrResolved = bcArrivee.lat != null || !!bcArrivee.cp
       if (prixFinal > 0 && depResolved && arrResolved && key !== lastEstimRef.current) {
         lastEstimRef.current = key
+        logFunnel('hero_widget_price_shown', { prix: prixFinal })
         fetch('/api/estimations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1035,6 +1036,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                 )}
                 <button className="btn-book" onClick={()=>{
+                  logFunnel('hero_widget_confirm_click', { prix: bcPrice })
                   const p = new URLSearchParams()
                   if (bcDepart.label)  p.set('depart',  bcDepart.label)
                   if (bcArrivee.label) p.set('arrivee', bcArrivee.label)
