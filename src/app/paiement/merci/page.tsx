@@ -53,7 +53,7 @@ export default async function PaiementMerciPage({
               color: '#09091A', lineHeight: 1,
             }}>OWISE</div>
             <div style={{ fontSize: 8, letterSpacing: '.24em', textTransform: 'uppercase', color: '#9B9B9B', marginTop: 2 }}>
-              Transport de prestige
+              Chauffeur privé VTC
             </div>
           </div>
         </div>

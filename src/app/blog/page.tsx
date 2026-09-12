@@ -116,7 +116,7 @@ export default async function BlogPage() {
             Prêt à réserver votre VTC ?
           </div>
           <p style={{ color: 'rgba(237,232,223,.6)', fontSize: 14, marginBottom: 24 }}>
-            Tarif fixe garanti · Disponible 24h/24 · Paris, IDF & Oise
+            Tarif fixe garanti · Disponible 24h/24 · Paris, Île-de-France & Oise
           </p>
           <Link href="/reserver" style={{
             display: 'inline-block', background: '#C9A84C', color: '#09091A',

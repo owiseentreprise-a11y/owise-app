@@ -801,7 +801,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           ))}
         </div>
         <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
-        <div className="mm-sub">Transport de prestige · Paris · IDF</div>
+        <div className="mm-sub">Chauffeur privé VTC · Paris & Oise</div>
         <div style={{display:'flex',gap:12,marginTop:28}}>
           <a href="https://www.facebook.com/Owise.vtc" className="fs-link" style={{width:44,height:44,borderRadius:12}} target="_blank" rel="noopener" aria-label="Facebook">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
@@ -852,7 +852,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div className="nav-divider" />
           <div className="nav-name-wrap">
             <span className="nav-name">OWISE</span>
-            <span className="nav-sub">Transport de prestige</span>
+            <span className="nav-sub">Chauffeur privé VTC</span>
           </div>
         </Link>
         <div className="nav-links">
@@ -911,7 +911,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         <div className="hero-center">
           <div className="hero-live-badge">
             <span className="live-dot"/>
-            Disponible maintenant · Paris, IDF &amp; Oise
+            Disponible maintenant · Paris, Île-de-France &amp; Oise
           </div>
           <h1 className="hero-headline">
             {heroTitle ? heroTitle : (
@@ -1915,7 +1915,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               </svg>
               <div>
                 <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:22,fontWeight:800,letterSpacing:'.2em',color:'#0A0A0A'}}>OWISE</div>
-                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(0,0,0,.4)',marginTop:2}}>Transport de prestige</div>
+                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(0,0,0,.4)',marginTop:2}}>Chauffeur privé VTC</div>
               </div>
             </div>
             <div className="brand-sub">Paris, Île-de-France & Oise.</div>

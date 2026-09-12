@@ -86,7 +86,7 @@ export default function OGImage() {
             marginBottom: 44,
             display: 'flex',
           }}>
-            TRANSPORT DE PRESTIGE
+            CHAUFFEUR PRIVÉ VTC
           </div>
 
           {/* Séparateur doré */}
