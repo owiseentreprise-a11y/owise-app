@@ -18,6 +18,7 @@ const navItems = [
       { href: '/admin/stats',         label: 'Statistiques', icon: 'bar'       },
       { href: '/admin/analytics',     label: 'Analytics',    icon: 'analytics' },
       { href: '/admin/estimations',   label: 'Estimations',  icon: 'search'    },
+      { href: '/admin/funnel',        label: 'Tunnel',       icon: 'funnel'    },
     ],
   },
   {
@@ -47,6 +48,7 @@ const ICONS: Record<string, React.ReactNode> = {
   search:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/></svg>,
   analytics: <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l4-4 4 4 4-6 4 3"/><path strokeLinecap="round" strokeLinejoin="round" d="M3 20h18"/></svg>,
   backup:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>,
+  funnel:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16l-6.5 8.5V19l-3 1.5v-7L4 5z"/></svg>,
 }
 
 function NavItem({ item, isActive }: { item: { href: string; label: string; icon: string }; isActive: boolean }) {
