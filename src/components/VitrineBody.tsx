@@ -84,6 +84,15 @@ function ServiceIcon({ name }: { name: string }) {
   }
 }
 
+/* Avis Google réels d'Owise — vérifiés sur la fiche Google Business, capture du 2026-09-12 */
+const TESTIMONIALS = [
+  { name:'Nathalie M.', initial:'N', color:'#C9A84C', when:'sept. 2026', text:'Super expérience. Société à recommander vivement.' },
+  { name:'Joelle P.',   initial:'J', color:'#181832', when:'août 2026',  text:'Très bonne prestation, chauffeur ponctuel et serviable.' },
+  { name:'Nabila B.',   initial:'N', color:'#8A6D3F', when:'août 2026',  text:'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !' },
+  { name:'Michèle M.',  initial:'M', color:'#4A5568', when:'août 2026',  text:'Excellentes prestations. Ponctualité. À recommander.' },
+  { name:'Khacim D.',   initial:'K', color:'#181832', when:'juil. 2026', text:'Impeccable, un service au top.' },
+]
+
 const TRUST_POINTS = [
   { icon:'shield',  title:'Chauffeurs vérifiés',       desc:'Carte professionnelle VTC et casier judiciaire vierge exigés avant la première course.' },
   { icon:'car',     title:'Véhicules assurés',         desc:'Assurance transport de personnes et contrôle technique à jour sur l\'ensemble de la flotte.' },
@@ -1294,6 +1303,40 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               Obtenir mon prix →
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS — avis Google réels et vérifiés */}
+      <section className="testimonials-section">
+        <div className="section-header reveal">
+          <div className="section-tag" style={{justifyContent:'center'}}>Avis clients</div>
+          <h2 className="section-title" style={{marginTop:10}}>Ils nous ont fait <em>confiance</em></h2>
+        </div>
+        <div className="testimonials-grid">
+          {TESTIMONIALS.map((t,i)=>(
+            <div key={i} className={`testimonial-card reveal${i>0?' rd'+(i%3):''}`}>
+              <span className="t-quote-mark">&ldquo;</span>
+              <div className="t-stars">{Array.from({length:5}).map((_,s)=>(<span key={s} className="t-star">★</span>))}</div>
+              <p className="t-text">{t.text}</p>
+              <div className="t-author">
+                <div className="t-avatar" style={{background:t.color,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:22}}>{t.initial}</div>
+                <div>
+                  <div className="t-name">{t.name}</div>
+                  <div className="t-role">Avis Google vérifié · {t.when}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=Owise+VTC+chauffeur+priv%C3%A9"
+            target="_blank" rel="noopener"
+            className="testimonial-card reveal rd2"
+            style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:12,textDecoration:'none',cursor:'pointer'}}
+          >
+            <div className="t-stars">{Array.from({length:5}).map((_,s)=>(<span key={s} className="t-star">★</span>))}</div>
+            <div style={{fontSize:15,fontWeight:600,color:'#09091A'}}>Voir tous nos avis</div>
+            <div style={{fontSize:12.5,color:'#6B6B6B'}}>sur Google →</div>
+          </a>
         </div>
       </section>
 
