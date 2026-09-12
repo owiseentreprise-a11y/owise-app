@@ -1129,7 +1129,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} />
 
       {/* Section intro SEO */}
       <section style={{ background: '#fff', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>

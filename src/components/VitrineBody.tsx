@@ -191,7 +191,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 type TarifRow  = TarifRow2
 type GrilleMin = GrilleCalc
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null }) {
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string }) {
   const router = useRouter()
 
   /* ── state ─────────────────────────────────────────────── */
@@ -795,7 +795,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* NAV */}
-      <nav className={navScrolled ? 'scrolled' : ''}>
+      <nav className={`${navScrolled ? 'scrolled' : ''}${heroTitle ? ' nav-with-bar' : ''}`}>
         <Link href="/" className="nav-logo" style={{textDecoration:'none'}}>
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
             <rect width="36" height="36" rx="8" fill="#09091A"/>
@@ -825,7 +825,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </nav>
 
       {/* HERO */}
-      <section className="hero" id="hero">
+      <section className={`hero${heroTitle ? ' hero-with-bar' : ''}`} id="hero">
         <div className="hero-bg">
           <div className="hero-photo-overlay"/>
           <div className="hero-vignette"/>
@@ -860,8 +860,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             Disponible maintenant · Paris, IDF &amp; Oise
           </div>
           <h1 className="hero-headline">
-            Votre chauffeur privé,<br/>
-            <em className="hero-em">où vous le souhaitez.</em>
+            {heroTitle ? heroTitle : (
+              <>Votre chauffeur privé,<br/>
+              <em className="hero-em">où vous le souhaitez.</em></>
+            )}
           </h1>
           <div className="hero-booking-wrap">
             <div className="booking-card">

@@ -35,6 +35,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
   padding:0 52px;height:72px;
   background:transparent;border-bottom:1px solid transparent;
   transition:background .4s,border-color .4s,backdrop-filter .4s}
+/* Pages de destination : un bandeau SEO fixe (z-index 2000) occupe le haut de
+   l'écran au-dessus de ce nav — sans ce décalage, il le recouvre (logo inclus). */
+nav.nav-with-bar{top:36px}
 nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1);backdrop-filter:blur(16px)}
 .nav-logo{display:flex;align-items:center;gap:16px}
 .nav-emblem{flex-shrink:0}
@@ -57,6 +60,8 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 
 /* HERO */
 .hero{min-height:100vh;display:flex;align-items:center;padding:120px 52px 80px;position:relative;overflow:hidden}
+/* Pages de destination : compense le bandeau SEO fixe qui décale nav vers le bas (voir nav.nav-with-bar) */
+.hero.hero-with-bar{padding-top:156px}
 .hero-bg{position:absolute;inset:0;z-index:0}
 .orb{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none}
 .orb-1{display:block;width:900px;height:700px;background:radial-gradient(ellipse,rgba(116,192,200,.09) 0%,transparent 70%);top:-280px;left:-260px;animation:ob1 20s ease-in-out infinite alternate}
@@ -161,8 +166,8 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 .section-header{text-align:center;margin-bottom:60px}
 .section-tag{display:inline-flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--t2);font-weight:500;margin-bottom:14px}
 .section-tag::before,.section-tag::after{content:'';width:28px;height:1px;background:var(--t2);opacity:.4}
-.section-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(32px,3.8vw,52px);font-weight:800;font-style:normal;color:#0A0A0A;line-height:1.15;letter-spacing:-.02em}
-.section-title em{font-style:normal;font-weight:800;color:#0A0A0A}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,4.4vw,58px);font-weight:600;font-style:normal;color:#0A0A0A;line-height:1.15;letter-spacing:-.01em}
+.section-title em{font-style:italic;font-weight:500;color:var(--gold,#C9A84C)}
 
 /* SERVICES */
 .services-section{padding:60px 52px 80px;border-bottom:1px solid rgba(0,0,0,.07)}
@@ -669,7 +674,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 
 /* RESPONSIVE */
 @media(max-width:1100px){.hero-inner{grid-template-columns:1fr}.hero-right{max-width:520px}.vehicles-grid{grid-template-columns:repeat(2,1fr)}.stats-inner{grid-template-columns:repeat(2,1fr);gap:32px}.stat-item:nth-child(2)::after{display:none}}
-@media(max-width:768px){nav{padding:0 20px}.nav-links{display:none}.nav-cta{display:none !important}.nav-r{display:flex !important}.nav-hamburger{display:flex}.hero{padding:100px 20px 60px}.hero-title{font-size:clamp(44px,10vw,70px)}.vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}.process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(0,0,0,.08);padding-bottom:36px;margin-bottom:36px}.zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}.ent-actions{align-items:flex-start}.footer-inner{grid-template-columns:1fr 1fr;gap:28px}.bg2{grid-template-columns:1fr}.stats-section{padding:60px 20px}.stats-inner{grid-template-columns:1fr 1fr;gap:16px}.stat-item{padding:16px 8px}.stat-item::after{display:none}.stat-num{font-size:46px}.devis-body{padding:20px 20px}.vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}.marquee-section{height:40px}.services-section{padding:50px 20px 60px}}
+@media(max-width:768px){nav{padding:0 20px}.nav-links{display:none}.nav-cta{display:none !important}.nav-r{display:flex !important}.nav-hamburger{display:flex}.hero{padding:100px 20px 60px}.hero.hero-with-bar{padding-top:136px}.hero-title{font-size:clamp(44px,10vw,70px)}.vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}.process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(0,0,0,.08);padding-bottom:36px;margin-bottom:36px}.zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}.ent-actions{align-items:flex-start}.footer-inner{grid-template-columns:1fr 1fr;gap:28px}.bg2{grid-template-columns:1fr}.stats-section{padding:60px 20px}.stats-inner{grid-template-columns:1fr 1fr;gap:16px}.stat-item{padding:16px 8px}.stat-item::after{display:none}.stat-num{font-size:46px}.devis-body{padding:20px 20px}.vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}.marquee-section{height:40px}.services-section{padding:50px 20px 60px}}
 @media(max-width:640px){.cookie-banner{padding:18px 20px;flex-direction:column;align-items:flex-start}.cookie-modal{padding:26px 20px 36px}}
 @media(max-width:480px){.footer-inner{grid-template-columns:1fr}.hero-trust{gap:0;overflow:hidden}.trust-item{padding:0 10px}.hero-trust>span:nth-child(n+3){display:none !important}.hero{overflow-x:hidden}.hero-sub{padding-right:0}}
 
@@ -986,6 +991,7 @@ nav:not(.scrolled) .nav-hamburger span{background:#EDE8DF}
 /* ── Mobile ── */
 @media(max-width:640px){
   .hero{padding:86px 16px 56px}
+  .hero.hero-with-bar{padding-top:122px}
   .hero-headline{font-size:36px;margin-bottom:22px}
   .htb-item{font-size:10px;padding:0 10px}
   .hero-live-badge{font-size:10px}

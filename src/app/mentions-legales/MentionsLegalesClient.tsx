@@ -101,7 +101,7 @@ export default function MentionsLegalesClient() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} />
+          <img src="/brand_assets/icon.svg" alt="Owise" style={{ height: 28 }} />
           <span style={{
             fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 19, fontWeight: 600, letterSpacing: '.1em', color: '#09091A',

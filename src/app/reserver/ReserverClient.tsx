@@ -526,7 +526,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         boxShadow: '0 1px 8px rgba(0,0,0,.04)',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <img src="/brand_assets/logo.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
+          <img src="/brand_assets/icon.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           <div>
             <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#09091A', lineHeight: 1 }}>OWISE</div>
             <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#9B9B9B', fontWeight: 400 }}>Transport de prestige</div>
