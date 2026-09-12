@@ -503,6 +503,12 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         .veh-card.active { border-color: #C9A84C !important; background: rgba(201,168,76,.08) !important; }
         .pas-btn:hover { background: rgba(0,0,0,.06) !important; }
         .pay-btn:hover:not(:disabled) { background: #09091A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.15) !important; }
+        .confirm-seal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; background: #09091A; opacity: 0; animation: seal-in .5s ease forwards; }
+        .confirm-seal-ring { width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid rgba(201,168,76,.25); position: relative; display: flex; align-items: center; justify-content: center; }
+        .confirm-seal-ring::before { content: ''; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid transparent; border-top-color: #C9A84C; animation: seal-spin 1.1s linear infinite; }
+        .confirm-seal-label { font-family: var(--font-cormorant, Georgia), serif; font-style: italic; font-size: 15px; color: rgba(237,232,223,.75); letter-spacing: .02em; }
+        @keyframes seal-in { to { opacity: 1; } }
+        @keyframes seal-spin { to { transform: rotate(360deg); } }
         .back-btn:hover { color: #09091A !important; }
         .res-time { color: #C9A84C !important; }
         .res-time::-webkit-datetime-edit { color: #C9A84C !important; }
@@ -520,6 +526,15 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
           .reservation-summary-detail { display: none !important; }
         }
       `}</style>
+
+      {pending && (
+        <div className="confirm-seal" role="status" aria-live="polite">
+          <div className="confirm-seal-ring">
+            <img src="/brand_assets/icon.svg" alt="" style={{ height: 26 }} />
+          </div>
+          <div className="confirm-seal-label">Votre réservation se scelle…</div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{

@@ -231,6 +231,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [bcLoading,  setBcLoading]  = useState(false)
   const [bcDepart,   setBcDepart]   = useState<BcAddr>({ label: '' })
   const [bcArrivee,  setBcArrivee]  = useState<BcAddr>({ label: '' })
+  // Trajet renseigné (les deux adresses) — anime la ligne dorée du radar hero
+  const hasTrajet = bcDepart.label.length > 2 && bcArrivee.label.length > 2
   const [bcDate,     setBcDate]     = useState('')
   const [bcTime,     setBcTime]     = useState('09:00')
 
@@ -865,6 +867,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <line x1="600" y1="100" x2="582" y2="118" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
               <line x1="100" y1="600" x2="118" y2="582" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
               <line x1="600" y1="600" x2="582" y2="582" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
+              {/* Trajet en direct : ligne dorée qui se dessine dès que départ + arrivée
+                  sont renseignés, avant même l'affichage du prix — décor stylisé sur le
+                  radar existant, pas une carte géographique réelle. */}
+              <g className={`hero-route${hasTrajet ? ' active' : ''}`}>
+                <circle cx="350" cy="350" r="5" fill="#C9A84C"/>
+                <path className="hero-route-path" d="M350 350 C 430 300, 490 230, 540 165" fill="none" stroke="#C9A84C" strokeWidth="1.6" strokeLinecap="round"/>
+                <circle className="hero-route-end" cx="540" cy="165" r="5" fill="#C9A84C"/>
+              </g>
             </svg>
           </div>
         </div>
