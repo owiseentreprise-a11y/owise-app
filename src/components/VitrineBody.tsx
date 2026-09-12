@@ -156,6 +156,8 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   const [focused, setFocused] = useState(-1)
   const timerRef              = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapRef               = useRef<HTMLDivElement>(null)
+  // Vrai seulement si la valeur vient d'une sélection (suggestion cliquée), pas d'une simple frappe.
+  const resolvedRef           = useRef(false)
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -172,13 +174,32 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    resolvedRef.current = false
     onSelect({ label: e.target.value })
     setFocused(-1)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => search(e.target.value), 250)
   }
 
+  // Filet de sécurité : si l'utilisateur quitte le champ sans avoir cliqué une
+  // suggestion (clavier mobile qui masque la liste, Entrée sans sélection...),
+  // on géocode quand même le texte tapé plutôt que de perdre l'adresse en
+  // silence — même mécanisme que la résolution d'adresse pré-remplie sur /reserver.
+  async function handleBlur() {
+    if (resolvedRef.current || value.trim().length < 3) return
+    const q = value.trim()
+    try {
+      const res  = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
+      const json = await res.json()
+      if (json.lat && json.lng) {
+        resolvedRef.current = true
+        onSelect({ label: json.label || q, lat: json.lat, lng: json.lng, cp: json.codePostal })
+      }
+    } catch {}
+  }
+
   async function pick(s: VtSugg) {
+    resolvedRef.current = true
     setSugg([]); setOpen(false); setFocused(-1)
     if (s.isLieu) {
       const lieu = LIEUX_CONNUS.find(l => l.label === s.label)
@@ -213,6 +234,7 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
         onChange={handleChange}
         onKeyDown={handleKey}
         onFocus={() => { if (sugg.length > 0) setOpen(true) }}
+        onBlur={handleBlur}
         placeholder={placeholder}
         autoComplete="off"
         style={style}
