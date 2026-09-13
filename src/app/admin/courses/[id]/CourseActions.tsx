@@ -1085,6 +1085,15 @@ export default function CourseActions({
           </div>
         )}
 
+        <div style={{
+          background: 'var(--elevated)', border: '1px solid var(--t3)', borderRadius: 8,
+          padding: '10px 12px', marginBottom: 12,
+          fontSize: 11, color: 'var(--t2)', lineHeight: 1.6, whiteSpace: 'pre-line',
+          fontFamily: 'var(--font-jetbrains), monospace',
+        }}>
+          {infosCourseTexte}
+        </div>
+
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {sendTel ? (
             <a
