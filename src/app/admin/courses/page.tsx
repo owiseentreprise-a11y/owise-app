@@ -287,8 +287,11 @@ export default async function CoursesPage({
 
                   {/* Trajet */}
                   <div style={{ position: 'relative', zIndex: 2, paddingRight: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', flexShrink: 0 }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{
+                        width: 8, height: 8, borderRadius: '50%', background: 'var(--green)',
+                        boxShadow: '0 0 5px rgba(61,184,122,.6)', flexShrink: 0,
+                      }} />
                       <span style={{
                         fontSize: 12, fontWeight: 500, color: 'var(--t1)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -296,10 +299,13 @@ export default async function CoursesPage({
                         {course.adresse_depart.split(',')[0]}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <span style={{ width: 6, height: 6, borderRadius: 2, border: '1.5px solid var(--red)', flexShrink: 0 }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{
-                        fontSize: 10, color: 'var(--t2)',
+                        width: 8, height: 8, borderRadius: 2, background: 'var(--red)',
+                        boxShadow: '0 0 5px rgba(217,84,84,.55)', flexShrink: 0,
+                      }} />
+                      <span style={{
+                        fontSize: 10.5, color: 'var(--t2)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {course.adresse_arrivee.split(',')[0]}
