@@ -165,31 +165,50 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     }
   }
 
-  if (client_id) {
-    const [emailResult, profileRes, clientRes] = await Promise.all([
-      getUserEmail(client_id),
-      supabase.from('profiles').select('prenom, nom').eq('id', client_id).single(),
-      supabase.from('clients').select('type_compte, entreprise_nom').eq('id', client_id).single(),
-    ])
-    const email = emailResult
-    const prenom = profileRes.data?.prenom ?? ''
-    const clientNom = clientRes.data?.type_compte === 'entreprise'
-      ? (clientRes.data.entreprise_nom ?? prenom)
-      : `${prenom} ${profileRes.data?.nom ?? ''}`.trim()
+  // Compte lié à la course, une fois toute la logique de création/liaison ci-dessus
+  // passée — un client existant sélectionné, ou un compte lié/créé en saisie libre.
+  // Sans ça, une saisie libre avec email mais sans "créer un compte" ne notifiait
+  // jamais personne (ni client, ni admin) alors que l'email était bien saisi.
+  const effectiveClientId = nouveauClientId ?? (passager_mode === 'libre' ? null : client_id)
 
-    await Promise.all([
-      email ? envoyerConfirmationClient({
-        clientEmail: email, clientPrenom: prenom,
-        adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
-        datePrevue: date_prevue, typeVehicule: type_vehicule,
-        nbPassagers: nb_passagers, prixEstime: prix_estime, refCourse,
-      }) : Promise.resolve(),
-      envoyerNotificationAdmin({
-        adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
-        datePrevue: date_prevue, clientNom, typeVehicule: type_vehicule, refCourse,
-      }),
+  let clientEmail: string | null = null
+  let clientPrenom = ''
+  let clientNomComplet = '—'
+
+  if (effectiveClientId) {
+    const [emailResult, profileRes, clientRes] = await Promise.all([
+      getUserEmail(effectiveClientId),
+      supabase.from('profiles').select('prenom, nom').eq('id', effectiveClientId).single(),
+      supabase.from('clients').select('type_compte, entreprise_nom').eq('id', effectiveClientId).single(),
     ])
+    clientEmail = emailResult
+    clientPrenom = profileRes.data?.prenom ?? ''
+    clientNomComplet = clientRes.data?.type_compte === 'entreprise'
+      ? (clientRes.data.entreprise_nom ?? clientPrenom)
+      : (`${clientPrenom} ${profileRes.data?.nom ?? ''}`.trim() || '—')
+  } else if (passager_mode === 'libre' && passager_email) {
+    // Pas de compte créé/lié, mais un email a bien été saisi — on peut quand
+    // même envoyer la confirmation directement, sans passer par un client_id.
+    clientEmail = passager_email
+    clientPrenom = passager_prenom ?? ''
+    clientNomComplet = `${passager_prenom ?? ''} ${passager_nom ?? ''}`.trim() || '—'
   }
+
+  // La notification admin part toujours, avec ou sans email client identifié —
+  // c'est le seul filet de sécurité pour repérer une course créée sans aucun
+  // contact passager renseigné.
+  await Promise.all([
+    clientEmail ? envoyerConfirmationClient({
+      clientEmail, clientPrenom,
+      adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
+      datePrevue: date_prevue, typeVehicule: type_vehicule,
+      nbPassagers: nb_passagers, prixEstime: prix_estime, refCourse,
+    }) : Promise.resolve(),
+    envoyerNotificationAdmin({
+      adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
+      datePrevue: date_prevue, clientNom: clientNomComplet, typeVehicule: type_vehicule, refCourse,
+    }),
+  ])
 
   redirect('/admin/courses')
 }
