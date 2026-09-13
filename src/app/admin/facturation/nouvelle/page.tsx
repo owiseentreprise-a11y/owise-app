@@ -14,10 +14,10 @@ export default async function NouvelleFacturePage() {
       .order('entreprise_nom'),
     supabase
       .from('courses')
-      .select('id, client_id, adresse_depart, adresse_arrivee, date_prevue, prix_final')
+      .select('id, client_id, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime')
       .eq('statut', 'terminee')
       .is('facture_id', null)
-      .not('prix_final', 'is', null)
+      .or('prix_final.not.is.null,prix_estime.not.is.null')
       .order('date_prevue'),
     supabase.from('parametres').select('facture_taux_tva, facture_delai_paiement').eq('id', true).single(),
   ])

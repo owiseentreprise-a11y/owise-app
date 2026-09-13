@@ -126,6 +126,7 @@ export default function ParametresForm({ data }: { data: Parametres }) {
                 style={{ ...input, fontFamily: 'var(--font-jetbrains), monospace' }}
               >
                 <option value="0">0% — Franchise en base (auto-entrepreneur)</option>
+                <option value="5.5">5,5%</option>
                 <option value="10">10%</option>
                 <option value="20">20%</option>
               </select>

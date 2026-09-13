@@ -584,12 +584,14 @@ export async function envoyerNouvelleFacture(params: {
   factureNumero: string
   montantHt: number
   montantTtc: number
+  tauxTva: number
   dateEcheance: string
   refCourse: string
   lienFacture: string
 }) {
-  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, dateEcheance, refCourse, lienFacture } = params
+  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture } = params
   const tva = montantTtc - montantHt
+  const tauxLabel = (tauxTva % 1 === 0 ? String(tauxTva) : tauxTva.toFixed(1)).replace('.', ',')
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre facture OWISE</h2>
     <p style="margin:0 0 24px;font-size:14px;color:#848499;">
@@ -602,7 +604,7 @@ export async function envoyerNouvelleFacture(params: {
         ${row('Facture', factureNumero)}
         ${row('Course', `#${refCourse}`)}
         ${row('Montant HT', `${montantHt.toFixed(2)} €`)}
-        ${row('TVA (20%)', `${tva.toFixed(2)} €`)}
+        ${row(`TVA (${tauxLabel}%)`, `${tva.toFixed(2)} €`)}
         ${row('Montant TTC', `<strong style="color:#09091A">${montantTtc.toFixed(2)} €</strong>`)}
         ${row('Échéance', fmtDate(dateEcheance))}
       </table>

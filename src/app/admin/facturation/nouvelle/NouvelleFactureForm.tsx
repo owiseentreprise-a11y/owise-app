@@ -17,6 +17,7 @@ type CourseOption = {
   adresse_arrivee: string
   date_prevue: string
   prix_final: number | null
+  prix_estime: number | null
 }
 
 const sel: React.CSSProperties = {
@@ -76,7 +77,7 @@ export default function NouvelleFactureForm({
   }
 
   const selectedCourses = clientCourses.filter(c => checked.has(c.id))
-  const totalTTC = selectedCourses.reduce((s, c) => s + (c.prix_final ?? 0), 0)
+  const totalTTC = selectedCourses.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
   const totalHT = totalTTC / (1 + tauxTva / 100)
 
   const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -187,8 +188,15 @@ export default function NouvelleFactureForm({
                   <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                     {new Date(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                   </div>
-                  <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: isChecked ? 'var(--gold)' : 'var(--t1)' }}>
-                    {course.prix_final != null ? `${fmt(course.prix_final)} €` : '—'}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: isChecked ? 'var(--gold)' : 'var(--t1)' }}>
+                      {course.prix_final != null
+                        ? `${fmt(course.prix_final)} €`
+                        : course.prix_estime != null ? `${fmt(course.prix_estime)} €` : '—'}
+                    </div>
+                    {course.prix_final == null && course.prix_estime != null && (
+                      <div style={{ fontSize: 9, color: 'var(--amb)' }}>estimé</div>
+                    )}
                   </div>
                 </label>
               )

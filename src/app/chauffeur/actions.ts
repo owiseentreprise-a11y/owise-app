@@ -116,12 +116,14 @@ export async function progresserCourseAction(
     await admin.from('chauffeurs').update({ statut: 'disponible' }).eq('id', user.id)
 
     // Reçu client
-    const [courseRes, chauffeurProfileRes] = await Promise.all([
+    const [courseRes, chauffeurProfileRes, parametresRes] = await Promise.all([
       admin.from('courses')
-        .select('adresse_depart, adresse_arrivee, date_prevue, prix_final, client_id, facture_id, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
+        .select('adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime, client_id, facture_id, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
         .eq('id', courseId).single(),
       admin.from('profiles').select('prenom, nom').eq('id', user.id).single(),
+      admin.from('parametres').select('facture_taux_tva').eq('id', true).single(),
     ])
+    const tauxTva = parametresRes.data?.facture_taux_tva ?? 0
 
     const course = courseRes.data
     const chauffeurProfile = chauffeurProfileRes.data
@@ -163,10 +165,11 @@ export async function progresserCourseAction(
 
       // Auto-génération de facture uniquement si mode "par_prestation"
       const factMode = client?.facturation_mode ?? 'mensuelle'
-      if (isEntreprise && factMode === 'par_prestation' && course.prix_final && !course.facture_id) {
-        const prixFinal = Number(course.prix_final)
+      const prixCourse = course?.prix_final ?? course?.prix_estime ?? null
+      if (isEntreprise && factMode === 'par_prestation' && prixCourse && !course.facture_id) {
+        const prixFinal = Number(prixCourse)
         const montantTtc = prixFinal
-        const montantHt  = Math.round((prixFinal / 1.2) * 100) / 100
+        const montantHt  = Math.round((prixFinal / (1 + tauxTva / 100)) * 100) / 100
         const tva        = Math.round((prixFinal - montantHt) * 100) / 100
 
         // Numéro de facture : OW-YYYYMM-XXXX
@@ -209,6 +212,7 @@ export async function progresserCourseAction(
               factureNumero:  numero,
               montantHt,
               montantTtc,
+              tauxTva,
               dateEcheance:   dateEcheance.toISOString(),
               refCourse:      courseId.slice(-6).toUpperCase(),
               lienFacture:    `${siteUrl}/espace-client/factures/${newFacture.id}`,

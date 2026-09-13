@@ -25,10 +25,10 @@ export async function GET(req: Request) {
   // Courses terminées du mois précédent, sans facture, pour clients entreprise mensuelle
   const { data: courses } = await supabase
     .from('courses')
-    .select('id, client_id, prix_final, adresse_depart, adresse_arrivee, date_prevue, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
+    .select('id, client_id, prix_final, prix_estime, adresse_depart, adresse_arrivee, date_prevue, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
     .eq('statut', 'terminee')
     .is('facture_id', null)
-    .not('prix_final', 'is', null)
+    .or('prix_final.not.is.null,prix_estime.not.is.null')
     .gte('date_fin', debutMois.toISOString())
     .lte('date_fin', finMois.toISOString())
 
@@ -61,7 +61,7 @@ export async function GET(req: Request) {
     const client = (clientCourses[0] as any).clients
 
     // Somme des courses
-    const totalTtc = clientCourses.reduce((s, c) => s + Number(c.prix_final ?? 0), 0)
+    const totalTtc = clientCourses.reduce((s, c) => s + Number(c.prix_final ?? c.prix_estime ?? 0), 0)
     if (totalTtc <= 0) return
 
     const montantTtc = Math.round(totalTtc * 100) / 100
@@ -107,6 +107,7 @@ export async function GET(req: Request) {
         factureNumero: numero,
         montantHt,
         montantTtc,
+        tauxTva,
         dateEcheance: dateEcheance.toISOString(),
         refCourse: `${clientCourses.length} courses — ${debutMois.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`,
         lienFacture: `${siteUrl}/espace-client/factures/${facture.id}`,

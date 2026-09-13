@@ -28,7 +28,7 @@ export default async function FactureDetailPage({
       .single(),
     supabase
       .from('courses')
-      .select('id, adresse_depart, adresse_arrivee, date_prevue, prix_final, type_vehicule, nb_passagers, collaborateurs(prenom, nom)')
+      .select('id, adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime, type_vehicule, nb_passagers, collaborateurs(prenom, nom)')
       .eq('facture_id', id)
       .order('date_prevue'),
     supabase.from('parametres').select('*').eq('id', true).single(),
@@ -222,7 +222,9 @@ export default async function FactureDetailPage({
                       {course.nb_passagers}
                     </div>
                     <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t1)' }}>
-                      {course.prix_final != null ? `${fmt(course.prix_final)} €` : '—'}
+                      {course.prix_final != null
+                        ? `${fmt(course.prix_final)} €`
+                        : (course as any).prix_estime != null ? `${fmt((course as any).prix_estime)} €` : '—'}
                     </div>
                   </div>
                 )

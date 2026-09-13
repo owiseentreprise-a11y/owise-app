@@ -197,7 +197,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     const prixHt   = Math.round((prixTtc / (1 + tauxTva / 100)) * 100) / 100
     const prixTva  = Math.round((prixTtc - prixHt) * 100) / 100
     const echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
-    await supabase.from('factures').insert({
+    const { data: facture } = await supabase.from('factures').insert({
       client_id:     userId,
       numero,
       statut:        'payee',
@@ -206,7 +206,11 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
       montant_ttc:   prixTtc,
       date_emission: new Date().toISOString().slice(0, 10),
       date_echeance: echeance,
-    })
+    }).select('id').single()
+
+    if (facture) {
+      await supabase.from('courses').update({ facture_id: facture.id }).eq('id', course.id)
+    }
   } catch (err) {
     console.error('[webhook] facture creation error', err)
   }
