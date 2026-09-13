@@ -221,8 +221,8 @@ export default async function CoursesPage({
           {/* Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr 140px 130px 160px 100px',
-            padding: '10px 20px',
+            gridTemplateColumns: '1.4fr 1fr 130px 110px 150px 90px',
+            padding: '11px 20px',
             fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase',
             color: 'var(--t3)', fontWeight: 500,
             borderBottom: '1px solid rgba(201,168,76,.07)',
@@ -242,7 +242,7 @@ export default async function CoursesPage({
                 : 'Aucune course dans cette catégorie'}
             </div>
           ) : (
-            list.map(course => {
+            list.map((course, i) => {
               const client  = (course as any).clients
               const chauffeur = (course as any).chauffeurs
               const collab  = (course as any).collaborateurs
@@ -271,8 +271,10 @@ export default async function CoursesPage({
                   style={{
                     position: 'relative',
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 140px 130px 160px 100px',
-                    padding: '13px 20px',
+                    gridTemplateColumns: '1.4fr 1fr 130px 110px 150px 90px',
+                    padding: '14px 20px',
+                    minHeight: 60,
+                    background: i % 2 === 1 ? 'rgba(201,168,76,.015)' : 'transparent',
                     borderBottom: '1px solid rgba(201,168,76,.04)',
                     alignItems: 'center',
                   }}
@@ -284,30 +286,47 @@ export default async function CoursesPage({
                   />
 
                   {/* Trajet */}
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
-                      {course.adresse_depart.split(',')[0]}
+                  <div style={{ position: 'relative', zIndex: 2, paddingRight: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', flexShrink: 0 }} />
+                      <span style={{
+                        fontSize: 12, fontWeight: 500, color: 'var(--t1)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {course.adresse_depart.split(',')[0]}
+                      </span>
                     </div>
-                    <div style={{ fontSize: 10, color: 'var(--t2)' }}>→ {course.adresse_arrivee.split(',')[0]}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: 2, border: '1.5px solid var(--red)', flexShrink: 0 }} />
+                      <span style={{
+                        fontSize: 10, color: 'var(--t2)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {course.adresse_arrivee.split(',')[0]}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Client */}
-                  <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       {clientIsLibre && (
-                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: 'rgba(77,142,212,.12)', border: '1px solid rgba(77,142,212,.25)', color: 'var(--blue)', fontWeight: 600 }}>
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: 'rgba(77,142,212,.12)', border: '1px solid rgba(77,142,212,.25)', color: 'var(--blue)', fontWeight: 600, flexShrink: 0 }}>
                           PONCTUEL
                         </span>
                       )}
-                      <span style={{ fontSize: 12, color: clientNom === '—' ? 'var(--t3)' : 'var(--t1)' }}>{clientNom}</span>
+                      <span style={{
+                        fontSize: 12, fontWeight: 500, color: clientNom === '—' ? 'var(--t3)' : 'var(--t1)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{clientNom}</span>
                     </div>
                     {clientIsLibre && course.passager_tel && (
-                      <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1, fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      <div style={{ fontSize: 10, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                         {course.passager_tel}
                       </div>
                     )}
                     {collabNom && (
-                      <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>↳ {collabNom}</div>
+                      <div style={{ fontSize: 10, color: 'var(--t2)' }}>↳ {collabNom}</div>
                     )}
                   </div>
 
@@ -344,7 +363,7 @@ export default async function CoursesPage({
                   <div style={{
                     textAlign: 'right',
                     fontFamily: 'var(--font-jetbrains), monospace',
-                    fontSize: 13, color: 'var(--gold)',
+                    fontSize: 13.5, fontWeight: 600, color: 'var(--gold)',
                     position: 'relative', zIndex: 2,
                   }}>
                     {course.prix_final ?? course.prix_estime
