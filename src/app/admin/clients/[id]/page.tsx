@@ -71,6 +71,31 @@ export default async function ClientDetailPage({
   const coursesNonFacturees = coursesRes2.data ?? []
   const montantNonFacture = coursesNonFacturees.reduce((s, c) => s + ((c as any).prix_final ?? (c as any).prix_estime ?? 0), 0)
 
+  // Coût par collaborateur (sur tout l'historique, pas seulement les 20
+  // dernières courses affichées plus bas) — utile à un client entreprise
+  // pour voir qui, dans son équipe, pèse le plus dans la facturation.
+  let coutParCollaborateur: Array<{ nom: string; nb: number; montant: number }> = []
+  if (isEntreprise && collaborateurs.length > 0) {
+    const { data: coursesCollab } = await supabase
+      .from('courses')
+      .select('collaborateur_id, prix_final, prix_estime')
+      .eq('client_id', id)
+      .eq('statut', 'terminee')
+      .not('collaborateur_id', 'is', null)
+
+    const parCollab = new Map<string, { nom: string; nb: number; montant: number }>()
+    for (const c of coursesCollab ?? []) {
+      const collab = collaborateurs.find(cb => cb.id === (c as any).collaborateur_id)
+      const nom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || 'Sans nom' : 'Collaborateur supprimé'
+      const prix = (c as any).prix_final ?? (c as any).prix_estime ?? 0
+      const entry = parCollab.get(nom) ?? { nom, nb: 0, montant: 0 }
+      entry.nb += 1
+      entry.montant += prix
+      parCollab.set(nom, entry)
+    }
+    coutParCollaborateur = Array.from(parCollab.values()).sort((a, b) => b.montant - a.montant)
+  }
+
   return (
     <>
       {/* Topbar */}
@@ -331,6 +356,30 @@ export default async function ClientDetailPage({
               clientId={id}
               collaborateurs={collaborateurs}
             />
+          )}
+
+          {coutParCollaborateur.length > 1 && (
+            <div style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 12, padding: '18px 20px',
+            }}>
+              <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 14 }}>
+                Coût par collaborateur
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {coutParCollaborateur.map(c => (
+                  <div key={c.nom} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--t1)' }}>{c.nom}</div>
+                      <div style={{ fontSize: 10, color: 'var(--t3)' }}>{c.nb} course{c.nb > 1 ? 's' : ''}</div>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t1)' }}>
+                      {c.montant.toFixed(0)} €
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <GenererFactureButton

@@ -5,6 +5,7 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient }   from '@/lib/supabase/admin'
 import { envoyerBienvenueCollaborateur } from '@/lib/email'
 import { genererNumeroFacture } from '@/lib/facturation'
+import { stripe } from '@/lib/stripe'
 
 export async function genererFactureGroupee(
   clientId: string,
@@ -60,6 +61,26 @@ export async function genererFactureGroupee(
 
   // Lier chaque course à la facture
   await admin.from('courses').update({ facture_id: facture.id }).in('id', courses.map(c => c.id))
+
+  // Lien de paiement Stripe — non bloquant, régénérable depuis la fiche facture si ça échoue
+  try {
+    const price = await stripe.prices.create({
+      currency: 'eur',
+      unit_amount: Math.round(montantTTC * 100),
+      product_data: { name: `Facture ${numero} – OWISE VTC` },
+    })
+    const link = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { facture_id: facture.id },
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/paiement/merci` },
+      },
+    })
+    await admin.from('factures').update({ stripe_payment_link: link.url }).eq('id', facture.id)
+  } catch {
+    // Non bloquant
+  }
 
   revalidatePath(`/admin/clients/${clientId}`)
   revalidatePath('/admin/facturation')

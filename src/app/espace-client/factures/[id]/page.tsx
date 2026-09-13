@@ -30,14 +30,20 @@ export default async function ClientFacturePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Sécurité : seul un client entreprise peut voir ses propres factures
+  // Sécurité : le client doit avoir un compte (particulier ou entreprise) —
+  // la facture elle-même est vérifiée juste après (eq('client_id', user.id))
   const { data: clientData } = await supabase
     .from('clients')
-    .select('id, type_compte, entreprise_nom, adresse_facturation, profiles(prenom, nom, telephone, email)')
+    .select('id, type_compte, entreprise_nom, prenom, nom, adresse_facturation, profiles(prenom, nom, telephone)')
     .eq('id', user.id)
     .single()
 
-  if (!clientData || clientData.type_compte !== 'entreprise') redirect('/espace-client')
+  if (!clientData) redirect('/espace-client')
+
+  const isEntreprise = clientData.type_compte === 'entreprise'
+  const clientNomAffiche = isEntreprise
+    ? (clientData.entreprise_nom ?? '—')
+    : `${clientData.prenom || (clientData as any).profiles?.prenom || ''} ${clientData.nom || (clientData as any).profiles?.nom || ''}`.trim() || '—'
 
   const [factureRes, coursesRes, parametresRes] = await Promise.all([
     supabase
@@ -169,7 +175,7 @@ export default async function ClientFacturePage({
                 Facturé à
               </div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 4 }}>
-                {clientData.entreprise_nom}
+                {clientNomAffiche}
               </div>
               {clientData.adresse_facturation && (
                 <div style={{ fontSize: 11, color: 'var(--t2)', lineHeight: 1.6 }}>

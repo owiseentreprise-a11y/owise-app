@@ -48,6 +48,20 @@ export default async function FactureDetailPage({
       : '—'
   const clientAdresse = client?.adresse_facturation ?? null
 
+  // Répartition par collaborateur — utile pour un client entreprise qui veut
+  // savoir qui, dans son équipe, a généré quelle part de la facture.
+  const parCollaborateur = new Map<string, { nom: string; nb: number; montant: number }>()
+  for (const c of courses as any[]) {
+    if (!c.collaborateurs) continue
+    const nom = `${c.collaborateurs.prenom ?? ''} ${c.collaborateurs.nom ?? ''}`.trim() || 'Sans nom'
+    const prix = c.prix_final ?? c.prix_estime ?? 0
+    const entry = parCollaborateur.get(nom) ?? { nom, nb: 0, montant: 0 }
+    entry.nb += 1
+    entry.montant += prix
+    parCollaborateur.set(nom, entry)
+  }
+  const repartitionCollaborateurs = Array.from(parCollaborateur.values()).sort((a, b) => b.montant - a.montant)
+
   const s = STATUT_STYLE[facture.statut as keyof typeof STATUT_STYLE]
   // Utilise la TVA stockée (valeur de référence de la facture) plutôt que
   // de la recalculer — évite toute divergence si les montants sont modifiés
@@ -233,6 +247,36 @@ export default async function FactureDetailPage({
                   </div>
                 )
               })}
+            </div>
+          )}
+
+          {/* Répartition par collaborateur */}
+          {repartitionCollaborateurs.length > 1 && (
+            <div style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 14, overflow: 'hidden',
+            }}>
+              <div style={{
+                padding: '13px 20px', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase',
+                color: 'var(--t3)', borderBottom: '1px solid rgba(201,168,76,.07)',
+              }}>
+                Répartition par collaborateur
+              </div>
+              {repartitionCollaborateurs.map(c => (
+                <div key={c.nom} style={{
+                  display: 'grid', gridTemplateColumns: '1fr 80px 100px',
+                  padding: '10px 20px', alignItems: 'center',
+                  borderBottom: '1px solid rgba(201,168,76,.04)',
+                }}>
+                  <div style={{ fontSize: 12, color: 'var(--t1)' }}>{c.nom}</div>
+                  <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                    {c.nb} course{c.nb > 1 ? 's' : ''}
+                  </div>
+                  <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 12, color: 'var(--t1)' }}>
+                    {fmt(c.montant)} €
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

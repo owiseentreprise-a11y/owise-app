@@ -75,8 +75,10 @@ export default async function EspaceClientPage({
     ? baseQuery.eq('collaborateur_id', user.id)
     : baseQuery.eq('client_id', user.id)
 
-  // Factures — uniquement clients entreprise, jamais collaborateurs
-  const facturesQuery = isEntreprise && !isCollab
+  // Factures — tout client (particulier ou entreprise) a accès aux siennes ;
+  // jamais les collaborateurs, dont les factures appartiennent au compte
+  // entreprise parent, pas à eux individuellement.
+  const facturesQuery = !isCollab
     ? supabase
         .from('factures')
         .select('id, numero, date_emission, date_echeance, montant_ht, tva, montant_ttc, statut')
@@ -186,8 +188,11 @@ export default async function EspaceClientPage({
         />
       )}
 
-      {/* Factures — uniquement clients entreprise, jamais collaborateurs */}
-      {isEntreprise && !isCollab && (
+      {/* Factures — tout client (particulier ou entreprise), jamais collaborateurs.
+          Pour un particulier, on ne montre la section que s'il a au moins une
+          facture (paiement en ligne) — pas d'état vide pour la majorité qui
+          n'en aura jamais besoin. */}
+      {!isCollab && (isEntreprise || factures.length > 0) && (
         <div>
           <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
             Mes factures
