@@ -1,4 +1,6 @@
 import { Resend } from 'resend'
+import { TYPE_VEHICULE_LABEL } from './types'
+import type { InfosCourseParams } from './courseMessage'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'OWISE <noreply@owise.fr>'
@@ -974,4 +976,47 @@ export async function envoyerAnnulation(params: {
   `)
 
   await send(destinataireEmail, `Course annulée #${refCourse} – ${fmtDate(datePrevue)}`, html)
+}
+
+// ── 7. Infos course — chauffeur externe / sous-traitant (envoi manuel) ──────
+//
+// Le prix n'apparaît que si paiementABord est vrai — sinon le chauffeur
+// externe n'a pas à connaître le tarif (paiement géré par la plateforme).
+
+export async function envoyerInfosCourseEmail(params: InfosCourseParams & {
+  destinataireEmail: string
+  destinataireNom: string | null
+}) {
+  const {
+    destinataireEmail, destinataireNom, ref, adresseDepart, adresseArrivee, datePrevue,
+    nbPassagers, typeVehicule, numVolTrain, terminal, heureArriveeVol,
+    passagerNom, passagerTel, notes, paiementABord, prix,
+  } = params
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Course à effectuer</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      Bonjour${destinataireNom ? ` ${destinataireNom}` : ''}, voici les informations d'une course OWISE.
+    </p>
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${ref}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+        ${row('Passagers', String(nbPassagers))}
+        ${row('Véhicule', TYPE_VEHICULE_LABEL[typeVehicule])}
+        ${numVolTrain ? row('Vol / Train', `${numVolTrain}${terminal ? ' — ' + terminal : ''}${heureArriveeVol ? ' — ' + heureArriveeVol : ''}`) : ''}
+        ${passagerNom ? row('Client', `${passagerNom}${passagerTel ? ' — ' + passagerTel : ''}`) : ''}
+        ${paiementABord && prix != null ? row('Montant à percevoir', `${prix.toFixed(2)} € (paiement à bord)`) : ''}
+        ${notes ? row('Notes', notes) : ''}
+      </table>
+    </div>
+    <p style="margin:0;font-size:12px;color:#848499;">
+      Questions : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
+    </p>
+  `)
+
+  await send(destinataireEmail, `[OWISE] Course #${ref} – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
 }

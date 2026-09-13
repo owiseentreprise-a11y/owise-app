@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutCourse } from '@/lib/types'
-import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement } from '@/lib/email'
+import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement, envoyerInfosCourseEmail } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
@@ -480,6 +480,60 @@ export async function envoyerLienPaiementEmailAction(courseId: string): Promise<
     datePrevue: course.date_prevue, prix: montant,
     lienPaiement: course.stripe_payment_link,
     refCourse: courseId.slice(-6).toUpperCase(),
+  })
+
+  return {}
+}
+
+// Envoie par email les informations d'une course à un contact externe
+// (sous-traitant existant ou chauffeur ponctuel jamais enregistré) — pour
+// le cas où aucun chauffeur interne n'est disponible. Le prix n'est inclus
+// que si paiement_a_bord est activé sur la course (sinon le chauffeur
+// externe n'a pas à le connaître).
+export async function envoyerInfosCourseEmailAction(
+  courseId: string,
+  destinataireEmail: string,
+  destinataireNom: string | null,
+): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  if (!destinataireEmail) return { error: 'Email manquant' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, type_vehicule, num_vol_train, terminal, heure_arrivee_vol, notes, paiement_a_bord, prix_estime, prix_final, client_id, passager_prenom, passager_nom, passager_tel')
+    .eq('id', courseId)
+    .single()
+
+  if (!course) return { error: 'Course introuvable' }
+
+  let passagerNom: string | null = null
+  let passagerTel: string | null = course.passager_tel ?? null
+  if (course.client_id) {
+    const profileRes = await supabase.from('profiles').select('prenom, nom, telephone').eq('id', course.client_id).single()
+    passagerNom = profileRes.data ? `${profileRes.data.prenom} ${profileRes.data.nom}`.trim() : null
+    passagerTel = profileRes.data?.telephone ?? passagerTel
+  } else {
+    passagerNom = `${course.passager_prenom ?? ''} ${course.passager_nom ?? ''}`.trim() || null
+  }
+
+  await envoyerInfosCourseEmail({
+    destinataireEmail, destinataireNom,
+    ref: courseId.slice(-6).toUpperCase(),
+    adresseDepart: course.adresse_depart,
+    adresseArrivee: course.adresse_arrivee,
+    datePrevue: course.date_prevue,
+    nbPassagers: course.nb_passagers,
+    typeVehicule: course.type_vehicule,
+    numVolTrain: course.num_vol_train,
+    terminal: course.terminal,
+    heureArriveeVol: course.heure_arrivee_vol,
+    passagerNom,
+    passagerTel,
+    notes: course.notes,
+    paiementABord: course.paiement_a_bord ?? false,
+    prix: course.prix_final ?? course.prix_estime,
   })
 
   return {}

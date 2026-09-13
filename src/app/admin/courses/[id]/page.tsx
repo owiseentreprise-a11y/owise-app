@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
+import { buildInfosCourseTexte } from '@/lib/courseMessage'
 import CourseActions from './CourseActions'
 
 export const dynamic = 'force-dynamic'
@@ -49,7 +50,7 @@ export default async function CourseDetailPage({
       .order('statut'),
     supabase
       .from('sous_traitants')
-      .select('id, nom')
+      .select('id, nom, telephone, email')
       .eq('actif', true)
       .order('nom'),
   ])
@@ -146,6 +147,25 @@ export default async function CourseDetailPage({
     contactTel,
     contactEmail,
   }
+
+  // Message pré-formaté pour l'envoi manuel des infos course à un chauffeur
+  // externe (sous-traitant ou contact ponctuel) via WhatsApp.
+  const infosCourseTexte = buildInfosCourseTexte({
+    ref: course.id.slice(-6).toUpperCase(),
+    adresseDepart: course.adresse_depart,
+    adresseArrivee: course.adresse_arrivee,
+    datePrevue: course.date_prevue,
+    nbPassagers: course.nb_passagers,
+    typeVehicule: course.type_vehicule,
+    numVolTrain: (course as any).num_vol_train ?? null,
+    terminal: (course as any).terminal ?? null,
+    heureArriveeVol: (course as any).heure_arrivee_vol ?? null,
+    passagerNom: clientNom ?? passagerLibreNomComplet,
+    passagerTel: contactTel,
+    notes: course.notes,
+    paiementABord: (course as any).paiement_a_bord ?? false,
+    prix: course.prix_final ?? course.prix_estime,
+  })
 
   const chauffeursForActions = chauffeurs.map((c: any) => ({
     id: c.id,
@@ -603,6 +623,7 @@ export default async function CourseDetailPage({
           course={courseForActions}
           chauffeurs={chauffeursForActions}
           sousTraitants={sousTraitants as any}
+          infosCourseTexte={infosCourseTexte}
         />
       </div>
     </>

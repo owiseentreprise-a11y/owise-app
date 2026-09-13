@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: string }> = {
@@ -20,6 +20,7 @@ export default function CourseActions({
   course,
   chauffeurs,
   sousTraitants,
+  infosCourseTexte,
 }: {
   course: {
     id: string
@@ -51,7 +52,8 @@ export default function CourseActions({
     contactEmail: string | null
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
-  sousTraitants: Array<{ id: string; nom: string }>
+  sousTraitants: Array<{ id: string; nom: string; telephone: string | null; email: string | null }>
+  infosCourseTexte: string
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -95,6 +97,20 @@ export default function CourseActions({
   const [payLinkCopied, setPayLinkCopied] = useState(false)
   const [emailSent, setEmailSent] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [emailError, setEmailError] = useState<string | null>(null)
+
+  // Envoi manuel des infos course à un chauffeur externe (sous-traitant ou contact ponctuel)
+  const [sendMode, setSendMode] = useState<'sous_traitant' | 'ponctuel'>(sousTraitants.length > 0 ? 'sous_traitant' : 'ponctuel')
+  const [sendSTId, setSendSTId] = useState('')
+  const [adhocNom, setAdhocNom] = useState('')
+  const [adhocTel, setAdhocTel] = useState('')
+  const [adhocEmail, setAdhocEmail] = useState('')
+  const [sendEmailStatus, setSendEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [sendEmailError, setSendEmailError] = useState<string | null>(null)
+
+  const selectedSTForSend = sousTraitants.find(st => st.id === sendSTId) ?? null
+  const sendNom = sendMode === 'sous_traitant' ? (selectedSTForSend?.nom ?? null) : (adhocNom || null)
+  const sendTel = sendMode === 'sous_traitant' ? selectedSTForSend?.telephone : adhocTel
+  const sendEmail = sendMode === 'sous_traitant' ? selectedSTForSend?.email : adhocEmail
 
   const [editOpen, setEditOpen] = useState(false)
   const [editDate, setEditDate] = useState(course.date_prevue.slice(0, 16))
@@ -979,6 +995,148 @@ export default function CourseActions({
           )}
         </div>
       )}
+
+      {/* Envoyer les infos course à un chauffeur externe (aucun chauffeur interne dispo) */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--gb)',
+        borderRadius: 12, padding: '18px 20px',
+      }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12, opacity: .7 }}>
+          Infos course pour un chauffeur externe
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.5, marginBottom: 12 }}>
+          Aucun chauffeur interne disponible ? Envoyez le trajet, l'horaire et les infos passager à un sous-traitant ou un chauffeur ponctuel — {course.paiement_a_bord ? 'le prix est inclus (paiement à bord activé)' : 'le prix n\'est pas inclus (paiement à bord désactivé)'}.
+        </p>
+
+        {sousTraitants.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            {(['sous_traitant', 'ponctuel'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setSendMode(mode)}
+                style={{
+                  padding: '6px 14px', borderRadius: 7, cursor: 'pointer',
+                  fontFamily: 'var(--font-dm-sans), sans-serif', fontSize: 12, fontWeight: sendMode === mode ? 600 : 400,
+                  border: `1px solid ${sendMode === mode ? 'rgba(201,168,76,.5)' : 'var(--t3)'}`,
+                  background: sendMode === mode ? 'rgba(201,168,76,.1)' : 'var(--elevated)',
+                  color: sendMode === mode ? 'var(--gold)' : 'var(--t2)',
+                }}
+              >
+                {mode === 'sous_traitant' ? 'Sous-traitant' : 'Contact ponctuel'}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {sendMode === 'sous_traitant' ? (
+          <div style={{ marginBottom: 12 }}>
+            <select
+              value={sendSTId}
+              onChange={e => setSendSTId(e.target.value)}
+              style={{
+                width: '100%', padding: '9px 12px', borderRadius: 8,
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                color: 'var(--t1)', fontSize: 12, fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              <option value="">— Choisir un sous-traitant —</option>
+              {sousTraitants.map(st => (
+                <option key={st.id} value={st.id}>{st.nom}</option>
+              ))}
+            </select>
+            {selectedSTForSend && (
+              <div style={{ fontSize: 10.5, color: 'var(--t3)', marginTop: 6 }}>
+                {selectedSTForSend.telephone ?? 'Pas de téléphone'} · {selectedSTForSend.email ?? 'Pas d\'email'}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+            <input
+              value={adhocNom} onChange={e => setAdhocNom(e.target.value)}
+              placeholder="Nom du chauffeur (optionnel)"
+              style={{
+                padding: '9px 12px', borderRadius: 8,
+                background: 'var(--elevated)', border: '1px solid var(--t3)',
+                color: 'var(--t1)', fontSize: 12, fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <input
+                value={adhocTel} onChange={e => setAdhocTel(e.target.value)}
+                placeholder="06 XX XX XX XX" type="tel"
+                style={{
+                  padding: '9px 12px', borderRadius: 8,
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  color: 'var(--t1)', fontSize: 12, fontFamily: 'var(--font-jetbrains), monospace',
+                }}
+              />
+              <input
+                value={adhocEmail} onChange={e => setAdhocEmail(e.target.value)}
+                placeholder="email@exemple.com" type="email"
+                style={{
+                  padding: '9px 12px', borderRadius: 8,
+                  background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  color: 'var(--t1)', fontSize: 12, fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {sendTel ? (
+            <a
+              href={`https://wa.me/${sendTel.replace(/[^\d]/g, '').replace(/^0/, '33')}?text=${encodeURIComponent(infosCourseTexte)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center',
+                background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.3)',
+                color: '#3DB87A', fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              WhatsApp
+            </a>
+          ) : (
+            <span style={{ flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center', background: 'var(--elevated)', border: '1px solid var(--t3)', color: 'var(--t3)', fontSize: 12 }}>
+              WhatsApp
+            </span>
+          )}
+
+          {sendEmail ? (
+            <button
+              onClick={() => {
+                setSendEmailStatus('sending')
+                setSendEmailError(null)
+                startTransition(async () => {
+                  const res = await envoyerInfosCourseEmailAction(course.id, sendEmail, sendNom)
+                  if (res?.error) { setSendEmailStatus('error'); setSendEmailError(res.error); return }
+                  setSendEmailStatus('sent')
+                })
+              }}
+              disabled={sendEmailStatus === 'sending'}
+              style={{
+                flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, cursor: sendEmailStatus === 'sending' ? 'wait' : 'pointer',
+                background: 'rgba(74,142,208,.1)', border: '1px solid rgba(74,142,208,.3)',
+                color: 'var(--blu)', fontSize: 12, fontWeight: 500,
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            >
+              {sendEmailStatus === 'sending' ? 'Envoi…' : sendEmailStatus === 'sent' ? '✓ Envoyé' : 'Email'}
+            </button>
+          ) : (
+            <span style={{ flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center', background: 'var(--elevated)', border: '1px solid var(--t3)', color: 'var(--t3)', fontSize: 12 }}>
+              Email
+            </span>
+          )}
+        </div>
+        {sendEmailError && (
+          <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 8 }}>{sendEmailError}</div>
+        )}
+      </div>
 
       {course.mode_paiement === 'stripe' && course.stripe_payment_intent_id && (
         <div style={{
