@@ -29,7 +29,7 @@ export default async function ChauffeurDetailPage({
   const { id } = await params
   const supabase = createAdminClient()
 
-  const [chauffeurRes, docsRes, coursesRes, email] = await Promise.all([
+  const [chauffeurRes, docsRes, coursesRes, nbCoursesRes, email] = await Promise.all([
     supabase
       .from('chauffeurs')
       .select('*, profiles(*)')
@@ -46,6 +46,12 @@ export default async function ChauffeurDetailPage({
       .eq('chauffeur_id', id)
       .order('date_prevue', { ascending: false })
       .limit(8),
+    // nb_courses en base n'est jamais incrémenté (toujours 0) — vrai total calculé à la volée.
+    supabase
+      .from('courses')
+      .select('id', { count: 'exact', head: true })
+      .eq('chauffeur_id', id)
+      .eq('statut', 'terminee'),
     getUserEmail(id),
   ])
 
@@ -55,6 +61,7 @@ export default async function ChauffeurDetailPage({
   const p = (c as any).profiles
   const docs = docsRes.data ?? []
   const courses = coursesRes.data ?? []
+  const nbCoursesTerminees = nbCoursesRes.count ?? 0
 
   const prenom = p?.prenom ?? ''
   const nom    = p?.nom ?? ''
@@ -172,7 +179,7 @@ export default async function ChauffeurDetailPage({
             gap: 12,
           }}>
             {[
-              { label: 'Courses effectuées', value: c.nb_courses.toString(), color: 'var(--t1)', mono: true },
+              { label: 'Courses effectuées', value: nbCoursesTerminees.toString(), color: 'var(--t1)', mono: true },
               {
                 label: 'Note moyenne',
                 value: c.note_moyenne > 0 ? c.note_moyenne.toFixed(1) : '—',

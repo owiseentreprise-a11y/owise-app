@@ -18,8 +18,13 @@ export default async function AdminDashboard() {
 
   const now    = new Date()
   const today  = now.toISOString().split('T')[0]
-  const weekStart  = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + 1); weekStart.setHours(0,0,0,0)
+  // Lundi de la semaine en cours — attention, le dimanche getDay()===0 donne un
+  // décalage de -1 sur la formule naïve (-getDay()+1), ce qui renvoyait le lundi
+  // SUIVANT au lieu de celui de la semaine en cours. Cas spécial nécessaire.
+  const weekStart  = new Date(now); weekStart.setDate(now.getDate() + (now.getDay() === 0 ? -6 : 1 - now.getDay())); weekStart.setHours(0,0,0,0)
+  const weekEnd    = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7)
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
   const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, docsAlertRes] = await Promise.all([
     supabase
@@ -34,11 +39,13 @@ export default async function AdminDashboard() {
     supabase
       .from('courses')
       .select('prix_final, prix_estime, statut')
-      .gte('date_prevue', weekStart.toISOString()),
+      .gte('date_prevue', weekStart.toISOString())
+      .lt('date_prevue', weekEnd.toISOString()),
     supabase
       .from('courses')
       .select('prix_final, prix_estime, statut')
-      .gte('date_prevue', monthStart.toISOString()),
+      .gte('date_prevue', monthStart.toISOString())
+      .lt('date_prevue', monthEnd.toISOString()),
     supabase
       .from('factures')
       .select('id, numero, montant_ttc, date_echeance, clients(entreprise_nom, type_compte, profiles(prenom, nom))')
@@ -418,7 +425,10 @@ export default async function AdminDashboard() {
                   const chauffeur = (course as any).chauffeurs
                   const client = (course as any).clients
                   const chauffeurNom = chauffeur?.profiles ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}` : '—'
-                  const clientNom = client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : client?.entreprise_nom ?? '—'
+                  const passagerLibreNom = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
+                  const clientNom = client?.profiles
+                    ? `${client.profiles.prenom} ${client.profiles.nom}`
+                    : client?.entreprise_nom ?? (passagerLibreNom || '—')
                   return (
                     <a key={course.id} href={`/admin/courses/${course.id}`} style={{
                       display: 'grid', gridTemplateColumns: '1fr 120px 90px 70px',
@@ -481,9 +491,10 @@ export default async function AdminDashboard() {
               ) : courses.slice(0, 12).map(course => {
                 const client   = (course as any).clients
                 const chauffeur = (course as any).chauffeurs
+                const passagerLibreNom = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
                 const clientNom = client?.profiles
                   ? `${client.profiles.prenom} ${client.profiles.nom}`
-                  : client?.entreprise_nom ?? '—'
+                  : client?.entreprise_nom ?? (passagerLibreNom || '—')
                 const chauffeurNom = chauffeur?.profiles
                   ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
                   : '—'

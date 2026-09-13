@@ -18,10 +18,25 @@ const statutBadge = (statut: string) => {
 export default async function ChauffeursPage() {
   const supabase = createAdminClient()
 
-  const { data: chauffeurs } = await supabase
-    .from('chauffeurs')
-    .select('*, profiles(*)')
-    .order('created_at', { ascending: false })
+  const [{ data: chauffeurs }, { data: coursesTerminees }] = await Promise.all([
+    supabase
+      .from('chauffeurs')
+      .select('*, profiles(*)')
+      .order('created_at', { ascending: false }),
+    // nb_courses en base n'est jamais incrémenté (toujours 0) — on calcule le vrai
+    // total de courses terminées par chauffeur à la volée, comme déjà fait pour les clients.
+    supabase
+      .from('courses')
+      .select('chauffeur_id')
+      .eq('statut', 'terminee')
+      .not('chauffeur_id', 'is', null),
+  ])
+
+  const nbCoursesParChauffeur = new Map<string, number>()
+  for (const c of coursesTerminees ?? []) {
+    if (!c.chauffeur_id) continue
+    nbCoursesParChauffeur.set(c.chauffeur_id, (nbCoursesParChauffeur.get(c.chauffeur_id) ?? 0) + 1)
+  }
 
   const list: Chauffeur[] = chauffeurs ?? []
   const disponibles = list.filter(c => c.statut === 'disponible').length
@@ -154,7 +169,7 @@ export default async function ChauffeursPage() {
                   fontFamily: 'var(--font-jetbrains), monospace',
                   fontSize: 15, color: 'var(--t1)',
                 }}>
-                  {c.nb_courses}
+                  {nbCoursesParChauffeur.get(c.id) ?? 0}
                 </div>
 
                 {/* Note */}
