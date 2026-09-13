@@ -2,17 +2,8 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { STATUT_COURSE_LABEL, type StatutCourse } from '@/lib/types'
+import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, type StatutCourse } from '@/lib/types'
 import { changerStatut } from './[id]/actions'
-
-const PROGRESSION: Record<StatutCourse, StatutCourse | null> = {
-  en_attente:      'acceptee',
-  acceptee:        'en_route',
-  en_route:        'prise_en_charge',
-  prise_en_charge: 'terminee',
-  terminee:        null,
-  annulee:         null,
-}
 
 const style = (statut: StatutCourse) => {
   const map: Record<string, { color: string; background: string; borderColor: string }> = {
@@ -37,7 +28,9 @@ export default function UpdateStatutButton({
 }) {
   const [pending, startTransition] = useTransition()
   const router = useRouter()
-  const nextStatut = PROGRESSION[statut]
+  // 1er élément = étape "normale" suivante (les autres, annulation/retour
+  // arrière, restent réservés à la fiche course, plus complète).
+  const nextStatut = STATUT_TRANSITIONS[statut][0] ?? null
 
   async function handleClick(e: React.MouseEvent) {
     e.preventDefault()

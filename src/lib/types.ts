@@ -218,6 +218,20 @@ export const STATUT_COURSE_LABEL: Record<StatutCourse, string> = {
   annulee:         'Annulée',
 }
 
+// Source unique des transitions de statut valides — utilisée à la fois par le
+// bouton rapide de la liste des courses (1er élément = étape suivante "normale")
+// et par la fiche course (liste complète, y compris annulation/retour arrière).
+// Avant, ces deux vues avaient chacune leur propre table : un changement de
+// règle métier dans l'une sans l'autre les faisait silencieusement diverger.
+export const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
+  en_attente:      ['acceptee', 'annulee'],
+  acceptee:        ['en_route', 'en_attente', 'annulee'],
+  en_route:        ['prise_en_charge', 'annulee'],
+  prise_en_charge: ['terminee', 'annulee'],
+  terminee:        [],
+  annulee:         [],
+}
+
 export const STATUT_COURSE_COLOR: Record<StatutCourse, string> = {
   en_attente:      'var(--amb)',
   acceptee:        'var(--blu)',

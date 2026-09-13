@@ -3,16 +3,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction } from './actions'
-import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
-
-const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
-  en_attente:      ['acceptee', 'annulee'],
-  acceptee:        ['en_route', 'en_attente', 'annulee'],
-  en_route:        ['prise_en_charge', 'annulee'],
-  prise_en_charge: ['terminee', 'annulee'],
-  terminee:        [],
-  annulee:         [],
-}
+import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: string }> = {
   en_attente:      { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)' },
