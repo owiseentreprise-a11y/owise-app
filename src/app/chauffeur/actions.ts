@@ -10,6 +10,7 @@ import {
   envoyerDemandeAvis,
   envoyerNouvelleFacture,
 } from '@/lib/email'
+import { genererNumeroFacture } from '@/lib/facturation'
 
 async function getChauffeurUser() {
   const supabase = await createClient()
@@ -172,15 +173,8 @@ export async function progresserCourseAction(
         const montantHt  = Math.round((prixFinal / (1 + tauxTva / 100)) * 100) / 100
         const tva        = Math.round((prixFinal - montantHt) * 100) / 100
 
-        // Numéro de facture : OW-YYYYMM-XXXX
+        const numero = await genererNumeroFacture(admin)
         const now = new Date()
-        const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
-        const { count } = await admin
-          .from('factures')
-          .select('*', { count: 'exact', head: true })
-          .like('numero', `OW-${yyyymm}-%`)
-        const seq = String((count ?? 0) + 1).padStart(4, '0')
-        const numero = `OW-${yyyymm}-${seq}`
 
         const dateEcheance = new Date(now)
         dateEcheance.setDate(dateEcheance.getDate() + 30)

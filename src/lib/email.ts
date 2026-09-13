@@ -664,6 +664,40 @@ export async function envoyerRelanceFacture(params: {
   await send(clientEmail, `[Relance] Facture ${factureNumero} – ${montantTtc.toFixed(2)} € en retard de ${joursRetard}j`, html)
 }
 
+// ── 5d. Rappel interne — factures sous-traitants en attente depuis longtemps ─
+//
+// Contrairement à envoyerRelanceFacture (envoyée AU client qui nous doit de
+// l'argent), ici c'est nous qui devons payer le sous-traitant — l'email va
+// donc à l'admin, pas au sous-traitant, pour ne pas oublier de régler.
+
+export async function envoyerRappelFacturesST(params: {
+  factures: Array<{ stNom: string; periode: string; montantHt: number; jours: number }>
+  totalDu: number
+}) {
+  const { factures, totalDu } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Factures sous-traitants en attente</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">
+      ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente de règlement depuis plus de 14 jours, pour un total de <strong style="color:#09091A">${totalDu.toFixed(2)} €</strong>.
+    </p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${factures.map(f => row(f.stNom, `${f.montantHt.toFixed(2)} € · ${f.periode} · en attente depuis ${f.jours}j`)).join('')}
+      </table>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/admin/facturation/sous-traitants"
+         style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;">
+        Voir et régler →
+      </a>
+    </div>
+  `)
+
+  await send(ADMIN_EMAIL, `[OWISE] ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente – ${totalDu.toFixed(2)} €`, html)
+}
+
 // ── 6b. Réinitialisation mot de passe ────────────────────────────────────────
 
 export async function envoyerResetPassword(params: { email: string; lien: string }) {

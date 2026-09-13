@@ -4,6 +4,7 @@ import {
   envoyerConfirmationClient,
   envoyerNotificationChauffeur,
   envoyerRelanceFacture,
+  envoyerRappelFacturesST,
 } from '@/lib/email'
 
 // Appelé par Vercel Cron chaque jour à 8h
@@ -154,10 +155,39 @@ export async function GET(req: Request) {
     }))
   }
 
+  // ── 3. Rappel interne — factures sous-traitants en attente > 14 jours ──────
+  // C'est nous qui devons payer le sous-traitant (pas l'inverse) : le rappel
+  // va donc à l'admin, pour éviter qu'une facture ne traîne indéfiniment sans
+  // que personne ne le remarque. Un seul digest hebdomadaire (le lundi) plutôt
+  // qu'un rappel quotidien tant que ce n'est pas réglé, pour ne pas spammer.
+  let stRappelEnvoye = false
+  if (now.getDay() === 1) {
+    const { data: facturesST } = await supabase
+      .from('factures_sous_traitants')
+      .select('montant_ht, periode, created_at, sous_traitants(nom)')
+      .eq('statut', 'en_attente')
+
+    const facturesSTAnciennes = (facturesST ?? [])
+      .map(f => ({
+        stNom: (f as any).sous_traitants?.nom ?? '—',
+        periode: f.periode,
+        montantHt: Number(f.montant_ht),
+        jours: Math.floor((now.getTime() - new Date(f.created_at).getTime()) / 86400000),
+      }))
+      .filter(f => f.jours >= 14)
+
+    if (facturesSTAnciennes.length > 0) {
+      const totalDu = facturesSTAnciennes.reduce((s, f) => s + f.montantHt, 0)
+      await envoyerRappelFacturesST({ factures: facturesSTAnciennes, totalDu })
+      stRappelEnvoye = true
+    }
+  }
+
   return NextResponse.json({
     courses: courses?.length ?? 0,
     sentRappelsCourses: sentCourses,
     facturesRetardMisesAJour: updatedRetard,
     relancesEnvoyees: sentRelances,
+    rappelFacturesSTEnvoye: stRappelEnvoye,
   })
 }

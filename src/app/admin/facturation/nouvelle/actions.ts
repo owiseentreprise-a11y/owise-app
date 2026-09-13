@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
+import { genererNumeroFacture } from '@/lib/facturation'
 
 export async function creerFacture(formData: FormData): Promise<void> {
   const supabase = await requireAdminClient()
@@ -17,16 +18,7 @@ export async function creerFacture(formData: FormData): Promise<void> {
     redirect('/admin/facturation/nouvelle?error=Données+incomplètes')
   }
 
-  const [parametresRes, countRes] = await Promise.all([
-    supabase.from('parametres').select('facture_prefixe').eq('id', true).single(),
-    supabase.from('factures').select('id', { count: 'exact', head: true }),
-  ])
-
-  const prefixe = parametresRes.data?.facture_prefixe ?? 'OW-'
-  const count = (countRes.count ?? 0) + 1
-  const now = new Date()
-  const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
-  const numero = `${prefixe}${yyyymm}-${String(count).padStart(3, '0')}`
+  const numero = await genererNumeroFacture(supabase)
 
   const echeance = new Date()
   echeance.setDate(echeance.getDate() + delai)

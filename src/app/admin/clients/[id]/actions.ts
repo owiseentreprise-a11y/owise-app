@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient }   from '@/lib/supabase/admin'
 import { envoyerBienvenueCollaborateur } from '@/lib/email'
+import { genererNumeroFacture } from '@/lib/facturation'
 
 export async function genererFactureGroupee(
   clientId: string,
@@ -30,9 +31,7 @@ export async function genererFactureGroupee(
   const montantHT = Math.round((montantTTC / (1 + tauxTva / 100)) * 100) / 100
   const montantTVA = Math.round((montantTTC - montantHT) * 100) / 100
 
-  const year     = new Date().getFullYear()
-  const ts       = Date.now().toString(36).toUpperCase().slice(-5)
-  const numero   = `OW-${year}-${ts}`
+  const numero   = await genererNumeroFacture(admin)
   const echeance = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)
 
   const { data: facture, error: fErr } = await admin.from('factures').insert({

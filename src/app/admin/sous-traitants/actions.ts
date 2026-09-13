@@ -226,6 +226,19 @@ export async function marquerFactureSTPayeeAction(formData: FormData) {
   redirect(`/admin/sous-traitants/${sous_traitant_id}`)
 }
 
+// Même action que ci-dessus mais sans redirection — pour la vue consolidée
+// (/admin/facturation/sous-traitants), où l'admin doit pouvoir marquer
+// plusieurs factures payées à la suite sans quitter la liste.
+export async function marquerFactureSTPayeeDepuisListe(factureId: string): Promise<void> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  await supabase.from('factures_sous_traitants').update({
+    statut: 'payee',
+    date_paiement: new Date().toISOString(),
+  }).eq('id', factureId)
+  revalidatePath('/admin/facturation/sous-traitants')
+}
+
 export async function toggleActifSTAction(id: string, actif: boolean): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()

@@ -16,10 +16,16 @@ const statutBadge = (statut: string) => {
 export default async function FacturationPage() {
   const supabase = createAdminClient()
 
-  const { data: factures } = await supabase
-    .from('factures')
-    .select('*, clients(*, profiles(*))')
-    .order('date_emission', { ascending: false })
+  const [{ data: factures }, { count: stEnAttenteCount }] = await Promise.all([
+    supabase
+      .from('factures')
+      .select('*, clients(*, profiles(*))')
+      .order('date_emission', { ascending: false }),
+    supabase
+      .from('factures_sous_traitants')
+      .select('id', { count: 'exact', head: true })
+      .eq('statut', 'en_attente'),
+  ])
 
   const list: Facture[] = factures ?? []
 
@@ -46,6 +52,24 @@ export default async function FacturationPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link href="/admin/facturation/sous-traitants" style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'var(--elevated)', color: 'var(--t2)',
+          border: '1px solid var(--t3)',
+          padding: '7px 14px', borderRadius: 8,
+          fontSize: 11, fontWeight: 500, textDecoration: 'none',
+        }}>
+          Sous-traitants
+          {(stEnAttenteCount ?? 0) > 0 && (
+            <span style={{
+              fontFamily: 'var(--font-jetbrains), monospace', fontSize: 9.5, fontWeight: 700,
+              color: 'var(--amb)', background: 'rgba(232,160,48,.12)',
+              padding: '1px 6px', borderRadius: 10,
+            }}>
+              {stEnAttenteCount}
+            </span>
+          )}
+        </Link>
         <Link href="/admin/facturation/export" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'var(--elevated)', color: 'var(--t2)',

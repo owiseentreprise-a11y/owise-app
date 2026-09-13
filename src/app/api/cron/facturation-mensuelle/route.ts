@@ -13,8 +13,9 @@ export async function GET(req: Request) {
   const supabase = createAdminClient()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
 
-  const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
+  const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva, facture_prefixe').eq('id', true).single()
   const tauxTva = parametres?.facture_taux_tva ?? 0
+  const prefixe = parametres?.facture_prefixe ?? 'OW-'
 
   // Fenêtre : mois précédent complet
   const now = new Date()
@@ -53,7 +54,7 @@ export async function GET(req: Request) {
   const { count: existingCount } = await supabase
     .from('factures')
     .select('*', { count: 'exact', head: true })
-    .like('numero', `OW-${yyyymm}-%`)
+    .like('numero', `${prefixe}${yyyymm}-%`)
 
   let seq = (existingCount ?? 0) + 1
 
@@ -68,7 +69,7 @@ export async function GET(req: Request) {
     const montantHt  = Math.round((totalTtc / (1 + tauxTva / 100)) * 100) / 100
     const tva        = Math.round((montantTtc - montantHt) * 100) / 100
 
-    const numero = `OW-${yyyymm}-${String(seq++).padStart(4, '0')}`
+    const numero = `${prefixe}${yyyymm}-${String(seq++).padStart(4, '0')}`
     const dateEcheance = new Date(now)
     dateEcheance.setDate(dateEcheance.getDate() + 30)
 

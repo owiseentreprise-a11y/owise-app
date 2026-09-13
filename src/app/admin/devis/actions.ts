@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { genererNumeroFacture } from '@/lib/facturation'
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -104,9 +105,7 @@ export async function convertirEnFacture(devis: {
   if (!devis.price) throw new Error('Prix manquant — impossible de créer une facture.')
   const supabase = createAdminClient()
 
-  const year  = new Date().getFullYear()
-  const ts    = Date.now().toString(36).toUpperCase().slice(-4)
-  const numero = `F-${year}-${ts}`
+  const numero = await genererNumeroFacture(supabase)
 
   const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
   const tauxTva = parametres?.facture_taux_tva ?? 0

@@ -49,10 +49,14 @@ export default async function FactureDetailPage({
   const clientAdresse = client?.adresse_facturation ?? null
 
   const s = STATUT_STYLE[facture.statut as keyof typeof STATUT_STYLE]
-  const tva = facture.montant_ttc - facture.montant_ht
+  // Utilise la TVA stockée (valeur de référence de la facture) plutôt que
+  // de la recalculer — évite toute divergence si les montants sont modifiés
+  // indépendamment. Le taux n'est affiché que quand il peut être déduit
+  // fiablement (jamais de repli arbitraire à 20%).
+  const tva = facture.tva ?? (facture.montant_ttc - facture.montant_ht)
   const tauxTva = facture.montant_ht > 0
     ? Math.round((tva / facture.montant_ht) * 100)
-    : 20
+    : null
 
   const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -240,7 +244,7 @@ export default async function FactureDetailPage({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 300, marginLeft: 'auto' }}>
               {[
                 { label: 'Total HT', value: `${fmt(facture.montant_ht)} €`, main: false },
-                { label: `TVA (${tauxTva}%)`, value: `${fmt(tva)} €`, main: false },
+                { label: tauxTva != null ? `TVA (${tauxTva}%)` : 'TVA', value: `${fmt(tva)} €`, main: false },
               ].map(row => (
                 <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: 'var(--t2)' }}>{row.label}</span>

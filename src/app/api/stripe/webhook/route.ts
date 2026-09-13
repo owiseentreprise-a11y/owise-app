@@ -6,6 +6,7 @@ import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
 import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
+import { genererNumeroFacture } from '@/lib/facturation'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -188,9 +189,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
 
   // 3. Créer la facture liée au paiement
   try {
-    const year     = new Date().getFullYear()
-    const ts       = Date.now().toString(36).toUpperCase().slice(-5)
-    const numero   = `OW-${year}-${ts}`
+    const numero   = await genererNumeroFacture(supabase)
     const { data: parametres } = await supabase.from('parametres').select('facture_taux_tva').eq('id', true).single()
     const tauxTva  = parametres?.facture_taux_tva ?? 0
     const prixTtc  = prix
