@@ -40,6 +40,24 @@ const lbl: React.CSSProperties = {
   textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 7,
 }
 
+// Regroupe visuellement les champs par thème (Trajet / Planification / Tarif /
+// Passager / Attribution) — avant, tout s'enchaînait dans une seule liste plate
+// sans repère visuel, difficile à scanner rapidement.
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      background: 'var(--surface)', border: '1px solid var(--gb)',
+      borderRadius: 12, padding: '18px 20px',
+      display: 'flex', flexDirection: 'column', gap: 14,
+    }}>
+      <div style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500 }}>
+        {title}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 // detectZone / isForfaitZone / calculerPrix / calculerPrixKm vivent dans
 // @/lib/calcPrix — source unique partagée avec /reserver et la vitrine.
 
@@ -271,10 +289,7 @@ export default function NouvelleCourseForm({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Trajet */}
-        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-          <legend style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
-            Trajet
-          </legend>
+        <Section title="Trajet">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <AddressInput
               name="adresse_depart" placeholder="Adresse de départ"
@@ -346,9 +361,10 @@ export default function NouvelleCourseForm({
               </div>
             </div>
           )}
-        </fieldset>
+        </Section>
 
-        {/* Date + Passagers */}
+        {/* Planification : date, passagers, aller-retour, vol/train */}
+        <Section title="Planification">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
           <div>
             <label style={lbl}>Date et heure prévue</label>
@@ -470,8 +486,10 @@ export default function NouvelleCourseForm({
             </div>
           )
         })()}
+        </Section>
 
-        {/* Véhicule */}
+        {/* Véhicule & tarif */}
+        <Section title="Véhicule & tarif">
         <div>
           <label style={lbl}>Type de véhicule</label>
           <select name="type_vehicule" required style={sel} value={vehicule} onChange={e => setVehicule(e.target.value)}>
@@ -481,7 +499,6 @@ export default function NouvelleCourseForm({
           </select>
         </div>
 
-        {/* Prix calculé */}
         <div>
           <label style={lbl}>
             Prix estimé (€)
@@ -504,13 +521,10 @@ export default function NouvelleCourseForm({
             </div>
           )}
         </div>
+        </Section>
 
         {/* Passager */}
-        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-          <legend style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
-            Passager
-          </legend>
-
+        <Section title="Passager">
           {/* Toggle compte / libre */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
             {(['compte', 'libre'] as const).map(mode => (
@@ -616,9 +630,10 @@ export default function NouvelleCourseForm({
               )}
             </div>
           )}
-        </fieldset>
+        </Section>
 
         {/* Chauffeur / Sous-traitant */}
+        <Section title="Attribution">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={isInternalChauffeur ? { gridColumn: '1 / -1' } : {}}>
             <label style={lbl}>Chauffeur</label>
@@ -655,13 +670,15 @@ export default function NouvelleCourseForm({
             </div>
           )}
         </div>
+        </Section>
 
         {/* Notes */}
+        <Section title="Notes">
         <div>
-          <label style={lbl}>Notes internes</label>
           <textarea name="notes" rows={3} placeholder="Instructions particulières, références client, etc."
             style={{ ...inp, resize: 'vertical', height: 'auto', paddingTop: 10, paddingBottom: 10 }} />
         </div>
+        </Section>
 
         {/* Erreur */}
         {error && (
