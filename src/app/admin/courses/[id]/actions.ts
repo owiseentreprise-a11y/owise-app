@@ -426,8 +426,17 @@ export async function genererLienPaiementAction(courseId: string): Promise<{ err
     revalidatePath(`/admin/courses/${courseId}`)
     return { url: link.url }
   } catch (err) {
+    const stripeErr = err as { type?: string; code?: string; statusCode?: number; message?: string; raw?: unknown }
+    console.error('[genererLienPaiementAction] Stripe error:', {
+      type: stripeErr?.type,
+      code: stripeErr?.code,
+      statusCode: stripeErr?.statusCode,
+      message: stripeErr?.message,
+      raw: stripeErr?.raw,
+    })
     const message = err instanceof Error ? err.message : 'Erreur inconnue'
-    return { error: `Erreur Stripe : ${message}` }
+    const detail = stripeErr?.type ? ` [${stripeErr.type}${stripeErr.code ? '/' + stripeErr.code : ''}]` : ''
+    return { error: `Erreur Stripe : ${message}${detail}` }
   }
 }
 
