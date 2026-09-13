@@ -42,6 +42,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true })
     }
 
+    // Lien de paiement envoyé pour une course déjà créée (réservation prise par
+    // téléphone/WhatsApp) — met à jour la course existante, n'en crée pas une nouvelle.
+    if (session.metadata?.course_id) {
+      const supabase = createAdminClient()
+      const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
+      // Même convention que handleNewReservation ci-dessous pour un paiement Stripe
+      // réussi : mode_paiement + stripe_payment_intent_id, sans toucher paiement_statut
+      // (réservé au suivi des remboursements ailleurs dans le code).
+      await supabase.from('courses').update({
+        mode_paiement: 'stripe',
+        stripe_payment_intent_id: paymentIntentId,
+      }).eq('id', session.metadata.course_id)
+      return NextResponse.json({ received: true })
+    }
+
     if (session.metadata?.type === 'reservation') {
       try {
         const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null

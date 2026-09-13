@@ -221,6 +221,47 @@ export async function envoyerConfirmationClient(params: {
   await send(clientEmail, `Confirmation de course – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
 }
 
+// ── 1b. Lien de paiement — réservation prise par téléphone/WhatsApp ──────────
+
+export async function envoyerLienPaiement(params: {
+  clientEmail: string
+  clientPrenom: string
+  adresseDepart: string
+  adresseArrivee: string
+  datePrevue: string
+  prix: number
+  lienPaiement: string
+  refCourse: string
+}) {
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, prix, lienPaiement, refCourse } = params
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Réglez votre course</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le lien pour régler votre course en ligne, en toute sécurité.</p>
+
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${refCourse}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+        ${row('Montant', `${prix.toFixed(2)} €`)}
+      </table>
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr><td align="center">
+        <a href="${lienPaiement}" style="display:inline-block;padding:14px 32px;border-radius:8px;background:#C9A84C;color:#09091A;font-weight:600;font-size:14px;text-decoration:none;">Payer ${prix.toFixed(2)} € →</a>
+      </td></tr>
+    </table>
+
+    <p style="margin:0;font-size:12px;color:#848499;">Paiement sécurisé par Stripe. Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
+  `)
+
+  await send(clientEmail, `Lien de paiement – course #${refCourse}`, html)
+}
+
 // ── 2b. Notification société sous-traitante — course assignée à l'un de ses chauffeurs ──
 
 export async function envoyerNotificationST(params: {

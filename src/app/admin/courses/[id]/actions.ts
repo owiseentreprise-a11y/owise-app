@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutCourse } from '@/lib/types'
-import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST } from '@/lib/email'
+import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
@@ -383,4 +383,95 @@ export async function rembourserCourseAction(courseId: string): Promise<{ error?
     const message = err instanceof Error ? err.message : 'Erreur inconnue'
     return { error: `Erreur Stripe : ${message}` }
   }
+}
+
+// Génère (ou renvoie, si déjà fait) un lien de paiement Stripe pour une course
+// prise par téléphone/WhatsApp — même mécanisme que les liens de facture déjà
+// en place (admin/facturation/nouvelle/actions.ts), appliqué à une course.
+export async function genererLienPaiementAction(courseId: string): Promise<{ error?: string; url?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('adresse_depart, adresse_arrivee, prix_estime, prix_final, stripe_payment_link')
+    .eq('id', courseId)
+    .single()
+
+  if (!course) return { error: 'Course introuvable' }
+  if (course.stripe_payment_link) return { url: course.stripe_payment_link }
+
+  const montant = course.prix_final ?? course.prix_estime
+  if (!montant || montant <= 0) return { error: 'Aucun prix défini pour cette course — renseignez un tarif avant de générer le lien.' }
+
+  const refCourse = courseId.slice(-6).toUpperCase()
+
+  try {
+    const price = await stripe.prices.create({
+      currency: 'eur',
+      unit_amount: Math.round(montant * 100),
+      product_data: {
+        name: `Course OWISE #${refCourse} — ${course.adresse_depart.split(',')[0]} → ${course.adresse_arrivee.split(',')[0]}`,
+      },
+    })
+    const link = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: { course_id: courseId },
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'}/paiement/merci` },
+      },
+    })
+    await supabase.from('courses').update({ stripe_payment_link: link.url }).eq('id', courseId)
+    revalidatePath(`/admin/courses/${courseId}`)
+    return { url: link.url }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Erreur Stripe : ${message}` }
+  }
+}
+
+// Envoie par email le lien de paiement déjà généré — résout l'email via le
+// compte client s'il existe, sinon via passager_email (saisie libre).
+export async function envoyerLienPaiementEmailAction(courseId: string): Promise<{ error?: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('stripe_payment_link, adresse_depart, adresse_arrivee, date_prevue, prix_estime, prix_final, client_id, passager_prenom, passager_nom, passager_email')
+    .eq('id', courseId)
+    .single()
+
+  if (!course) return { error: 'Course introuvable' }
+  if (!course.stripe_payment_link) return { error: 'Générez d\'abord le lien de paiement.' }
+
+  let email: string | null = null
+  let prenom = ''
+  if (course.client_id) {
+    const [emailResult, profileRes] = await Promise.all([
+      getUserEmail(course.client_id),
+      supabase.from('profiles').select('prenom').eq('id', course.client_id).single(),
+    ])
+    email = emailResult
+    prenom = profileRes.data?.prenom ?? ''
+  } else if (course.passager_email) {
+    email = course.passager_email
+    prenom = course.passager_prenom ?? ''
+  }
+
+  if (!email) return { error: 'Aucun email connu pour cette course.' }
+
+  const montant = course.prix_final ?? course.prix_estime
+  if (!montant) return { error: 'Aucun prix défini pour cette course.' }
+
+  await envoyerLienPaiement({
+    clientEmail: email, clientPrenom: prenom,
+    adresseDepart: course.adresse_depart, adresseArrivee: course.adresse_arrivee,
+    datePrevue: course.date_prevue, prix: montant,
+    lienPaiement: course.stripe_payment_link,
+    refCourse: courseId.slice(-6).toUpperCase(),
+  })
+
+  return {}
 }

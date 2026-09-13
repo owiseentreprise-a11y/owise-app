@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 import CourseActions from './CourseActions'
 
@@ -92,8 +92,16 @@ export default async function CourseDetailPage({
   const passagerLibrePrenom: string | null = (course as any).passager_prenom ?? null
   const passagerLibreNom: string | null    = (course as any).passager_nom    ?? null
   const passagerLibreTel: string | null    = (course as any).passager_tel    ?? null
+  const passagerLibreEmail: string | null  = (course as any).passager_email  ?? null
   const passagerLibreNomComplet = [passagerLibrePrenom, passagerLibreNom].filter(Boolean).join(' ') || null
   const isPassagerLibre = !clientNom && !!passagerLibreNomComplet
+
+  // Contact pour l'envoi du lien de paiement (email/WhatsApp) — compte client
+  // en priorité, sinon les coordonnées saisies en libre.
+  const contactTel: string | null = clientTel ?? passagerLibreTel
+  const contactEmail: string | null = course.client_id
+    ? await getUserEmail(course.client_id)
+    : passagerLibreEmail
 
   const collabNom = collabData
     ? `${collabData.prenom ?? ''} ${collabData.nom ?? ''}`.trim() || null
@@ -134,6 +142,9 @@ export default async function CourseDetailPage({
     stripe_payment_intent_id: (course as any).stripe_payment_intent_id ?? null,
     paiement_a_bord: (course as any).paiement_a_bord ?? false,
     prix_chauffeur: (course as any).prix_chauffeur ?? null,
+    stripe_payment_link: (course as any).stripe_payment_link ?? null,
+    contactTel,
+    contactEmail,
   }
 
   const chauffeursForActions = chauffeurs.map((c: any) => ({

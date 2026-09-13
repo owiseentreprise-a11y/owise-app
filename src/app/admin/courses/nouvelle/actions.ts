@@ -66,6 +66,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     passager_prenom,
     passager_nom,
     passager_tel,
+    passager_email,
     statut: 'en_attente',
   }).select('id').single()
 
@@ -140,6 +141,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
         passager_prenom,
         passager_nom,
         passager_tel,
+        passager_email,
         statut:            'en_attente',
       })
     }

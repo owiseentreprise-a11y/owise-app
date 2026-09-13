@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction } from './actions'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 const STATUT_TRANSITIONS: Record<StatutCourse, StatutCourse[]> = {
@@ -55,6 +55,9 @@ export default function CourseActions({
     stripe_payment_intent_id: string | null
     paiement_a_bord: boolean
     prix_chauffeur: number | null
+    stripe_payment_link: string | null
+    contactTel: string | null
+    contactEmail: string | null
   }
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string }>
@@ -95,6 +98,12 @@ export default function CourseActions({
   const [refundOpen, setRefundOpen] = useState(false)
   const [refundError, setRefundError] = useState<string | null>(null)
   const [refundDone, setRefundDone] = useState<number | null>(null)
+  const [payLink, setPayLink] = useState<string | null>(course.stripe_payment_link)
+  const [payLinkError, setPayLinkError] = useState<string | null>(null)
+  const [payLinkPending, setPayLinkPending] = useState(false)
+  const [payLinkCopied, setPayLinkCopied] = useState(false)
+  const [emailSent, setEmailSent] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   const [editOpen, setEditOpen] = useState(false)
   const [editDate, setEditDate] = useState(course.date_prevue.slice(0, 16))
@@ -859,6 +868,126 @@ export default function CourseActions({
           }} />
         </button>
       </div>
+
+      {!(course.mode_paiement === 'stripe' && course.stripe_payment_intent_id) && (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--gb)',
+          borderRadius: 12, padding: '18px 20px',
+        }}>
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12, opacity: .7 }}>
+            Lien de paiement (téléphone / WhatsApp)
+          </div>
+
+          {!payLink ? (
+            <>
+              <p style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.5, marginBottom: 12 }}>
+                Génère un lien Stripe pour le montant de cette course, à envoyer par email ou WhatsApp à un client qui a réservé par téléphone.
+              </p>
+              {payLinkError && (
+                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)', marginBottom: 10 }}>
+                  {payLinkError}
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setPayLinkPending(true)
+                  setPayLinkError(null)
+                  startTransition(async () => {
+                    const res = await genererLienPaiementAction(course.id)
+                    setPayLinkPending(false)
+                    if (res?.error) { setPayLinkError(res.error); return }
+                    if (res?.url) setPayLink(res.url)
+                  })
+                }}
+                disabled={payLinkPending}
+                style={{
+                  width: '100%', padding: '9px 16px', borderRadius: 8, cursor: payLinkPending ? 'wait' : 'pointer',
+                  background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.3)',
+                  color: 'var(--gold)', fontSize: 12, fontWeight: 500,
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                {payLinkPending ? 'Génération…' : 'Générer le lien de paiement'}
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{
+                fontSize: 11, color: 'var(--t2)', wordBreak: 'break-all',
+                background: 'var(--elevated)', border: '1px solid var(--t3)', borderRadius: 8, padding: '8px 10px',
+                fontFamily: 'var(--font-jetbrains), monospace',
+              }}>
+                {payLink}
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(payLink)
+                    setPayLinkCopied(true)
+                    setTimeout(() => setPayLinkCopied(false), 2000)
+                  }}
+                  style={{
+                    flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, cursor: 'pointer',
+                    background: 'var(--elevated)', border: '1px solid var(--t3)',
+                    color: 'var(--t1)', fontSize: 12, fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                >
+                  {payLinkCopied ? '✓ Copié' : 'Copier'}
+                </button>
+
+                {course.contactTel && (
+                  <a
+                    href={`https://wa.me/${course.contactTel.replace(/[^\d]/g, '').replace(/^0/, '33')}?text=${encodeURIComponent(
+                      `Bonjour, voici le lien pour régler votre course OWISE (réf #${course.id.slice(-6).toUpperCase()}) : ${payLink}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center',
+                      background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.3)',
+                      color: '#3DB87A', fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  >
+                    WhatsApp
+                  </a>
+                )}
+
+                {course.contactEmail && (
+                  <button
+                    onClick={() => {
+                      setEmailSent('sending')
+                      setEmailError(null)
+                      startTransition(async () => {
+                        const res = await envoyerLienPaiementEmailAction(course.id)
+                        if (res?.error) { setEmailSent('error'); setEmailError(res.error); return }
+                        setEmailSent('sent')
+                      })
+                    }}
+                    disabled={emailSent === 'sending'}
+                    style={{
+                      flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, cursor: emailSent === 'sending' ? 'wait' : 'pointer',
+                      background: 'rgba(74,142,208,.1)', border: '1px solid rgba(74,142,208,.3)',
+                      color: 'var(--blu)', fontSize: 12, fontWeight: 500,
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  >
+                    {emailSent === 'sending' ? 'Envoi…' : emailSent === 'sent' ? '✓ Envoyé' : 'Email'}
+                  </button>
+                )}
+              </div>
+              {!course.contactTel && !course.contactEmail && (
+                <div style={{ fontSize: 11, color: 'var(--t3)' }}>
+                  Aucun téléphone ni email connu pour cette course — copiez le lien manuellement.
+                </div>
+              )}
+              {emailError && (
+                <div style={{ fontSize: 11, color: 'var(--red)' }}>{emailError}</div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {course.mode_paiement === 'stripe' && course.stripe_payment_intent_id && (
         <div style={{
