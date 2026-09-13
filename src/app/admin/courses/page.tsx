@@ -275,7 +275,7 @@ export default async function CoursesPage({
                     padding: '14px 20px',
                     minHeight: 60,
                     background: i % 2 === 1 ? 'rgba(201,168,76,.015)' : 'transparent',
-                    borderBottom: '1px solid rgba(201,168,76,.04)',
+                    borderBottom: i < list.length - 1 ? '1px solid var(--gb)' : 'none',
                     alignItems: 'center',
                   }}
                 >

@@ -421,7 +421,7 @@ export default async function AdminDashboard() {
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blu)', display: 'inline-block' }} />
                   Courses en cours ({coursesActives.length})
                 </div>
-                {coursesActives.map(course => {
+                {coursesActives.map((course, i) => {
                   const chauffeur = (course as any).chauffeurs
                   const client = (course as any).clients
                   const chauffeurNom = chauffeur?.profiles ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}` : '—'
@@ -433,7 +433,7 @@ export default async function AdminDashboard() {
                     <a key={course.id} href={`/admin/courses/${course.id}`} style={{
                       display: 'grid', gridTemplateColumns: '1fr 120px 90px 70px',
                       padding: '11px 20px', alignItems: 'center',
-                      borderBottom: '1px solid rgba(201,168,76,.04)',
+                      borderBottom: i < coursesActives.length - 1 ? '1px solid var(--gb)' : 'none',
                       textDecoration: 'none',
                     }}>
                       <div>
@@ -488,7 +488,7 @@ export default async function AdminDashboard() {
                 <div style={{ padding: '36px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
                   Aucune course
                 </div>
-              ) : courses.slice(0, 12).map(course => {
+              ) : courses.slice(0, 12).map((course, i, arr) => {
                 const client   = (course as any).clients
                 const chauffeur = (course as any).chauffeurs
                 const passagerLibreNom = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
@@ -502,7 +502,7 @@ export default async function AdminDashboard() {
                 return (
                   <a key={course.id} href={`/admin/courses/${course.id}`} style={{
                     display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
-                    padding: '11px 20px', borderBottom: '1px solid rgba(201,168,76,.04)',
+                    padding: '11px 20px', borderBottom: i < arr.length - 1 ? '1px solid var(--gb)' : 'none',
                     textDecoration: 'none', alignItems: 'center',
                   }}>
                     <div>
