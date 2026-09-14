@@ -219,6 +219,20 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     await enregistrerParrainage(meta.code_parrainage, email).catch(() => {})
   }
 
+  // 4b. Parrainage — consommer les crédits appliqués à cette réservation
+  // (marqués "disponible" côté client, maintenant que le paiement est confirmé)
+  if (meta.credit_parrainage_ids) {
+    const ids = meta.credit_parrainage_ids.split(',').filter(Boolean)
+    if (ids.length > 0) {
+      try {
+        await supabase.from('credits_parrainage')
+          .update({ statut: 'utilise' })
+          .in('id', ids)
+          .eq('statut', 'disponible')
+      } catch { /* non bloquant */ }
+    }
+  }
+
   // 5. CAPI Purchase + conversion Google Ads + Emails (en parallèle, ne bloquent pas si l'un échoue)
   capiPurchase({
     eventId   : randomUUID(),

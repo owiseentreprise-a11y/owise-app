@@ -13,6 +13,7 @@ const DESTINATIONS = [
   'vtc-gouvieux',
   'vtc-chantilly',
   'vtc-aeroport-beauvais',
+  'vtc-beauvais',
   'vtc-lamorlaye',
   'vtc-pontoise',
   'vtc-versailles',

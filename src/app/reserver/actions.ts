@@ -108,6 +108,37 @@ export async function createReservationCheckout(data: {
     }
   }
 
+  // Crédits de parrainage disponibles (client connecté uniquement) — appliqués
+  // par unités entières de 10€, jamais en dessous d'un plancher de 5€ payés.
+  // Consommés définitivement seulement après paiement confirmé (webhook).
+  let creditRowsAppliquees: string[] = []
+  let creditMontantApplique = 0
+  {
+    const supabaseUser = await createClient()
+    const { data: { user } } = await supabaseUser.auth.getUser()
+    if (user) {
+      const admin = createAdminClient()
+      const { data: credits } = await admin
+        .from('credits_parrainage')
+        .select('id, montant')
+        .eq('client_id', user.id)
+        .eq('statut', 'disponible')
+        .order('created_at', { ascending: true })
+        .limit(5)
+
+      const plancher = 5
+      for (const c of credits ?? []) {
+        const montant = Number(c.montant)
+        if (prixServeur - (creditMontantApplique + montant) < plancher) break
+        creditRowsAppliquees.push(c.id)
+        creditMontantApplique += montant
+      }
+      if (creditMontantApplique > 0) {
+        prixServeur = Math.round((prixServeur - creditMontantApplique) * 100) / 100
+      }
+    }
+  }
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
   const label = VEHICULE_LABEL[data.type_vehicule] ?? data.type_vehicule
 
@@ -143,6 +174,9 @@ export async function createReservationCheckout(data: {
   }
   if (data.code_parrainage) {
     params.set('metadata[code_parrainage]', data.code_parrainage)
+  }
+  if (creditRowsAppliquees.length > 0) {
+    params.set('metadata[credit_parrainage_ids]', creditRowsAppliquees.join(','))
   }
   if (data.gclid) {
     // Identifiant de clic Google Ads — permet de remonter la conversion côté
