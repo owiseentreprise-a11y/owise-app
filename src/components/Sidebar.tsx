@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { logoutAction } from '@/app/login/actions'
 
 const navItems = [
@@ -98,6 +98,21 @@ export default function Sidebar() {
   const pathname = usePathname()
   const [logoutHover, setLogoutHover] = useState(false)
 
+  // Masque le sidebar le temps de deux frames après le montage : sur certaines
+  // machines/navigateurs, le tout premier paint après une connexion peut
+  // survenir avant que la mise en page (flex/overflow) ne soit stabilisée,
+  // produisant un affichage chevauché jusqu'à un repaint ultérieur. Repousser
+  // le premier paint visible de quelques millisecondes (imperceptible) laisse
+  // le temps à la mise en page de se stabiliser avant que quiconque la voie.
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => setReady(true))
+      return () => cancelAnimationFrame(raf2)
+    })
+    return () => cancelAnimationFrame(raf1)
+  }, [])
+
   return (
     <aside style={{
       width: 220, minWidth: 220, height: '100dvh',
@@ -106,6 +121,8 @@ export default function Sidebar() {
       display: 'flex', flexDirection: 'column',
       position: 'relative', flexShrink: 0,
       overflow: 'hidden',
+      opacity: ready ? 1 : 0,
+      transition: 'opacity .1s',
     }}>
       {/* Bande or en haut */}
       <div style={{
