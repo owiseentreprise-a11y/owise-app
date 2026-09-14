@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import PurchaseEvent from './PurchaseEvent'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getOrCreateParrainageCodePour } from '@/app/espace-client/actions-parrainage'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
@@ -26,6 +29,13 @@ export default async function PaiementMerciPage({
 }) {
   const { session_id } = await searchParams
   const amount = session_id ? await getStripeAmount(session_id) : 0
+
+  let codeParrainage: string | null = null
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) codeParrainage = await getOrCreateParrainageCodePour(createAdminClient(), user.id)
+  } catch { /* pas connecté ou erreur non bloquante */ }
 
   return (
     <div>
@@ -144,6 +154,36 @@ export default async function PaiementMerciPage({
             </Link>
           </div>
         </div>
+
+        {/* Parrainage */}
+        {codeParrainage && (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid rgba(201,168,76,.25)',
+            borderRadius: 16,
+            padding: '22px 24px',
+            marginBottom: 24,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#09091A', marginBottom: 4 }}>
+              Parrainez vos proches, gagnez 10 €
+            </div>
+            <div style={{ fontSize: 12, color: '#9B9B9B', marginBottom: 14, lineHeight: 1.6 }}>
+              -10% pour eux sur leur 1ère course, 10€ de crédit pour vous dès leur paiement.
+            </div>
+            <div style={{
+              display: 'inline-block',
+              fontFamily: 'monospace',
+              fontSize: 16, fontWeight: 700, letterSpacing: '.15em',
+              color: '#C9A84C',
+              background: '#09091A',
+              padding: '9px 20px',
+              borderRadius: 8,
+            }}>
+              {codeParrainage}
+            </div>
+          </div>
+        )}
 
         {/* Sécurité Stripe */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>

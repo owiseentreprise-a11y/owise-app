@@ -448,8 +448,9 @@ export async function envoyerRecuClient(params: {
   prixFinal: number
   chauffeurNom?: string
   refCourse: string
+  codeParrainage?: string | null
 }) {
-  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, prixFinal, chauffeurNom, refCourse } = params
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, prixFinal, chauffeurNom, refCourse, codeParrainage } = params
 
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre course est terminée</h2>
@@ -485,6 +486,13 @@ export async function envoyerRecuClient(params: {
         <div style="font-size:10px;color:#848499;margin-top:6px;">Scanner pour laisser un avis</div>
       </div>
     </div>
+
+    ${codeParrainage ? `
+    <div style="background:#F8F6F1;border:1px solid #C9A84C33;border-radius:10px;padding:18px 24px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:14px;font-weight:600;color:#09091A;margin-bottom:6px;">Parrainez vos proches, gagnez 10 €</div>
+      <div style="font-size:12.5px;color:#848499;margin-bottom:12px;">Partagez votre code : ils bénéficient de -10% sur leur 1ère course, vous recevez 10€ de crédit dès leur paiement.</div>
+      <div style="display:inline-block;background:#09091A;color:#C9A84C;font-family:'Courier New',monospace;font-size:16px;font-weight:700;letter-spacing:.15em;padding:8px 18px;border-radius:8px;">${codeParrainage}</div>
+    </div>` : ''}
 
     <p style="margin:0;font-size:12px;color:#848499;text-align:center;">À bientôt sur OWISE — <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
   `)

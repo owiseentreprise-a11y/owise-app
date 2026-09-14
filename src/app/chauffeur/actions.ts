@@ -11,6 +11,7 @@ import {
   envoyerNouvelleFacture,
 } from '@/lib/email'
 import { genererNumeroFacture } from '@/lib/facturation'
+import { getOrCreateParrainageCodePour } from '@/app/espace-client/actions-parrainage'
 
 async function getChauffeurUser() {
   const supabase = await createClient()
@@ -138,8 +139,9 @@ export async function progresserCourseAction(
     if (course?.client_id) {
       const clientEmail = await getUserEmail(course.client_id)
 
-      // Reçu pour clients particuliers (inclut demande d'avis Google)
+      // Reçu pour clients particuliers (inclut demande d'avis Google + code parrainage)
       if (clientEmail && course.prix_final && !isEntreprise) {
+        const codeParrainage = await getOrCreateParrainageCodePour(admin, course.client_id)
         await envoyerRecuClient({
           clientEmail, clientPrenom,
           adresseDepart: course.adresse_depart,
@@ -150,6 +152,7 @@ export async function progresserCourseAction(
             ? `${chauffeurProfile.prenom ?? ''} ${chauffeurProfile.nom ?? ''}`.trim()
             : undefined,
           refCourse: courseId.slice(-6).toUpperCase(),
+          codeParrainage,
         })
       }
 

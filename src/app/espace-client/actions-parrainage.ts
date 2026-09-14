@@ -11,23 +11,21 @@ function genCode(): string {
   return code
 }
 
-export async function getOrCreateParrainageCode(): Promise<{ code: string | null; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { code: null, error: 'Non connecté' }
-
-  const admin = createAdminClient()
-
-  // Code existant ?
+// Réutilisable côté serveur pour n'importe quel client_id (ex: envoi de reçu
+// depuis l'action chauffeur, où l'utilisateur "connecté" est le chauffeur,
+// pas le client concerné).
+export async function getOrCreateParrainageCodePour(
+  admin: ReturnType<typeof createAdminClient>,
+  clientId: string,
+): Promise<string | null> {
   const { data: existing } = await admin
     .from('codes_parrainage')
     .select('code')
-    .eq('client_id', user.id)
+    .eq('client_id', clientId)
     .single()
 
-  if (existing?.code) return { code: existing.code }
+  if (existing?.code) return existing.code
 
-  // Générer un code unique
   let code = genCode()
   let attempts = 0
   while (attempts < 10) {
@@ -43,9 +41,20 @@ export async function getOrCreateParrainageCode(): Promise<{ code: string | null
 
   const { error } = await admin
     .from('codes_parrainage')
-    .insert({ client_id: user.id, code })
+    .insert({ client_id: clientId, code })
 
-  if (error) return { code: null, error: error.message }
+  if (error) return null
+  return code
+}
+
+export async function getOrCreateParrainageCode(): Promise<{ code: string | null; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { code: null, error: 'Non connecté' }
+
+  const admin = createAdminClient()
+  const code = await getOrCreateParrainageCodePour(admin, user.id)
+  if (!code) return { code: null, error: 'Erreur génération code' }
   return { code }
 }
 
