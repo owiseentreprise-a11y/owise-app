@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerResetPassword } from '@/lib/email'
 import { reportAuthFailureIfAbnormal } from '@/lib/authMonitoring'
 
-export async function loginAction(formData: FormData) {
+export async function loginAction(formData: FormData): Promise<{ error?: string; redirectTo?: string }> {
   const supabase = await createClient()
 
   const email = formData.get('email') as string
@@ -16,16 +16,15 @@ export async function loginAction(formData: FormData) {
 
   if (error || !data.user) {
     reportAuthFailureIfAbnormal(error, 'login admin/chauffeur')
-    redirect('/login?error=identifiants-incorrects')
+    return { error: 'identifiants-incorrects' }
   }
 
   // Rôle stocké dans app_metadata — disponible immédiatement sans query DB
   const role = data.user.app_metadata?.role as string | undefined
 
-  if (role === 'admin') redirect('/admin')
-  if (role === 'chauffeur') redirect('/chauffeur')
-  if (role === 'collaborateur') redirect('/espace-client')
-  redirect('/espace-client')
+  if (role === 'admin') return { redirectTo: '/admin' }
+  if (role === 'chauffeur') return { redirectTo: '/chauffeur' }
+  return { redirectTo: '/espace-client' }
 }
 
 export async function logoutAction() {

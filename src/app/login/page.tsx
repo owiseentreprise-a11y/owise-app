@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { loginAction } from './actions'
+import LoginForm from './LoginForm'
 
 const L = {
   bg:      '#F8F6F1',
@@ -65,67 +65,7 @@ export default function LoginPage({
         <StatusBanner searchParams={searchParams} />
 
         {/* Formulaire */}
-        <form action={loginAction} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: L.t2, fontWeight: 500 }}>
-              Adresse e-mail
-            </label>
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder="admin@owise.fr"
-              style={{
-                background: L.input,
-                border: `1px solid ${L.border}`,
-                borderRadius: 9, padding: '13px 16px',
-                color: L.t1,
-                fontFamily: 'inherit',
-                fontSize: 14, outline: 'none',
-                width: '100%',
-              }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: L.t2, fontWeight: 500 }}>
-              Mot de passe
-            </label>
-            <input
-              name="password"
-              type="password"
-              required
-              placeholder="••••••••"
-              style={{
-                background: L.input,
-                border: `1px solid ${L.border}`,
-                borderRadius: 9, padding: '13px 16px',
-                color: L.t1,
-                fontFamily: 'inherit',
-                fontSize: 14, outline: 'none',
-                width: '100%',
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              marginTop: 8,
-              background: L.gold,
-              color: '#fff',
-              border: 'none',
-              borderRadius: 9,
-              padding: '14px',
-              fontSize: 14, fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              letterSpacing: '.04em',
-            }}
-          >
-            Se connecter
-          </button>
-        </form>
+        <LoginForm />
 
         <div style={{ marginTop: 16, textAlign: 'center' }}>
           <Link href="/login/reset-password" style={{ fontSize: 12, color: L.t3, textDecoration: 'none' }}>
