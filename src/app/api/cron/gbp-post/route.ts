@@ -23,6 +23,29 @@ export async function GET(req: NextRequest) {
   }
 
   const template = pickTemplate()
+  const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+
+  // Filet de sécurité : tant que GBP_AUTO_PUBLISH n'est pas explicitement
+  // "true", on n'envoie qu'un aperçu par email — aucune publication réelle
+  // sur la fiche Google. Permet de relire les textes en conditions réelles
+  // avant d'activer la publication automatique.
+  if (process.env.GBP_AUTO_PUBLISH !== 'true') {
+    try {
+      if (resend) {
+        await resend.emails.send({
+          from:    'OWISE <noreply@owise.fr>',
+          to:      ADMIN_EMAIL,
+          subject: `[OWISE] Aperçu post GBP (non publié) : ${template.id}`,
+          html:    `<p>Publication automatique désactivée — voici ce qui aurait été publié sur votre fiche Google Business Profile.</p>
+                    <p><strong>Template :</strong> ${template.id}</p>
+                    <pre style="white-space:pre-wrap;font-family:inherit;background:#F8F6F1;padding:16px;border-radius:8px;">${template.summary}</pre>
+                    <p>Pour activer la publication automatique de ces posts, mettez la variable d'environnement <code>GBP_AUTO_PUBLISH=true</code> sur Vercel.</p>`,
+        })
+      }
+    } catch { /* email non bloquant */ }
+
+    return NextResponse.json({ ok: true, mode: 'preview_only', template: template.id })
+  }
 
   try {
     const result = await publishGbpPost({
@@ -37,7 +60,6 @@ export async function GET(req: NextRequest) {
 
     // Email de confirmation
     try {
-      const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
       if (resend) {
         await resend.emails.send({
           from:    'OWISE <noreply@owise.fr>',
@@ -51,7 +73,7 @@ export async function GET(req: NextRequest) {
       }
     } catch { /* email non bloquant */ }
 
-    return NextResponse.json({ ok: true, template: template.id, gbpName: result.name })
+    return NextResponse.json({ ok: true, mode: 'published', template: template.id, gbpName: result.name })
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Erreur inconnue'

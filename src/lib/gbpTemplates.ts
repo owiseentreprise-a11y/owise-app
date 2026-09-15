@@ -93,8 +93,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '🏡 VTC Chantilly & Gouvieux — CDG et Orly en toute sérénité\n\n' +
       'Habitant de Chantilly, Gouvieux ou Lamorlaye ? Owise assure vos transferts aéroport depuis l\'Oise.\n\n' +
-      '• Creil → CDG dès 110€\n' +
-      '• Chantilly → Orly dès 75€\n' +
+      '• Chantilly → CDG dès 59€\n' +
+      '• Chantilly → Orly dès 139€\n' +
       '• Beauvais → tarif sur devis\n' +
       '• Disponible à toute heure\n\n' +
       'Réservez en ligne, payez en ligne.',
@@ -119,8 +119,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '👑 VTC Versailles — Transferts aéroport et courses longue distance\n\n' +
       'Owise dessert désormais Versailles et les Yvelines pour vos transferts vers CDG, Orly et Beauvais.\n\n' +
-      '• Versailles → CDG dès 65€\n' +
-      '• Versailles → Orly dès 55€\n' +
+      '• Versailles → CDG dès 99€\n' +
+      '• Versailles → Orly dès 72€\n' +
       '• Service de qualité premium\n' +
       '• Chauffeur anglophone disponible\n\n' +
       'Réservez votre VTC depuis Versailles.',
@@ -132,8 +132,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '📍 Nouveau : Owise dessert Pontoise & Cergy-Pontoise\n\n' +
       'Vous habitez dans le Val-d\'Oise ? Nous assurons vos transferts aéroport depuis Cergy, Pontoise et toutes les communes environnantes.\n\n' +
-      '• Pontoise → CDG dès 55€\n' +
-      '• Cergy → Orly dès 65€\n' +
+      '• Pontoise → CDG dès 102€\n' +
+      '• Cergy → Orly dès 110€\n' +
       '• Berline ou Van, selon vos besoins\n\n' +
       'Calculez votre tarif en ligne dès maintenant.',
     cta: 'BOOK',
