@@ -53,7 +53,29 @@ export async function GET(req: NextRequest) {
     const cpComp = (result.address_components ?? []).find(
       (c: any) => c.types.includes('postal_code')
     )
-    const codePostal = cpComp?.long_name ?? ''
+    let codePostal = cpComp?.long_name ?? ''
+
+    // Certains lieux Google (ex: "Creil, France") n'exposent pas de composant
+    // postal_code sur le Place Details — même repli que /api/geocode : reverse-geocode
+    // sur les coordonnées pour le récupérer. Sans ce repli, detectZone() ne peut pas
+    // matcher la zone de départ/arrivée par code postal.
+    if (!codePostal && lat && lng) {
+      try {
+        const rUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+        rUrl.searchParams.set('latlng',      `${lat},${lng}`)
+        rUrl.searchParams.set('key',         GOOGLE_KEY)
+        rUrl.searchParams.set('language',    'fr')
+        rUrl.searchParams.set('result_type', 'postal_code')
+        const rRes  = await fetch(rUrl.toString(), { next: { revalidate: 0 } })
+        const rJson = await rRes.json()
+        if (rJson.results?.[0]) {
+          const cp = (rJson.results[0].address_components ?? []).find(
+            (c: any) => c.types.includes('postal_code')
+          )
+          if (cp) codePostal = cp.long_name
+        }
+      } catch {}
+    }
 
     return NextResponse.json({ lat, lng, codePostal, address: result.formatted_address ?? '' })
   } catch {
