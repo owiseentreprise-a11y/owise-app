@@ -66,7 +66,11 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
     if (lower.includes('orly')) {
       const z = zones.find(z => z.code === 'ORY'); if (z) return z
     }
-    if (lower.includes('beauvais')) {
+    // Aéroport de Beauvais-Tillé : on exige "tillé" ou "aéroport" en plus de
+    // "beauvais" — sinon une simple adresse dans la ville de Beauvais (zone BEA,
+    // CP 60000) était aussi absorbée par la zone aéroport (CP 60550).
+    if (lower.includes('tillé') || lower.includes('tille')
+        || (lower.includes('beauvais') && (lower.includes('aéroport') || lower.includes('aeroport')))) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z
     }
     // Charleroi : aéroport belge distinct de Bruxelles, sensiblement plus proche

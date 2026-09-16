@@ -127,9 +127,15 @@ export const SUJETS: Sujet[] = [
   { id: 'clermont-orly',      type: 'transfert', depart: 'Clermont-de-l\'Oise', arrivee: 'Orly'  },
   { id: 'clermont-beauvais',  type: 'transfert', depart: 'Clermont-de-l\'Oise', arrivee: 'Beauvais' },
   // Belgique (Bruxelles / Charleroi) — vols low-cost depuis l'Oise
-  { id: 'creil-charleroi',    type: 'transfert', depart: 'Creil',     arrivee: 'Charleroi'  },
-  { id: 'chantilly-charleroi',type: 'transfert', depart: 'Chantilly', arrivee: 'Charleroi'  },
-  { id: 'creil-bruxelles',    type: 'transfert', depart: 'Creil',     arrivee: 'Bruxelles'  },
+  { id: 'creil-charleroi',     type: 'transfert', depart: 'Creil',     arrivee: 'Charleroi'  },
+  { id: 'chantilly-charleroi', type: 'transfert', depart: 'Chantilly', arrivee: 'Charleroi'  },
+  { id: 'creil-bruxelles',     type: 'transfert', depart: 'Creil',     arrivee: 'Bruxelles'  },
+  { id: 'senlis-charleroi',    type: 'transfert', depart: 'Senlis',     arrivee: 'Charleroi'  },
+  { id: 'senlis-bruxelles',    type: 'transfert', depart: 'Senlis',     arrivee: 'Bruxelles'  },
+  { id: 'compiegne-charleroi', type: 'transfert', depart: 'Compiègne',  arrivee: 'Charleroi'  },
+  { id: 'compiegne-bruxelles', type: 'transfert', depart: 'Compiègne',  arrivee: 'Bruxelles'  },
+  { id: 'beauvais-charleroi',  type: 'transfert', depart: 'Beauvais',   arrivee: 'Charleroi'  },
+  { id: 'beauvais-bruxelles',  type: 'transfert', depart: 'Beauvais',   arrivee: 'Bruxelles'  },
   // Guides locaux Oise
   { id: 'guide-mariage-oise',     type: 'guide',    theme: "transport mariage dans l'Oise : Chantilly, Compiègne, Senlis" },
   { id: 'guide-terminal-cdg',     type: 'guide',    theme: "terminaux CDG : T1, T2, T2E, T2F, T3 — guide pour voyageurs de l'Oise" },
@@ -197,6 +203,7 @@ const COMMUNES: Record<string, { zone: string; dist_cdg: number; desc: string }>
   'Méru':                 { zone: 'Oise Ouest', dist_cdg: 52, desc: 'commune de l\'ouest de l\'Oise, entre Cergy et Beauvais' },
   'Noailles':             { zone: 'Oise Ouest', dist_cdg: 65, desc: 'commune de l\'Oise proche de Beauvais' },
   "Clermont-de-l'Oise":  { zone: 'Oise Ouest', dist_cdg: 68, desc: 'sous-préfecture de l\'Oise, à mi-chemin entre Creil et Amiens' },
+  'Beauvais':            { zone: 'Oise Ouest', dist_cdg: 77, desc: 'préfecture de l\'Oise, connue pour sa cathédrale Saint-Pierre et voisine de l\'aéroport de Beauvais-Tillé' },
 }
 
 // ── Distances réelles par itinéraire (km) ─────────────────────────────────
@@ -271,6 +278,9 @@ const DISTANCES: Record<string, number> = {
   // Belgique (aéroports) — distances réelles via API Google Distance Matrix
   'Creil-Bruxelles': 286,     'Creil-Charleroi': 241,
   'Chantilly-Bruxelles': 293, 'Chantilly-Charleroi': 248,
+  'Senlis-Bruxelles': 280,    'Senlis-Charleroi': 236,
+  'Compiègne-Bruxelles': 256, 'Compiègne-Charleroi': 211,
+  'Beauvais-Bruxelles': 301,  'Beauvais-Charleroi': 256,
 }
 
 function getRouteDist(dep: string, arr: string): number {
