@@ -130,6 +130,7 @@ export const SUJETS: Sujet[] = [
   { id: 'creil-charleroi',     type: 'transfert', depart: 'Creil',     arrivee: 'Charleroi'  },
   { id: 'chantilly-charleroi', type: 'transfert', depart: 'Chantilly', arrivee: 'Charleroi'  },
   { id: 'creil-bruxelles',     type: 'transfert', depart: 'Creil',     arrivee: 'Bruxelles'  },
+  { id: 'chantilly-bruxelles', type: 'transfert', depart: 'Chantilly',  arrivee: 'Bruxelles'  },
   { id: 'senlis-charleroi',    type: 'transfert', depart: 'Senlis',     arrivee: 'Charleroi'  },
   { id: 'senlis-bruxelles',    type: 'transfert', depart: 'Senlis',     arrivee: 'Bruxelles'  },
   { id: 'compiegne-charleroi', type: 'transfert', depart: 'Compiègne',  arrivee: 'Charleroi'  },
