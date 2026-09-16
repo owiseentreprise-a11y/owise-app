@@ -40,7 +40,8 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('input',       q)
     url.searchParams.set('key',         GOOGLE_KEY)
     url.searchParams.set('language',    'fr')
-    url.searchParams.set('components',  'country:fr')
+    // FR + BE : élargi pour les trajets longue distance Nord/Belgique (zones LILLE/BXL)
+    url.searchParams.set('components',  'country:fr|country:be')
     url.searchParams.set('types',       'geocode|establishment')
     if (token) url.searchParams.set('sessiontoken', token)
 

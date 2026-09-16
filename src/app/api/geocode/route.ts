@@ -29,14 +29,28 @@ export async function GET(req: NextRequest) {
   if (!GOOGLE_KEY) return NextResponse.json({ error: 'no_key' }, { status: 200 })
 
   try {
-    const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
-    url.searchParams.set('address',    q)
-    url.searchParams.set('key',        GOOGLE_KEY)
-    url.searchParams.set('language',   'fr')
-    url.searchParams.set('components', 'country:FR')
+    // L'API Geocoding (contrairement à Places Autocomplete) n'accepte qu'un seul
+    // pays par filtre "components" — un "country:FR|country:BE" est mal interprété
+    // et retombe sur "France" en entier. On tente FR d'abord (l'essentiel des
+    // adresses), puis BE en repli si FR échoue ou ne renvoie qu'un match de pays
+    // entier (signe que l'adresse n'est pas française — ex: une ville belge).
+    async function geocodeIn(country: 'FR' | 'BE') {
+      const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+      url.searchParams.set('address',    q)
+      url.searchParams.set('key',        GOOGLE_KEY)
+      url.searchParams.set('language',   'fr')
+      url.searchParams.set('components', `country:${country}`)
+      const res  = await fetch(url.toString(), { next: { revalidate: 0 } })
+      return res.json()
+    }
 
-    const res  = await fetch(url.toString(), { next: { revalidate: 0 } })
-    const json = await res.json()
+    let json = await geocodeIn('FR')
+    const isWeakMatch = (j: any) =>
+      j.status !== 'OK' || !j.results?.[0] || (j.results[0].types ?? []).includes('country')
+    if (isWeakMatch(json)) {
+      const beJson = await geocodeIn('BE')
+      if (!isWeakMatch(beJson)) json = beJson
+    }
 
     if (json.status !== 'OK' || !json.results?.[0]) {
       return NextResponse.json({ error: json.status ?? 'no_result' }, { status: 200 })

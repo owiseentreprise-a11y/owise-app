@@ -69,6 +69,13 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
     if (lower.includes('beauvais')) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z
     }
+    // Belgique : pas de code postal français exploitable, donc détection uniquement
+    // par libellé (nom de pays ou grandes villes du trajet longue distance).
+    if (lower.includes('belgique') || lower.includes('belgium') || lower.includes('bruxelles')
+        || lower.includes('brussels') || lower.includes('charleroi') || lower.includes('mouscron')
+        || lower.includes('kortrijk') || lower.includes('courtrai') || lower.includes('tournai')) {
+      const z = zones.find(z => z.code === 'BEL'); if (z) return z
+    }
     // "gare" dans l'adresse → zone gare uniquement si Paris intramuros (CP 75xxx)
     if ((lower.includes('gare ') || lower.startsWith('gare') || lower.includes(' gare')) && /^75/.test(codePostal)) {
       const z = zones.find(z => z.type === 'gare'); if (z) return z
