@@ -75,7 +75,10 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
       // Bruxelles / Charleroi : hors grille cdg_fixe/orly_fixe/beauvais_fixe,
       // prix stocké dans grilles_tarifaires (zones CHA/CRL <-> BEL/CHR).
       if (sujet.arrivee === 'Bruxelles' || sujet.arrivee === 'Charleroi') {
-        const DEP_CODES: Record<string, string> = { Chantilly: 'CHA', Creil: 'CRL', Senlis: 'SEN', Compiègne: 'COM', Beauvais: 'BEA' }
+        const DEP_CODES: Record<string, string> = {
+          Chantilly: 'CHA', Lamorlaye: 'CHA', Gouvieux: 'CHA',
+          Creil: 'CRL', Senlis: 'SEN', Compiègne: 'COM', Beauvais: 'BEA',
+        }
         const depCode = DEP_CODES[sujet.depart ?? ''] ?? null
         const arrCode = sujet.arrivee === 'Bruxelles' ? 'BEL' : 'CHR'
         if (depCode) {

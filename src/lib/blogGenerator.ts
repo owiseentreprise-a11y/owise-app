@@ -131,6 +131,10 @@ export const SUJETS: Sujet[] = [
   { id: 'chantilly-charleroi', type: 'transfert', depart: 'Chantilly', arrivee: 'Charleroi'  },
   { id: 'creil-bruxelles',     type: 'transfert', depart: 'Creil',     arrivee: 'Bruxelles'  },
   { id: 'chantilly-bruxelles', type: 'transfert', depart: 'Chantilly',  arrivee: 'Bruxelles'  },
+  { id: 'lamorlaye-charleroi', type: 'transfert', depart: 'Lamorlaye',  arrivee: 'Charleroi'  },
+  { id: 'lamorlaye-bruxelles', type: 'transfert', depart: 'Lamorlaye',  arrivee: 'Bruxelles'  },
+  { id: 'gouvieux-charleroi',  type: 'transfert', depart: 'Gouvieux',   arrivee: 'Charleroi'  },
+  { id: 'gouvieux-bruxelles',  type: 'transfert', depart: 'Gouvieux',   arrivee: 'Bruxelles'  },
   { id: 'senlis-charleroi',    type: 'transfert', depart: 'Senlis',     arrivee: 'Charleroi'  },
   { id: 'senlis-bruxelles',    type: 'transfert', depart: 'Senlis',     arrivee: 'Bruxelles'  },
   { id: 'compiegne-charleroi', type: 'transfert', depart: 'Compiègne',  arrivee: 'Charleroi'  },
@@ -282,6 +286,8 @@ const DISTANCES: Record<string, number> = {
   'Senlis-Bruxelles': 280,    'Senlis-Charleroi': 236,
   'Compiègne-Bruxelles': 256, 'Compiègne-Charleroi': 211,
   'Beauvais-Bruxelles': 301,  'Beauvais-Charleroi': 256,
+  'Lamorlaye-Bruxelles': 297, 'Lamorlaye-Charleroi': 253,
+  'Gouvieux-Bruxelles': 297,  'Gouvieux-Charleroi': 252,
 }
 
 function getRouteDist(dep: string, arr: string): number {
@@ -289,9 +295,19 @@ function getRouteDist(dep: string, arr: string): number {
 }
 
 // Durée en minutes selon la distance, avec marge trafic réaliste
+// (calibré pour les trajets domestiques courts Oise -> CDG/Orly/Beauvais, 30-120 km,
+// avec une part significative de circulation urbaine/départementale)
 function getDuration(distKm: number): { min: number; max: number } {
   const min = Math.max(20, Math.round(distKm / 75 * 60))
   const max = Math.round(distKm / 52 * 60)
+  return { min, max }
+}
+
+// Durée pour les trajets longue distance à dominante autoroutière (Nord/Belgique,
+// 200-300 km) — vitesse moyenne bien plus élevée que sur un trajet domestique court.
+function getLongDistanceDuration(distKm: number): { min: number; max: number } {
+  const min = Math.round(distKm / 105 * 60)
+  const max = Math.round(distKm / 85 * 60)
   return { min, max }
 }
 
@@ -328,7 +344,8 @@ function genTransfert(s: Sujet, prix?: number): BlogPost {
   const isAirportArr = arr in AIRPORTS
 
   const dist = getRouteDist(dep, arr)
-  const dur  = getDuration(dist)
+  const isLongDistance = arr === 'Bruxelles' || arr === 'Charleroi' || dep === 'Bruxelles' || dep === 'Charleroi'
+  const dur  = isLongDistance ? getLongDistanceDuration(dist) : getDuration(dist)
 
   const descDep = dep !== 'Paris' && depInfo.desc
     ? ` ${dep} est ${depInfo.desc}.`
