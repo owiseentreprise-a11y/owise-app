@@ -1061,6 +1061,53 @@ const DESTINATIONS: Record<string, {
       { q: 'Proposez-vous le retour Beauvais → Creil ?', a: 'Oui. Le tarif retour est identique. Pour les vols Ryanair dont les horaires sont souvent très tôt le matin ou tard le soir, Owise est disponible 24h/24 — votre chauffeur sera là, quelle que soit l\'heure d\'arrivée.' },
     ],
   },
+
+  'vtc-aeroport-charleroi': {
+    slug: 'vtc-aeroport-charleroi',
+    title: 'VTC Aéroport de Charleroi',
+    metaTitle: 'VTC Aéroport de Charleroi depuis l\'Oise dès 513€ | Owise',
+    metaDesc: 'Chauffeur privé depuis Chantilly, Creil, Senlis et l\'Oise vers l\'aéroport de Charleroi (Bruxelles Sud), hub Ryanair. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
+    keywords: [
+      'vtc charleroi depuis chantilly','vtc aéroport charleroi oise','chauffeur privé charleroi ryanair',
+      'transfert charleroi depuis creil','vtc charleroi belgique','taxi aéroport charleroi',
+      'vtc bruxelles sud charleroi','navette charleroi depuis paris nord','vtc oise charleroi ryanair',
+    ],
+    h1: 'VTC vers l\'Aéroport de Charleroi (Bruxelles Sud)',
+    intro: 'Votre chauffeur privé depuis Chantilly, Creil, Senlis, Gouvieux, Lamorlaye et toute l\'Oise vers l\'aéroport de Charleroi (Bruxelles Sud), le hub belge de Ryanair. De nombreux habitants du nord de l\'Oise y trouvent des vols moins chers que depuis CDG ou Orly pour l\'Europe du Sud et de l\'Est. Tarif fixe garanti, chauffeur professionnel, prise en charge à domicile. Disponible 24h/24, 7j/7.',
+    prix: 'dès 513€',
+    duree: '2h30–2h50 selon votre départ',
+    faq: [
+      { q: 'Quel est le tarif d\'un VTC depuis Creil vers l\'aéroport de Charleroi ?', a: 'Le forfait Creil → Charleroi est de 513€ en berline, prix fixe garanti, quelle que soit la circulation. Depuis Chantilly, le tarif est de 525€. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
+      { q: 'Pourquoi partir de Charleroi plutôt que de CDG ou Orly ?', a: 'Charleroi est le hub historique de Ryanair en Belgique : sur de nombreuses destinations (Espagne, Italie, Europe de l\'Est, Maroc), les tarifs y sont souvent nettement inférieurs à ceux proposés au départ de CDG ou Orly. Pour un groupe ou une famille, l\'écart sur les billets d\'avion peut largement compenser le trajet plus long jusqu\'à l\'aéroport.' },
+      { q: 'Combien de temps dure le trajet vers Charleroi ?', a: 'Comptez environ 2h30 depuis Creil et 2h35 depuis Chantilly, selon le trafic sur l\'A1 puis la E42 en Belgique. Votre chauffeur calcule le départ pour vous déposer confortablement avant l\'enregistrement.' },
+      { q: 'Le chauffeur peut-il m\'attendre si mon vol retour est en retard ?', a: 'Oui. Nous suivons votre vol en temps réel grâce à votre numéro de vol. En cas de retard à l\'arrivée à Charleroi, votre chauffeur ajuste son horaire sans frais supplémentaires.' },
+      { q: 'Desservez-vous aussi l\'aéroport de Bruxelles-Zaventem ?', a: 'Oui, avec un tarif dédié à cette destination, plus au nord de Bruxelles. Consultez notre page VTC Aéroport de Bruxelles pour le détail des prix depuis votre commune.' },
+      { q: 'Peut-on réserver un aller simple ou faut-il un aller-retour ?', a: 'L\'aller simple est possible. L\'option aller-retour est proposée à la réservation avec un tarif préférentiel — pratique si vos dates de vol sont déjà fixées.' },
+    ],
+  },
+
+  'vtc-aeroport-bruxelles': {
+    slug: 'vtc-aeroport-bruxelles',
+    title: 'VTC Aéroport de Bruxelles',
+    metaTitle: 'VTC Aéroport de Bruxelles depuis l\'Oise dès 593€ | Owise',
+    metaDesc: 'Chauffeur privé depuis Chantilly, Creil, Senlis et l\'Oise vers l\'aéroport de Bruxelles-Zaventem. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
+    keywords: [
+      'vtc bruxelles depuis chantilly','vtc aéroport bruxelles oise','chauffeur privé bruxelles zaventem',
+      'transfert bruxelles depuis creil','vtc zaventem belgique','taxi aéroport bruxelles',
+      'vtc oise aéroport bruxelles','navette bruxelles depuis paris nord',
+    ],
+    h1: 'VTC vers l\'Aéroport de Bruxelles-Zaventem',
+    intro: 'Votre chauffeur privé depuis Chantilly, Creil, Senlis, Gouvieux, Lamorlaye et toute l\'Oise vers l\'aéroport de Bruxelles-Zaventem. Correspondances long-courrier, vols Brussels Airlines ou simplement une alternative aux aéroports parisiens. Tarif fixe garanti, chauffeur professionnel, prise en charge à domicile. Disponible 24h/24, 7j/7.',
+    prix: 'dès 593€',
+    duree: '2h50–3h05 selon votre départ',
+    faq: [
+      { q: 'Quel est le tarif d\'un VTC depuis Creil vers l\'aéroport de Bruxelles ?', a: 'Le forfait Creil → Bruxelles-Zaventem est de 593€ en berline, prix fixe garanti. Depuis Chantilly, le tarif est de 606€. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
+      { q: 'Combien de temps dure le trajet vers Bruxelles-Zaventem ?', a: 'Comptez environ 2h50 depuis Creil et 2h55 depuis Chantilly, selon le trafic sur l\'A1 puis le ring de Bruxelles. Votre chauffeur ajuste l\'heure de départ pour un enregistrement serein.' },
+      { q: 'Le chauffeur suit-il mon vol en cas de retard ?', a: 'Oui. Nous suivons votre vol en temps réel grâce à votre numéro de vol, à l\'aller comme au retour, sans frais supplémentaires en cas de décalage.' },
+      { q: 'Desservez-vous aussi l\'aéroport de Charleroi ?', a: 'Oui, avec un tarif dédié — Charleroi est plus proche de l\'Oise d\'une quarantaine de kilomètres et le prix y est en conséquence plus bas. Consultez notre page VTC Aéroport de Charleroi pour le détail.' },
+      { q: 'Proposez-vous ce trajet pour un groupe ou une famille ?', a: 'Oui, en Van 7 places sur demande. Le tarif est calculé selon le même barème avec le coefficient véhicule appliqué automatiquement dans votre estimation en ligne.' },
+    ],
+  },
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }): Promise<Metadata> {

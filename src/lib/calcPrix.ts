@@ -69,10 +69,15 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
     if (lower.includes('beauvais')) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z
     }
-    // Belgique : pas de code postal français exploitable, donc détection uniquement
-    // par libellé (nom de pays ou grandes villes du trajet longue distance).
+    // Charleroi : aéroport belge distinct de Bruxelles, sensiblement plus proche
+    // de l'Oise (~45 km de moins) — mérite son propre tarif, pas celui de "BEL".
+    if (lower.includes('charleroi') || lower.includes('gosselies')) {
+      const z = zones.find(z => z.code === 'CHR'); if (z) return z
+    }
+    // Belgique (reste) : pas de code postal français exploitable, donc détection
+    // uniquement par libellé (nom de pays ou grandes villes du trajet longue distance).
     if (lower.includes('belgique') || lower.includes('belgium') || lower.includes('bruxelles')
-        || lower.includes('brussels') || lower.includes('charleroi') || lower.includes('mouscron')
+        || lower.includes('brussels') || lower.includes('zaventem') || lower.includes('mouscron')
         || lower.includes('kortrijk') || lower.includes('courtrai') || lower.includes('tournai')) {
       const z = zones.find(z => z.code === 'BEL'); if (z) return z
     }

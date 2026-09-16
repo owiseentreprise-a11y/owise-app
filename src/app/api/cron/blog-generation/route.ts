@@ -71,6 +71,26 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
         if (sujet.arrivee === 'Orly' || sujet.depart === 'Orly')   prixBerline = tarifs.orly_fixe
         if (sujet.arrivee === 'Beauvais')                           prixBerline = tarifs.beauvais_fixe
       }
+
+      // Bruxelles / Charleroi : hors grille cdg_fixe/orly_fixe/beauvais_fixe,
+      // prix stocké dans grilles_tarifaires (zones CHA/CRL <-> BEL/CHR).
+      if (sujet.arrivee === 'Bruxelles' || sujet.arrivee === 'Charleroi') {
+        const depCode = sujet.depart === 'Chantilly' ? 'CHA' : sujet.depart === 'Creil' ? 'CRL' : null
+        const arrCode = sujet.arrivee === 'Bruxelles' ? 'BEL' : 'CHR'
+        if (depCode) {
+          const { data: zones } = await supabase.from('zones').select('id, code').in('code', [depCode, arrCode])
+          const depZone = zones?.find(z => z.code === depCode)
+          const arrZone = zones?.find(z => z.code === arrCode)
+          if (depZone && arrZone) {
+            const { data: grille } = await supabase
+              .from('grilles_tarifaires')
+              .select('prix_berline')
+              .or(`and(zone_depart_id.eq.${depZone.id},zone_arrivee_id.eq.${arrZone.id}),and(zone_depart_id.eq.${arrZone.id},zone_arrivee_id.eq.${depZone.id})`)
+              .maybeSingle()
+            if (grille) prixBerline = grille.prix_berline
+          }
+        }
+      }
     } catch { /* pas bloquant */ }
   }
 

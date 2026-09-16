@@ -126,6 +126,10 @@ export const SUJETS: Sujet[] = [
   { id: 'clermont-cdg',       type: 'transfert', depart: 'Clermont-de-l\'Oise', arrivee: 'CDG'   },
   { id: 'clermont-orly',      type: 'transfert', depart: 'Clermont-de-l\'Oise', arrivee: 'Orly'  },
   { id: 'clermont-beauvais',  type: 'transfert', depart: 'Clermont-de-l\'Oise', arrivee: 'Beauvais' },
+  // Belgique (Bruxelles / Charleroi) — vols low-cost depuis l'Oise
+  { id: 'creil-charleroi',    type: 'transfert', depart: 'Creil',     arrivee: 'Charleroi'  },
+  { id: 'chantilly-charleroi',type: 'transfert', depart: 'Chantilly', arrivee: 'Charleroi'  },
+  { id: 'creil-bruxelles',    type: 'transfert', depart: 'Creil',     arrivee: 'Bruxelles'  },
   // Guides locaux Oise
   { id: 'guide-mariage-oise',     type: 'guide',    theme: "transport mariage dans l'Oise : Chantilly, Compiègne, Senlis" },
   { id: 'guide-terminal-cdg',     type: 'guide',    theme: "terminaux CDG : T1, T2, T2E, T2F, T3 — guide pour voyageurs de l'Oise" },
@@ -150,9 +154,11 @@ export const SUJETS: Sujet[] = [
 // ── Données de référence ──────────────────────────────────────────────────
 
 const AIRPORTS: Record<string, { nom: string; code: string; desc: string }> = {
-  CDG:      { nom: 'Paris Charles de Gaulle (CDG)', code: 'CDG', desc: 'le plus grand aéroport de France, desservant 200+ destinations mondiales' },
-  Orly:     { nom: 'Paris Orly (ORY)', code: 'ORY', desc: 'le deuxième aéroport de Paris, idéal pour les vols court et moyen-courriers' },
-  Beauvais: { nom: 'Beauvais-Tillé (BVA)', code: 'BVA', desc: 'hub des compagnies low-cost Ryanair et Wizzair' },
+  CDG:       { nom: 'Paris Charles de Gaulle (CDG)', code: 'CDG', desc: 'le plus grand aéroport de France, desservant 200+ destinations mondiales' },
+  Orly:      { nom: 'Paris Orly (ORY)', code: 'ORY', desc: 'le deuxième aéroport de Paris, idéal pour les vols court et moyen-courriers' },
+  Beauvais:  { nom: 'Beauvais-Tillé (BVA)', code: 'BVA', desc: 'hub des compagnies low-cost Ryanair et Wizzair' },
+  Bruxelles: { nom: 'Bruxelles-Zaventem (BRU)', code: 'BRU', desc: 'l\'aéroport international de Bruxelles, hub de Brussels Airlines' },
+  Charleroi: { nom: 'Charleroi (Bruxelles Sud)', code: 'CRL', desc: 'le hub belge de Ryanair, souvent moins cher que CDG ou Orly sur les vols vers le sud et l\'est de l\'Europe' },
 }
 
 const COMMUNES: Record<string, { zone: string; dist_cdg: number; desc: string }> = {
@@ -262,6 +268,9 @@ const DISTANCES: Record<string, number> = {
   "Clermont-de-l'Oise-CDG": 68, "Clermont-de-l'Oise-Orly": 105, "Clermont-de-l'Oise-Beauvais": 40,
   // Compiègne → Gare du Nord
   'Compiègne-Gare du Nord': 90,
+  // Belgique (aéroports) — distances réelles via API Google Distance Matrix
+  'Creil-Bruxelles': 286,     'Creil-Charleroi': 241,
+  'Chantilly-Bruxelles': 293, 'Chantilly-Charleroi': 248,
 }
 
 function getRouteDist(dep: string, arr: string): number {
