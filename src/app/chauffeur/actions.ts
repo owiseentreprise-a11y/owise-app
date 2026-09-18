@@ -138,16 +138,20 @@ export async function progresserCourseAction(
 
     if (course?.client_id) {
       const clientEmail = await getUserEmail(course.client_id)
+      // Prix definitif reellement facture : prix_final si renseigne (ajustement manuel),
+      // sinon prix_estime (cas normal — tarif fixe garanti, jamais ajuste en pratique).
+      // Meme fallback deja utilise plus bas pour la generation de facture (ligne ~172).
+      const prixDefinitif = course.prix_final ?? course.prix_estime
 
       // Reçu pour clients particuliers (inclut demande d'avis Google + code parrainage)
-      if (clientEmail && course.prix_final && !isEntreprise) {
+      if (clientEmail && prixDefinitif && !isEntreprise) {
         const codeParrainage = await getOrCreateParrainageCodePour(admin, course.client_id)
         await envoyerRecuClient({
           clientEmail, clientPrenom,
           adresseDepart: course.adresse_depart,
           adresseArrivee: course.adresse_arrivee,
           datePrevue: course.date_prevue,
-          prixFinal: course.prix_final,
+          prixFinal: prixDefinitif,
           chauffeurNom: chauffeurProfile
             ? `${chauffeurProfile.prenom ?? ''} ${chauffeurProfile.nom ?? ''}`.trim()
             : undefined,
@@ -169,9 +173,8 @@ export async function progresserCourseAction(
 
       // Auto-génération de facture uniquement si mode "par_prestation"
       const factMode = client?.facturation_mode ?? 'mensuelle'
-      const prixCourse = course?.prix_final ?? course?.prix_estime ?? null
-      if (isEntreprise && factMode === 'par_prestation' && prixCourse && !course.facture_id) {
-        const prixFinal = Number(prixCourse)
+      if (isEntreprise && factMode === 'par_prestation' && prixDefinitif && !course.facture_id) {
+        const prixFinal = Number(prixDefinitif)
         const montantTtc = prixFinal
         const montantHt  = Math.round((prixFinal / (1 + tauxTva / 100)) * 100) / 100
         const tva        = Math.round((prixFinal - montantHt) * 100) / 100
