@@ -53,6 +53,28 @@ export const NOM_VERS_CLE: Record<string, string> = {
 }
 
 /**
+ * Vocabulaire des destinations belges desservies.
+ *
+ * Sert à deux choses qui doivent rester d'accord : la détection de zone
+ * ci-dessous, et le géocodage (`/api/geocode`), qui doit chercher en Belgique
+ * plutôt qu'en France pour ces adresses. La France compte des homonymes —
+ * « Bruxelles » est un hameau de Dammarie-sur-Loing (45230), « Tournai » une
+ * commune de l'Orne, « Mouscron » un lieu-dit de Willems — et Google renvoyait
+ * ces lieux-là, à 400-500 km de la vraie destination (constaté le 2026-09-19).
+ */
+export const TERMES_CHARLEROI = ['charleroi', 'gosselies'] as const
+export const TERMES_BELGIQUE  = [
+  'belgique', 'belgium', 'bruxelles', 'brussels', 'zaventem',
+  'mouscron', 'kortrijk', 'courtrai', 'tournai',
+] as const
+
+/** Vrai si le libellé désigne une destination belge desservie. */
+export function estAdresseBelge(label: string): boolean {
+  const l = (label ?? '').toLowerCase()
+  return TERMES_CHARLEROI.some(t => l.includes(t)) || TERMES_BELGIQUE.some(t => l.includes(t))
+}
+
+/**
  * Détecte la zone tarifaire d'une adresse.
  * Libellé en priorité (aéroports, gares, Paris), code postal en fallback
  * (préfixe le plus long gagne — ex: "60550" > "60").
@@ -75,14 +97,12 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
     }
     // Charleroi : aéroport belge distinct de Bruxelles, sensiblement plus proche
     // de l'Oise (~45 km de moins) — mérite son propre tarif, pas celui de "BEL".
-    if (lower.includes('charleroi') || lower.includes('gosselies')) {
+    if (TERMES_CHARLEROI.some(t => lower.includes(t))) {
       const z = zones.find(z => z.code === 'CHR'); if (z) return z
     }
     // Belgique (reste) : pas de code postal français exploitable, donc détection
     // uniquement par libellé (nom de pays ou grandes villes du trajet longue distance).
-    if (lower.includes('belgique') || lower.includes('belgium') || lower.includes('bruxelles')
-        || lower.includes('brussels') || lower.includes('zaventem') || lower.includes('mouscron')
-        || lower.includes('kortrijk') || lower.includes('courtrai') || lower.includes('tournai')) {
+    if (TERMES_BELGIQUE.some(t => lower.includes(t))) {
       const z = zones.find(z => z.code === 'BEL'); if (z) return z
     }
     // "gare" dans l'adresse → zone gare uniquement si Paris intramuros (CP 75xxx)

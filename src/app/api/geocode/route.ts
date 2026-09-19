@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { estAdresseBelge } from '@/lib/calcPrix'
 
 const GOOGLE_KEY = process.env.GOOGLE_MAPS_KEY ?? ''
 
@@ -44,12 +45,26 @@ export async function GET(req: NextRequest) {
       return res.json()
     }
 
-    let json = await geocodeIn('FR')
     const isWeakMatch = (j: any) =>
       j.status !== 'OK' || !j.results?.[0] || (j.results[0].types ?? []).includes('country')
-    if (isWeakMatch(json)) {
-      const beJson = await geocodeIn('BE')
-      if (!isWeakMatch(beJson)) json = beJson
+
+    // Le repli « FR d'abord, BE si FR échoue » ne suffit pas : la France a des
+    // homonymes des villes belges (Bruxelles → hameau de Dammarie-sur-Loing,
+    // Tournai → commune de l'Orne, Mouscron → lieu-dit de Willems). La
+    // recherche française réussissait donc, et renvoyait un lieu à 400-500 km
+    // de la destination réelle — prix juste par chance, adresse fausse dans la
+    // course, la confirmation client et l'application chauffeur.
+    // Quand le libellé désigne une destination belge desservie, on cherche en
+    // Belgique en premier. (Constaté et corrigé le 2026-09-19.)
+    const belge = estAdresseBelge(q)
+    const [premier, second] = belge ? ['BE', 'FR'] as const : ['FR', 'BE'] as const
+    let json = await geocodeIn(premier)
+    // Pour un libellé belge, ne jamais se rabattre sur la France : si la
+    // Belgique ne sait pas résoudre l'adresse, un homonyme français est
+    // forcément faux. « Belgique » seul renvoyait ainsi un lieu-dit du Quesnoy.
+    if (isWeakMatch(json) && !belge) {
+      const autre = await geocodeIn(second)
+      if (!isWeakMatch(autre)) json = autre
     }
 
     if (json.status !== 'OK' || !json.results?.[0]) {
