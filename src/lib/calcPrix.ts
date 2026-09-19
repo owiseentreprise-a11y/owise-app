@@ -89,8 +89,11 @@ export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], a
       const z = zones.find(z => z.code === 'ORY'); if (z) return z
     }
     // Aéroport de Beauvais-Tillé : on exige "tillé" ou "aéroport" en plus de
-    // "beauvais" — sinon une simple adresse dans la ville de Beauvais (zone BEA,
-    // CP 60000) était aussi absorbée par la zone aéroport (CP 60550).
+    // "beauvais" — sinon une simple adresse dans la ville de Beauvais (zone BEA)
+    // était absorbée par la zone aéroport.
+    // À noter : la ville et l'aéroport partagent le code postal 60000 (l'aéroport
+    // est sur la commune de Tillé). Seul le libellé peut donc les distinguer —
+    // la zone BVA n'a d'ailleurs aucun préfixe postal en base.
     if (lower.includes('tillé') || lower.includes('tille')
         || (lower.includes('beauvais') && (lower.includes('aéroport') || lower.includes('aeroport')))) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z

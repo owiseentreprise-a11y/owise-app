@@ -18,7 +18,11 @@ export const LIEUX_CONNUS: Array<{
   // Aéroports
   { label: 'Aéroport Paris-Charles de Gaulle (CDG)', sublabel: 'Terminal 1, 2, 3 · 95700 Roissy-en-France', keywords: ['cdg', 'roissy', 'charles de gaulle', 'charles degaulle', 'aeroport cdg', 'aéroport cdg', 'aeroport paris', 'aéroport paris', 'charles'], lat: 49.0097, lng: 2.5479, codePostal: '95700' },
   { label: 'Aéroport de Paris-Orly (ORY)', sublabel: 'Terminal 1, 2, 3, 4 · 94390 Orly', keywords: ['orly', 'ory', 'aeroport orly', 'aéroport orly'], lat: 48.7233, lng: 2.3794, codePostal: '94390' },
-  { label: 'Aéroport Paris-Beauvais Tillé (BVA)', sublabel: '60550 Tillé (Beauvais)', keywords: ['beauvais', 'bva', 'tillé', 'tille', 'aeroport beauvais'], lat: 49.4543, lng: 2.1128, codePostal: '60550' },
+  // Code postal de l'aéroport : 60000 (Tillé), vérifié via Google le 2026-09-19.
+  // Il portait 60550, qui est celui de Verneuil-en-Halatte — commune voisine de
+  // Creil, et présente à ce titre dans les préfixes de la zone CRL. Un repli sur
+  // le code postal aurait donc classé l'aéroport de Beauvais en zone Creil.
+  { label: 'Aéroport Paris-Beauvais Tillé (BVA)', sublabel: '60000 Tillé (Beauvais)', keywords: ['beauvais', 'bva', 'tillé', 'tille', 'aeroport beauvais'], lat: 49.4543, lng: 2.1128, codePostal: '60000' },
   { label: 'Aéroport Paris-Le Bourget', sublabel: '93350 Le Bourget', keywords: ['le bourget', 'bourget', 'aeroport bourget'], lat: 48.9717, lng: 2.4408, codePostal: '93350' },
   // Gares Paris
   { label: 'Gare du Nord', sublabel: '18 Rue de Dunkerque, 75010 Paris', keywords: ['gare du nord', 'nord', 'eurostar', 'thalys', 'gare nord'], lat: 48.8809, lng: 2.3553, codePostal: '75010' },

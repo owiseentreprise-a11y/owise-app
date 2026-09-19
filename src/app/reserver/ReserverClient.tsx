@@ -275,22 +275,33 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
   useEffect(() => {
     async function resolve(label: string, setter: (v: AdresseVal) => void) {
       if (label.length < 3) return
-      // Lieux connus en priorité
-      const lower = label.toLowerCase()
-      const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower || l.label.toLowerCase() === lower))
-      if (lieu) {
-        const cpMatch = lieu.sublabel.match(/\b(\d{5})\b/)
-        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '', lat: lieu.lat, lng: lieu.lng })
-        return
-      }
-      // Google Geocoding
+      // Géocodage Google en premier, liste locale seulement en secours.
+      //
+      // L'ordre inverse (liste locale prioritaire) faisait réserver au mauvais
+      // endroit : les mots-clés de LIEUX_CONNUS contiennent des noms de communes
+      // — « beauvais » désigne l'aéroport de Beauvais-Tillé, « lyon » la gare de
+      // Lyon à Paris. Une adresse pré-remplie « Beauvais » était donc résolue en
+      // aéroport sans que le client l'ait choisi, et un Beauvais → Bruxelles
+      // s'affichait à 355 € au lieu des 620 € de la grille.
+      // Vérifié le 2026-09-19 : Google résout correctement chacun de ces lieux
+      // (CDG, Gare du Nord, Gare de Lyon, Orly, Disneyland, La Défense), et rend
+      // bien la ville pour « Beauvais » (60000) et « Lyon » (69002).
       try {
         const res  = await fetch(`/api/geocode?q=${encodeURIComponent(label)}`)
         const json = await res.json()
         if (json.lat && json.lng) {
           setter({ label: json.label || label, codePostal: json.codePostal ?? '', lat: json.lat, lng: json.lng })
+          return
         }
       } catch {}
+      // Géocodage indisponible (clé absente, quota, réseau) : la liste locale
+      // reste préférable à un champ laissé sans coordonnées.
+      const lower = label.toLowerCase()
+      const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower) || l.label.toLowerCase() === lower)
+      if (lieu) {
+        const cpMatch = lieu.sublabel.match(/\b(\d{5})\b/)
+        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '', lat: lieu.lat, lng: lieu.lng })
+      }
     }
     const dep = searchParams.get('depart')
     const arr = searchParams.get('arrivee')
