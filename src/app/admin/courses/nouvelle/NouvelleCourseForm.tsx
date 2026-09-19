@@ -292,6 +292,10 @@ export default function NouvelleCourseForm({
     }
     if (prixFinal === null) {
       out.push("Aucun prix n'est renseigné. Sans prix, le client ne recevra ni reçu ni demande d'avis Google à la fin de la course.")
+    } else if (allerRetour) {
+      // Deux courses sont créées, chacune au prix saisi : le montant réellement
+      // facturé est le double, et rien ne le disait avant de valider.
+      out.push(`Aller-retour : deux courses à ${prixFinal} € seront créées, soit ${prixFinal * 2} € facturés au client.`)
     }
 
     // Chauffeur déjà pris. Les courses n'ont pas de durée en base : on signale
@@ -492,7 +496,7 @@ export default function NouvelleCourseForm({
                 </div>
               )}
               <div style={{ fontSize: 10, color: 'var(--t3)' }}>
-                Le prix du retour sera à définir séparément sur la fiche course.
+                Le retour reprend le prix saisi ci-dessous, modifiable ensuite sur sa fiche.
               </div>
             </div>
           )}
@@ -565,7 +569,7 @@ export default function NouvelleCourseForm({
 
         <div>
           <label style={lbl}>
-            Prix estimé (€)
+            {allerRetour ? 'Prix par trajet (€)' : 'Prix estimé (€)'}
             {prixAuto !== null && (
               <span style={{ marginLeft: 8, color: 'var(--gold)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
                 — calculé : {prixAuto} €{useForfait ? ' (forfait)' : distanceKm ? ` (${distanceKm} km)` : ''}
@@ -579,6 +583,23 @@ export default function NouvelleCourseForm({
             onChange={e => setPrixManuel(e.target.value)}
             style={inp}
           />
+          {/* Le prix saisi vaut pour UN trajet : l'aller-retour crée deux courses
+              qui portent chacune ce montant. Sans ce rappel, un admin qui raisonne
+              en total fait payer le double. */}
+          {allerRetour && prixFinal !== null && (
+            <div style={{
+              marginTop: 8, padding: '9px 12px', borderRadius: 7,
+              background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.22)',
+              fontSize: 12, color: 'var(--t1)',
+            }}>
+              <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{prixFinal} €</span>
+              {' par trajet, aller et retour — '}
+              <strong style={{ fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--gold)' }}>
+                {prixFinal * 2} € au total
+              </strong>
+              {' facturés au client.'}
+            </div>
+          )}
           {prixAuto !== null && prixManuel === '' && (
             <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 4 }}>
               Prix automatique appliqué — saisir une valeur pour le remplacer

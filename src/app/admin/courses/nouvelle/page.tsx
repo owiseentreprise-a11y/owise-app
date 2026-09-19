@@ -27,9 +27,17 @@ export default async function NouvelleCourse() {
       .gte('date_prevue', new Date(Date.now() - 12 * 3_600_000).toISOString()),
   ])
 
-  const now = new Date()
-  now.setHours(now.getHours() + 1, Math.ceil(now.getMinutes() / 15) * 15, 0, 0)
-  const defaultDatetime = now.toISOString().slice(0, 16)
+  // Un input datetime-local attend une heure LOCALE, or toISOString() renvoie de
+  // l'UTC : en France (UTC+2 l'été) le défaut tombait une heure avant l'heure
+  // réelle, donc dans le passé. Le serveur tournant en UTC, on formate
+  // explicitement sur Europe/Paris plutôt que de se fier à son fuseau.
+  const QUART_HEURE = 15 * 60_000
+  const cible = new Date(Math.ceil((Date.now() + 3_600_000) / QUART_HEURE) * QUART_HEURE)
+  const defaultDatetime = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(cible).replace(' ', 'T')
 
   return (
     <>
