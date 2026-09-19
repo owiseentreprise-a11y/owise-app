@@ -74,6 +74,18 @@ export default async function AdminDashboard() {
   const demandesCollaborateur = coursesEnAttente.filter(c => !!(c as any).collaborateur_id && !c.chauffeur_id)
   const nonAssignees         = coursesEnAttente.filter(c => !c.chauffeur_id && !(c as any).sous_traitant_id)
 
+  // Courses imminentes sans chauffeur : celles qui peuvent réellement faire
+  // rater une prise en charge. Aucune alerte de création ne les attrape, elles
+  // ne deviennent urgentes qu'avec le temps qui passe.
+  const imminentes = courses
+    .filter(c => {
+      if (c.chauffeur_id || (c as any).sous_traitant_id) return false
+      if (c.statut === 'terminee' || c.statut === 'annulee') return false
+      const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
+      return h >= 0 && h < 24
+    })
+    .sort((a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime())
+
   // CA jour : terminée (prix_final) + en attente (prix_estime)
   const caJourTerminee = coursesAujourdHui
     .filter(c => c.statut === 'terminee')
@@ -148,6 +160,53 @@ export default async function AdminDashboard() {
       </div>
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* Courses imminentes sans chauffeur */}
+        {imminentes.length > 0 && (
+          <div style={{
+            background: 'rgba(217,84,84,.07)',
+            border: '1px solid rgba(217,84,84,.28)',
+            borderRadius: 12, padding: '15px 18px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--red)', flexShrink: 0 }} />
+              <span style={{
+                fontSize: 11, fontWeight: 600, letterSpacing: '.1em',
+                textTransform: 'uppercase', color: 'var(--red)',
+              }}>
+                {imminentes.length === 1
+                  ? 'Une course démarre dans moins de 24 h sans chauffeur'
+                  : `${imminentes.length} courses démarrent dans moins de 24 h sans chauffeur`}
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {imminentes.map(c => {
+                const d = new Date(c.date_prevue)
+                const h = (d.getTime() - Date.now()) / 3_600_000
+                const dans = h < 1 ? `${Math.max(0, Math.round(h * 60))} min` : `${Math.floor(h)} h`
+                return (
+                  <a key={c.id} href={`/admin/courses/${c.id}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    textDecoration: 'none', fontSize: 12.5, color: 'var(--t1)',
+                  }}>
+                    <span style={{
+                      fontFamily: 'var(--font-jetbrains), monospace', fontSize: 12,
+                      fontWeight: 600, color: 'var(--red)', minWidth: 58,
+                    }}>
+                      dans {dans}
+                    </span>
+                    <span style={{ color: 'var(--t2)', fontSize: 11.5, minWidth: 96 }}>
+                      {d.toLocaleString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.adresse_depart} → {c.adresse_arrivee}
+                    </span>
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* KPI strip */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>

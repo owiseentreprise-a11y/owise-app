@@ -15,6 +15,9 @@
   --amb:      #E8A030;
   --red:      #D95050;
   --blu:      #4A8ED0;
+  /* Alias de --amb : plusieurs composants admin écrivent var(--amber), qui sans
+     cette définition ne résout rien — fond transparent, texte hérité. */
+  --amber:    #E8A030;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -85,6 +88,9 @@ button:active { transform: scale(.98); }
   --t1:       #0A0A0A;
   --t2:       #555555;
   --t3:       #999999;
+  /* Ambre assombri : le #E8A030 du thème sombre ne tient pas le contraste
+     sur fond crème, ni en texte ni derrière du texte clair. */
+  --amber:    #B45309;
   color: #0A0A0A;
 }
 /* Supprime le grain sur les pages claires */

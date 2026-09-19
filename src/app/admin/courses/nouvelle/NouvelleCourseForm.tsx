@@ -177,16 +177,21 @@ function AddressInput({
 export default function NouvelleCourseForm({
   clients, collabs, chauffeurs, sousTraitants,
   zones, grille, tarifs, params,
-  defaultDatetime,
+  defaultDatetime, coursesAssignees = [],
 }: {
   clients: ClientOption[]; collabs: CollabOption[]
   chauffeurs: ChauffeurOption[]; sousTraitants: SousTraitantOption[]
   zones: Zone[]; grille: Grille[]; tarifs: TarifVehicule[]
   params?: ParamsCalc | null
   defaultDatetime: string
+  coursesAssignees?: { id: string; chauffeur_id: string; date_prevue: string; adresse_depart: string }[]
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError]          = useState<string | null>(null)
+  // Avertissements affichés avant création : un premier clic les révèle, un
+  // second confirme. Une course sans prix n'envoie ni reçu ni demande d'avis,
+  // et une date erronée disparaît du planning sans que personne ne la voie.
+  const [avertissements, setAvertissements] = useState<string[]>([])
 
   const [depart,  setDepart]  = useState<AdresseVal>({ label: '', codePostal: '' })
   const [arrivee, setArrivee] = useState<AdresseVal>({ label: '', codePostal: '' })
@@ -259,9 +264,68 @@ export default function NouvelleCourseForm({
   const selectedChauffeur = chauffeurs.find((c: ChauffeurOption) => c.id === chauffeurId)
   const isInternalChauffeur = !!chauffeurId && !selectedChauffeur?.sous_traitant_id
 
+  /** Date dans le passé = toujours une erreur de saisie : on bloque. */
+  function erreurBloquante(): string | null {
+    const d = new Date(dateHeure)
+    if (isNaN(d.getTime())) return 'Date invalide.'
+    if (d.getTime() < Date.now()) {
+      return `La date saisie (${d.toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}) est déjà passée.`
+    }
+    return null
+  }
+
+  /** Situations douteuses mais parfois légitimes : on demande confirmation. */
+  function calculerAvertissements(): string[] {
+    const out: string[] = []
+    const heures = (new Date(dateHeure).getTime() - Date.now()) / 3_600_000
+
+    if (heures < 24) {
+      // Arrondir en minutes d'abord : sinon 2,999 h donne « 2 h 60 ».
+      const totalMin = Math.round(heures * 60)
+      const delai = totalMin >= 60
+        ? `${Math.floor(totalMin / 60)} h ${String(totalMin % 60).padStart(2, '0')}`
+        : `${totalMin} minutes`
+      out.push(`Cette course démarre dans ${delai}. Vérifiez qu'un chauffeur est disponible.`)
+    }
+    if (heures > 24 * 183) {
+      out.push(`La date est à plus de 6 mois (${new Date(dateHeure).toLocaleDateString('fr-FR', { dateStyle: 'long' })}). Erreur d'année ?`)
+    }
+    if (prixFinal === null) {
+      out.push("Aucun prix n'est renseigné. Sans prix, le client ne recevra ni reçu ni demande d'avis Google à la fin de la course.")
+    }
+
+    // Chauffeur déjà pris. Les courses n'ont pas de durée en base : on signale
+    // toute autre course du même chauffeur à moins de 2 h, à l'admin de juger.
+    if (chauffeurId) {
+      const cible = new Date(dateHeure).getTime()
+      const proches = coursesAssignees.filter(c =>
+        c.chauffeur_id === chauffeurId &&
+        Math.abs(new Date(c.date_prevue).getTime() - cible) < 2 * 3_600_000
+      )
+      for (const c of proches) {
+        const quand = new Date(c.date_prevue).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+        out.push(`Ce chauffeur a déjà une course le ${quand} au départ de ${c.adresse_depart}. Vérifiez qu'il peut enchaîner.`)
+      }
+    }
+    return out
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+
+    const bloquant = erreurBloquante()
+    if (bloquant) { setAvertissements([]); setError(bloquant); return }
+
+    // Premier clic : on révèle les avertissements sans créer. Second clic : on crée.
+    // On compare le contenu et pas seulement la présence : si l'utilisateur corrige
+    // un point entre les deux clics, la nouvelle liste doit être relue avant de créer.
+    const nouveaux = calculerAvertissements()
+    if (nouveaux.length > 0 && nouveaux.join('|') !== avertissements.join('|')) {
+      setAvertissements(nouveaux)
+      return
+    }
+
     const fd = new FormData(e.currentTarget)
     fd.set('adresse_depart', depart.label || (fd.get('adresse_depart') as string))
     fd.set('adresse_arrivee', arrivee.label || (fd.get('adresse_arrivee') as string))
@@ -691,17 +755,43 @@ export default function NouvelleCourseForm({
           </div>
         )}
 
+        {/* Avertissements — à confirmer avant création */}
+        {avertissements.length > 0 && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 8,
+            background: 'rgba(232,160,48,.08)', border: '1px solid rgba(232,160,48,.28)',
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase',
+              color: 'var(--amber)', marginBottom: 10,
+            }}>
+              {avertissements.length > 1 ? `${avertissements.length} points à vérifier` : 'Point à vérifier'}
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {avertissements.map((a, i) => (
+                <li key={i} style={{ fontSize: 12.5, color: 'var(--t1)', lineHeight: 1.5 }}>{a}</li>
+              ))}
+            </ul>
+            <div style={{ fontSize: 11.5, color: 'var(--t2)', marginTop: 11 }}>
+              Corrigez si nécessaire, ou cliquez à nouveau sur « Créer » pour confirmer.
+            </div>
+          </div>
+        )}
+
         {/* Submit */}
         <div style={{ display: 'flex', gap: 12, paddingTop: 8 }}>
           <button type="submit" disabled={pending} style={{
             padding: '13px 32px', borderRadius: 10,
-            background: pending ? 'var(--elevated)' : 'var(--gold)',
+            background: pending ? 'var(--elevated)' : avertissements.length ? 'var(--amber)' : 'var(--gold)',
             border: 'none', color: pending ? 'var(--t2)' : 'var(--base)',
             fontSize: 13, fontWeight: 600, cursor: pending ? 'wait' : 'pointer',
             fontFamily: 'var(--font-dm-sans), sans-serif',
-            boxShadow: pending ? 'none' : '0 4px 16px rgba(201,168,76,.3)',
+            boxShadow: pending ? 'none'
+              : avertissements.length ? '0 4px 16px rgba(232,160,48,.3)' : '0 4px 16px rgba(201,168,76,.3)',
           }}>
-            {pending ? 'Création en cours…' : 'Créer la course'}
+            {pending ? 'Création en cours…'
+              : avertissements.length ? 'Créer malgré tout'
+              : 'Créer la course'}
           </button>
           <Link href="/admin/courses" style={{
             padding: '13px 24px', borderRadius: 10,
