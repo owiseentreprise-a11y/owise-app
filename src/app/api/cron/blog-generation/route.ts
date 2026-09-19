@@ -60,38 +60,36 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
   let prixBerline: number | undefined
   if (sujet.type === 'transfert' && sujet.depart && sujet.arrivee) {
     try {
-      const { data: tarifs } = await supabase
-        .from('tarifs')
-        .select('cdg_fixe, orly_fixe, beauvais_fixe')
-        .eq('vehicule', 'Berline')
-        .single()
-
-      if (tarifs) {
-        if (sujet.arrivee === 'CDG' || sujet.depart === 'CDG')     prixBerline = tarifs.cdg_fixe
-        if (sujet.arrivee === 'Orly' || sujet.depart === 'Orly')   prixBerline = tarifs.orly_fixe
-        if (sujet.arrivee === 'Beauvais')                           prixBerline = tarifs.beauvais_fixe
-      }
-
-      // Bruxelles / Charleroi : hors grille cdg_fixe/orly_fixe/beauvais_fixe,
-      // prix stocké dans grilles_tarifaires (zones CHA/CRL <-> BEL/CHR).
-      if (sujet.arrivee === 'Bruxelles' || sujet.arrivee === 'Charleroi') {
+      // Toutes les destinations passent par la grille zone-à-zone, y compris
+      // les aéroports français. Auparavant CDG/Orly/Beauvais utilisaient les
+      // forfaits génériques cdg_fixe/orly_fixe/beauvais_fixe : un article
+      // « Chantilly → CDG » annonçait 69 € alors que la grille facture 59 €,
+      // et ces colonnes ne servent plus au calcul de prix depuis le 2026-09-19.
+      {
         const DEP_CODES: Record<string, string> = {
           Chantilly: 'CHA', Lamorlaye: 'CHA', Gouvieux: 'CHA',
           Creil: 'CRL', Senlis: 'SEN', Compiègne: 'COM', Beauvais: 'BEA',
         }
+        const ARR_CODES: Record<string, string> = {
+          CDG: 'CDG', Orly: 'ORY', Beauvais: 'BVA',
+          Bruxelles: 'BEL', Charleroi: 'CHR',
+        }
         const depCode = DEP_CODES[sujet.depart ?? ''] ?? null
-        const arrCode = sujet.arrivee === 'Bruxelles' ? 'BEL' : 'CHR'
-        if (depCode) {
+        const arrCode = ARR_CODES[sujet.arrivee ?? ''] ?? null
+        if (depCode && arrCode) {
           const { data: zones } = await supabase.from('zones').select('id, code').in('code', [depCode, arrCode])
           const depZone = zones?.find(z => z.code === depCode)
           const arrZone = zones?.find(z => z.code === arrCode)
           if (depZone && arrZone) {
+            // limit(1) indispensable : la grille contient désormais les deux
+            // sens de chaque paire, et maybeSingle() échoue sur deux lignes.
             const { data: grille } = await supabase
               .from('grilles_tarifaires')
               .select('prix_berline')
               .or(`and(zone_depart_id.eq.${depZone.id},zone_arrivee_id.eq.${arrZone.id}),and(zone_depart_id.eq.${arrZone.id},zone_arrivee_id.eq.${depZone.id})`)
+              .limit(1)
               .maybeSingle()
-            if (grille) prixBerline = grille.prix_berline
+            if (grille?.prix_berline) prixBerline = grille.prix_berline
           }
         }
       }

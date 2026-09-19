@@ -156,23 +156,11 @@ export function calculerPrix(
     return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
   }
 
-  // Priorité 2 : tarif fixe aéroport (chaque véhicule a sa propre ligne dans tarifs)
-  const zDep = zones.find(z => z.id === zoneDepId)
-  const zArr = zones.find(z => z.id === zoneArrId)
-  const airportZone = [zDep, zArr].find(z => z?.type === 'aeroport' && AIRPORT_COL[z.code ?? ''])
-  if (airportZone) {
-    const tarif = tarifs.find(t => t.vehicule === vehiculeNom)
-    const col   = AIRPORT_COL[airportZone.code]
-    if (tarif && col) {
-      const prixBase = Number(tarif[col])
-      if (prixBase > 0) {
-        let prix = prixBase
-        if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
-        return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
-      }
-    }
-  }
-
+  // Plus de forfait aéroport « global » en repli : un prix unique appliqué dès
+  // qu'une zone aéroport était impliquée, quelle que soit la distance. Il
+  // facturait Orly → Charleroi 59 € pour 300 km, et CDG → Charleroi 69 € pour
+  // 262 km. Sans ligne de grille, on passe désormais au kilomètre, ce que les
+  // trois points d'entrée savent faire.
   return null
 }
 

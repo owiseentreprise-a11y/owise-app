@@ -22,9 +22,10 @@ export default function CoherenceAlert({
   const berline = tarifs.find(t => t.vehicule === 'Berline')
   if (!berline) return null
 
-  // La grille zone-à-zone a TOUJOURS la priorité sur le tarif fixe aéroport dans calculerPrix.
-  // On alerte uniquement si une zone tarifaire n'a PAS d'entrée de grille vers un aéroport —
-  // dans ce cas, le tarif fixe serait utilisé en secours (ce qui peut être intentionnel ou un oubli).
+  // Sans entrée de grille, le prix est calculé au kilomètre depuis le 2026-09-19 :
+  // le forfait aéroport global a été retiré, il appliquait le même prix quelle que
+  // soit la distance. On signale donc les paires qui n'ont pas de forfait, pour que
+  // ce soit un choix et non un oubli.
   type Manquant = { zone: string; aeroport: string; tarifFixe: number }
   const manquants: Manquant[] = []
 
@@ -65,14 +66,14 @@ export default function CoherenceAlert({
           </div>
           <div style={{ fontSize: 12, color: 'var(--t2)', marginBottom: 12, lineHeight: 1.6 }}>
             Les trajets ci-dessous n&apos;ont pas d&apos;entrée dans la <strong style={{ color: 'var(--t1)' }}>grille tarifaire</strong>.
-            Le <strong style={{ color: 'var(--t1)' }}>tarif fixe aéroport</strong> sera utilisé en secours.
-            Ajoutez une entrée dans la grille si vous souhaitez un tarif spécifique pour cette zone.
+            Leur prix est donc <strong style={{ color: 'var(--t1)' }}>calculé au kilomètre</strong>, selon la distance réelle.
+            Ajoutez une entrée dans la grille si vous voulez un forfait fixe pour ce trajet.
           </div>
 
           <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11 }}>
             <thead>
               <tr>
-                {['Zone', 'Aéroport', 'Tarif fixe (secours)'].map(h => (
+                {['Zone', 'Aéroport', 'Prix appliqué'].map(h => (
                   <th key={h} style={{
                     textAlign: 'left', padding: '4px 12px 4px 0',
                     color: 'var(--t3)', letterSpacing: '.08em', textTransform: 'uppercase',
@@ -91,7 +92,7 @@ export default function CoherenceAlert({
                     {m.aeroport}
                   </td>
                   <td style={{ padding: '5px 0', color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                    {m.tarifFixe} €
+                    au kilomètre
                   </td>
                 </tr>
               ))}
