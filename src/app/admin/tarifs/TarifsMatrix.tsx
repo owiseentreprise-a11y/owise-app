@@ -7,9 +7,10 @@ type Zone = { id: string; nom: string; code: string; type: string }
 type Grille = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 
 function PrixCell({
-  depart, arrivee, prix, coefPremium, coefVan, miroir,
+  depart, arrivee, prix, coefPremium, coefVan, pecBerline, kmBerline, miroir,
 }: {
   depart: string; arrivee: string; prix: number; coefPremium: number; coefVan: number
+  pecBerline: number; kmBerline: number
   /** Case symétrique : lecture seule, la saisie se fait dans l'autre sens. */
   miroir?: boolean
 }) {
@@ -43,6 +44,13 @@ function PrixCell({
 
   const berline = parseFloat(val) || 0
 
+  // Une case à 0 ne veut pas dire « gratuit » : elle veut dire qu'aucun forfait
+  // n'est défini pour cette paire, et que le calcul bascule au kilomètre
+  // (calculerPrix ignore une valeur nulle et rend null). Afficher « 0 € » se
+  // lisait comme un prix, d'où cet affichage explicite avec la formule réelle.
+  const sansForfait = berline <= 0
+  const libelleKm = `${pecBerline.toFixed(0)} € + ${kmBerline.toFixed(2).replace('.', ',')} €/km`
+
   // Case symétrique : non éditable. Les deux sens portent forcément le même
   // prix, une saisie des deux côtés ne pourrait que créer une divergence.
   if (miroir) {
@@ -53,10 +61,10 @@ function PrixCell({
             fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13,
             fontWeight: 500, color: 'var(--t3)',
           }}>
-            {berline.toFixed(0)} €
+            {sansForfait ? 'au km' : `${berline.toFixed(0)} €`}
           </div>
           <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 2, opacity: .6 }}>
-            ↔ symétrique
+            {sansForfait ? libelleKm : '↔ symétrique'}
           </div>
         </div>
       </td>
@@ -103,11 +111,17 @@ function PrixCell({
           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,.08)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
         >
-          <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, fontWeight: 600, color: saving ? 'var(--t3)' : 'var(--gold)' }}>
-            {berline.toFixed(0)} €
+          <div style={{
+            fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13,
+            fontWeight: sansForfait ? 500 : 600,
+            color: saving ? 'var(--t3)' : sansForfait ? 'var(--t2)' : 'var(--gold)',
+          }}>
+            {sansForfait ? 'au km' : `${berline.toFixed(0)} €`}
           </div>
           <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 2 }}>
-            P: {(berline * coefPremium).toFixed(0)}€ · V: {(berline * coefVan).toFixed(0)}€
+            {sansForfait
+              ? libelleKm
+              : `P: ${(berline * coefPremium).toFixed(0)}€ · V: ${(berline * coefVan).toFixed(0)}€`}
           </div>
         </button>
       )}
@@ -116,9 +130,11 @@ function PrixCell({
 }
 
 export default function TarifsMatrix({
-  zones, grille, coefPremium, coefVan,
+  zones, grille, coefPremium, coefVan, pecBerline, kmBerline,
 }: {
   zones: Zone[]; grille: Grille[]; coefPremium: number; coefVan: number
+  /** Prise en charge et prix au kilomètre, affichés dans les cases sans forfait. */
+  pecBerline: number; kmBerline: number
 }) {
   const activeZones = zones.filter(z => z.code !== 'HORS')
 
@@ -129,6 +145,8 @@ export default function TarifsMatrix({
     <div style={{ overflowX: 'auto' }}>
       <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 10, letterSpacing: '.08em' }}>
         CLIQUEZ SUR UN PRIX POUR LE MODIFIER — LES DEUX SENS SONT ENREGISTRÉS ENSEMBLE, LA CASE GRISÉE SUIT AUTOMATIQUEMENT — P: premium · V: van
+        <br />
+        « AU KM » = AUCUN FORFAIT POUR CE TRAJET : IL EST FACTURÉ À LA DISTANCE. METTRE 0 DANS UNE CASE REVIENT À LA REPASSER AU KILOMÈTRE.
       </div>
       <table style={{ borderCollapse: 'collapse', minWidth: 600 }}>
         <thead>
@@ -175,6 +193,8 @@ export default function TarifsMatrix({
                     prix={cell?.prix_berline ?? 0}
                     coefPremium={coefPremium}
                     coefVan={coefVan}
+                    pecBerline={pecBerline}
+                    kmBerline={kmBerline}
                     miroir={miroir}
                   />
                 )

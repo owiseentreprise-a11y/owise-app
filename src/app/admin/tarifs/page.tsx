@@ -22,6 +22,18 @@ export default async function TarifsPage() {
   const zones  = zonesRes.data ?? []
   const grille = grilleRes.data ?? []
   const tarifs = tarifsRes.data ?? []
+  const params = paramsRes.data
+
+  // Les coefficients étaient écrits en dur (1.5 / 1.7) dans l'appel à
+  // TarifsMatrix alors que le calcul de prix lit ceux de `parametres` : les
+  // modifier en base aurait fait afficher des prix premium et van faux ici.
+  const coefPremium = Number(params?.coef_berline_premium ?? 1.5)
+  const coefVan     = Number(params?.coef_van ?? 1.7)
+
+  // Prix au kilomètre de la berline, affiché dans les cases sans forfait.
+  const berline = tarifs.find((t: any) => t.vehicule === 'Berline')
+  const pecBerline = Number(berline?.prise_en_charge ?? 0)
+  const kmBerline  = Number(berline?.prix_km ?? 0)
 
   return (
     <>
@@ -67,8 +79,10 @@ export default async function TarifsPage() {
           <TarifsMatrix
             zones={zones}
             grille={grille}
-            coefPremium={1.5}
-            coefVan={1.7}
+            coefPremium={coefPremium}
+            coefVan={coefVan}
+            pecBerline={pecBerline}
+            kmBerline={kmBerline}
           />
         </div>
 
