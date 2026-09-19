@@ -51,6 +51,8 @@ export async function createReservationCheckout(data: {
   zone_arrivee_id: string
   aller_retour?: boolean
   date_retour?: string
+  /** Arrivée du retour quand elle diffère du point de départ de l'aller. */
+  adresse_arrivee_retour?: string
   num_vol_train?: string
   terminal?: string
   heure_arrivee_vol?: string
@@ -193,7 +195,7 @@ export async function createReservationCheckout(data: {
         const supabaseAdmin = createAdminClient()
         await supabaseAdmin.from('courses').insert({
           adresse_depart:  data.adresse_arrivee,
-          adresse_arrivee: data.adresse_depart,
+          adresse_arrivee: data.adresse_arrivee_retour?.trim() || data.adresse_depart,
           date_prevue:     dateRetourParsed.toISOString(),
           type_vehicule:   data.type_vehicule,
           nb_passagers:    data.nb_passagers,

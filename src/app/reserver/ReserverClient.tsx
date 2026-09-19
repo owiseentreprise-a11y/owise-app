@@ -315,6 +315,9 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
   const [email,     setEmail]     = useState(profil?.email     ?? searchParams.get('email')  ?? '')
   const [telephone, setTelephone] = useState(profil?.telephone ?? searchParams.get('tel')    ?? '')
   const [allerRetour,     setAllerRetour]     = useState(false)
+  // Retour vers une adresse différente de celle du départ. Vide = adresses inversées.
+  const [retourAutreAdresse, setRetourAutreAdresse] = useState(false)
+  const [arriveeRetour, setArriveeRetour] = useState<AdresseVal>({ label: '', codePostal: '' })
   const [dateRetourOnly,  setDateRetourOnly]  = useState('')
   const [timeRetourOnly,  setTimeRetourOnly]  = useState('10:00')
   const dateRetour = dateRetourOnly ? `${dateRetourOnly}T${timeRetourOnly}` : ''
@@ -469,6 +472,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         distance_km:     distanceKm ?? undefined,
         aller_retour:    allerRetour,
         date_retour:     allerRetour ? dateRetour : '',
+        adresse_arrivee_retour: allerRetour && arriveeRetour.label ? arriveeRetour.label : undefined,
         num_vol_train:   numVolTrain || undefined,
         terminal:        terminal || undefined,
         heure_arrivee_vol: heureArrivee || undefined,
@@ -834,14 +838,51 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                           onChange={e => handleTimeRetourChange(e.target.value)} />
                       </div>
                     </div>
+                    {/* On ne rentre pas toujours là d'où on est parti : hôtel,
+                        famille, autre ville. Masqué par défaut pour ne pas
+                        alourdir le cas courant. */}
+                    <div style={{ marginBottom: 10 }}>
+                      {!retourAutreAdresse ? (
+                        <button type="button" onClick={() => setRetourAutreAdresse(true)}
+                          style={{
+                            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                            fontSize: 12, color: '#C9A84C', fontWeight: 500, textDecoration: 'underline',
+                            fontFamily: 'inherit',
+                          }}>
+                          Le retour se fait à une autre adresse
+                        </button>
+                      ) : (
+                        <div>
+                          <FieldLabel>Adresse d&apos;arrivée du retour</FieldLabel>
+                          <AddressInput value={arriveeRetour} placeholder={depart.label || 'Votre adresse de retour'} icon={
+                            <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+                              <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="#3DB87A"/>
+                              <circle cx="8" cy="6" r="2.2" fill="#fff"/>
+                            </svg>
+                          } onSelect={setArriveeRetour} />
+                          <button type="button"
+                            onClick={() => { setRetourAutreAdresse(false); setArriveeRetour({ label: '', codePostal: '' }) }}
+                            style={{
+                              marginTop: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                              fontSize: 11, color: '#6B6B6B', textDecoration: 'underline', fontFamily: 'inherit',
+                            }}>
+                            Revenir à l&apos;adresse de départ
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     {(depart.label || arrivee.label) && (
                       <div style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
                         <span>{arrivee.label || '…'}</span>
                         <span>→</span>
                         <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
-                        <span>{depart.label || '…'}</span>
-                        <span style={{ fontSize: 10, opacity: .6 }}>(adresses inversées)</span>
+                        <span style={{ color: arriveeRetour.label ? '#C9A84C' : undefined, fontWeight: arriveeRetour.label ? 600 : 400 }}>
+                          {arriveeRetour.label || depart.label || '…'}
+                        </span>
+                        <span style={{ fontSize: 10, opacity: .6 }}>
+                          {arriveeRetour.label ? '(adresse de retour différente)' : '(adresses inversées)'}
+                        </span>
                       </div>
                     )}
                   </div>

@@ -25,6 +25,9 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   try { etapes = JSON.parse(etapesRaw).filter((e: string) => e.trim()) } catch { etapes = [] }
   const allerRetour   = formData.get('aller_retour') === 'true'
   const dateRetourRaw = (formData.get('date_retour') as string) || ''
+  // Adresse d'arrivée du retour, si le client ne rentre pas là d'où il est parti.
+  // Vide = comportement historique, on inverse simplement les adresses.
+  const arriveeRetour = ((formData.get('adresse_arrivee_retour') as string) || '').trim()
   const num_vol_train    = (formData.get('num_vol_train') as string) || null
   const terminal_val     = (formData.get('terminal') as string) || null
   const heure_arrivee_vol = (formData.get('heure_arrivee_vol') as string) || null
@@ -126,7 +129,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     if (!isNaN(dateRetourParsed.getTime())) {
       await supabase.from('courses').insert({
         adresse_depart:    adresse_arrivee,
-        adresse_arrivee:   adresse_depart,
+        adresse_arrivee:   arriveeRetour || adresse_depart,
         etapes:            etapes.length > 0 ? [...etapes].reverse() : null,
         date_prevue:       dateRetourParsed.toISOString(),
         type_vehicule,
@@ -208,7 +211,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
       // Le retour existe en base mais n'apparaissait pas dans la confirmation :
       // le client ignorait qu'il était réservé.
       retour: allerRetour && dateRetourRaw && !isNaN(new Date(dateRetourRaw).getTime())
-        ? { datePrevue: new Date(dateRetourRaw).toISOString() }
+        ? { datePrevue: new Date(dateRetourRaw).toISOString(), adresseArrivee: arriveeRetour || undefined }
         : null,
     }) : Promise.resolve(),
     envoyerNotificationAdmin({

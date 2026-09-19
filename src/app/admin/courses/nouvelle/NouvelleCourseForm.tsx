@@ -209,6 +209,8 @@ export default function NouvelleCourseForm({
   const [creerCompte, setCreerCompte]       = useState(false)
   const [allerRetour, setAllerRetour] = useState(false)
   const [dateRetour, setDateRetour]   = useState('')
+  // Vide = le retour ramène à l'adresse de départ de l'aller (cas courant).
+  const [arriveeRetour, setArriveeRetour] = useState<AdresseVal>({ label: '', codePostal: '' })
   const [numVolTrain, setNumVolTrain] = useState('')
   const [terminal, setTerminal]       = useState('')
   const [heureArrivee, setHeureArrivee] = useState('')
@@ -343,6 +345,7 @@ export default function NouvelleCourseForm({
     fd.set('creer_compte', creerCompte ? 'true' : 'false')
     fd.set('aller_retour', allerRetour ? 'true' : 'false')
     fd.set('date_retour', dateRetour)
+    fd.set('adresse_arrivee_retour', arriveeRetour.label)
     fd.set('num_vol_train', numVolTrain)
     fd.set('terminal', terminal)
     fd.set('heure_arrivee_vol', heureArrivee)
@@ -482,17 +485,34 @@ export default function NouvelleCourseForm({
                 <input type="datetime-local" value={dateRetour} required={allerRetour}
                   onChange={e => setDateRetour(e.target.value)} style={inp} />
               </div>
+              {/* Le retour ne ramène pas toujours au point de départ : hôtel,
+                  domicile d'un proche, autre adresse. Sans ce champ, il fallait
+                  corriger la course après coup — ou ne pas s'en apercevoir. */}
+              <div>
+                <label style={lbl}>Adresse d'arrivée du retour</label>
+                <AddressInput
+                  name="adresse_arrivee_retour_visible"
+                  placeholder={depart.label ? `Par défaut : ${depart.label}` : "Par défaut : adresse de départ de l'aller"}
+                  dotColor="var(--green)" dotShape="circle"
+                  value={arriveeRetour} onChange={setArriveeRetour}
+                />
+              </div>
               {(depart.label || arrivee.label) && (
                 <div style={{
                   fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 6,
                   padding: '6px 10px', borderRadius: 7, background: 'var(--elevated)', border: '1px solid var(--t3)',
+                  flexWrap: 'wrap',
                 }}>
                   <span style={{ color: 'var(--red)', fontSize: 9 }}>●</span>
                   <span style={{ color: 'var(--t3)' }}>{arrivee.label || '…'}</span>
                   <span style={{ color: 'var(--t3)' }}>→</span>
                   <span style={{ color: 'var(--grn)', fontSize: 9 }}>●</span>
-                  <span style={{ color: 'var(--t3)' }}>{depart.label || '…'}</span>
-                  <span style={{ marginLeft: 4, fontSize: 9, color: 'var(--t3)' }}>(adresses inversées)</span>
+                  <span style={{ color: arriveeRetour.label ? 'var(--gold)' : 'var(--t3)' }}>
+                    {arriveeRetour.label || depart.label || '…'}
+                  </span>
+                  <span style={{ marginLeft: 4, fontSize: 9, color: 'var(--t3)' }}>
+                    {arriveeRetour.label ? '(adresse de retour spécifique)' : '(adresses inversées)'}
+                  </span>
                 </div>
               )}
               <div style={{ fontSize: 10, color: 'var(--t3)' }}>

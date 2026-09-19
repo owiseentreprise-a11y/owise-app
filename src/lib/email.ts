@@ -201,7 +201,7 @@ export async function envoyerConfirmationClient(params: {
    * recevait une confirmation ne mentionnant que l'aller alors que deux courses
    * étaient bien enregistrées — il ignorait que son retour était réservé.
    */
-  retour?: { datePrevue: string } | null
+  retour?: { datePrevue: string; adresseArrivee?: string } | null
 }) {
   const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse, retour } = params
 
@@ -227,7 +227,7 @@ export async function envoyerConfirmationClient(params: {
         </table>
       </div>
       ${bloc('Trajet aller', datePrevue, adresseDepart, adresseArrivee)}
-      ${bloc('Trajet retour', retour.datePrevue, adresseArrivee, adresseDepart)}
+      ${bloc('Trajet retour', retour.datePrevue, adresseArrivee, retour.adresseArrivee || adresseDepart)}
       ${prixEstime ? `
       <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
