@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic'
 
 const PH_HOST    = 'https://eu.posthog.com'
 const PH_PROJECT = '200343'
+/** Délai au-delà duquel une requête PostHog est abandonnée (voir phQuery). */
+const PH_TIMEOUT_MS = 8000
 
 let phError: string | null = null
 
@@ -20,6 +22,12 @@ async function phQuery(query: string): Promise<unknown[][]> {
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body:    JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
       cache:   'no-store',
+      // Six requêtes HogQL partent en parallèle et rien ne les bornait : la
+      // page attendait la plus lente, indéfiniment. Le 2026-09-14 en production,
+      // /admin/analytics a atteint la limite de 300 s de Vercel et a été tuée.
+      // Mesuré en local le 2026-09-19 : 18 s de chargement. Une requête qui
+      // dépasse ce délai laisse sa section vide plutôt que d'emporter la page.
+      signal: AbortSignal.timeout(PH_TIMEOUT_MS),
     })
     if (!res.ok) {
       const body = await res.text().catch(() => '')
@@ -29,7 +37,9 @@ async function phQuery(query: string): Promise<unknown[][]> {
     const j = await res.json() as { results?: unknown[][] }
     return j.results ?? []
   } catch (e) {
-    phError = `Erreur réseau PostHog: ${String(e)}`
+    phError = (e as Error)?.name === 'TimeoutError'
+      ? `PostHog n'a pas répondu en moins de ${PH_TIMEOUT_MS / 1000} s — section incomplète, rechargez la page.`
+      : `Erreur réseau PostHog: ${String(e)}`
     return []
   }
 }
