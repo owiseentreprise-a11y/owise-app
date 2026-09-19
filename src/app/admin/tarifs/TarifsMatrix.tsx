@@ -7,23 +7,29 @@ type Zone = { id: string; nom: string; code: string; type: string }
 type Grille = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 
 function PrixCell({
-  depart, arrivee, prix, coefPremium, coefVan,
+  depart, arrivee, prix, coefPremium, coefVan, miroir,
 }: {
   depart: string; arrivee: string; prix: number; coefPremium: number; coefVan: number
+  /** Case symétrique : lecture seule, la saisie se fait dans l'autre sens. */
+  miroir?: boolean
 }) {
   const [val, setVal] = useState(String(prix))
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
   const [, startTransition] = useTransition()
 
   const save = () => {
     const n = parseFloat(val)
     if (isNaN(n) || n < 0) { setVal(String(prix)); setEditing(false); return }
     setSaving(true)
+    setErreur(null)
     startTransition(async () => {
-      await updatePrixGrille(depart, arrivee, n)
+      const res = await updatePrixGrille(depart, arrivee, n)
       setSaving(false)
       setEditing(false)
+      // Sans cette remontée, un échec d'enregistrement passait inaperçu.
+      if (res?.error) { setErreur(res.error); setVal(String(prix)) }
     })
   }
 
@@ -37,8 +43,36 @@ function PrixCell({
 
   const berline = parseFloat(val) || 0
 
+  // Case symétrique : non éditable. Les deux sens portent forcément le même
+  // prix, une saisie des deux côtés ne pourrait que créer une divergence.
+  if (miroir) {
+    return (
+      <td style={{ padding: '8px 12px', verticalAlign: 'middle', background: 'rgba(0,0,0,.025)' }}>
+        <div title="Se règle dans l'autre sens" style={{ padding: '4px 8px', cursor: 'not-allowed' }}>
+          <div style={{
+            fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13,
+            fontWeight: 500, color: 'var(--t3)',
+          }}>
+            {berline.toFixed(0)} €
+          </div>
+          <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 2, opacity: .6 }}>
+            ↔ symétrique
+          </div>
+        </div>
+      </td>
+    )
+  }
+
   return (
     <td style={{ padding: '8px 12px', verticalAlign: 'middle' }}>
+      {erreur && (
+        <div style={{
+          fontSize: 9.5, color: 'var(--red)', marginBottom: 4,
+          maxWidth: 150, lineHeight: 1.3,
+        }}>
+          {erreur}
+        </div>
+      )}
       {editing ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <input
@@ -94,7 +128,7 @@ export default function TarifsMatrix({
   return (
     <div style={{ overflowX: 'auto' }}>
       <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 10, letterSpacing: '.08em' }}>
-        CLIQUEZ SUR UN PRIX POUR LE MODIFIER — B: berline · P: premium · V: van
+        CLIQUEZ SUR UN PRIX POUR LE MODIFIER — LES DEUX SENS SONT ENREGISTRÉS ENSEMBLE, LA CASE GRISÉE SUIT AUTOMATIQUEMENT — P: premium · V: van
       </div>
       <table style={{ borderCollapse: 'collapse', minWidth: 600 }}>
         <thead>
@@ -128,8 +162,11 @@ export default function TarifsMatrix({
                 <div>{dep.nom}</div>
                 <div style={{ fontSize: 9, color: 'var(--t3)' }}>{dep.code}</div>
               </td>
-              {activeZones.map(arr => {
-                const cell = getCell(dep.id, arr.id)
+              {activeZones.map((arr, j) => {
+                // Une paire n'a qu'un prix : on n'en rend éditable qu'un côté
+                // (triangle supérieur), l'autre affiche la même valeur en grisé.
+                const miroir = j < i
+                const cell = getCell(dep.id, arr.id) ?? getCell(arr.id, dep.id)
                 return (
                   <PrixCell
                     key={arr.id}
@@ -138,6 +175,7 @@ export default function TarifsMatrix({
                     prix={cell?.prix_berline ?? 0}
                     coefPremium={coefPremium}
                     coefVan={coefVan}
+                    miroir={miroir}
                   />
                 )
               })}

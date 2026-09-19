@@ -25,20 +25,53 @@ export async function updateTarifVehicule(
   return {}
 }
 
+/**
+ * Enregistre un prix de grille pour une paire de zones.
+ *
+ * Trois défauts corrigés le 2026-09-19, chacun ayant réellement produit un prix
+ * faux en production :
+ *  - un seul sens était écrit, alors que calculerPrix() lit indifféremment l'un
+ *    ou l'autre : la valeur périmée du sens opposé pouvait l'emporter ;
+ *  - un UPDATE sur une paire absente de la table ne touchait aucune ligne et ne
+ *    remontait aucune erreur — la saisie disparaissait en silence ;
+ *  - le retour était `void`, donc l'interface ne pouvait rien signaler.
+ *
+ * Pas d'upsert : la table n'a pas de contrainte d'unicité sur la paire de zones.
+ */
 export async function updatePrixGrille(
   zoneDepart: string,
   zoneArrivee: string,
   prix: number
-): Promise<void> {
+): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
-  await supabase
-    .from('grilles_tarifaires')
-    .update({ prix_berline: prix, updated_at: new Date().toISOString() })
-    .eq('zone_depart_id', zoneDepart)
-    .eq('zone_arrivee_id', zoneArrivee)
+
+  if (!Number.isFinite(prix) || prix < 0) return { error: 'Prix invalide.' }
+  if (zoneDepart === zoneArrivee) return { error: 'Départ et arrivée identiques.' }
+
+  const maintenant = new Date().toISOString()
+
+  for (const [dep, arr] of [[zoneDepart, zoneArrivee], [zoneArrivee, zoneDepart]]) {
+    const { data: majs, error: errMaj } = await supabase
+      .from('grilles_tarifaires')
+      .update({ prix_berline: prix, updated_at: maintenant })
+      .eq('zone_depart_id', dep)
+      .eq('zone_arrivee_id', arr)
+      .select('id')
+
+    if (errMaj) return { error: `Enregistrement impossible : ${errMaj.message}` }
+
+    if (!majs || majs.length === 0) {
+      const { error: errIns } = await supabase
+        .from('grilles_tarifaires')
+        .insert({ zone_depart_id: dep, zone_arrivee_id: arr, prix_berline: prix, updated_at: maintenant })
+      if (errIns) return { error: `Création impossible : ${errIns.message}` }
+    }
+  }
+
   revalidatePath('/admin/tarifs')
   revalidatePagesPubliques()
+  return {}
 }
 
 export async function updateParametresTarifs(formData: FormData): Promise<{ error?: string }> {
