@@ -196,31 +196,72 @@ export async function envoyerConfirmationClient(params: {
   nbPassagers: number
   prixEstime?: number | null
   refCourse: string
+  /**
+   * Trajet retour, quand la réservation est un aller-retour. Sans lui, le client
+   * recevait une confirmation ne mentionnant que l'aller alors que deux courses
+   * étaient bien enregistrées — il ignorait que son retour était réservé.
+   */
+  retour?: { datePrevue: string } | null
 }) {
-  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse } = params
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse, retour } = params
 
-  const html = base(`
-    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre course est confirmée</h2>
-    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le récapitulatif de votre réservation.</p>
-
-    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+  const bloc = (titre: string, date: string, depart: string, arrivee: string) => `
+    <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:14px;">
+      ${titre ? `<div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:12px;">${titre}</div>` : ''}
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${row('Référence', `#${refCourse}`)}
-        ${row('Date', fmtDate(datePrevue))}
-        ${row('Heure', fmtTime(datePrevue))}
-        ${row('Départ', adresseDepart)}
-        ${row('Arrivée', adresseArrivee)}
-        ${row('Véhicule', typeVehicule)}
-        ${row('Passagers', String(nbPassagers))}
+        ${row('Date', fmtDate(date))}
+        ${row('Heure', fmtTime(date))}
+        ${row('Départ', depart)}
+        ${row('Arrivée', arrivee)}
         ${prixEstime ? row('Tarif estimé', `${prixEstime.toFixed(2)} €`) : ''}
       </table>
-    </div>
+    </div>`
 
+  const corps = retour
+    ? `
+      <div style="background:#F8F6F1;border-radius:10px;padding:16px 24px;margin-bottom:14px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${row('Référence', `#${refCourse}`)}
+          ${row('Véhicule', typeVehicule)}
+          ${row('Passagers', String(nbPassagers))}
+        </table>
+      </div>
+      ${bloc('Trajet aller', datePrevue, adresseDepart, adresseArrivee)}
+      ${bloc('Trajet retour', retour.datePrevue, adresseArrivee, adresseDepart)}
+      ${prixEstime ? `
+      <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="font-size:13px;color:#EDE8DF;">Total aller-retour</td>
+          <td align="right" style="font-size:18px;color:#C9A84C;font-weight:600;">${(prixEstime * 2).toFixed(2)} €</td>
+        </tr></table>
+      </div>` : ''}`
+    : `
+      <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${row('Référence', `#${refCourse}`)}
+          ${row('Date', fmtDate(datePrevue))}
+          ${row('Heure', fmtTime(datePrevue))}
+          ${row('Départ', adresseDepart)}
+          ${row('Arrivée', adresseArrivee)}
+          ${row('Véhicule', typeVehicule)}
+          ${row('Passagers', String(nbPassagers))}
+          ${prixEstime ? row('Tarif estimé', `${prixEstime.toFixed(2)} €`) : ''}
+        </table>
+      </div>`
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">${retour ? 'Votre aller-retour est confirmé' : 'Votre course est confirmée'}</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le récapitulatif de votre réservation.</p>
+    ${corps}
     <p style="margin:0 0 8px;font-size:13px;color:#555;">Votre chauffeur vous sera communiqué avant la prise en charge.</p>
     <p style="margin:0;font-size:12px;color:#848499;">Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
   `)
 
-  await send(clientEmail, `Confirmation de course – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
+  const sujet = retour
+    ? `Confirmation aller-retour – ${fmtDate(datePrevue)} et ${fmtDate(retour.datePrevue)}`
+    : `Confirmation de course – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`
+
+  await send(clientEmail, sujet, html)
 }
 
 // ── 1b. Lien de paiement — réservation prise par téléphone/WhatsApp ──────────
