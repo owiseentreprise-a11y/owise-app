@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix, calculerPrixKm } from '@/lib/calcPrix'
 import { capiLead } from '@/lib/capi'
+import { nettoyerCleEnv } from '@/lib/stripe'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -61,8 +62,7 @@ export async function createReservationCheckout(data: {
   gclid?: string
   ads_consent?: 'accepted' | 'refused' | 'unknown'
 }): Promise<{ error?: string; checkoutUrl?: string }> {
-  const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
-  const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
+  const key = nettoyerCleEnv(process.env.STRIPE_SECRET_KEY)
   if (!key) return { error: 'Clé Stripe manquante' }
 
   // Recalculer le prix côté serveur — ne jamais faire confiance au prix client

@@ -4,13 +4,13 @@ import PurchaseEvent from './PurchaseEvent'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getOrCreateParrainageCodePour } from '@/app/espace-client/actions-parrainage'
+import { nettoyerCleEnv } from '@/lib/stripe'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 async function getStripeAmount(sessionId: string): Promise<number> {
   try {
-    const rawKey = process.env.STRIPE_SECRET_KEY ?? ''
-    const key = rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey
+    const key = nettoyerCleEnv(process.env.STRIPE_SECRET_KEY)
     if (!key) return 0
     const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
       headers: { Authorization: `Bearer ${key}` },

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, nettoyerCleEnv } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
@@ -18,8 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
   }
 
-  const rawSecret = process.env.STRIPE_WEBHOOK_SECRET ?? ''
-  const webhookSecret = rawSecret.charCodeAt(0) === 0xFEFF ? rawSecret.slice(1) : rawSecret
+  const webhookSecret = nettoyerCleEnv(process.env.STRIPE_WEBHOOK_SECRET)
 
   let event
   try {
