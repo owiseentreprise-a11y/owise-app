@@ -1,4 +1,5 @@
 import Sidebar from '@/components/Sidebar'
+import ErrorReporter from './ErrorReporter'
 
 // L'auth est déjà vérifiée par proxy.ts (matcher '/admin/:path*') sur CHAQUE requête —
 // pas besoin d'un 2e appel getUser() indépendant ici, ça ne ferait que dupliquer le
@@ -6,6 +7,7 @@ import Sidebar from '@/components/Sidebar'
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="theme-light" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#F8F6F1' }}>
+      <ErrorReporter />
       <Sidebar />
       <main style={{
         flex: 1, minHeight: 0,
