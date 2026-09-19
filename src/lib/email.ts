@@ -202,8 +202,10 @@ export async function envoyerConfirmationClient(params: {
    * étaient bien enregistrées — il ignorait que son retour était réservé.
    */
   retour?: { datePrevue: string; adresseArrivee?: string } | null
+  /** Message affiché en tête, pour une confirmation qui en remplace une précédente. */
+  note?: string
 }) {
-  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse, retour } = params
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse, retour, note } = params
 
   const bloc = (titre: string, date: string, depart: string, arrivee: string) => `
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:14px;">
@@ -251,7 +253,8 @@ export async function envoyerConfirmationClient(params: {
 
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">${retour ? 'Votre aller-retour est confirmé' : 'Votre course est confirmée'}</h2>
-    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le récapitulatif de votre réservation.</p>
+    <p style="margin:0 0 ${note ? '16' : '24'}px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le récapitulatif de votre réservation.</p>
+    ${note ? `<div style="margin:0 0 24px;padding:12px 16px;border-radius:8px;background:#FDF6E3;border:1px solid rgba(201,168,76,.35);font-size:13px;color:#6B5518;line-height:1.55;">${note}</div>` : ''}
     ${corps}
     <p style="margin:0 0 8px;font-size:13px;color:#555;">Votre chauffeur vous sera communiqué avant la prise en charge.</p>
     <p style="margin:0;font-size:12px;color:#848499;">Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
