@@ -222,6 +222,13 @@ export async function togglePayerAbord(id: string, valeur: boolean): Promise<voi
   revalidatePath(`/admin/clients/${id}`)
 }
 
+/** Affichage du montant dans les emails passager (confirmation et reçu). */
+export async function toggleAfficherPrix(id: string, valeur: boolean): Promise<void> {
+  const supabase = await requireAdminClient()
+  await supabase.from('clients').update({ afficher_prix: valeur }).eq('id', id)
+  revalidatePath(`/admin/clients/${id}`)
+}
+
 export async function updateCompte(
   id: string,
   data: { type_compte: string; entreprise_nom: string; adresse_facturation: string },

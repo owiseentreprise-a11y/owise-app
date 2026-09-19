@@ -6,7 +6,8 @@ import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import ClientEditActions, { DeleteClientButton } from './ClientEditActions'
 import CollaborateursSection from './CollaborateursSection'
 import GenererFactureButton from './GenererFactureButton'
-import { togglePayerAbord } from './actions'
+import { togglePayerAbord, toggleAfficherPrix } from './actions'
+import { afficherPrixPourClient } from '@/lib/affichagePrix'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,7 @@ export default async function ClientDetailPage({
   const courses = coursesRes.data ?? []
   const collaborateurs = (collabsRes.data ?? []) as any[]
   const isEntreprise = client.type_compte === 'entreprise'
+  const afficherPrix = afficherPrixPourClient(client)
   // Colonnes directes sur clients (nouveau schéma) avec fallback profiles (ancien)
   const prenom = client.prenom || p?.prenom || ''
   const nom    = client.nom    || p?.nom    || ''
@@ -351,6 +353,43 @@ export default async function ClientDetailPage({
               </form>
             </div>
           )}
+          {/* Confidentialité du prix — un collaborateur d'entreprise n'a pas à
+              voir le montant, qui est une information entre Owise et l'entreprise. */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--gb)', borderRadius: 12, padding: '16px 20px' }}>
+            <div style={{ fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 500, marginBottom: 12 }}>
+              Confidentialité
+            </div>
+            <form action={async () => {
+              'use server'
+              await toggleAfficherPrix(id, !afficherPrix)
+            }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                <button type="submit" style={{
+                  width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+                  background: afficherPrix ? 'var(--gold)' : 'var(--t3)',
+                  position: 'relative', transition: 'background .2s', flexShrink: 0, padding: 0,
+                }}>
+                  <span style={{
+                    position: 'absolute', top: 3, left: afficherPrix ? 21 : 3,
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: '#fff', transition: 'left .2s', display: 'block',
+                  }} />
+                </button>
+                <span style={{ fontSize: 13, color: 'var(--t1)' }}>
+                  Afficher le prix dans les emails du passager
+                </span>
+              </label>
+              <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 8, lineHeight: 1.5 }}>
+                {afficherPrix
+                  ? '✓ Confirmation et reçu indiquent le montant.'
+                  : 'Le montant est masqué : le passager lit « facturée à votre entreprise ».'}
+                {client.afficher_prix === null || client.afficher_prix === undefined
+                  ? ` Réglage par défaut pour un compte ${isEntreprise ? 'entreprise' : 'particulier'}.`
+                  : ' Choix explicite.'}
+              </div>
+            </form>
+          </div>
+
           {isEntreprise && (
             <CollaborateursSection
               clientId={id}

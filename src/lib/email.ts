@@ -204,8 +204,13 @@ export async function envoyerConfirmationClient(params: {
   retour?: { datePrevue: string; adresseArrivee?: string } | null
   /** Message affiché en tête, pour une confirmation qui en remplace une précédente. */
   note?: string
+  /** false pour un collaborateur d'entreprise : le montant ne le regarde pas. */
+  afficherPrix?: boolean
 }) {
-  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, prixEstime, refCourse, retour, note } = params
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, refCourse, retour, note } = params
+  // Prix masqué : on neutralise la valeur au lieu de la tester partout, pour
+  // qu'aucun futur ajout de ligne tarifaire ne la laisse filtrer par oubli.
+  const prixEstime = params.afficherPrix === false ? null : params.prixEstime
 
   const bloc = (titre: string, date: string, depart: string, arrivee: string) => `
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:14px;">
@@ -493,8 +498,11 @@ export async function envoyerRecuClient(params: {
   chauffeurNom?: string
   refCourse: string
   codeParrainage?: string | null
+  /** false pour un collaborateur d'entreprise : le montant ne le regarde pas. */
+  afficherPrix?: boolean
 }) {
   const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, prixFinal, chauffeurNom, refCourse, codeParrainage } = params
+  const afficherPrix = params.afficherPrix !== false
 
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre course est terminée</h2>
@@ -510,10 +518,14 @@ export async function envoyerRecuClient(params: {
       </table>
     </div>
 
+    ${afficherPrix ? `
     <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;text-align:center;">
       <div style="font-size:11px;color:#848499;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Montant</div>
       <div style="font-size:32px;font-weight:700;color:#C9A84C;font-family:'Courier New',monospace;">${prixFinal.toFixed(2)} €</div>
-    </div>
+    </div>` : `
+    <div style="background:#F8F6F1;border-radius:10px;padding:14px 24px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:13px;color:#848499;">Cette course est facturée à votre entreprise.</div>
+    </div>`}
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;text-align:center;">
       <div style="font-size:20px;margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
@@ -541,7 +553,13 @@ export async function envoyerRecuClient(params: {
     <p style="margin:0;font-size:12px;color:#848499;text-align:center;">À bientôt sur OWISE — <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
   `)
 
-  await send(clientEmail, `Reçu course #${refCourse} – ${prixFinal.toFixed(2)} €`, html)
+  // Le montant figurait aussi dans l'objet : visible dans la liste des mails
+  // sans même ouvrir, ce qui annulait le masquage fait dans le corps.
+  await send(
+    clientEmail,
+    afficherPrix ? `Reçu course #${refCourse} – ${prixFinal.toFixed(2)} €` : `Reçu de votre course #${refCourse}`,
+    html,
+  )
 }
 
 // ── 5. Demande d'avis Google (clients entreprise — pas de reçu auto) ─────────

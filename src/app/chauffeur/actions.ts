@@ -12,6 +12,7 @@ import {
 } from '@/lib/email'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { getOrCreateParrainageCodePour } from '@/app/espace-client/actions-parrainage'
+import { afficherPrixPourClient } from '@/lib/affichagePrix'
 
 async function getChauffeurUser() {
   const supabase = await createClient()
@@ -120,7 +121,9 @@ export async function progresserCourseAction(
     // Reçu client
     const [courseRes, chauffeurProfileRes, parametresRes] = await Promise.all([
       admin.from('courses')
-        .select('adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime, client_id, facture_id, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
+        // clients(*) volontaire : afficher_prix peut ne pas encore exister en base,
+        // un select explicite ferait échouer la clôture de course.
+        .select('adresse_depart, adresse_arrivee, date_prevue, prix_final, prix_estime, client_id, facture_id, clients(*)')
         .eq('id', courseId).single(),
       admin.from('profiles').select('prenom, nom').eq('id', user.id).single(),
       admin.from('parametres').select('facture_taux_tva').eq('id', true).single(),
@@ -157,6 +160,7 @@ export async function progresserCourseAction(
             : undefined,
           refCourse: courseId.slice(-6).toUpperCase(),
           codeParrainage,
+          afficherPrix: afficherPrixPourClient(client),
         })
       }
 

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerNotificationChauffeur, envoyerBienvenueClient } from '@/lib/email'
 import { getUserEmail, createAdminClient } from '@/lib/supabase/admin'
+import { afficherPrixPourClient } from '@/lib/affichagePrix'
 
 export async function creerCourseAction(formData: FormData): Promise<{ error?: string } | void> {
   const supabase = await requireAdminClient()
@@ -179,18 +180,36 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   let clientEmail: string | null = null
   let clientPrenom = ''
   let clientNomComplet = '—'
+  // Par défaut on affiche le prix ; masqué seulement si le client le demande
+  // ou s'il s'agit d'une entreprise (cf. afficherPrixPourClient).
+  let afficherPrix = true
 
   if (effectiveClientId) {
     const [emailResult, profileRes, clientRes] = await Promise.all([
       getUserEmail(effectiveClientId),
       supabase.from('profiles').select('prenom, nom').eq('id', effectiveClientId).single(),
-      supabase.from('clients').select('type_compte, entreprise_nom').eq('id', effectiveClientId).single(),
+      // select('*') volontaire : afficher_prix peut ne pas encore exister en
+      // base, un select explicite ferait échouer toute la création de course.
+      supabase.from('clients').select('*').eq('id', effectiveClientId).single(),
     ])
     clientEmail = emailResult
     clientPrenom = profileRes.data?.prenom ?? ''
     clientNomComplet = clientRes.data?.type_compte === 'entreprise'
       ? (clientRes.data.entreprise_nom ?? clientPrenom)
       : (`${clientPrenom} ${profileRes.data?.nom ?? ''}`.trim() || '—')
+    afficherPrix = afficherPrixPourClient(clientRes.data)
+
+    // Réservation faite pour un collaborateur : c'est lui qui voyage, donc lui
+    // qui reçoit la confirmation — sans le montant. Repli sur le compte de
+    // l'entreprise si son email n'est pas renseigné, sinon personne n'est averti.
+    if (collaborateur_id) {
+      const { data: collab } = await supabase
+        .from('collaborateurs').select('prenom, nom, email').eq('id', collaborateur_id).single()
+      if (collab?.email) {
+        clientEmail = collab.email
+        clientPrenom = collab.prenom ?? clientPrenom
+      }
+    }
   } else if (passager_mode === 'libre' && passager_email) {
     // Pas de compte créé/lié, mais un email a bien été saisi — on peut quand
     // même envoyer la confirmation directement, sans passer par un client_id.
@@ -213,6 +232,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
       retour: allerRetour && dateRetourRaw && !isNaN(new Date(dateRetourRaw).getTime())
         ? { datePrevue: new Date(dateRetourRaw).toISOString(), adresseArrivee: arriveeRetour || undefined }
         : null,
+      afficherPrix,
     }) : Promise.resolve(),
     envoyerNotificationAdmin({
       adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
