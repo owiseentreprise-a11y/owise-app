@@ -2,13 +2,83 @@
 
 > Owise est un service de chauffeur privé (VTC) basé dans l'Oise, desservant Paris, l'Île-de-France et l'Oise. Transferts vers les aéroports CDG, Orly, Beauvais, la gare du Nord et toute destination en France. Tarif fixe garanti annoncé avant la réservation — pas de compteur, pas de surprise. Disponible 24h/24, 7j/7. Réservation en ligne sur owise.fr.
 
-## Tarifs confirmés (prix fixe, berline, hors supplément nuit)
+<!-- TARIFS-AUTO:DEBUT — généré par generer-llms-tarifs.mjs, ne pas modifier à la main -->
+## Tarifs fixes par secteur (berline, prix garanti à la réservation)
 
-- Chantilly → CDG : **59 €**
-- Gouvieux → CDG : **59 €**
-- Lamorlaye → CDG : **59 €**
-- Creil → CDG : **59 €**
-- Pour les autres communes : tarif calculé à l'avance via l'estimateur sur owise.fr selon l'adresse exacte.
+Le prix ne dépend pas de la commune exacte mais du secteur. Toutes les communes listées sous un secteur paient le même tarif fixe. Ces prix valent dans les deux sens.
+
+### Chantilly et environs (5km)
+Communes desservies : Asnières-sur-Oise, Bellefontaine, Boran-sur-Oise, Chantilly, Chaumontel, Coye-la-Forêt, Crouy-en-Thelle, Gouvieux, Lamorlaye, Le Mesnil-en-Thelle, Luzarches, Neuilly-en-Thelle, Plessis-Luzarches, Précy-sur-Oise, Saint-Leu-d'Esserent, Saint-Maximin, Villers-sous-Saint-Leu, Vineuil-Saint-Firmin.
+- Chantilly → CDG : 59 €
+- Chantilly → Orly : 139 €
+- Chantilly → Beauvais-Tillé : 79 €
+- Chantilly → Paris : 119 €
+- Vers Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
+### Creil et environs (5km)
+Communes desservies : Cauffry, Creil, Fleurines, Laigneville, Liancourt, Monchy-Saint-Éloi, Montataire, Nogent-sur-Oise, Pont-Sainte-Maxence, Rantigny, Thiverny, Verneuil-en-Halatte, Villers-Saint-Paul.
+- Creil → CDG : 59 €
+- Creil → Orly : 145 €
+- Creil → Beauvais-Tillé : 69 €
+- Creil → Paris : 125 €
+- Vers Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
+### Senlis et environs
+Communes desservies : Apremont, Aumont-en-Halatte, Avilly-Saint-Léonard, Barbery, Chamant, Courteuil, La Chapelle-en-Serval, Mont-l'Évêque, Orry-la-Ville, Pontarmé, Senlis, Thiers-sur-Thève.
+- Senlis → CDG : 59 €
+- Senlis → Orly : 139 €
+- Senlis → Beauvais-Tillé : 79 €
+- Vers Paris, Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
+### Compiègne et Oise Nord
+Communes desservies : Bienville, Choisy-au-Bac, Clairoix, Compiègne, Coudun, Jaux, Jonquières, Lacroix-Saint-Ouen, Le Meux, Longueil-Annel, Margny-lès-Compiègne, Montmacq, Rethondes, Thourotte, Venette, Vieux-Moulin.
+- Compiègne → CDG : 115 €
+- Compiègne → Orly : 149 €
+- Compiègne → Beauvais-Tillé : 139 €
+- Vers Paris, Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
+### Beauvais (ville)
+- Beauvais → CDG : 125 €
+- Beauvais → Orly : 169 €
+- Beauvais → Beauvais-Tillé : 59 €
+- Vers Paris, Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
+## Longue distance — tarifs fixes garantis
+
+Trajets longue distance au forfait, sans compteur. Prix valables dans les deux sens.
+
+### Vers Bruxelles et la Belgique
+- Chantilly → Bruxelles : 606 €
+- Creil → Bruxelles : 593 €
+- Senlis → Bruxelles : 584 €
+- Compiègne → Bruxelles : 539 €
+- Beauvais → Bruxelles : 620 €
+- Paris → Bruxelles : 640 €
+- Gare du Nord → Bruxelles : 625 €
+- CDG → Bruxelles : 588 €
+- Orly → Bruxelles : 656 €
+
+### Vers Aéroport de Charleroi (Bruxelles-Sud)
+- Chantilly → Charleroi : 525 €
+- Creil → Charleroi : 513 €
+- Senlis → Charleroi : 503 €
+- Compiègne → Charleroi : 459 €
+- Beauvais → Charleroi : 540 €
+
+### Vers Lille et le Nord
+- Paris → Lille : 488 €
+- Gare du Nord → Lille : 474 €
+- CDG → Lille : 436 €
+- Orly → Lille : 505 €
+
+## Trajets sans forfait
+
+Pour un trajet qui ne figure pas ci-dessus, le prix est calculé à la distance réelle : 39 € de prise en charge + 1,25 € par kilomètre en berline. Le montant est affiché avant la réservation et ne bouge plus.
+
+Van 7 places : 1,7× le prix berline. Berline premium : 1,5×.
+Aucune majoration de nuit ni de week-end n'est appliquée actuellement.
+<!-- TARIFS-AUTO:FIN -->
+
 
 ## Avantages clés
 
