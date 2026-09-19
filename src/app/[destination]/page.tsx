@@ -86,8 +86,8 @@ const DESTINATIONS: Record<string, {
   'vtc-creil': {
     slug: 'vtc-creil',
     title: 'VTC Creil & Oise Sud',
-    metaTitle: 'VTC Creil & Oise Sud → CDG, Orly, Paris dès 69€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Creil, Senlis, Gouvieux, Chantilly, Lamorlaye et toute l\'Oise Sud. Tarif fixe dès 69€ vers CDG, Orly et Paris. Disponible 24h/24.',
+    metaTitle: 'VTC Creil & Oise Sud → CDG, Orly, Paris dès 59€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Creil, Senlis, Gouvieux, Chantilly, Lamorlaye et toute l\'Oise Sud. Tarif fixe dès 59€ vers CDG, Orly et Paris. Disponible 24h/24.',
     keywords: [
       'vtc creil','vtc senlis','vtc gouvieux','vtc saint-maximin','vtc lamorlaye',
       'vtc chantilly cdg','vtc nogent-sur-oise','chauffeur privé creil cdg',
@@ -97,7 +97,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Creil, Senlis, Gouvieux & Oise Sud',
     intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers CDG, Orly, Beauvais et Paris. Disponible 24h/24.',
-    prix: 'dès 69€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Creil', cp: '60100', km: 0 },
@@ -119,11 +119,11 @@ const DESTINATIONS: Record<string, {
       { nom: 'Pont-Sainte-Maxence', cp: '60700', km: 12.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est de 69€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
+      { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est de 59€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
       { q: 'Desservez-vous Senlis, Gouvieux et Saint-Maximin ?', a: 'Oui. Nous couvrons toutes les communes dans un rayon de 10 km autour de Creil : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Verneuil-en-Halatte, Saint-Leu-d\'Esserent, Liancourt, Rantigny, Fleurines et plus encore.' },
       { q: 'Puis-je réserver tôt le matin depuis l\'Oise ?', a: 'Absolument. Nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
       { q: 'Quel est le prix depuis Lamorlaye ou Gouvieux vers CDG ?', a: 'Depuis Lamorlaye ou Gouvieux (secteur Chantilly), le forfait CDG est de 59€ en berline, prix fixe garanti. C\'est le même tarif que depuis Chantilly, ces communes étant dans la même zone.' },
-      { q: 'Proposez-vous des courses vers Orly depuis l\'Oise ?', a: 'Oui. Depuis Creil et ses environs, le forfait Orly est d\'environ 100€ en berline. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis toute l\'Oise Sud.' },
+      { q: 'Proposez-vous des courses vers Orly depuis l\'Oise ?', a: 'Oui. Depuis Creil et ses environs, le forfait Orly est de 145€ en berline. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis toute l\'Oise Sud.' },
       { q: 'Couvrez-vous Pont-Sainte-Maxence et Verneuil-en-Halatte ?', a: 'Oui, ces communes sont dans notre zone de desserte. Pont-Sainte-Maxence, Verneuil-en-Halatte, Liancourt et toutes les localités de l\'Oise Sud sont couvertes avec le même niveau de service premium.' },
     ],
   },
@@ -171,8 +171,8 @@ const DESTINATIONS: Record<string, {
   'vtc-senlis': {
     slug: 'vtc-senlis',
     title: 'VTC Senlis & Environs',
-    metaTitle: 'VTC Senlis → CDG, Orly, Paris dès 65€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Senlis, Aumont-en-Halatte, Fleurines et environs vers CDG, Orly et Paris. Tarif fixe dès 65€, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Senlis → CDG, Orly, Paris dès 59€ | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Senlis, Aumont-en-Halatte, Fleurines et environs vers CDG, Orly et Paris. Tarif fixe dès 59€, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc senlis','chauffeur privé senlis cdg','vtc senlis aéroport',
       'taxi senlis paris','vtc aumont-en-halatte','vtc fleurines',
@@ -181,7 +181,7 @@ const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Senlis & Environs',
     intro: 'Chauffeur VTC depuis Senlis et ses communes voisines : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant, Courteuil et toutes les localités dans un rayon de 10 km. Tarif fixe vers CDG, Orly et Paris.',
-    prix: 'dès 65€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '45–60 min vers CDG',
     zones: [
       { nom: 'Senlis', cp: '60300', km: 0 },
@@ -756,17 +756,17 @@ const DESTINATIONS: Record<string, {
   'vtc-creil-cdg': {
     slug: 'vtc-creil-cdg',
     title: 'VTC Creil → CDG',
-    metaTitle: 'VTC Creil CDG — Tarif Fixe 65€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Creil CDG — Tarif Fixe 59€ | Chauffeur Privé | Owise',
     metaDesc: 'VTC de Creil à l\'aéroport CDG. Tarif fixe 65€, suivi de vol, prise en charge à domicile. Chauffeur professionnel disponible 24h/24 depuis Creil et l\'Oise Sud.',
     keywords: ['vtc creil cdg','taxi creil aéroport','chauffeur creil charles de gaulle','vtc creil roissy','creil cdg prix','vtc nogent oise cdg','chauffeur privé creil cdg 65'],
-    h1: 'VTC Creil → CDG — Tarif Fixe 65€',
-    intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 65€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
-    prix: '65€ vers CDG',
+    h1: 'VTC Creil → CDG — Tarif Fixe 59€',
+    intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
+    prix: '59€ vers CDG',
     duree: '40–55 min',
     faq: [
-      { q: 'Quel est le prix d\'un VTC de Creil à CDG ?', a: 'Le tarif fixe est de 65€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Prix garanti à la réservation, sans compteur — aucune mauvaise surprise en cas de bouchon ou de retard de vol.' },
+      { q: 'Quel est le prix d\'un VTC de Creil à CDG ?', a: 'Le tarif fixe est de 59€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Prix garanti à la réservation, sans compteur — aucune mauvaise surprise en cas de bouchon ou de retard de vol.' },
       { q: 'Combien de temps met-on de Creil à CDG ?', a: 'Environ 40 à 55 minutes via l\'A1 depuis Creil. Tôt le matin (avant 6h), le trajet prend 35 à 40 minutes. Votre chauffeur part à l\'heure calculée pour respecter votre vol.' },
-      { q: 'Le tarif 65€ inclut-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise et Montataire sont dans la même zone tarifaire. Le forfait de 65€ vers CDG couvre toutes ces communes et leurs alentours immédiats.' },
+      { q: 'Le tarif 59€ inclut-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise et Montataire sont dans la même zone tarifaire. Le forfait de 59€ vers CDG couvre toutes ces communes et leurs alentours immédiats.' },
       { q: 'Owise suit-il les vols retardés depuis CDG ?', a: 'Oui, le suivi de vol en temps réel est inclus dans chaque course. En cas de retard, votre chauffeur ajuste son heure d\'arrivée automatiquement — vous attendez le moins longtemps possible à l\'aéroport.' },
       { q: 'Comment se fait la prise en charge à CDG pour un retour ?', a: 'À l\'arrivée à CDG, votre chauffeur vous attend dans le hall des arrivées avec une pancarte à votre nom, au terminal indiqué dans votre confirmation de réservation.' },
     ],
@@ -780,7 +780,7 @@ const DESTINATIONS: Record<string, {
     keywords: ['vtc senlis cdg','taxi senlis aéroport','chauffeur senlis charles de gaulle','vtc senlis roissy','senlis cdg prix','vtc aumont halatte cdg','chauffeur privé senlis aéroport'],
     h1: 'VTC Senlis → CDG — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Disponible 24h/24.',
-    prix: 'dès 69€ vers CDG',
+    prix: 'dès 59€ vers CDG',
     duree: '45–60 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Senlis à CDG ?', a: 'Le tarif fixe est calculé selon votre adresse précise à Senlis ou dans ses environs. Owise garantit le prix affiché à la réservation — sans compteur, sans surprise. Estimez votre course en 30 secondes sur owise.fr.' },
@@ -856,7 +856,7 @@ const DESTINATIONS: Record<string, {
     keywords: ['vtc senlis orly','taxi senlis aéroport orly','chauffeur senlis orly','senlis orly prix','vtc aumont halatte orly','chauffeur privé senlis orly','transfert senlis orly'],
     h1: 'VTC Senlis → Orly — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti en berline, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
-    prix: 'dès 149€ vers Orly',
+    prix: 'dès 139€ vers Orly',
     duree: '70–90 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Senlis à Orly ?', a: 'Depuis Senlis, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet traverse ou contourne Paris, ce qui explique le tarif plus élevé que vers CDG. Estimez votre course sur owise.fr.' },
