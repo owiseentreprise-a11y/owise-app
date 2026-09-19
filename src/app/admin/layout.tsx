@@ -14,6 +14,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         overflowY: 'auto', overflowX: 'hidden',
         display: 'flex', flexDirection: 'column',
         background: '#F8F6F1',
+        // Réserve la hauteur du bandeau cookies, qui sinon recouvre le bas de
+        // page — y compris les boutons de validation des formulaires.
+        paddingBottom: 'var(--bandeau-cookies, 0px)',
       }}>
         {children}
       </main>

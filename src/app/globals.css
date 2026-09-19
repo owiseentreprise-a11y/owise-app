@@ -20,6 +20,11 @@
   --amber:    #E8A030;
 }
 
+/* Le bandeau cookies est en position fixe : sans cette marge, il recouvre le
+   bas de page sur toutes les vues qui défilent avec le document. La variable
+   est renseignée par CookieBanner et vaut 0 quand le bandeau est absent. */
+body { padding-bottom: var(--bandeau-cookies, 0px); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {

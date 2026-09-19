@@ -418,7 +418,9 @@ export default function MentionsLegalesClient() {
           </span>
           <div style={{ display: 'flex', gap: 16 }}>
             {[['Accueil', '/'], ['Contact DPO', 'mailto:owise.entreprise@gmail.com'], ['Support', 'mailto:owise.entreprise@gmail.com']].map(([label, href]) => (
-              <a key={href} href={href} style={{ fontSize: 11, color: '#9B9B9B', textDecoration: 'none' }}>{label}</a>
+              // Clé sur le libellé et non sur le lien : « Contact DPO » et
+              // « Support » pointent vers la même adresse mail.
+              <a key={label} href={href} style={{ fontSize: 11, color: '#9B9B9B', textDecoration: 'none' }}>{label}</a>
             ))}
           </div>
         </div>

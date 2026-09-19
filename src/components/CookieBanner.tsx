@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { initGA } from '@/lib/ga'
@@ -26,6 +26,7 @@ function hasOwnCookieBanner(pathname: string): boolean {
 export default function CookieBanner() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (hasOwnCookieBanner(pathname)) return
@@ -55,10 +56,35 @@ export default function CookieBanner() {
     setVisible(false)
   }
 
+  // Le bandeau est en position fixe par-dessus la page : sans réserver sa
+  // hauteur, il recouvre ce qui se trouve en bas. Mesuré le 2026-09-19 sur
+  // /admin/courses/nouvelle en 1400×900 : le bouton « Créer la course »
+  // occupait 823→868 px et le bandeau 825→900, soit 43 px sur 45 masqués — le
+  // clic partait dans le bandeau et la création semblait ne rien faire.
+  // On publie la hauteur réelle dans une variable CSS, que les conteneurs
+  // défilants utilisent comme marge basse.
+  useEffect(() => {
+    const racine = document.documentElement
+    if (!visible) { racine.style.setProperty('--bandeau-cookies', '0px'); return }
+    const maj = () => {
+      const h = ref.current?.getBoundingClientRect().height ?? 0
+      racine.style.setProperty('--bandeau-cookies', `${Math.ceil(h)}px`)
+    }
+    maj()
+    const ro = new ResizeObserver(maj)
+    if (ref.current) ro.observe(ref.current)
+    window.addEventListener('resize', maj)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', maj)
+      racine.style.setProperty('--bandeau-cookies', '0px')
+    }
+  }, [visible])
+
   if (!visible) return null
 
   return (
-    <div style={{
+    <div ref={ref} style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
       background: '#09091A',
       borderTop: '1px solid rgba(201,168,76,.2)',
