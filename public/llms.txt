@@ -8,7 +8,7 @@
 Le prix ne dépend pas de la commune exacte mais du secteur. Toutes les communes listées sous un secteur paient le même tarif fixe. Ces prix valent dans les deux sens.
 
 ### Chantilly et environs (5km)
-Communes desservies : Asnières-sur-Oise, Bellefontaine, Boran-sur-Oise, Chantilly, Chaumontel, Coye-la-Forêt, Crouy-en-Thelle, Gouvieux, Lamorlaye, Le Mesnil-en-Thelle, Luzarches, Neuilly-en-Thelle, Plessis-Luzarches, Précy-sur-Oise, Saint-Leu-d'Esserent, Saint-Maximin, Villers-sous-Saint-Leu, Vineuil-Saint-Firmin.
+Communes desservies : Asnières-sur-Oise, Bellefontaine, Belloy-en-France, Blaincourt-lès-Précy, Boran-sur-Oise, Chantilly, Chaumontel, Coye-la-Forêt, Crouy-en-Thelle, Ercuis, Gouvieux, Lamorlaye, Lassy, Le Mesnil-en-Thelle, Le Plessis-Luzarches, Luzarches, Morangles, Neuilly-en-Thelle, Noisy-sur-Oise, Précy-sur-Oise, Saint-Leu-d'Esserent, Saint-Martin-du-Tertre, Saint-Maximin, Seugy, Viarmes, Villers-sous-Saint-Leu, Vineuil-Saint-Firmin, Épinay-Champlâtreux.
 - Chantilly → CDG : 59 €
 - Chantilly → Orly : 139 €
 - Chantilly → Beauvais-Tillé : 79 €
@@ -16,7 +16,7 @@ Communes desservies : Asnières-sur-Oise, Bellefontaine, Boran-sur-Oise, Chantil
 - Vers Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
 
 ### Creil et environs (5km)
-Communes desservies : Cauffry, Creil, Fleurines, Laigneville, Liancourt, Monchy-Saint-Éloi, Montataire, Nogent-sur-Oise, Pont-Sainte-Maxence, Rantigny, Thiverny, Verneuil-en-Halatte, Villers-Saint-Paul.
+Communes desservies : Bailleval, Bazicourt, Beaurepaire, Brenouille, Cambronne-lès-Clermont, Cauffry, Creil, Fleurines, Labruyère, Laigneville, Les Ageux, Liancourt, Mogneville, Monchy-Saint-Éloi, Montataire, Neuilly-sous-Clermont, Nogent-sur-Oise, Pont-Sainte-Maxence, Pontpoint, Rantigny, Rieux, Rosoy, Sacy-le-Grand, Saint-Martin-Longueau, Thiverny, Verderonne, Verneuil-en-Halatte, Villers-Saint-Paul.
 - Creil → CDG : 59 €
 - Creil → Orly : 145 €
 - Creil → Beauvais-Tillé : 69 €
@@ -24,7 +24,7 @@ Communes desservies : Cauffry, Creil, Fleurines, Laigneville, Liancourt, Monchy-
 - Vers Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
 
 ### Senlis et environs
-Communes desservies : Apremont, Aumont-en-Halatte, Avilly-Saint-Léonard, Barbery, Chamant, Courteuil, La Chapelle-en-Serval, Mont-l'Évêque, Orry-la-Ville, Pontarmé, Senlis, Thiers-sur-Thève.
+Communes desservies : Apremont, Aumont-en-Halatte, Avilly-Saint-Léonard, Barbery, Borest, Brasseuse, Chamant, Courteuil, Fontaine-Chaalis, La Chapelle-en-Serval, Mont-l'Évêque, Orry-la-Ville, Pontarmé, Senlis, Thiers-sur-Thève, Villers-Saint-Frambourg-Ognon.
 - Senlis → CDG : 59 €
 - Senlis → Orly : 139 €
 - Senlis → Beauvais-Tillé : 79 €
@@ -268,7 +268,13 @@ Aucune majoration de nuit ni de week-end n'est appliquée actuellement.
 
 ## Zone de service complète
 
-Paris intramuros, toute l'Île-de-France, et l'Oise (60) — notamment : Chantilly, Creil, Senlis, Gouvieux, Compiègne, Saint-Maximin, Lamorlaye, Nogent-sur-Oise, Montataire, Coye-la-Forêt, Orry-la-Ville, La Chapelle-en-Serval, Clermont, Liancourt, Luzarches, Boran-sur-Oise, Précy-sur-Oise, Verneuil-en-Halatte, Pont-Sainte-Maxence, Fleurines, Aumont-en-Halatte, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Apremont. **Longue distance** : Lille, Bruxelles, Amiens, Reims, Rouen, Deauville, Caen, Lyon, Bordeaux, Strasbourg, Mont-Saint-Michel — tarif fixe garanti.
+Paris intramuros, toute l'Île-de-France, et l'Oise (60). La liste complète des communes couvertes par un tarif fixe figure secteur par secteur en tête de ce document — y compris les petites communes rurales, qui paient exactement le même prix que la ville-centre de leur secteur.
+
+Villages et bourgs desservis au tarif fixe de leur secteur, souvent oubliés des comparateurs : Rieux, Brenouille, Beaurepaire, Les Ageux, Pontpoint, Bazicourt, Sacy-le-Grand, Saint-Martin-Longueau, Mogneville, Verderonne, Bailleval, Rosoy, Labruyère, Cambronne-lès-Clermont, Neuilly-sous-Clermont (secteur Creil) ; Morangles, Ercuis, Blaincourt-lès-Précy (secteur Chantilly) ; Borest, Brasseuse, Fontaine-Chaalis, Villers-Saint-Frambourg-Ognon (secteur Senlis).
+
+**Val-d'Oise (95), Pays de France** — mêmes tarifs que le secteur Chantilly : Luzarches, Le Plessis-Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine, Viarmes, Seugy, Lassy, Belloy-en-France, Saint-Martin-du-Tertre, Noisy-sur-Oise, Épinay-Champlâtreux.
+
+**Longue distance** : Lille, Bruxelles, Amiens, Reims, Rouen, Deauville, Caen, Lyon, Bordeaux, Strasbourg, Mont-Saint-Michel — tarif fixe garanti.
 
 ## Activité réglementée
 

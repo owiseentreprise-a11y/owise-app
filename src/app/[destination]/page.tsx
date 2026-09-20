@@ -117,6 +117,18 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.0 },
       { nom: 'Lamorlaye', cp: '60260', km: 11.2 },
       { nom: 'Pont-Sainte-Maxence', cp: '60700', km: 12.0 },
+      // Communes du secteur Creil jamais annoncees jusqu'ici (2026-09-21).
+      // Leur code postal appartient deja a la zone CRL : elles paient le meme
+      // tarif fixe que Creil. Les nommer ne change aucun prix, mais les rend
+      // visibles pour les assistants IA via generer-llms-tarifs.mjs.
+      { nom: 'Rieux', cp: '60870', km: 5.2 },
+      { nom: 'Beaurepaire', cp: '60700', km: 7.1 },
+      { nom: 'Brenouille', cp: '60870', km: 7.5 },
+      { nom: 'Les Ageux', cp: '60700', km: 10.3 },
+      { nom: 'Sacy-le-Grand', cp: '60700', km: 12.7 },
+      { nom: 'Pontpoint', cp: '60700', km: 13.0 },
+      { nom: 'Saint-Martin-Longueau', cp: '60700', km: 13.1 },
+      { nom: 'Bazicourt', cp: '60700', km: 14.3 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Creil vers CDG ?', a: 'Le forfait Creil → CDG est de 59€ en berline, prix fixe garanti. Depuis Chantilly, comptez 59€. Obtenez votre prix exact depuis votre adresse avec notre estimateur.' },
@@ -200,6 +212,11 @@ const DESTINATIONS: Record<string, {
       { nom: 'Verneuil-en-Halatte', cp: '60550', km: 8.1 },
       { nom: 'Orry-la-Ville', cp: '60560', km: 9.3 },
       { nom: 'Saint-Maximin', cp: '60740', km: 9.8 },
+      // Secteur Senlis, jamais annonce jusqu'ici (2026-09-21) — meme tarif fixe.
+      { nom: 'Villers-Saint-Frambourg-Ognon', cp: '60810', km: 5.2 },
+      { nom: 'Borest', cp: '60300', km: 6.8 },
+      { nom: 'Brasseuse', cp: '60810', km: 7.6 },
+      { nom: 'Fontaine-Chaalis', cp: '60300', km: 8.1 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Owise propose un tarif fixe garanti, calculé à l\'avance selon votre adresse — pas de compteur, pas de mauvaise surprise à l\'arrivée. Le prix est confirmé dès la réservation et reste le même quelle que soit la circulation. Obtenez votre estimation personnalisée en 30 secondes sur owise.fr.' },
@@ -584,6 +601,9 @@ const DESTINATIONS: Record<string, {
       { nom: 'Chambly', cp: '60230', km: 7.0 },
       { nom: 'Chantilly', cp: '60500', km: 9.0 },
       { nom: 'Lamorlaye', cp: '60260', km: 9.5 },
+      // Secteur Chantilly, jamais annonce jusqu'ici (2026-09-21) — meme tarif fixe.
+      { nom: 'Morangles', cp: '60530', km: 3.9 },
+      { nom: 'Ercuis', cp: '60530', km: 7.7 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Boran-sur-Oise vers CDG ?', a: 'Owise garantit un tarif fixe confirmé avant le départ — pas de compteur, pas de surplus pour les bouchons. Votre chauffeur vient vous chercher à Boran-sur-Oise, suivi de vol en temps réel inclus si vous rentrez d\'un voyage. Obtenez votre prix exact en 30 secondes sur owise.fr.' },
@@ -618,6 +638,8 @@ const DESTINATIONS: Record<string, {
       { nom: 'Saint-Leu-d\'Esserent', cp: '60340', km: 7.8 },
       { nom: 'Creil', cp: '60100', km: 8.5 },
       { nom: 'Chantilly', cp: '60500', km: 12.0 },
+      // Secteur Chantilly, jamais annonce jusqu'ici (2026-09-21) — meme tarif fixe.
+      { nom: 'Blaincourt-lès-Précy', cp: '60460', km: 3.0 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Owise calcule un tarif fixe à l\'avance selon votre adresse exacte : le prix est bloqué dès la réservation, même si vous annulez et reréservez. Prise en charge à domicile, chauffeur professionnel, disponible dès 4h du matin pour les vols matinaux. Estimez votre course sur owise.fr.' },
@@ -643,7 +665,10 @@ const DESTINATIONS: Record<string, {
     duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Luzarches', cp: '95270', km: 0 },
-      { nom: 'Plessis-Luzarches', cp: '95270', km: 2.0 },
+      // Nom officiel de la commune : « Le Plessis-Luzarches ». Il manquait
+      // l'article, si bien que llms.txt annoncait une commune qui n'existe pas
+      // sous ce nom dans les annuaires (2026-09-21).
+      { nom: 'Le Plessis-Luzarches', cp: '95270', km: 2.0 },
       { nom: 'Asnières-sur-Oise', cp: '95270', km: 2.5 },
       { nom: 'Bellefontaine', cp: '95270', km: 3.5 },
       { nom: 'Chaumontel', cp: '95270', km: 4.5 },
@@ -652,6 +677,14 @@ const DESTINATIONS: Record<string, {
       { nom: 'Orry-la-Ville', cp: '60560', km: 7.0 },
       { nom: 'La Chapelle-en-Serval', cp: '60520', km: 8.5 },
       { nom: 'Chantilly', cp: '60500', km: 9.0 },
+      // Secteur Chantilly, jamais annonce jusqu'ici (2026-09-21) — meme tarif fixe.
+      { nom: 'Lassy', cp: '95270', km: 2.5 },
+      { nom: 'Seugy', cp: '95270', km: 3.7 },
+      { nom: 'Épinay-Champlâtreux', cp: '95270', km: 4.0 },
+      { nom: 'Viarmes', cp: '95270', km: 4.6 },
+      { nom: 'Belloy-en-France', cp: '95270', km: 6.2 },
+      { nom: 'Saint-Martin-du-Tertre', cp: '95270', km: 8.2 },
+      { nom: 'Noisy-sur-Oise', cp: '95270', km: 8.8 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Luzarches vers CDG ?', a: 'Luzarches est parfaitement placée entre Chantilly et l\'aéroport CDG. Owise propose un tarif fixe calculé selon votre adresse, confirmé avant le départ — le même prix qu\'il pleuve, qu\'il y ait des bouchons ou un retard. Chauffeur professionnel, prise en charge à domicile. Estimez sur owise.fr.' },
@@ -721,6 +754,14 @@ const DESTINATIONS: Record<string, {
       { nom: 'Saint-Maximin', cp: '60740', km: 10.0 },
       { nom: 'Creil', cp: '60100', km: 10.0 },
       { nom: 'Clermont', cp: '60600', km: 10.0 },
+      // Secteur Creil, jamais annonce jusqu'ici (2026-09-21) — meme tarif fixe.
+      { nom: 'Mogneville', cp: '60140', km: 1.9 },
+      { nom: 'Verderonne', cp: '60140', km: 2.1 },
+      { nom: 'Bailleval', cp: '60140', km: 2.1 },
+      { nom: 'Rosoy', cp: '60140', km: 3.3 },
+      { nom: 'Labruyère', cp: '60140', km: 3.9 },
+      { nom: 'Cambronne-lès-Clermont', cp: '60290', km: 4.6 },
+      { nom: 'Neuilly-sous-Clermont', cp: '60290', km: 5.1 },
     ],
     faq: [
       { q: 'Quel est le tarif depuis Liancourt vers CDG ?', a: 'Owise couvre Liancourt, Rantigny, Cauffry et toutes les communes voisines avec un tarif fixe calculé à l\'avance — le prix confirmé à la réservation ne changera pas, même en cas de retard de vol ou de bouchon sur l\'A1. Prise en charge à domicile, disponible dès 4h du matin. Estimez sur owise.fr.' },
