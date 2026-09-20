@@ -658,15 +658,30 @@ export async function envoyerNouvelleFacture(params: {
   dateEcheance: string
   refCourse: string
   lienFacture: string
+  /** Facture émise après encaissement : on n'annonce pas une échéance déjà réglée. */
+  dejaReglee?: boolean
+  modePaiement?: string | null
 }) {
-  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture } = params
+  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture, dejaReglee, modePaiement } = params
   const tva = montantTtc - montantHt
   const tauxLabel = (tauxTva % 1 === 0 ? String(tauxTva) : tauxTva.toFixed(1)).replace('.', ',')
+  const MODE_LABEL: Record<string, string> = {
+    tpe_bord: 'carte bancaire à bord',
+    especes:  'espèces',
+    virement: 'virement',
+    cheque:   'chèque',
+    stripe:   'paiement en ligne',
+  }
+  const regle = dejaReglee
+    ? `Réglée${modePaiement ? ` par ${MODE_LABEL[modePaiement] ?? modePaiement}` : ''}`
+    : null
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre facture OWISE</h2>
     <p style="margin:0 0 24px;font-size:14px;color:#848499;">
       Bonjour ${clientNom},<br>
-      Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.
+      ${dejaReglee
+        ? 'Voici votre facture, déjà réglée. Aucun paiement n\'est attendu de votre part — ce document vous sert de justificatif.'
+        : 'Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.'}
     </p>
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
@@ -676,7 +691,9 @@ export async function envoyerNouvelleFacture(params: {
         ${row('Montant HT', `${montantHt.toFixed(2)} €`)}
         ${row(`TVA (${tauxLabel}%)`, `${tva.toFixed(2)} €`)}
         ${row('Montant TTC', `<strong style="color:#09091A">${montantTtc.toFixed(2)} €</strong>`)}
-        ${row('Échéance', fmtDate(dateEcheance))}
+        ${regle
+          ? row('Statut', `<strong style="color:#3DB87A">${regle}</strong>`)
+          : row('Échéance', fmtDate(dateEcheance))}
       </table>
     </div>
 
@@ -690,7 +707,13 @@ export async function envoyerNouvelleFacture(params: {
       Questions : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
     </p>
   `)
-  await send(clientEmail, `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC`, html)
+  // Le sujet dit l'essentiel sans ouvrir : une facture acquittée n'appelle
+  // aucune action du client.
+  await send(clientEmail,
+    dejaReglee
+      ? `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC – réglée`
+      : `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC`,
+    html)
 }
 
 // ── 5c. Relance facture en retard ─────────────────────────────────────────────

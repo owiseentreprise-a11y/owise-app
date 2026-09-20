@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { changerStatutFacture, envoyerLienPaiement } from './actions'
+import { changerStatutFacture, envoyerLienPaiement, envoyerFactureParEmail } from './actions'
 import PrintButton from '@/components/PrintButton'
 
 export default function FactureActions({
@@ -17,6 +17,9 @@ export default function FactureActions({
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [sendMsg, setSendMsg] = useState<string | null>(null)
+  // Couleur pilotee par un drapeau, jamais par le texte : comparer le libelle
+  // faisait passer tout nouveau message de succes pour une erreur.
+  const [sendOk, setSendOk]   = useState(false)
 
   function run(s: 'payee' | 'retard' | 'en_attente') {
     startTransition(async () => {
@@ -25,17 +28,45 @@ export default function FactureActions({
     })
   }
 
+  function envoyerFacture() {
+    startTransition(async () => {
+      const r = await envoyerFactureParEmail(factureId)
+      setSendOk(!r.error)
+      setSendMsg(r.error ?? `Facture envoyée à ${r.envoyeA}`)
+      setTimeout(() => setSendMsg(null), 8000)
+    })
+  }
+
   function envoyerLien() {
     startTransition(async () => {
       const result = await envoyerLienPaiement(factureId)
+      setSendOk(!result.error)
       setSendMsg(result.error ?? 'Email envoyé !')
-      setTimeout(() => setSendMsg(null), 4000)
+      setTimeout(() => setSendMsg(null), 8000)
     })
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <PrintButton />
+
+      {/* Toujours disponible, réglée ou non : c'est le document que le client
+          attend. Le lien de paiement, lui, n'a de sens que si elle est impayée. */}
+      <button
+        onClick={envoyerFacture}
+        disabled={pending}
+        style={{
+          width: '100%', padding: '12px',
+          borderRadius: 8,
+          background: 'var(--gold)', border: 'none',
+          color: 'var(--base)', fontSize: 12, fontWeight: 600,
+          cursor: pending ? 'wait' : 'pointer',
+          opacity: pending ? .6 : 1,
+          fontFamily: 'var(--font-dm-sans), sans-serif',
+        }}
+      >
+        Envoyer la facture par e-mail
+      </button>
 
       {stripePaymentLink && statut !== 'payee' && (
         <button
@@ -77,7 +108,7 @@ export default function FactureActions({
       {sendMsg && (
         <p style={{
           margin: 0, fontSize: 11, textAlign: 'center',
-          color: sendMsg === 'Email envoyé !' ? 'var(--grn)' : 'var(--red)',
+          color: sendOk ? 'var(--grn)' : 'var(--red)',
         }}>
           {sendMsg}
         </p>
