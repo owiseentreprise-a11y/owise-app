@@ -1,5 +1,7 @@
 import { Resend } from 'resend'
 import { TYPE_VEHICULE_LABEL } from './types'
+import { genererFacturePdf } from './facture-pdf'
+import { formaterMontant } from './facture-document'
 import type { InfosCourseParams } from './courseMessage'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -7,10 +9,12 @@ const FROM = 'OWISE <noreply@owise.fr>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL ?? 'https://g.page/r/CY0-ORyXWwpXEAE/review'
 
-async function send(to: string, subject: string, html: string) {
+type PieceJointe = { filename: string; content: Buffer }
+
+async function send(to: string, subject: string, html: string, attachments?: PieceJointe[]) {
   if (!resend) return
   try {
-    await resend.emails.send({ from: FROM, to, subject, html })
+    await resend.emails.send({ from: FROM, to, subject, html, ...(attachments?.length ? { attachments } : {}) })
   } catch {
     // Ne pas faire planter l'action si l'email échoue
   }
@@ -661,8 +665,14 @@ export async function envoyerNouvelleFacture(params: {
   /** Facture émise après encaissement : on n'annonce pas une échéance déjà réglée. */
   dejaReglee?: boolean
   modePaiement?: string | null
+  /**
+   * Identifiant de la facture. Fourni, la facture est jointe au message en PDF.
+   * Sans lui, le client ne dispose que du lien vers l'espace client — inutile
+   * pour qui ne se connectera jamais (réservation prise par téléphone).
+   */
+  factureId?: string
 }) {
-  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture, dejaReglee, modePaiement } = params
+  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture, dejaReglee, modePaiement, factureId } = params
   const tva = montantTtc - montantHt
   const tauxLabel = (tauxTva % 1 === 0 ? String(tauxTva) : tauxTva.toFixed(1)).replace('.', ',')
   const MODE_LABEL: Record<string, string> = {
@@ -675,6 +685,22 @@ export async function envoyerNouvelleFacture(params: {
   const regle = dejaReglee
     ? `Réglée${modePaiement ? ` par ${MODE_LABEL[modePaiement] ?? modePaiement}` : ''}`
     : null
+
+  // La facture en pièce jointe : c'est elle le justificatif. Un échec de
+  // génération ne doit jamais empêcher l'envoi du message lui-même, mais il
+  // doit laisser une trace — sinon le client reçoit un mail muet et personne
+  // ne le sait.
+  let pieceJointe: PieceJointe | null = null
+  if (factureId) {
+    try {
+      const pdf = await genererFacturePdf(factureId)
+      if (pdf) pieceJointe = { filename: pdf.nomFichier, content: Buffer.from(pdf.contenu) }
+      else console.error(`[FACTURE PDF] facture introuvable : ${factureId}`)
+    } catch (e) {
+      console.error(`[FACTURE PDF] génération impossible pour ${factureId} :`, e)
+    }
+  }
+
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre facture OWISE</h2>
     <p style="margin:0 0 24px;font-size:14px;color:#848499;">
@@ -682,15 +708,16 @@ export async function envoyerNouvelleFacture(params: {
       ${dejaReglee
         ? 'Voici votre facture, déjà réglée. Aucun paiement n\'est attendu de votre part — ce document vous sert de justificatif.'
         : 'Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.'}
+      ${pieceJointe ? '<br><strong style="color:#09091A">Elle est jointe à ce message au format PDF</strong>, vous n\'avez rien à installer ni aucun compte à ouvrir pour la lire.' : ''}
     </p>
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         ${row('Facture', factureNumero)}
         ${row('Course', `#${refCourse}`)}
-        ${row('Montant HT', `${montantHt.toFixed(2)} €`)}
-        ${row(`TVA (${tauxLabel}%)`, `${tva.toFixed(2)} €`)}
-        ${row('Montant TTC', `<strong style="color:#09091A">${montantTtc.toFixed(2)} €</strong>`)}
+        ${row('Montant HT', formaterMontant(montantHt))}
+        ${row(`TVA (${tauxLabel}%)`, formaterMontant(tva))}
+        ${row('Montant TTC', `<strong style="color:#09091A">${formaterMontant(montantTtc)}</strong>`)}
         ${regle
           ? row('Statut', `<strong style="color:#3DB87A">${regle}</strong>`)
           : row('Échéance', fmtDate(dateEcheance))}
@@ -711,9 +738,10 @@ export async function envoyerNouvelleFacture(params: {
   // aucune action du client.
   await send(clientEmail,
     dejaReglee
-      ? `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC – réglée`
-      : `Facture ${factureNumero} – ${montantTtc.toFixed(2)} € TTC`,
-    html)
+      ? `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC – réglée`
+      : `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC`,
+    html,
+    pieceJointe ? [pieceJointe] : undefined)
 }
 
 // ── 5c. Relance facture en retard ─────────────────────────────────────────────

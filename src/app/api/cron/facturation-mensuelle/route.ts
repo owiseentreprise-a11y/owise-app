@@ -116,6 +116,7 @@ export async function GET(req: Request) {
         dateEcheance: dateEcheance.toISOString(),
         refCourse: `${clientCourses.length} courses — ${debutMois.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`,
         lienFacture: `${siteUrl}/espace-client/factures/${facture.id}`,
+        factureId: facture.id,
       })
     }
 

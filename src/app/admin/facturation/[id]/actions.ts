@@ -66,6 +66,7 @@ export async function envoyerFactureParEmail(
       lienFacture: `${siteUrl}/espace-client/factures/${factureId}`,
       dejaReglee: facture.statut === 'payee',
       modePaiement: facture.mode_paiement ?? null,
+      factureId,
     })
   } catch (e) {
     return { error: `Envoi impossible : ${(e as Error).message}` }

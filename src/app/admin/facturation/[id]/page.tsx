@@ -3,17 +3,11 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 import FactureActions from './FactureActions'
+// Libellés partagés avec la page espace client et le PDF joint aux e-mails :
+// les trois documents doivent dire la même chose, mot pour mot.
+import { MODE_PAIEMENT_LABEL, formaterNombre } from '@/lib/facture-document'
 
 export const dynamic = 'force-dynamic'
-
-/** Libellés des moyens de paiement, tels qu'ils apparaissent sur la facture. */
-const MODE_PAIEMENT_LABEL: Record<string, string> = {
-  tpe_bord: 'carte bancaire au TPE à bord',
-  especes:  'espèces',
-  virement: 'virement',
-  cheque:   'chèque',
-  stripe:   'paiement en ligne',
-}
 
 const STATUT_STYLE = {
   en_attente: { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)', label: 'En attente' },
@@ -81,7 +75,7 @@ export default async function FactureDetailPage({
     ? Math.round((tva / facture.montant_ht) * 100)
     : null
 
-  const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmt = formaterNombre
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 
   return (

@@ -4,23 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import PrintButton from '@/components/PrintButton'
 import PayerButton from './PayerButton'
+// Libellés partagés avec la page admin et le PDF joint aux e-mails : les
+// trois documents doivent dire la même chose, mot pour mot.
+import { MODE_PAIEMENT_LABEL, STATUT_LABEL, formaterMontant } from '@/lib/facture-document'
 
 export const dynamic = 'force-dynamic'
 
-/** Libellés des moyens de paiement, tels qu'ils apparaissent sur la facture. */
-const MODE_PAIEMENT_LABEL: Record<string, string> = {
-  tpe_bord: 'carte bancaire au TPE à bord',
-  especes:  'espèces',
-  virement: 'virement',
-  cheque:   'chèque',
-  stripe:   'paiement en ligne',
-}
-
-const STATUT_LABEL: Record<string, string> = {
-  en_attente: 'En attente',
-  payee:      'Payée',
-  retard:     'En retard',
-}
 const STATUT_COLOR: Record<string, string> = {
   en_attente: 'var(--amb)',
   payee:      'var(--grn)',
@@ -263,7 +252,7 @@ export default async function ClientFacturePage({
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 12, color: 'var(--t1)' }}>
-                    {prix ? `${Number(prix).toFixed(2)} €` : '—'}
+                    {prix ? formaterMontant(Number(prix)) : '—'}
                   </div>
                 </div>
               )
@@ -277,13 +266,13 @@ export default async function ClientFacturePage({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: 'var(--t2)' }}>Total HT</span>
               <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t1)' }}>
-                {Number(facture.montant_ht).toFixed(2)} €
+                {formaterMontant(Number(facture.montant_ht))}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: 'var(--t2)' }}>TVA</span>
               <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: 'var(--t2)' }}>
-                {Number(facture.tva).toFixed(2)} €
+                {formaterMontant(Number(facture.tva))}
               </span>
             </div>
             <div style={{ height: 1, background: 'rgba(201,168,76,.12)', margin: '4px 0' }} />
@@ -293,7 +282,7 @@ export default async function ClientFacturePage({
                 fontFamily: 'var(--font-jetbrains), monospace',
                 fontSize: 20, fontWeight: 600, color: 'var(--gold)',
               }}>
-                {Number(facture.montant_ttc).toFixed(2)} €
+                {formaterMontant(Number(facture.montant_ttc))}
               </span>
             </div>
           </div>

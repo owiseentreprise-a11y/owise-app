@@ -220,6 +220,7 @@ export async function progresserCourseAction(
               dateEcheance:   dateEcheance.toISOString(),
               refCourse:      courseId.slice(-6).toUpperCase(),
               lienFacture:    `${siteUrl}/espace-client/factures/${newFacture.id}`,
+              factureId:      newFacture.id,
             })
           }
         }
