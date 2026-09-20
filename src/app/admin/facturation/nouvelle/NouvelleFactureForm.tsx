@@ -57,6 +57,9 @@ export default function NouvelleFactureForm({
 }) {
   const [clientId, setClientId] = useState('')
   const [checked, setChecked] = useState<Set<string>>(new Set())
+  /** Course déjà encaissée : la facture est un justificatif, pas un appel à paiement. */
+  const [dejaReglee, setDejaReglee]   = useState(false)
+  const [modePaiement, setModePaiement] = useState('')
 
   const clientCourses = courses.filter(c => c.client_id === clientId)
 
@@ -248,19 +251,53 @@ export default function NouvelleFactureForm({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label style={lbl}>Délai de paiement (jours)</label>
-                <input
-                  name="delai_paiement_override"
-                  type="number"
-                  min={0}
-                  defaultValue={delaiPaiement}
-                  style={inp}
-                  onChange={e => {
-                    const hidden = document.querySelector('input[name="delai_paiement"]') as HTMLInputElement
-                    if (hidden) hidden.value = e.target.value
-                  }}
-                />
+              {!dejaReglee && (
+                <div>
+                  <label style={lbl}>Délai de paiement (jours)</label>
+                  <input
+                    name="delai_paiement_override"
+                    type="number"
+                    min={0}
+                    defaultValue={delaiPaiement}
+                    style={inp}
+                    onChange={e => {
+                      const hidden = document.querySelector('input[name="delai_paiement"]') as HTMLInputElement
+                      if (hidden) hidden.value = e.target.value
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Course réglée sur place (TPE à bord, espèces) ou déjà virée :
+                  la facture sert de justificatif, pas d'appel à paiement. Sans
+                  cette case, elle partait « en attente » avec un lien Stripe. */}
+              <div style={{ padding: '12px 14px', borderRadius: 8,
+                background: dejaReglee ? 'rgba(61,196,124,.08)' : 'rgba(0,0,0,.03)',
+                border: `1px solid ${dejaReglee ? 'rgba(61,196,124,.3)' : 'var(--gb)'}` }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--t1)' }}>
+                  <input type="checkbox" name="deja_reglee" checked={dejaReglee}
+                    onChange={e => setDejaReglee(e.target.checked)} style={{ marginTop: 2 }} />
+                  <span>
+                    <strong>Facture déjà réglée</strong>
+                    <span style={{ display: 'block', color: 'var(--t2)', fontSize: 12, marginTop: 2 }}>
+                      Le client a déjà payé. La facture est émise comme justificatif, sans lien de paiement.
+                    </span>
+                  </span>
+                </label>
+                {dejaReglee && (
+                  <div style={{ marginTop: 10 }}>
+                    <label style={{ ...lbl, fontSize: 11 }}>Moyen de paiement</label>
+                    <select name="mode_paiement" value={modePaiement}
+                      onChange={e => setModePaiement(e.target.value)} style={inp} required>
+                      <option value="">Sélectionner…</option>
+                      <option value="tpe_bord">Carte bancaire au TPE à bord</option>
+                      <option value="especes">Espèces</option>
+                      <option value="virement">Virement</option>
+                      <option value="cheque">Chèque</option>
+                      <option value="stripe">Paiement en ligne (Stripe)</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </div>

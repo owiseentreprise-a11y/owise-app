@@ -197,6 +197,9 @@ export default function NouvelleCourseForm({
   const [arrivee, setArrivee] = useState<AdresseVal>({ label: '', codePostal: '' })
   const [etapes,  setEtapes]  = useState<AdresseVal[]>([])
   const [dateHeure, setDateHeure] = useState(defaultDatetime)
+  /** Course réservée par téléphone et déjà réalisée : saisie après coup pour la facturer. */
+  const [dejaEffectuee, setDejaEffectuee] = useState(false)
+  const [modePaiement, setModePaiement]   = useState('')
   const [vehicule, setVehicule]   = useState('berline')
   const [prixManuel, setPrixManuel] = useState<string>('')
   const [distanceKm, setDistanceKm] = useState<number | null>(null)
@@ -266,12 +269,23 @@ export default function NouvelleCourseForm({
   const selectedChauffeur = chauffeurs.find((c: ChauffeurOption) => c.id === chauffeurId)
   const isInternalChauffeur = !!chauffeurId && !selectedChauffeur?.sous_traitant_id
 
-  /** Date dans le passé = toujours une erreur de saisie : on bloque. */
+  /** Vrai si la date saisie est dans le passé. */
+  const datePassee = !isNaN(new Date(dateHeure).getTime()) && new Date(dateHeure).getTime() < Date.now()
+
+  /**
+   * Seule une date illisible est bloquante.
+   *
+   * Une date passée l'était aussi jusqu'au 2026-09-21, pour attraper les fautes
+   * de frappe. Mais cela rendait impossible un cas courant et légitime : une
+   * course réservée par téléphone, effectuée, puis saisie après coup pour être
+   * facturée. Elle passe donc en avertissement, avec une case à cocher qui
+   * l'enregistre directement comme terminée.
+   */
   function erreurBloquante(): string | null {
-    const d = new Date(dateHeure)
-    if (isNaN(d.getTime())) return 'Date invalide.'
-    if (d.getTime() < Date.now()) {
-      return `La date saisie (${d.toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}) est déjà passée.`
+    if (isNaN(new Date(dateHeure).getTime())) return 'Date invalide.'
+    if (datePassee && !dejaEffectuee) {
+      return `La date saisie (${new Date(dateHeure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}) est déjà passée. `
+        + `S'il s'agit d'une course déjà réalisée, cochez « course déjà effectuée » juste en dessous du champ de date.`
     }
     return null
   }
@@ -441,6 +455,36 @@ export default function NouvelleCourseForm({
             <label style={lbl}>Date et heure prévue</label>
             <input name="date_prevue" type="datetime-local" defaultValue={defaultDatetime}
               onChange={e => setDateHeure(e.target.value)} required style={inp} />
+            {/* N'apparaît que si la date est passée : inutile d'encombrer le
+                formulaire dans le cas normal d'une réservation à venir. */}
+            {datePassee && (
+              <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 8,
+                background: 'rgba(232,160,48,.08)', border: '1px solid rgba(232,160,48,.3)' }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--t1)' }}>
+                  <input type="checkbox" name="deja_effectuee" checked={dejaEffectuee}
+                    onChange={e => setDejaEffectuee(e.target.checked)} style={{ marginTop: 2 }} />
+                  <span>
+                    <strong>Course déjà effectuée</strong>
+                    <span style={{ display: 'block', color: 'var(--t2)', fontSize: 12, marginTop: 2 }}>
+                      Réservée par téléphone et réalisée : elle sera enregistrée comme terminée, prête à être facturée.
+                    </span>
+                  </span>
+                </label>
+                {dejaEffectuee && (
+                  <div style={{ marginTop: 10 }}>
+                    <label style={{ ...lbl, fontSize: 11 }}>Règlement reçu</label>
+                    <select name="mode_paiement" value={modePaiement}
+                      onChange={e => setModePaiement(e.target.value)} style={inp}>
+                      <option value="">Pas encore réglée</option>
+                      <option value="tpe_bord">Carte bancaire au TPE à bord</option>
+                      <option value="especes">Espèces</option>
+                      <option value="virement">Virement</option>
+                      <option value="cheque">Chèque</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div>
             <label style={lbl}>Passagers</label>

@@ -29,6 +29,10 @@ export async function GET(req: Request) {
     .select('id, client_id, prix_final, prix_estime, adresse_depart, adresse_arrivee, date_prevue, clients(type_compte, entreprise_nom, nom, prenom, facturation_mode)')
     .eq('statut', 'terminee')
     .is('facture_id', null)
+    // Une course déjà encaissée (TPE à bord, espèces, virement reçu à la
+    // saisie) ne doit pas repartir dans la facturation mensuelle : le client
+    // serait débité deux fois.
+    .or('paiement_statut.is.null,paiement_statut.neq.paye')
     .or('prix_final.not.is.null,prix_estime.not.is.null')
     .gte('date_fin', debutMois.toISOString())
     .lte('date_fin', finMois.toISOString())

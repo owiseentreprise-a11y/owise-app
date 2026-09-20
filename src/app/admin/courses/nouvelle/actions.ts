@@ -41,13 +41,22 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const passager_email  = passager_mode === 'libre' ? ((formData.get('passager_email')  as string) || null) : null
   const creer_compte    = passager_mode === 'libre' && formData.get('creer_compte') === 'true' && !!passager_email
 
+  // Course réservée par téléphone, réalisée, puis saisie après coup pour être
+  // facturée. Sans cette case, la date passée était refusée et le cas — courant —
+  // n'avait aucune solution dans l'interface.
+  const deja_effectuee = formData.get('deja_effectuee') === 'on' || formData.get('deja_effectuee') === 'true'
+  const mode_paiement  = deja_effectuee ? ((formData.get('mode_paiement') as string) || null) : null
+
   if (!adresse_depart || !adresse_arrivee || !date_prevue || !type_vehicule) {
     return { error: 'Champs obligatoires manquants' }
   }
 
   const dateParsed = new Date(date_prevue)
-  if (dateParsed < new Date(Date.now() - 15 * 60_000)) {
-    return { error: 'La date de prise en charge est dans le passé' }
+  if (!deja_effectuee && dateParsed < new Date(Date.now() - 15 * 60_000)) {
+    return { error: 'La date de prise en charge est dans le passé. Pour une course déjà réalisée, cochez « course déjà effectuée ».' }
+  }
+  if (deja_effectuee && dateParsed > new Date()) {
+    return { error: 'Une course déjà effectuée ne peut pas avoir une date future.' }
   }
 
   const { error, data: newCourse } = await supabase.from('courses').insert({
@@ -71,7 +80,23 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     passager_nom,
     passager_tel,
     passager_email,
-    statut: 'en_attente',
+    // Une course déjà réalisée entre directement en « terminée », avec son
+    // horaire réel : elle apparaît ainsi dans l'historique et les statistiques,
+    // et devient facturable immédiatement.
+    statut: deja_effectuee ? 'terminee' : 'en_attente',
+    ...(deja_effectuee ? {
+      // Même valeur brute que date_prevue, volontairement. L'application stocke
+      // les horaires sans fuseau et les réaffiche tels quels : passer par
+      // toISOString() les décalerait de l'offset du serveur et les trois dates
+      // d'une même course ne concorderaient plus.
+      date_debut: date_prevue,
+      date_fin:   date_prevue,
+      mode_paiement,
+      // « paye » empêche aussi la facturation mensuelle de la reprendre :
+      // une course déjà encaissée ne doit pas être refacturée.
+      paiement_statut: mode_paiement ? 'paye' : 'a_percevoir',
+      paiement_a_bord: mode_paiement === 'tpe_bord' || mode_paiement === 'especes',
+    } : {}),
   }).select('id').single()
 
   if (error) return { error: error.message }
@@ -222,7 +247,10 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   // c'est le seul filet de sécurité pour repérer une course créée sans aucun
   // contact passager renseigné.
   await Promise.all([
-    clientEmail ? envoyerConfirmationClient({
+    // Pas de confirmation de réservation pour une course déjà réalisée : le
+    // client recevrait la confirmation d'un trajet qu'il vient de faire. Il
+    // recevra la facture à la place.
+    clientEmail && !deja_effectuee ? envoyerConfirmationClient({
       clientEmail, clientPrenom,
       adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
       datePrevue: date_prevue, typeVehicule: type_vehicule,
