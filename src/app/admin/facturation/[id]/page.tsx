@@ -145,12 +145,10 @@ export default async function FactureDetailPage({
                     {p.societe_nom}
                   </div>
                 )}
-                {p?.societe_adresse && (
-                  <div style={{ fontSize: 11, color: 'var(--t2)', lineHeight: 1.6 }}>
-                    {p.societe_adresse}<br />
-                    {p.societe_code_postal} {p.societe_ville}
-                  </div>
-                )}
+                {/* Adresse volontairement absente des factures, a la demande
+                    de l'exploitant (2026-09-20). Ne pas la reintroduire : le
+                    champ `societe_adresse` peut etre rempli en base sans que
+                    cela doive apparaitre sur le document. */}
                 {p?.societe_siret && (
                   <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 4, fontFamily: 'var(--font-jetbrains), monospace' }}>
                     SIRET {p.societe_siret}
