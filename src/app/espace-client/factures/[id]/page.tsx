@@ -1,10 +1,20 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import PrintButton from '@/components/PrintButton'
 import PayerButton from './PayerButton'
 
 export const dynamic = 'force-dynamic'
+
+/** Libellés des moyens de paiement, tels qu'ils apparaissent sur la facture. */
+const MODE_PAIEMENT_LABEL: Record<string, string> = {
+  tpe_bord: 'carte bancaire au TPE à bord',
+  especes:  'espèces',
+  virement: 'virement',
+  cheque:   'chèque',
+  stripe:   'paiement en ligne',
+}
 
 const STATUT_LABEL: Record<string, string> = {
   en_attente: 'En attente',
@@ -57,7 +67,13 @@ export default async function ClientFacturePage({
       .select('id, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, prix_final, prix_estime')
       .eq('facture_id', id)
       .order('date_prevue', { ascending: true }),
-    supabase
+    // Lu avec le client admin : la table `parametres` est fermee par RLS aux
+    // comptes clients, si bien que la facture s'affichait SANS raison sociale,
+    // SANS SIRET, SANS adresse ni TVA — mentions pourtant obligatoires sur une
+    // facture francaise. Ce sont des informations publiques d'entreprise, leur
+    // lecture ici n'expose rien : la facture elle-meme reste filtree par
+    // client_id avec le client utilisateur, juste au-dessus.
+    createAdminClient()
       .from('parametres')
       .select('societe_nom, societe_adresse, societe_code_postal, societe_ville, societe_siret, societe_tva_numero, societe_email, societe_telephone, banque_iban, banque_bic, banque_nom, facture_mentions')
       .eq('id', true)
@@ -193,15 +209,20 @@ export default async function ClientFacturePage({
                 </div>
               </div>
               <div>
+                {/* Une facture acquittee n'a pas d'echeance a annoncer : on dit
+                    comment elle a ete reglee, ce qui en fait un justificatif. */}
                 <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 6 }}>
-                  Échéance
+                  {facture.statut === 'payee' ? 'Règlement' : 'Échéance'}
                 </div>
                 <div style={{
                   fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13,
-                  color: facture.statut !== 'payee' && new Date(facture.date_echeance) < new Date()
-                    ? 'var(--red)' : 'var(--t1)',
+                  color: facture.statut === 'payee'
+                    ? 'var(--grn)'
+                    : new Date(facture.date_echeance) < new Date() ? 'var(--red)' : 'var(--t1)',
                 }}>
-                  {new Date(facture.date_echeance).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  {facture.statut === 'payee'
+                    ? `Réglée${MODE_PAIEMENT_LABEL[(facture as any).mode_paiement] ? ` par ${MODE_PAIEMENT_LABEL[(facture as any).mode_paiement]}` : ''}`
+                    : new Date(facture.date_echeance).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </div>
               </div>
             </div>
@@ -282,7 +303,9 @@ export default async function ClientFacturePage({
 
         {/* Coordonnées bancaires + mentions */}
         <div style={{ padding: '20px 36px 28px' }}>
-          {(params2?.banque_iban || params2?.banque_bic) && (
+          {/* Jamais d'IBAN sur une facture acquittee : le client pourrait
+              virer une seconde fois en la relisant. */}
+          {facture.statut !== 'payee' && (params2?.banque_iban || params2?.banque_bic) && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
                 Coordonnées bancaires

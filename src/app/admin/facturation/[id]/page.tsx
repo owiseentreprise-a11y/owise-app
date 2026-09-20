@@ -6,6 +6,15 @@ import FactureActions from './FactureActions'
 
 export const dynamic = 'force-dynamic'
 
+/** Libellés des moyens de paiement, tels qu'ils apparaissent sur la facture. */
+const MODE_PAIEMENT_LABEL: Record<string, string> = {
+  tpe_bord: 'carte bancaire au TPE à bord',
+  especes:  'espèces',
+  virement: 'virement',
+  cheque:   'chèque',
+  stripe:   'paiement en ligne',
+}
+
 const STATUT_STYLE = {
   en_attente: { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)', label: 'En attente' },
   payee:      { color: 'var(--grn)', bg: 'rgba(61,184,122,.12)',  border: 'rgba(61,184,122,.25)',  label: 'Payée' },
@@ -165,12 +174,19 @@ export default async function FactureDetailPage({
                 <div style={{ fontSize: 11, color: 'var(--t2)', lineHeight: 1.8 }}>
                   <span style={{ color: 'var(--t3)' }}>Émise le </span>
                   {fmtDate(facture.date_emission)}<br />
-                  {facture.date_echeance && (
+                  {/* Une facture acquittée n'a pas d'échéance à annoncer : on
+                      indique comment elle a été réglée, ce qui en fait un vrai
+                      justificatif pour le client. */}
+                  {facture.statut === 'payee' ? (
+                    <span style={{ color: 'var(--grn)', fontWeight: 600 }}>
+                      Réglée{MODE_PAIEMENT_LABEL[(facture as any).mode_paiement] ? ` par ${MODE_PAIEMENT_LABEL[(facture as any).mode_paiement]}` : ''}
+                    </span>
+                  ) : facture.date_echeance ? (
                     <>
                       <span style={{ color: 'var(--t3)' }}>Échéance </span>
                       {fmtDate(facture.date_echeance)}
                     </>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -322,7 +338,9 @@ export default async function FactureDetailPage({
           )}
 
           {/* Coordonnées bancaires */}
-          {(p?.banque_iban || p?.banque_bic) && (
+          {/* Jamais d'IBAN sur une facture acquittee : le client pourrait
+              virer une seconde fois en la relisant. */}
+          {facture.statut !== 'payee' && (p?.banque_iban || p?.banque_bic) && (
             <div style={{
               padding: '14px 18px', borderRadius: 10,
               background: 'var(--surface)', border: '1px solid var(--gb)',
@@ -367,11 +385,14 @@ export default async function FactureDetailPage({
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: s.color }}>{s.label}</span>
             </div>
-            <FactureActions
-              factureId={facture.id}
-              statut={facture.statut as any}
-              stripePaymentLink={(facture as any).stripe_payment_link ?? null}
-            />
+            {/* Les boutons n'ont rien a faire sur le document remis au client. */}
+            <div className="no-print">
+              <FactureActions
+                factureId={facture.id}
+                statut={facture.statut as any}
+                stripePaymentLink={(facture as any).stripe_payment_link ?? null}
+              />
+            </div>
           </div>
 
           {/* Récap financier */}
