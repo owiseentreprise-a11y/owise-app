@@ -2034,7 +2034,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <Link href="/mentions-legales" className="footer-link">Conditions générales</Link>
               <Link href="/mentions-legales" className="footer-link">Politique de confidentialité</Link>
               <Link href="/mentions-legales" className="footer-link">Mentions légales</Link>
-              <Link href="/admin" className="footer-link">Espace administration</Link>
+              {/* Plus de lien vers /admin ici (2026-09-21). Ce pied de page est
+                  rendu sur ~170 pages publiques ; robots.txt interdisant /admin,
+                  Google decouvrait l'adresse sans pouvoir la lire et la listait a
+                  vide — c'est l'avertissement « Indexee malgre le blocage par le
+                  fichier robots.txt » recu le 2026-09-20. L'acces se fait
+                  desormais en tapant owise.fr/admin. */}
             </div>
           </div>
           <div>
