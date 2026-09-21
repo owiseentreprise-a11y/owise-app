@@ -1235,8 +1235,18 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
   }
 }
 
+/**
+ * Source unique des pages villes existantes.
+ *
+ * Le sitemap en tenait sa propre copie, recopiee a la main : elle comptait 37
+ * entrees quand ce fichier en definissait 38, et la page ajoutee le 2026-09-21
+ * (vtc-goussainville) n'y figurait pas. Toute liste separee finit par deriver —
+ * on derive donc celle-ci de l'objet qui cree reellement les pages.
+ */
+export const DESTINATION_SLUGS = Object.keys(DESTINATIONS)
+
 export function generateStaticParams() {
-  return Object.keys(DESTINATIONS).map(slug => ({ destination: slug }))
+  return DESTINATION_SLUGS.map(slug => ({ destination: slug }))
 }
 
 export const revalidate = 3600
