@@ -192,6 +192,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
         adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
         datePrevue: date_prevue, clientNom: '—',
         nbPassagers: nb_passagers, notes: notes ?? null, refCourse,
+        etapes: etapes.length > 0 ? etapes : null,
       })
     }
   }
@@ -255,6 +256,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
       adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
       datePrevue: date_prevue, typeVehicule: type_vehicule,
       nbPassagers: nb_passagers, prixEstime: prix_estime, refCourse,
+      etapes: etapes.length > 0 ? etapes : null,
       // Le retour existe en base mais n'apparaissait pas dans la confirmation :
       // le client ignorait qu'il était réservé.
       retour: allerRetour && dateRetourRaw && !isNaN(new Date(dateRetourRaw).getTime())

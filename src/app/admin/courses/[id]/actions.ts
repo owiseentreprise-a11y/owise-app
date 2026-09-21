@@ -41,7 +41,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
   if (chauffeurId) {
     const [courseRes, chauffeurProfileRes, chauffeurEmail, fcmRes] = await Promise.all([
       supabase.from('courses')
-        .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes, passager_prenom, passager_nom, passager_tel, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
+        .select('adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, notes, passager_prenom, passager_nom, passager_tel, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
         .eq('id', courseId).single(),
       supabase.from('profiles').select('prenom').eq('id', chauffeurId).single(),
       getUserEmail(chauffeurId),
@@ -77,6 +77,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
           nbPassagers: course.nb_passagers,
           notes: course.notes,
           refCourse,
+          etapes: course.etapes,
         }),
         fcmToken ? envoyerNotifChauffeur({
           fcmToken,

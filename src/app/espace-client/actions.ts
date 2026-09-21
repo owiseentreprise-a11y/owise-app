@@ -127,6 +127,7 @@ export async function demanderCourse(formData: FormData): Promise<void> {
         typeVehicule: vehicule,
         nbPassagers: passagers,
         refCourse,
+        etapes: etapes.length > 0 ? etapes : null,
       }) : Promise.resolve(),
       envoyerNotificationAdmin({
         adresseDepart: depart,

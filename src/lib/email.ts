@@ -210,19 +210,25 @@ export async function envoyerConfirmationClient(params: {
   note?: string
   /** false pour un collaborateur d'entreprise : le montant ne le regarde pas. */
   afficherPrix?: boolean
+  /** Arrêts en chemin, à l'aller — le client doit pouvoir vérifier l'adresse. */
+  etapes?: string[] | null
 }) {
-  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, refCourse, retour, note } = params
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, refCourse, retour, note, etapes } = params
+  const arrets = (etapes ?? []).filter(e => e?.trim())
+  const lignesArrets = arrets.map((e, i) => row(`Arrêt ${arrets.length > 1 ? i + 1 : ''}`.trim(), e)).join('')
   // Prix masqué : on neutralise la valeur au lieu de la tester partout, pour
   // qu'aucun futur ajout de ligne tarifaire ne la laisse filtrer par oubli.
   const prixEstime = params.afficherPrix === false ? null : params.prixEstime
 
-  const bloc = (titre: string, date: string, depart: string, arrivee: string) => `
+  // `arrets` n'apparaît qu'au trajet où l'arrêt a lieu : l'aller.
+  const bloc = (titre: string, date: string, depart: string, arrivee: string, arretsBloc = '') => `
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:14px;">
       ${titre ? `<div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:12px;">${titre}</div>` : ''}
       <table width="100%" cellpadding="0" cellspacing="0">
         ${row('Date', fmtDate(date))}
         ${row('Heure', fmtTime(date))}
         ${row('Départ', depart)}
+        ${arretsBloc}
         ${row('Arrivée', arrivee)}
         ${prixEstime ? row('Tarif estimé', `${prixEstime.toFixed(2)} €`) : ''}
       </table>
@@ -237,7 +243,7 @@ export async function envoyerConfirmationClient(params: {
           ${row('Passagers', String(nbPassagers))}
         </table>
       </div>
-      ${bloc('Trajet aller', datePrevue, adresseDepart, adresseArrivee)}
+      ${bloc('Trajet aller', datePrevue, adresseDepart, adresseArrivee, lignesArrets)}
       ${bloc('Trajet retour', retour.datePrevue, adresseArrivee, retour.adresseArrivee || adresseDepart)}
       ${prixEstime ? `
       <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;">
@@ -253,6 +259,7 @@ export async function envoyerConfirmationClient(params: {
           ${row('Date', fmtDate(datePrevue))}
           ${row('Heure', fmtTime(datePrevue))}
           ${row('Départ', adresseDepart)}
+          ${lignesArrets}
           ${row('Arrivée', adresseArrivee)}
           ${row('Véhicule', typeVehicule)}
           ${row('Passagers', String(nbPassagers))}
@@ -367,8 +374,11 @@ export async function envoyerNotificationChauffeur(params: {
   nbPassagers: number
   notes?: string | null
   refCourse: string
+  /** Arrêts en chemin — payés par le client, donc dus par le chauffeur. */
+  etapes?: string[] | null
 }) {
-  const { chauffeurEmail, chauffeurPrenom, adresseDepart, adresseArrivee, datePrevue, clientNom, clientTel, nbPassagers, notes, refCourse } = params
+  const { chauffeurEmail, chauffeurPrenom, adresseDepart, adresseArrivee, datePrevue, clientNom, clientTel, nbPassagers, notes, refCourse, etapes } = params
+  const arrets = (etapes ?? []).filter(e => e?.trim())
 
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Nouvelle course assignée</h2>
@@ -380,6 +390,7 @@ export async function envoyerNotificationChauffeur(params: {
         ${row('Date', fmtDate(datePrevue))}
         ${row('Heure', fmtTime(datePrevue))}
         ${row('Départ', adresseDepart)}
+        ${arrets.map((e, i) => row(`Arrêt ${arrets.length > 1 ? i + 1 : ''}`.trim(), e)).join('')}
         ${row('Arrivée', adresseArrivee)}
         ${row('Client', clientNom)}
         ${clientTel ? row('Tél. client', clientTel) : ''}

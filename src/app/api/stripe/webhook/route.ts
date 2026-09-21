@@ -273,6 +273,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
       nbPassagers,
       prixEstime: prix,
       refCourse,
+      etapes: etapes.length > 0 ? etapes : null,
     }),
     envoyerNotificationAdmin({
       adresseDepart,

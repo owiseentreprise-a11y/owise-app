@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const { data: courses } = await supabase
     .from('courses')
     .select(`
-      id, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, notes, type_vehicule,
+      id, adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, notes, type_vehicule,
       client_id, chauffeur_id,
       clients(type_compte, entreprise_nom, nom, prenom, tel),
       chauffeurs(profiles(prenom, nom))
@@ -69,6 +69,7 @@ export async function GET(req: Request) {
           typeVehicule: course.type_vehicule,
           nbPassagers: course.nb_passagers,
           refCourse,
+          etapes: course.etapes,
         }))
         sentCourses++
       }
@@ -85,6 +86,7 @@ export async function GET(req: Request) {
           nbPassagers: course.nb_passagers,
           notes: course.notes,
           refCourse,
+          etapes: course.etapes,
         }))
         sentCourses++
       }
