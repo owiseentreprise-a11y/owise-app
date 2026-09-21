@@ -1145,10 +1145,14 @@ export async function envoyerInfosCourseEmail(params: InfosCourseParams & {
   destinataireNom: string | null
 }) {
   const {
-    destinataireEmail, destinataireNom, ref, adresseDepart, adresseArrivee, datePrevue,
+    destinataireEmail, destinataireNom, ref, adresseDepart, adresseArrivee, etapes, datePrevue,
     nbPassagers, typeVehicule, numVolTrain, terminal, heureArriveeVol,
     passagerNom, passagerTel, notes, paiementABord, prix,
   } = params
+
+  // Les arrêts intermédiaires manquaient à cet e-mail comme au message texte :
+  // un chauffeur externe partait sans savoir qu'il devait s'arrêter en route.
+  const arrets = (etapes ?? []).filter(e => e?.trim())
 
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Course à effectuer</h2>
@@ -1161,6 +1165,7 @@ export async function envoyerInfosCourseEmail(params: InfosCourseParams & {
         ${row('Date', fmtDate(datePrevue))}
         ${row('Heure', fmtTime(datePrevue))}
         ${row('Départ', adresseDepart)}
+        ${arrets.map((e, i) => row(`Étape ${i + 1}`, e)).join('')}
         ${row('Arrivée', adresseArrivee)}
         ${row('Passagers', String(nbPassagers))}
         ${row('Véhicule', TYPE_VEHICULE_LABEL[typeVehicule])}

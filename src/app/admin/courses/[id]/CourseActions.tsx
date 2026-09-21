@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation'
 import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
+/** Style commun aux champs du panneau « Modifier la course ». */
+const champStyle: React.CSSProperties = {
+  width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+  background: 'var(--elevated)', border: '1px solid var(--t3)',
+  borderRadius: 8, color: 'var(--t1)', fontSize: 12, outline: 'none',
+  fontFamily: 'var(--font-dm-sans), sans-serif',
+}
+
 const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: string }> = {
   en_attente:      { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)' },
   acceptee:        { color: 'var(--blu)', bg: 'rgba(74,142,208,.12)', border: 'rgba(74,142,208,.25)' },
@@ -118,6 +126,19 @@ export default function CourseActions({
   const [editPassagers, setEditPassagers] = useState(String(course.nb_passagers))
   const [editDepart, setEditDepart] = useState(course.adresse_depart)
   const [editArrivee, setEditArrivee] = useState(course.adresse_arrivee)
+  // Ajoutés le 2026-09-21 : ces trois blocs se modifiaient nulle part une fois
+  // la course créée, alors que ce sont les demandes les plus courantes au
+  // téléphone — et que le chauffeur s'en sert sur le terrain (il appelle le
+  // passager, suit le vol, passe par l'étape).
+  const [editEtapes, setEditEtapes] = useState<string[]>(
+    Array.isArray((course as any).etapes) ? (course as any).etapes as string[] : [],
+  )
+  const [editVol, setEditVol] = useState((course as any).num_vol_train ?? '')
+  const [editTerminal, setEditTerminal] = useState((course as any).terminal ?? '')
+  const [editHeureVol, setEditHeureVol] = useState((course as any).heure_arrivee_vol ?? '')
+  const [editPassPrenom, setEditPassPrenom] = useState((course as any).passager_prenom ?? '')
+  const [editPassNom, setEditPassNom] = useState((course as any).passager_nom ?? '')
+  const [editPassTel, setEditPassTel] = useState((course as any).passager_tel ?? '')
   const [editError, setEditError] = useState<string | null>(null)
   const [editSaved, setEditSaved] = useState(false)
 
@@ -757,6 +778,75 @@ export default function CourseActions({
                 />
               </div>
 
+              {/* Étapes intermédiaires */}
+              <div>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+                  Étapes en chemin
+                </div>
+                {editEtapes.map((etape, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                    <input
+                      type="text"
+                      value={etape}
+                      placeholder={`Adresse de l'étape ${i + 1}`}
+                      onChange={e => setEditEtapes(editEtapes.map((v, j) => j === i ? e.target.value : v))}
+                      style={champStyle}
+                    />
+                    <button
+                      onClick={() => setEditEtapes(editEtapes.filter((_, j) => j !== i))}
+                      title="Retirer cette étape"
+                      style={{
+                        padding: '0 12px', borderRadius: 8, cursor: 'pointer', flexShrink: 0,
+                        background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
+                        color: 'var(--red)', fontSize: 14, lineHeight: 1,
+                      }}
+                    >×</button>
+                  </div>
+                ))}
+                {editEtapes.length < 2 && (
+                  <button
+                    onClick={() => setEditEtapes([...editEtapes, ''])}
+                    style={{
+                      width: '100%', padding: '8px', borderRadius: 8, cursor: 'pointer',
+                      background: 'rgba(201,168,76,.06)', border: '1px dashed rgba(201,168,76,.3)',
+                      color: 'var(--gold)', fontSize: 11,
+                      fontFamily: 'var(--font-dm-sans), sans-serif',
+                    }}
+                  >+ Ajouter une étape</button>
+                )}
+              </div>
+
+              {/* Vol / train */}
+              <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 10 }}>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+                  Vol / train
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
+                  <input type="text" value={editVol} placeholder="N° (AF1077)"
+                    onChange={e => setEditVol(e.target.value)} style={champStyle} />
+                  <input type="text" value={editHeureVol} placeholder="Arrivée (18:25)"
+                    onChange={e => setEditHeureVol(e.target.value)} style={champStyle} />
+                </div>
+                <input type="text" value={editTerminal} placeholder="Terminal / voie (T2F Marrakech)"
+                  onChange={e => setEditTerminal(e.target.value)} style={champStyle} />
+              </div>
+
+              {/* Passager transporté — ce n'est pas toujours celui qui réserve,
+                  et c'est ce numéro que le chauffeur appelle en arrivant. */}
+              <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 10 }}>
+                <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+                  Passager transporté
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
+                  <input type="text" value={editPassPrenom} placeholder="Prénom"
+                    onChange={e => setEditPassPrenom(e.target.value)} style={champStyle} />
+                  <input type="text" value={editPassNom} placeholder="Nom"
+                    onChange={e => setEditPassNom(e.target.value)} style={champStyle} />
+                </div>
+                <input type="tel" value={editPassTel} placeholder="Téléphone du passager"
+                  onChange={e => setEditPassTel(e.target.value)} style={champStyle} />
+              </div>
+
               {editError && (
                 <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
                   {editError}
@@ -773,6 +863,13 @@ export default function CourseActions({
                       nb_passagers:   parseInt(editPassagers) || 1,
                       adresse_depart: editDepart,
                       adresse_arrivee: editArrivee,
+                      etapes:            editEtapes,
+                      num_vol_train:     editVol,
+                      terminal:          editTerminal,
+                      heure_arrivee_vol: editHeureVol,
+                      passager_prenom:   editPassPrenom,
+                      passager_nom:      editPassNom,
+                      passager_tel:      editPassTel,
                     })
                     if (res?.error) { setEditError(res.error); return }
                     setEditSaved(true)

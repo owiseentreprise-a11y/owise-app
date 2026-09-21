@@ -7,6 +7,8 @@ export type InfosCourseParams = {
   datePrevue: string
   nbPassagers: number
   typeVehicule: TypeVehicule
+  /** Arrêts intermédiaires, dans l'ordre du trajet. */
+  etapes?: string[] | null
   numVolTrain?: string | null
   terminal?: string | null
   heureArriveeVol?: string | null
@@ -25,10 +27,17 @@ export function buildInfosCourseTexte(p: InfosCourseParams): string {
   const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
   const heureStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
+  // Les étapes s'intercalent entre le départ et l'arrivée, dans l'ordre du
+  // trajet. Elles n'y figuraient pas : un arrêt ajouté après coup n'apparaissait
+  // que dans l'application chauffeur, jamais dans le message envoyé à un
+  // chauffeur externe ou à un sous-traitant, qui partait donc sans le savoir.
+  const etapes = (p.etapes ?? []).filter(e => e?.trim())
+
   const lignes = [
     `Course OWISE #${p.ref}`,
     '',
     `Départ : ${p.adresseDepart}`,
+    ...etapes.map((e, i) => `Étape ${i + 1} : ${e}`),
     `Arrivée : ${p.adresseArrivee}`,
     `Date : ${dateStr} à ${heureStr}`,
     `Passagers : ${p.nbPassagers}`,

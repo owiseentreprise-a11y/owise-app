@@ -154,6 +154,7 @@ export default async function CourseDetailPage({
     ref: course.id.slice(-6).toUpperCase(),
     adresseDepart: course.adresse_depart,
     adresseArrivee: course.adresse_arrivee,
+    etapes: Array.isArray((course as any).etapes) ? (course as any).etapes as string[] : null,
     datePrevue: course.date_prevue,
     nbPassagers: course.nb_passagers,
     typeVehicule: course.type_vehicule,

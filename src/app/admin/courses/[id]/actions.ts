@@ -252,6 +252,23 @@ export async function modifierNotes(courseId: string, notes: string): Promise<vo
   revalidatePath(`/admin/courses/${courseId}`)
 }
 
+/**
+ * Modifie une course déjà créée.
+ *
+ * Couvrait à l'origine la date, le véhicule, le nombre de passagers et les deux
+ * adresses. Les trois blocs ajoutés le 2026-09-21 — étapes, informations de vol
+ * et identité du passager — ne se modifiaient nulle part une fois la course
+ * enregistrée, alors que ce sont les demandes les plus fréquentes quand un
+ * client rappelle, et que le chauffeur s'en sert sur le terrain : il appelle le
+ * passager, suit le vol et passe par l'étape.
+ *
+ * Sur 18 courses réelles au 2026-09-21 : 9 portaient un passager nommé,
+ * 7 un numéro de vol, 4 une étape.
+ *
+ * Une chaîne vide est enregistrée comme `null`, jamais comme `''` : le reste de
+ * l'application teste l'absence d'information avec `?? `, et une chaîne vide
+ * ferait afficher un bloc « vol » ou « passager » creux au chauffeur.
+ */
 export async function modifierCourseDetails(
   courseId: string,
   data: {
@@ -260,6 +277,13 @@ export async function modifierCourseDetails(
     nb_passagers: number
     adresse_depart: string
     adresse_arrivee: string
+    etapes?: string[]
+    num_vol_train?: string
+    terminal?: string
+    heure_arrivee_vol?: string
+    passager_prenom?: string
+    passager_nom?: string
+    passager_tel?: string
   }
 ): Promise<{ error?: string } | void> {
   await requireAdminClient()
@@ -267,12 +291,22 @@ export async function modifierCourseDetails(
   if (!data.adresse_depart || !data.adresse_arrivee || !data.date_prevue) {
     return { error: 'Champs obligatoires manquants' }
   }
+  const vide = (s?: string) => (s ?? '').trim() || null
+  const etapes = (data.etapes ?? []).map(e => e.trim()).filter(Boolean)
+
   const { error } = await supabase.from('courses').update({
-    date_prevue:    data.date_prevue,
-    type_vehicule:  data.type_vehicule,
-    nb_passagers:   data.nb_passagers,
-    adresse_depart: data.adresse_depart,
-    adresse_arrivee: data.adresse_arrivee,
+    date_prevue:       data.date_prevue,
+    type_vehicule:     data.type_vehicule,
+    nb_passagers:      data.nb_passagers,
+    adresse_depart:    data.adresse_depart,
+    adresse_arrivee:   data.adresse_arrivee,
+    etapes:            etapes.length ? etapes : null,
+    num_vol_train:     vide(data.num_vol_train),
+    terminal:          vide(data.terminal),
+    heure_arrivee_vol: vide(data.heure_arrivee_vol),
+    passager_prenom:   vide(data.passager_prenom),
+    passager_nom:      vide(data.passager_nom),
+    passager_tel:      vide(data.passager_tel),
   }).eq('id', courseId)
   if (error) return { error: error.message }
   revalidatePath(`/admin/courses/${courseId}`)
@@ -502,7 +536,7 @@ export async function envoyerInfosCourseEmailAction(
 
   const { data: course } = await supabase
     .from('courses')
-    .select('adresse_depart, adresse_arrivee, date_prevue, nb_passagers, type_vehicule, num_vol_train, terminal, heure_arrivee_vol, notes, paiement_a_bord, prix_estime, prix_final, client_id, passager_prenom, passager_nom, passager_tel')
+    .select('adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, type_vehicule, num_vol_train, terminal, heure_arrivee_vol, notes, paiement_a_bord, prix_estime, prix_final, client_id, passager_prenom, passager_nom, passager_tel')
     .eq('id', courseId)
     .single()
 
@@ -523,6 +557,7 @@ export async function envoyerInfosCourseEmailAction(
     ref: courseId.slice(-6).toUpperCase(),
     adresseDepart: course.adresse_depart,
     adresseArrivee: course.adresse_arrivee,
+    etapes: Array.isArray(course.etapes) ? course.etapes as string[] : null,
     datePrevue: course.date_prevue,
     nbPassagers: course.nb_passagers,
     typeVehicule: course.type_vehicule,
