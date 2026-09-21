@@ -141,27 +141,61 @@ export default function TarifsMatrix({
   const getCell = (dep: string, arr: string) =>
     grille.find(g => g.zone_depart_id === dep && g.zone_arrivee_id === arr)
 
+  // En-tête et première colonne figés.
+  //
+  // Sans ça, la matrice est inutilisable dès qu'elle dépasse la largeur de
+  // l'écran : en faisant défiler vers la droite on perd le nom de la ligne, et
+  // vers le bas le nom de la colonne — on modifie donc un prix sans savoir quel
+  // trajet on modifie. Signalé le 2026-09-21.
+  //
+  // Le conteneur doit avoir sa PROPRE hauteur et son propre défilement : un
+  // `position: sticky; top` se cale sur l'ancêtre qui défile, et `overflow-x`
+  // seul en faisait déjà un — l'en-tête n'aurait donc jamais collé.
+  //
+  // Les bordures sont posées en `box-shadow: inset`, pas en `border` : avec
+  // `border-collapse: collapse`, les bordures d'une cellule figée disparaissent
+  // pendant le défilement.
+  const FOND = 'var(--surface)'
+  const entete: React.CSSProperties = {
+    position: 'sticky', top: 0, zIndex: 2, background: FOND,
+    boxShadow: 'inset 0 -1px 0 rgba(201,168,76,.18)',
+  }
+  const colonneFigee: React.CSSProperties = {
+    position: 'sticky', left: 0, zIndex: 1, background: FOND,
+    boxShadow: 'inset -1px 0 0 var(--gb)',
+  }
+
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <>
       <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 10, letterSpacing: '.08em' }}>
         CLIQUEZ SUR UN PRIX POUR LE MODIFIER — LES DEUX SENS SONT ENREGISTRÉS ENSEMBLE, LA CASE GRISÉE SUIT AUTOMATIQUEMENT — P: premium · V: van
         <br />
         « AU KM » = AUCUN FORFAIT POUR CE TRAJET : IL EST FACTURÉ À LA DISTANCE. METTRE 0 DANS UNE CASE REVIENT À LA REPASSER AU KILOMÈTRE.
+        <br />
+        LE TABLEAU DÉFILE DANS LES DEUX SENS — LA LIGNE DE GAUCHE ET L&apos;EN-TÊTE DU HAUT RESTENT VISIBLES.
       </div>
+    {/* La hauteur est volontairement plafonnee sous celle du tableau : c'est
+        ce plafond qui fait du conteneur le vrai element defilant, et donc ce
+        qui permet a l'en-tete de coller. Sans plafond, l'en-tete repartirait
+        avec la page. Pas d'`overscroll-behavior: contain` : on laisse la page
+        continuer a defiler quand on arrive en bas du tableau. */}
+    <div style={{ overflow: 'auto', maxHeight: 'min(72dvh, 820px)' }}>
       <table style={{ borderCollapse: 'collapse', minWidth: 600 }}>
         <thead>
           <tr>
             <th style={{
+              ...entete, ...colonneFigee, zIndex: 3,
+              boxShadow: 'inset 0 -1px 0 rgba(201,168,76,.18), inset -1px 0 0 var(--gb)',
               padding: '8px 14px', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase',
               color: 'var(--t3)', fontWeight: 500, textAlign: 'left',
-              borderBottom: '1px solid rgba(201,168,76,.1)',
             }}>
               DÉPART → ARRIVÉE
             </th>
             {activeZones.map(z => (
               <th key={z.id} style={{
+                ...entete,
                 padding: '8px 12px', fontSize: 10, color: 'var(--t2)', fontWeight: 500,
-                textAlign: 'center', borderBottom: '1px solid rgba(201,168,76,.1)',
+                textAlign: 'center',
                 whiteSpace: 'nowrap',
               }}>
                 <div>{z.nom}</div>
@@ -174,6 +208,7 @@ export default function TarifsMatrix({
           {activeZones.map((dep, i) => (
             <tr key={dep.id} style={{ borderBottom: '1px solid rgba(201,168,76,.04)' }}>
               <td style={{
+                ...colonneFigee,
                 padding: '10px 14px', fontSize: 11, fontWeight: 500, color: 'var(--t1)',
                 whiteSpace: 'nowrap',
               }}>
@@ -204,5 +239,6 @@ export default function TarifsMatrix({
         </tbody>
       </table>
     </div>
+    </>
   )
 }
