@@ -45,6 +45,16 @@ export default function CourseActions({
     created_at: string
     adresse_depart: string
     adresse_arrivee: string
+    // Déclarés explicitement, et non lus via `(course as any)` : c'est ce
+    // raccourci qui avait masqué leur absence et fait effacer les valeurs
+    // existantes à l'enregistrement (2026-09-21).
+    etapes: string[] | null
+    num_vol_train: string | null
+    terminal: string | null
+    heure_arrivee_vol: string | null
+    passager_prenom: string | null
+    passager_nom: string | null
+    passager_tel: string | null
     client: { nom: string; prenom: string; telephone: string | null; entreprise: string | null } | null
     chauffeur: { nom: string; prenom: string; telephone: string | null; vehicule: string } | null
     prix_sous_traitant: number | null
@@ -130,15 +140,13 @@ export default function CourseActions({
   // la course créée, alors que ce sont les demandes les plus courantes au
   // téléphone — et que le chauffeur s'en sert sur le terrain (il appelle le
   // passager, suit le vol, passe par l'étape).
-  const [editEtapes, setEditEtapes] = useState<string[]>(
-    Array.isArray((course as any).etapes) ? (course as any).etapes as string[] : [],
-  )
-  const [editVol, setEditVol] = useState((course as any).num_vol_train ?? '')
-  const [editTerminal, setEditTerminal] = useState((course as any).terminal ?? '')
-  const [editHeureVol, setEditHeureVol] = useState((course as any).heure_arrivee_vol ?? '')
-  const [editPassPrenom, setEditPassPrenom] = useState((course as any).passager_prenom ?? '')
-  const [editPassNom, setEditPassNom] = useState((course as any).passager_nom ?? '')
-  const [editPassTel, setEditPassTel] = useState((course as any).passager_tel ?? '')
+  const [editEtapes, setEditEtapes] = useState<string[]>(course.etapes ?? [])
+  const [editVol, setEditVol] = useState(course.num_vol_train ?? '')
+  const [editTerminal, setEditTerminal] = useState(course.terminal ?? '')
+  const [editHeureVol, setEditHeureVol] = useState(course.heure_arrivee_vol ?? '')
+  const [editPassPrenom, setEditPassPrenom] = useState(course.passager_prenom ?? '')
+  const [editPassNom, setEditPassNom] = useState(course.passager_nom ?? '')
+  const [editPassTel, setEditPassTel] = useState(course.passager_tel ?? '')
   const [editError, setEditError] = useState<string | null>(null)
   const [editSaved, setEditSaved] = useState(false)
 

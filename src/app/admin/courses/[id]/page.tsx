@@ -136,6 +136,17 @@ export default async function CourseDetailPage({
     created_at: course.created_at,
     adresse_depart: course.adresse_depart,
     adresse_arrivee: course.adresse_arrivee,
+    // Ces sept champs alimentent le panneau « Modifier la course ». Sans eux,
+    // le panneau s'ouvrait vide et l'enregistrement EFFAÇAIT les valeurs déjà
+    // saisies (vol, terminal, passager, étapes). Le défaut n'était pas visible
+    // sur une course neuve — seulement sur une course déjà renseignée.
+    etapes: Array.isArray((course as any).etapes) ? (course as any).etapes as string[] : null,
+    num_vol_train: (course as any).num_vol_train ?? null,
+    terminal: (course as any).terminal ?? null,
+    heure_arrivee_vol: (course as any).heure_arrivee_vol ?? null,
+    passager_prenom: (course as any).passager_prenom ?? null,
+    passager_nom: (course as any).passager_nom ?? null,
+    passager_tel: (course as any).passager_tel ?? null,
     client: clientNom ? { nom: '', prenom: clientNom, telephone: clientTel, entreprise: clientData?.entreprise_nom } : null,
     chauffeur: chauffeurNom ? { nom: '', prenom: chauffeurNom, telephone: chauffeurTel, vehicule: chauffeurVehicule } : null,
     mode_paiement: (course as any).mode_paiement ?? null,
