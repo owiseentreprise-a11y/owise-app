@@ -8,6 +8,8 @@ import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, env
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
+import { calculerPrixEtapes } from '@/lib/calcPrix'
+import { detourKm } from '@/lib/geo'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   // Vérification admin via JWT (anon key)
@@ -311,6 +313,41 @@ export async function modifierCourseDetails(
   if (error) return { error: error.message }
   revalidatePath(`/admin/courses/${courseId}`)
   revalidatePath('/admin/courses')
+}
+
+/**
+ * Ce que coûteraient les arrêts saisis, pour l'afficher pendant l'appel.
+ *
+ * Purement indicatif : la course garde le prix que l'exploitant décide. Le
+ * calcul passe par la même règle que le site public (kilomètres du détour +
+ * frais par étape), pour qu'un client au téléphone s'entende annoncer le même
+ * montant qu'en ligne.
+ */
+export async function estimerSurcoutEtapesAction(
+  courseId: string, etapes: string[],
+): Promise<{ surcout: number; detourKm: number } | { error: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  const retenues = etapes.map(e => e.trim()).filter(Boolean).slice(0, 2)
+  if (retenues.length === 0) return { surcout: 0, detourKm: 0 }
+
+  const [{ data: course }, { data: tarifs }, { data: params }] = await Promise.all([
+    supabase.from('courses').select('adresse_depart,adresse_arrivee,type_vehicule,date_prevue').eq('id', courseId).single(),
+    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    supabase.from('parametres').select('supplement_nuit,supplement_weekend,supplement_etape').single(),
+  ])
+  if (!course) return { error: 'Course introuvable' }
+
+  const mesure = await detourKm(course.adresse_depart, retenues, course.adresse_arrivee)
+  if (!mesure) return { error: 'Distances indisponibles' }
+
+  const surcout = calculerPrixEtapes(
+    0, mesure.directe, mesure.troncons,
+    course.type_vehicule, course.date_prevue, tarifs ?? [], params,
+  )
+  const somme = mesure.troncons.reduce((t, d) => t + d, 0)
+  return { surcout, detourKm: Math.ceil(Math.max(0, somme - mesure.directe)) }
 }
 
 export async function supprimerCourse(courseId: string): Promise<{ error?: string }> {

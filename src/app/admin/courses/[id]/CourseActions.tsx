@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction, estimerSurcoutEtapesAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 
 /** Style commun aux champs du panneau « Modifier la course ». */
@@ -141,6 +141,22 @@ export default function CourseActions({
   // téléphone — et que le chauffeur s'en sert sur le terrain (il appelle le
   // passager, suit le vol, passe par l'étape).
   const [editEtapes, setEditEtapes] = useState<string[]>(course.etapes ?? [])
+
+  // Ce que coûteraient les arrêts saisis — affiché pendant l'appel, jamais
+  // appliqué tout seul : le prix de la course reste la décision de l'exploitant.
+  const [surcoutEtapes, setSurcoutEtapes] =
+    useState<{ surcout: number; detourKm: number } | { error: string } | null>(null)
+  useEffect(() => {
+    const saisies = editEtapes.map(e => e.trim()).filter(Boolean)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saisies.length === 0) { setSurcoutEtapes(null); return }
+    let vivant = true
+    const t = setTimeout(async () => {
+      const r = await estimerSurcoutEtapesAction(course.id, saisies).catch(() => ({ error: 'indisponible' }))
+      if (vivant) setSurcoutEtapes(r)
+    }, 900)
+    return () => { vivant = false; clearTimeout(t) }
+  }, [editEtapes, course.id])
   const [editVol, setEditVol] = useState(course.num_vol_train ?? '')
   const [editTerminal, setEditTerminal] = useState(course.terminal ?? '')
   const [editHeureVol, setEditHeureVol] = useState(course.heure_arrivee_vol ?? '')
@@ -811,6 +827,18 @@ export default function CourseActions({
                     >×</button>
                   </div>
                 ))}
+                {surcoutEtapes && (
+                  <div style={{
+                    fontSize: 11, lineHeight: 1.5, padding: '7px 10px', marginBottom: 6, borderRadius: 8,
+                    background: 'rgba(201,168,76,.06)', border: '1px solid var(--gb)', color: 'var(--t2)',
+                  }}>
+                    {'error' in surcoutEtapes
+                      ? `Surcoût non calculable (${surcoutEtapes.error}).`
+                      : <>Ces arrêts valent <strong style={{ color: 'var(--gold)' }}>+{surcoutEtapes.surcout} €</strong>{' '}
+                          ({surcoutEtapes.detourKm} km de détour + frais). Le prix de la course ne change pas tout seul :
+                          reportez-le dans « Prix final » si vous l&apos;appliquez.</>}
+                  </div>
+                )}
                 {editEtapes.length < 2 && (
                   <button
                     onClick={() => setEditEtapes([...editEtapes, ''])}

@@ -25,7 +25,9 @@ export default async function SousTraitantPage() {
   const in30days = new Date(now)
   in30days.setDate(in30days.getDate() + 30)
 
-  const COURSE_FIELDS = 'id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, type_vehicule, notes, prix_sous_traitant, client_id'
+  // Même raison que côté chauffeur : le portail sait afficher les arrêts, la
+  // requête ne les chargeait pas.
+  const COURSE_FIELDS = 'id, statut, adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, type_vehicule, notes, prix_sous_traitant, client_id'
   const CLIENT_JOIN = ', clients(type_compte, entreprise_nom, nom, prenom, tel, profiles(prenom, nom, telephone))'
 
   const [coursesRes, planningRes, historiqueRes, facturesRes] = await Promise.all([

@@ -127,13 +127,18 @@ export async function createReservationCheckout(data: {
     prixServeur = Math.round(prixServeur * 2 * 100) / 100
   }
 
-  // Arrêts en chemin — comptés une seule fois, même sur un aller-retour.
+  // Arrêts en chemin — comptés une seule fois, même sur un aller-retour :
+  // l'arrêt a lieu à l'aller. On retient le surcoût à part, pour ne pas en
+  // reverser la moitié sur la course retour créée plus bas.
   const etapes = (data.etapes ?? []).map(e => e.trim()).filter(Boolean).slice(0, 2)
+  let surcoutEtapes = 0
   if (etapes.length > 0) {
-    prixServeur = await appliquerEtapes(
+    const avec = await appliquerEtapes(
       prixServeur, data.adresse_depart, etapes, data.adresse_arrivee,
       data.type_vehicule, data.date_prevue,
     )
+    surcoutEtapes = Math.round((avec - prixServeur) * 100) / 100
+    prixServeur = avec
   }
 
   // Code parrainage : -10% si code actif en base
@@ -244,7 +249,9 @@ export async function createReservationCheckout(data: {
           date_prevue:     dateRetourParsed.toISOString(),
           type_vehicule:   data.type_vehicule,
           nb_passagers:    data.nb_passagers,
-          prix_estime:     Math.round(prixServeur / 2),
+          // Le surcoût des arrêts est retiré avant de partager en deux : il
+          // porte sur l'aller, pas sur le retour.
+          prix_estime:     Math.round((prixServeur - surcoutEtapes) / 2),
           notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
           mode_paiement:   'stripe',
           statut:          'en_attente',
