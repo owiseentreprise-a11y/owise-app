@@ -56,6 +56,7 @@ Trajets longue distance au forfait, sans compteur. Prix valables dans les deux s
 
 ### Vers Bruxelles et la Belgique
 - Chantilly → Bruxelles : 606 €
+- Goussainville → Bruxelles : 610 €
 - Creil → Bruxelles : 593 €
 - Senlis → Bruxelles : 584 €
 - Compiègne → Bruxelles : 539 €
@@ -67,6 +68,7 @@ Trajets longue distance au forfait, sans compteur. Prix valables dans les deux s
 
 ### Vers Aéroport de Charleroi (Bruxelles-Sud)
 - Chantilly → Charleroi : 525 €
+- Goussainville → Charleroi : 550 €
 - Creil → Charleroi : 513 €
 - Senlis → Charleroi : 503 €
 - Compiègne → Charleroi : 459 €
