@@ -81,21 +81,39 @@ export function estAdresseBelge(label: string): boolean {
  */
 export function detectZone<T extends ZoneCalc>(codePostal: string, zones: T[], addressLabel?: string): T | null {
   if (addressLabel) {
-    const lower = addressLabel.toLowerCase()
-    if (lower.includes('charles de gaulle') || lower.includes('roissy') || /\bcdg\b/.test(lower)) {
+    // Les traits d'union sont neutralisés avant toute comparaison : Google
+    // réécrit les libellés qu'on lui envoie, et « Aéroport Paris-Charles de
+    // Gaulle (CDG) » revient en « Aéroport Charles-de-Gaulle, Rue du Luxembourg,
+    // 93290 Tremblay-en-France ». Le mot « CDG » a disparu, « Charles de Gaulle »
+    // a pris des traits d'union, et 93290 n'appartient à aucune zone : le
+    // forfait aéroport ne s'appliquait plus sur les liens pré-remplis.
+    const lower = addressLabel.toLowerCase().replace(/[-‐‑–—]/g, ' ')
+    const marqueurAeroport = /a[ée]roport|terminal/.test(lower)
+
+    // « Charles de Gaulle » est l'un des noms de rue les plus répandus de
+    // France : sans marqueur d'aéroport, une adresse de Creil ou de Neuilly
+    // était facturée comme un transfert CDG. « Roissy en Brie » (77) est une
+    // commune de Seine-et-Marne, à 40 km de l'aéroport.
+    const estRoissyAeroport = lower.includes('roissy') && !lower.includes('roissy en brie')
+    if (/\bcdg\b/.test(lower)
+        || estRoissyAeroport
+        || (lower.includes('charles de gaulle') && marqueurAeroport)) {
       const z = zones.find(z => z.code === 'CDG'); if (z) return z
     }
     if (lower.includes('orly')) {
       const z = zones.find(z => z.code === 'ORY'); if (z) return z
     }
-    // Aéroport de Beauvais-Tillé : on exige "tillé" ou "aéroport" en plus de
-    // "beauvais" — sinon une simple adresse dans la ville de Beauvais (zone BEA)
-    // était absorbée par la zone aéroport.
+    // Aéroport de Beauvais-Tillé : on exige « Tillé » comme mot entier, ou
+    // « Beauvais » accompagné d'un marqueur d'aéroport — sinon une adresse dans
+    // la ville de Beauvais (zone BEA) est absorbée par la zone aéroport.
+    // Le mot entier est indispensable : « bastille » contient « tille », si bien
+    // que « Place de la Bastille, 75011 Paris » était facturée comme un départ
+    // de l'aéroport de Beauvais.
     // À noter : la ville et l'aéroport partagent le code postal 60000 (l'aéroport
     // est sur la commune de Tillé). Seul le libellé peut donc les distinguer —
     // la zone BVA n'a d'ailleurs aucun préfixe postal en base.
-    if (lower.includes('tillé') || lower.includes('tille')
-        || (lower.includes('beauvais') && (lower.includes('aéroport') || lower.includes('aeroport')))) {
+    if (/\btill[ée]\b/.test(lower)
+        || (lower.includes('beauvais') && marqueurAeroport)) {
       const z = zones.find(z => z.code === 'BVA'); if (z) return z
     }
     // Charleroi : aéroport belge distinct de Bruxelles, sensiblement plus proche
