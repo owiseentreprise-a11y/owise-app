@@ -205,6 +205,57 @@ export function calculerPrix(
   return null
 }
 
+/**
+ * Frais par étape appliqués si /admin/tarifs n'a jamais été configuré, ou si
+ * la page qui calcule le prix a oublié de charger `supplement_etape`.
+ * Valeur de repli volontairement égale au tarif en vigueur : une page mal
+ * câblée facture le bon prix au lieu d'offrir l'étape au client.
+ */
+export const SUPPLEMENT_ETAPE_DEFAUT = 15
+
+/**
+ * Prix d'une course qui comporte une ou plusieurs étapes intermédiaires.
+ *
+ * Règle unique, la même pour tous les clients et tous les parcours :
+ *
+ *     prix du trajet direct
+ *   + kilomètres réellement ajoutés par le détour
+ *   + frais fixes, une fois par étape
+ *
+ * Le détour est ce que les étapes rallongent vraiment le trajet : la somme
+ * des tronçons parcourus moins le trajet direct, arrondie au kilomètre
+ * supérieur. Une étape qui se trouve déjà sur la route ne rallonge rien et
+ * ne coûte donc que les frais fixes ; un détour ne réduit jamais le prix.
+ *
+ * `prixDirect` est le prix normal de A→B, qu'il vienne d'un forfait de zone
+ * ou du calcul au kilomètre : la règle s'applique identiquement aux deux.
+ * Les majorations nuit/weekend portent sur les kilomètres du détour, qui
+ * sont du transport, mais pas sur les frais fixes.
+ */
+export function calculerPrixEtapes(
+  prixDirect: number,
+  distanceDirecteKm: number,
+  distancesTronconsKm: number[],
+  vehiculeKey: string,
+  dateHeure: string,
+  tarifs: TarifCalc[],
+  params?: ParamsCalc | null,
+): number {
+  const nbEtapes = Math.max(0, distancesTronconsKm.length - 1)
+  if (nbEtapes === 0) return Math.round(prixDirect * 100) / 100
+
+  const vehiculeNom = VEHICULE_NOM[vehiculeKey] ?? vehiculeKey
+  const tarif  = tarifs.find(t => t.vehicule === vehiculeNom)
+  const prixKm = tarif ? Number(tarif.prix_km) : 2
+  const frais  = params?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT
+
+  const totalTroncons = distancesTronconsKm.reduce((t, d) => t + d, 0)
+  const detourKm = Math.ceil(Math.max(0, totalTroncons - distanceDirecteKm))
+
+  const prixDetour = appliquerSupplements(detourKm * prixKm, dateHeure, params)
+  return Math.round((prixDirect + prixDetour + nbEtapes * frais) * 100) / 100
+}
+
 /** Calcule le prix au kilomètre — utilisé quand aucun forfait n'est disponible */
 export function calculerPrixKm(
   distanceKm: number,

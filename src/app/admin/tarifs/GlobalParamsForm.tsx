@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateParametresTarifs } from './actions'
+import { SUPPLEMENT_ETAPE_DEFAUT } from '@/lib/calcPrix'
 
 const inp: React.CSSProperties = {
   background: 'var(--elevated)', border: '1px solid var(--t3)',
@@ -97,7 +98,7 @@ export default function GlobalParamsForm({ p }: { p: any }) {
   // Valeurs réactives pour les indicateurs d'état
   const [pecActif, setPecActif]     = useState(String(p?.tarif_pec_actif ?? false))
   const [fraisPec, setFraisPec]     = useState(Number(p?.tarif_frais_pec ?? 0))
-  const [etape, setEtape]           = useState(Number(p?.supplement_etape ?? 10))
+  const [etape, setEtape]           = useState(Number(p?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT))
   const [nuit, setNuit]             = useState(Number(p?.supplement_nuit ?? 0))
   const [weekend, setWeekend]       = useState(Number(p?.supplement_weekend ?? 0))
   const [ferie, setFerie]           = useState(Number(p?.supplement_ferie ?? 0))
@@ -156,7 +157,7 @@ export default function GlobalParamsForm({ p }: { p: any }) {
           label={`Frais par étape (actuellement ${etape}€)`}
           desc={`Ajouté au prix total lorsqu'un arrêt intermédiaire est demandé. Le calcul des km réels du détour s'ajoute en plus.`}
           name="supplement_etape"
-          value={p?.supplement_etape ?? 10}
+          value={p?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT}
           isActive={etape > 0}
           onChange={v => setEtape(Number(v))}
         />

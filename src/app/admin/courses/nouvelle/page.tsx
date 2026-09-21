@@ -18,7 +18,7 @@ export default async function NouvelleCourse() {
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
     supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-    supabase.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
+    supabase.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec').single(),
     // Courses déjà assignées, pour signaler qu'un chauffeur est pris sur le créneau.
     supabase.from('courses')
       .select('id, chauffeur_id, date_prevue, adresse_depart, adresse_arrivee')

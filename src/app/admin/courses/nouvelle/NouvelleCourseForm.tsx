@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
-import { calculerPrix, calculerPrixKm, detectZone, isForfaitZone, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, isForfaitZone, type ParamsCalc } from '@/lib/calcPrix'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,6 +60,27 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 // detectZone / isForfaitZone / calculerPrix / calculerPrixKm vivent dans
 // @/lib/calcPrix — source unique partagée avec /reserver et la vitrine.
+
+/**
+ * Complète une adresse avec ses coordonnées.
+ *
+ * Les coordonnées n'arrivent que lorsque l'opérateur clique une suggestion.
+ * Au téléphone il tape souvent l'adresse sans la choisir dans la liste : sans
+ * ce rattrapage, le détour d'une étape ne serait pas mesurable et l'étape
+ * serait offerte au client.
+ */
+async function resoudreAdresse(a: AdresseVal): Promise<AdresseVal> {
+  if (a.lat && a.lng) return a
+  if (a.label.trim().length < 3) return a
+  try {
+    const res  = await fetch(`/api/geocode?q=${encodeURIComponent(a.label)}`)
+    const json = await res.json()
+    if (json.lat && json.lng) {
+      return { ...a, lat: json.lat, lng: json.lng, codePostal: a.codePostal || (json.codePostal ?? '') }
+    }
+  } catch {}
+  return a
+}
 
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
   if (!dep.lng || !dep.lat || !arr.lng || !arr.lat) return null
@@ -246,11 +267,46 @@ export default function NouvelleCourseForm({
 
   const useForfait = forfaitPrix !== null
 
+  /**
+   * Surcoût des étapes : les kilomètres que le détour ajoute réellement, plus
+   * les frais par étape. On mesure ici les distances ; c'est calcPrix.ts qui
+   * les tarife, avec la même règle que le site public. Un prix direct de 0
+   * fait ressortir le seul surcoût, que l'on ajoute ensuite au prix du trajet.
+   */
+  const [surcoutEtapes, setSurcoutEtapes] = useState(0)
+  useEffect(() => {
+    const saisies = etapes.filter(e => e.label.trim().length >= 3)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saisies.length === 0 || depart.label.trim().length < 3 || arrivee.label.trim().length < 3) {
+      setSurcoutEtapes(0); return
+    }
+    let alive = true
+    ;(async () => {
+      const chaine = await Promise.all([depart, ...saisies, arrivee].map(resoudreAdresse))
+      if (!alive) return
+      const [troncons, directe] = await Promise.all([
+        Promise.all(chaine.slice(0, -1).map((p, i) => fetchDistanceKm(p, chaine[i + 1]))),
+        fetchDistanceKm(chaine[0], chaine[chaine.length - 1]),
+      ])
+      if (!alive) return
+      const mesurees = directe !== null && troncons.every(d => d !== null)
+      setSurcoutEtapes(calculerPrixEtapes(
+        0,
+        mesurees ? directe : 0,
+        mesurees ? troncons as number[] : chaine.slice(0, -1).map(() => 0),
+        vehicule, dateHeure, tarifs, params,
+      ))
+    })()
+    return () => { alive = false }
+  }, [etapes, depart, arrivee, vehicule, dateHeure, tarifs, params])
+
   const prixAuto = useMemo(() => {
-    if (useForfait) return forfaitPrix
-    if (distanceKm) return calculerPrixKm(distanceKm, vehicule, dateHeure, tarifs, params)
-    return null
-  }, [useForfait, forfaitPrix, vehicule, distanceKm, dateHeure, tarifs, params])
+    const direct = useForfait ? forfaitPrix
+      : distanceKm ? calculerPrixKm(distanceKm, vehicule, dateHeure, tarifs, params)
+      : null
+    if (direct === null) return null
+    return Math.round((direct + surcoutEtapes) * 100) / 100
+  }, [useForfait, forfaitPrix, vehicule, distanceKm, dateHeure, tarifs, params, surcoutEtapes])
 
   // Fetch OSRM distance when in km mode
   useEffect(() => {
@@ -637,6 +693,7 @@ export default function NouvelleCourseForm({
             {prixAuto !== null && (
               <span style={{ marginLeft: 8, color: 'var(--gold)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
                 — calculé : {prixAuto} €{useForfait ? ' (forfait)' : distanceKm ? ` (${distanceKm} km)` : ''}
+                {surcoutEtapes > 0 && ` · dont ${surcoutEtapes} € pour ${etapes.filter(e => e.label.trim()).length} étape${etapes.filter(e => e.label.trim()).length > 1 ? 's' : ''}`}
               </span>
             )}
           </label>

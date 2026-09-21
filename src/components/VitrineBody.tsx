@@ -30,11 +30,18 @@ async function geocodeAddress(label: string): Promise<{ lat: number; lng: number
   } catch {}
   return null
 }
+
+/** Complète une adresse saisie au clavier avec ses coordonnées et son code postal. */
+async function resoudreAdresse(addr: BcAddr): Promise<BcAddr> {
+  if (addr.lat && addr.cp) return addr
+  const gc = await geocodeAddress(addr.label)
+  return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
+}
 import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { gtagEvent } from '@/lib/ga'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, detectZone, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -321,6 +328,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   // Adresses structurées pour le calcul de prix du devis (même type que bcDepart/bcArrivee)
   const [devisOrig,    setDevisOrig]   = useState<BcAddr>({ label: '' })
   const [desisDest,    setDesisDest]   = useState<BcAddr>({ label: '' })
+  const [devisEtape,   setDevisEtape]  = useState<BcAddr>({ label: '' })
   const [devisPrix,    setDevisPrix]   = useState<number | null>(null)
   const [form, setForm] = useState({
     origin:'', dest:'', date:'', time:'09:00', destType:'addr',
@@ -487,53 +495,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
       setBcPrice(null)
-      const fraisEtape = paramsProp?.supplement_etape ?? 10
       let prixFinal: number
       let isKmFinal: boolean
 
       if (bcEtape && bcEtapeAddr.label.trim().length >= 3) {
-        const tarifVeh = bcTarifs.find(t => t.vehicule === getVehicle(bcPax).name)
-        const pec = tarifVeh ? Number(tarifVeh.prise_en_charge) : 0
-
-        // Calculer en parallèle : prix direct A→B + leg A→étape + leg étape→B
-        const [direct, leg1, leg2] = await Promise.all([
-          estimerPrixBase(bcDepart, bcArrivee,  bcPax, bcDate, bcTime),
-          estimerPrixBase(bcDepart, bcEtapeAddr, bcPax, bcDate, bcTime),
-          estimerPrixBase(bcEtapeAddr, bcArrivee, bcPax, bcDate, bcTime),
-        ])
-
-        if (!direct.isKm) {
-          // A→B est un FORFAIT
-          if (leg1.isKm && leg2.isKm) {
-            // Les deux tronçons sont au km → overhead réel = km(A→étape)+km(étape→B) - km(A→B)
-            // Calculé depuis les prix (pec déjà déduit) puis arrondi au km supérieur
-            const pk = tarifVeh ? Number(tarifVeh.prix_km) : 1.25
-            const dDirect = await fetchGoogleDist(bcDepart, bcArrivee)
-            if (dDirect !== null) {
-              const dLeg1 = (leg1.prix - pec) / pk
-              const dLeg2 = (leg2.prix - pec) / pk
-              const extraKm = Math.ceil(Math.max(0, dLeg1 + dLeg2 - dDirect))
-              prixFinal = direct.prix + extraKm * pk + fraisEtape
-            } else {
-              // Fallback si distance directe non disponible : km du premier tronçon
-              prixFinal = direct.prix + Math.max(0, leg1.prix - pec) + fraisEtape
-            }
-          } else {
-            // Un des tronçons est lui-même un forfait (étape en zone) → ajouter son prix complet
-            const prixDetour = leg1.isKm ? Math.max(0, leg1.prix - pec) : leg1.prix
-            prixFinal = direct.prix + prixDetour + fraisEtape
-          }
-          isKmFinal = false
-        } else {
-          // A→B est per-km → 1 seule prise en charge
-          const priseEnCharge = (leg1.isKm && leg2.isKm) ? pec : 0
-          prixFinal = leg1.prix + leg2.prix - priseEnCharge + fraisEtape
-          isKmFinal = true
-        }
+        const result = await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime)
+        prixFinal = result.prix
+        isKmFinal = result.isKm
       } else {
-        // Pas d'étape ou adresse étape non résolue → comportement simple
+        // Étape ouverte mais adresse pas encore saisie : on ne peut pas mesurer
+        // le détour, on n'annonce donc que le trajet direct. Le prix se remet à
+        // jour dès que l'adresse de l'étape est renseignée.
         const result = await bcEstimate()
-        prixFinal = bcEtape ? result.prix + fraisEtape : result.prix
+        prixFinal = result.prix
         isKmFinal = result.isKm
       }
 
@@ -564,7 +538,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     }, 900)
     return () => { if (autoEstTimer.current) clearTimeout(autoEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime, bcEtape, bcEtapeAddr.cp, bcEtapeAddr.lat])
+  // `bcEtapeAddr.label` fait partie des déclencheurs : sans lui, une adresse
+  // d'étape tapée au clavier sans choisir de suggestion laissait le prix figé
+  // sur le trajet sans étape.
+  }, [bcDepart.label, bcArrivee.label, bcPax, bcTime, bcEtape, bcEtapeAddr.label, bcEtapeAddr.cp, bcEtapeAddr.lat])
 
   /* ── Estimation devis — même logique que le widget ──────── */
   useEffect(() => {
@@ -573,13 +550,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     if (dep.length < 3 || arr.length < 3) { setDevisPrix(null); return }
     if (devisEstTimer.current) clearTimeout(devisEstTimer.current)
     devisEstTimer.current = setTimeout(async () => {
-      const result = await estimerPrixBase(devisOrig, desisDest, pax, form.date, form.time)
+      const result = await estimerAvecEtapes(
+        devisOrig, etapeOpen ? [devisEtape] : [], desisDest, pax, form.date, form.time,
+      )
       const suppTotal = Object.values(suppls).reduce((a, b) => a + b, 0)
-      setDevisPrix(Math.round(result.prix + suppTotal + (etapeOpen ? (paramsProp?.supplement_etape ?? 10) : 0)))
+      setDevisPrix(Math.round(result.prix + suppTotal))
     }, 600)
     return () => { if (devisEstTimer.current) clearTimeout(devisEstTimer.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [devisOrig.label, desisDest.label, pax, form.date, form.time, suppls, etapeOpen])
+  }, [devisOrig.label, desisDest.label, pax, form.date, form.time, suppls, etapeOpen, devisEtape.label, devisEtape.cp, devisEtape.lat])
 
   /* ── Parallax souris hero ───────────────────────────────── */
   useEffect(() => {
@@ -633,16 +612,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const v     = getVehicle(paxN)
     const tarif = bcTarifs.find(t => t.vehicule === v.name)
 
-    const gcFull = async (addr: BcAddr): Promise<BcAddr> => {
-      if (addr.lat && addr.cp) return addr
-      const gc = await geocodeAddress(addr.label)
-      return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
-    }
-
     const realDate = date ? `${date}T${time || '09:00'}` : ''
 
     if (tarif && dep.label && arr.label) {
-      const [depGc, arrGc] = await Promise.all([gcFull(dep), gcFull(arr)])
+      const [depGc, arrGc] = await Promise.all([resoudreAdresse(dep), resoudreAdresse(arr)])
       const zoneDep = detectZone(depGc.cp ?? '', zonesProp, depGc.label)
       const zoneArr = detectZone(arrGc.cp ?? '', zonesProp, arrGc.label)
 
@@ -672,6 +645,44 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
     return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime)
+  }
+
+  /**
+   * Prix d'un trajet comportant une ou plusieurs étapes.
+   *
+   * On mesure le trajet direct et chaque tronçon par la route, puis on laisse
+   * calcPrix.ts appliquer la règle (détour + frais par étape). Le tarif d'une
+   * étape n'est défini qu'à cet endroit-là, jamais ici.
+   */
+  async function estimerAvecEtapes(
+    dep: BcAddr, etapes: BcAddr[], arr: BcAddr, paxN: number, date: string, time: string,
+  ): Promise<{ prix: number; isKm: boolean }> {
+    const retenues = etapes.filter(e => e.label.trim().length >= 3)
+    if (retenues.length === 0) return estimerPrixBase(dep, arr, paxN, date, time)
+
+    const direct   = await estimerPrixBase(dep, arr, paxN, date, time)
+    const realDate = date ? `${date}T${time || '09:00'}` : ''
+    const cle      = NOM_VERS_CLE[getVehicle(paxN).name] ?? 'berline'
+
+    const points = await Promise.all([dep, ...retenues, arr].map(resoudreAdresse))
+    const troncons = await Promise.all(
+      points.slice(0, -1).map((p, i) => fetchGoogleDist(p, points[i + 1])),
+    )
+    const distDirecte = await fetchGoogleDist(points[0], points[points.length - 1])
+
+    // Une distance manquante rend le détour immesurable : on facture alors le
+    // trajet direct plus les frais d'étape, jamais moins que sans étape.
+    if (distDirecte === null || troncons.some(d => d === null)) {
+      return {
+        prix: calculerPrixEtapes(direct.prix, 0, retenues.map(() => 0).concat(0), cle, realDate, bcTarifs, paramsProp),
+        isKm: direct.isKm,
+      }
+    }
+
+    return {
+      prix: calculerPrixEtapes(direct.prix, distDirecte, troncons as number[], cle, realDate, bcTarifs, paramsProp),
+      isKm: direct.isKm,
+    }
   }
 
   // Construit l'URL /reserver avec toutes les infos déjà saisies, pour que
@@ -715,7 +726,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const v       = getVehicle(pax)
     const price   = devisPrix
     const ref     = 'OW-' + Date.now().toString(36).toUpperCase()
-    const supList = Object.keys(suppls)
+    // La table `devis` n'a pas de colonne pour les étapes : l'adresse voyage
+    // avec les suppléments, pour que l'admin la voie dans la demande.
+    const etapeSaisie = etapeOpen ? devisEtape.label.trim() : ''
+    const supList = [...Object.keys(suppls), ...(etapeSaisie ? [`Étape : ${etapeSaisie}`] : [])]
 
     try {
       await soumettreDevis({
@@ -1100,20 +1114,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 {bcPrice !== null && (
                   <button onClick={async()=>{
                     setBcLoading(true);setBcPrice(null);
-                    const frais=paramsProp?.supplement_etape??10;
-                    if(bcEtape&&bcEtapeAddr.label.trim().length>=3){
-                      const tv=bcTarifs.find(t=>t.vehicule===getVehicle(bcPax).name);const pec=tv?Number(tv.prise_en_charge):0;
-                      const[d,l1,l2]=await Promise.all([estimerPrixBase(bcDepart,bcArrivee,bcPax,bcDate,bcTime),estimerPrixBase(bcDepart,bcEtapeAddr,bcPax,bcDate,bcTime),estimerPrixBase(bcEtapeAddr,bcArrivee,bcPax,bcDate,bcTime)]);
-                      if(!d.isKm){
-                        const pk=tv?Number(tv.prix_km):1.25;
-                        if(l1.isKm&&l2.isKm){
-                          const dd=await fetchGoogleDist(bcDepart,bcArrivee);
-                          if(dd!==null){const ek=Math.ceil(Math.max(0,(l1.prix-pec)/pk+(l2.prix-pec)/pk-dd));setBcPrice(d.prix+ek*pk+frais);}
-                          else setBcPrice(d.prix+Math.max(0,l1.prix-pec)+frais);
-                        }else{setBcPrice(d.prix+(l1.isKm?Math.max(0,l1.prix-pec):l1.prix)+frais);}
-                        setBcIsKm(false);
-                      }else{const p=(l1.isKm&&l2.isKm)?pec:0;setBcPrice(l1.prix+l2.prix-p+frais);setBcIsKm(true);}
-                    }else{const r=await bcEstimate();setBcPrice(bcEtape?r.prix+frais:r.prix);setBcIsKm(r.isKm);}
+                    const r = await estimerAvecEtapes(bcDepart, bcEtape ? [bcEtapeAddr] : [], bcArrivee, bcPax, bcDate, bcTime);
+                    setBcPrice(r.prix);setBcIsKm(r.isKm);
                     setBcLoading(false);
                   }} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
                     ↺ Recalculer
@@ -1819,7 +1821,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                       <div className="route-dot" style={{background:'var(--amber)',width:8,height:8,left:18}}/>
                       <div className="field" style={{flex:1}}>
                         <label>Étape intermédiaire</label>
-                        <input type="text" placeholder="Adresse de l'étape"/>
+                        <VtAddressInput placeholder="Adresse de l'étape" value={devisEtape.label} onSelect={v=>setDevisEtape(v)}/>
                       </div>
                     </div>
                   )}
@@ -1831,7 +1833,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     </div>
                   </div>
                 </div>
-                <button style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:12,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:0,transition:'color .15s',marginBottom:16}} onClick={()=>setEtapeOpen(v=>!v)}>
+                <button style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:12,color:'var(--t2)',cursor:'pointer',background:'none',border:'none',fontFamily:'inherit',padding:0,transition:'color .15s',marginBottom:16}} onClick={()=>setEtapeOpen(v=>{ if(v) setDevisEtape({label:''}); return !v })}>
                   <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
                   {etapeOpen ? "Retirer l'étape" : 'Ajouter une étape intermédiaire'}
                 </button>
