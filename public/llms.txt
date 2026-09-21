@@ -15,6 +15,13 @@ Communes desservies : Asnières-sur-Oise, Bellefontaine, Belloy-en-France, Blain
 - Chantilly → Paris : 119 €
 - Vers Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
 
+### Roissy Pays de France
+Communes desservies : Bouqueval, Chennevières-lès-Louvres, Châtenay-en-France, Fontenay-en-Parisis, Fosses, Goussainville, Jagny-sous-Bois, Le Mesnil-Aubry, Le Plessis-Gassot, Louvres, Mareil-en-France, Marly-la-Ville, Mortefontaine, Plailly, Puiseux-en-France, Saint-Witz, Survilliers, Villeron, Villiers-le-Sec, Vémars, Épiais-lès-Louvres.
+- Goussainville → CDG : 59 €
+- Goussainville → Orly : 139 €
+- Goussainville → Paris : 119 €
+- Vers Beauvais-Tillé, Gare du Nord : prix au kilomètre, calculé à l'adresse exacte sur owise.fr.
+
 ### Creil et environs (5km)
 Communes desservies : Bailleval, Bazicourt, Beaurepaire, Brenouille, Cambronne-lès-Clermont, Cauffry, Creil, Fleurines, Labruyère, Laigneville, Les Ageux, Liancourt, Mogneville, Monchy-Saint-Éloi, Montataire, Neuilly-sous-Clermont, Nogent-sur-Oise, Pont-Sainte-Maxence, Pontpoint, Rantigny, Rieux, Rosoy, Sacy-le-Grand, Saint-Martin-Longueau, Thiverny, Verderonne, Verneuil-en-Halatte, Villers-Saint-Paul.
 - Creil → CDG : 59 €
@@ -116,6 +123,7 @@ Aucune majoration de nuit ni de week-end n'est appliquée actuellement.
 - [VTC Boran-sur-Oise](https://www.owise.fr/vtc-boran-sur-oise): Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle. Tarif via estimateur.
 - [VTC Précy-sur-Oise](https://www.owise.fr/vtc-precy-sur-oise): Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie. Tarif via estimateur.
 - [VTC Luzarches](https://www.owise.fr/vtc-luzarches): Luzarches, Asnières-sur-Oise, Chaumontel (Val-d'Oise 95). Tarif via estimateur.
+- [VTC Goussainville & Roissy Pays de France](https://www.owise.fr/vtc-goussainville): Goussainville, Louvres, Fosses, Survilliers, Marly-la-Ville, Saint-Witz, Vémars, Puiseux-en-France, Plailly, Mortefontaine. CDG : **59 €**, 12 à 18 minutes — le secteur le plus proche de l'aéroport.
 - [VTC Clermont](https://www.owise.fr/vtc-clermont): Clermont-de-l'Oise, Agnetz, Breuil-le-Vert, Breuil-le-Sec. Tarif via estimateur.
 - [VTC Liancourt](https://www.owise.fr/vtc-liancourt): Liancourt, Rantigny, Cauffry, Laigneville. Tarif via estimateur.
 
@@ -273,6 +281,8 @@ Paris intramuros, toute l'Île-de-France, et l'Oise (60). La liste complète des
 Villages et bourgs desservis au tarif fixe de leur secteur, souvent oubliés des comparateurs : Rieux, Brenouille, Beaurepaire, Les Ageux, Pontpoint, Bazicourt, Sacy-le-Grand, Saint-Martin-Longueau, Mogneville, Verderonne, Bailleval, Rosoy, Labruyère, Cambronne-lès-Clermont, Neuilly-sous-Clermont (secteur Creil) ; Morangles, Ercuis, Blaincourt-lès-Précy (secteur Chantilly) ; Borest, Brasseuse, Fontaine-Chaalis, Villers-Saint-Frambourg-Ognon (secteur Senlis).
 
 **Val-d'Oise (95), Pays de France** — mêmes tarifs que le secteur Chantilly : Luzarches, Le Plessis-Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine, Viarmes, Seugy, Lassy, Belloy-en-France, Saint-Martin-du-Tertre, Noisy-sur-Oise, Épinay-Champlâtreux.
+
+**Roissy Pays de France (95 et frange de l'Oise)** — secteur le plus proche de CDG, 12 à 18 minutes de l'aéroport pour **59 € fixes** : Goussainville, Louvres, Fosses, Survilliers, Saint-Witz, Vémars, Marly-la-Ville, Puiseux-en-France, Villeron, Fontenay-en-Parisis, Épiais-lès-Louvres, Chennevières-lès-Louvres, Le Mesnil-Aubry, Bouqueval, Le Plessis-Gassot, Villiers-le-Sec, Jagny-sous-Bois, Mareil-en-France, Châtenay-en-France, ainsi que Plailly (Parc Astérix) et Mortefontaine dans l'Oise.
 
 **Longue distance** : Lille, Bruxelles, Amiens, Reims, Rouen, Deauville, Caen, Lyon, Bordeaux, Strasbourg, Mont-Saint-Michel — tarif fixe garanti.
 
