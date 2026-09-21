@@ -13,6 +13,7 @@ import ReservationSummary from './ReservationSummary'
 import {
   calculerPrix,
   calculerPrixKm,
+  calculerPrixEtapes,
   detectZone,
   isForfaitZone,
   AIRPORT_COL,
@@ -34,6 +35,19 @@ type AdresseVal   = { label: string; codePostal: string; lat?: number; lng?: num
 // detectZone / isForfaitZone / calculerPrix / calculerPrixKm vivent dans
 // @/lib/calcPrix — source unique partagée avec actions.ts (serveur) et la
 // vitrine, pour garantir que le prix affiché = le prix facturé.
+
+/** Complète une adresse tapée sans choisir de suggestion avec ses coordonnées. */
+async function resoudreAdresse(a: AdresseVal): Promise<AdresseVal> {
+  if (a.lat && a.lng) return a
+  if (a.label.trim().length < 3) return a
+  try {
+    const json = await (await fetch(`/api/geocode?q=${encodeURIComponent(a.label)}`)).json()
+    if (json.lat && json.lng) {
+      return { ...a, lat: json.lat, lng: json.lng, codePostal: a.codePostal || (json.codePostal ?? '') }
+    }
+  } catch {}
+  return a
+}
 
 async function fetchDistanceKm(dep: AdresseVal, arr: AdresseVal): Promise<number | null> {
   if (!dep.lng || !dep.lat || !arr.lng || !arr.lat) return null
@@ -305,8 +319,10 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
     }
     const dep = searchParams.get('depart')
     const arr = searchParams.get('arrivee')
+    const eta = searchParams.get('etape')
     if (dep) resolve(dep, setDepart)
     if (arr) resolve(arr, setArrivee)
+    if (eta) resolve(eta, v => setEtapes([v]))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Diagnostic tunnel : arrivée sur /reserver, avec ou sans trajet pré-rempli
@@ -355,6 +371,13 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
   // Distance OSRM (pour mode km)
   const [distanceKm,   setDistanceKm]   = useState<number | null>(null)
   const [loadingRoute, setLoadingRoute] = useState(false)
+
+  // Arrêts en chemin — l'adresse arrive de l'estimation faite sur la page
+  // d'accueil, et reste modifiable ici.
+  const [etapes, setEtapes] = useState<AdresseVal[]>(() => {
+    const e = searchParams.get('etape')
+    return e ? [{ label: e, codePostal: '' }] : []
+  })
 
   const activeZones = zones.filter(z => z.code !== 'HORS')
   const zoneDepart  = useMemo(() => detectZone(depart.codePostal,  activeZones, depart.label),  [depart.codePostal,  depart.label])
@@ -416,8 +439,44 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
     if (prix === null) prixCalculéRef.current = false
   }, [prix, depart.label, arrivee.label, vehicule])
 
-  // Prix total : aller × 2 si aller-retour activé
-  const prixTotal = useMemo(() => prix === null ? null : allerRetour ? Math.round(prix * 2 * 100) / 100 : prix, [prix, allerRetour])
+  /**
+   * Ce que coûtent les arrêts : les kilomètres que le détour ajoute vraiment,
+   * plus les frais par étape. On mesure ici les distances, calcPrix.ts les
+   * tarife — la même règle que sur la page d'accueil et côté admin. Un prix
+   * direct de 0 fait ressortir le seul surcoût. Le serveur refait ce calcul
+   * avant le paiement : l'affichage n'est jamais ce qui fait foi.
+   */
+  const [surcoutEtapes, setSurcoutEtapes] = useState(0)
+  useEffect(() => {
+    const saisies = etapes.filter(e => e.label.trim().length >= 3)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saisies.length === 0 || !depart.label.trim() || !arrivee.label.trim()) { setSurcoutEtapes(0); return }
+    let vivant = true
+    ;(async () => {
+      const chaine = await Promise.all([depart, ...saisies, arrivee].map(resoudreAdresse))
+      if (!vivant) return
+      const [troncons, directe] = await Promise.all([
+        Promise.all(chaine.slice(0, -1).map((p, i) => fetchDistanceKm(p, chaine[i + 1]))),
+        fetchDistanceKm(chaine[0], chaine[chaine.length - 1]),
+      ])
+      if (!vivant) return
+      const mesurees = directe !== null && troncons.every(d => d !== null)
+      setSurcoutEtapes(calculerPrixEtapes(
+        0,
+        mesurees ? directe : 0,
+        mesurees ? troncons as number[] : chaine.slice(0, -1).map(() => 0),
+        vehicule, date, tarifs, params,
+      ))
+    })()
+    return () => { vivant = false }
+  }, [etapes, depart, arrivee, vehicule, date, tarifs, params])
+
+  // Prix total : aller × 2 si aller-retour activé, puis les arrêts une seule fois
+  const prixTotal = useMemo(() => {
+    if (prix === null) return null
+    const base = allerRetour ? Math.round(prix * 2 * 100) / 100 : prix
+    return Math.round((base + surcoutEtapes) * 100) / 100
+  }, [prix, allerRetour, surcoutEtapes])
 
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
@@ -481,6 +540,7 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
         zone_depart_id:  zoneDepart?.id ?? '',
         zone_arrivee_id: zoneArrivee?.id ?? '',
         distance_km:     distanceKm ?? undefined,
+        etapes:          etapes.map(e => e.label.trim()).filter(Boolean),
         aller_retour:    allerRetour,
         date_retour:     allerRetour ? dateRetour : '',
         adresse_arrivee_retour: allerRetour && arriveeRetour.label ? arriveeRetour.label : undefined,
@@ -681,6 +741,41 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                   </div>
                 )}
               </div>
+
+              {/* Étapes en chemin — reprises de l'estimation faite sur l'accueil */}
+              {etapes.map((etape, i) => (
+                <div key={i}>
+                  <FieldLabel>Étape {etapes.length > 1 ? i + 1 : ''} — arrêt en chemin</FieldLabel>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <AddressInput value={etape} placeholder="Adresse de l'arrêt" icon={
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <circle cx="8" cy="8" r="7" stroke="#E8A030" strokeWidth="1.5" fill="rgba(232,160,48,.12)"/>
+                          <circle cx="8" cy="8" r="3" fill="#E8A030"/>
+                        </svg>
+                      } onSelect={v => setEtapes(prev => prev.map((old, j) => j === i ? v : old))} />
+                    </div>
+                    <button type="button" aria-label="Retirer cet arrêt"
+                      onClick={() => setEtapes(prev => prev.filter((_, j) => j !== i))}
+                      style={{
+                        width: 38, height: 38, flexShrink: 0, borderRadius: 8, cursor: 'pointer',
+                        background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
+                        color: '#D95454', fontSize: 17, lineHeight: 1,
+                      }}>×</button>
+                  </div>
+                </div>
+              ))}
+
+              {etapes.length < 2 && (
+                <button type="button" onClick={() => setEtapes(prev => [...prev, { label: '', codePostal: '' }])}
+                  style={{
+                    alignSelf: 'flex-start', padding: '6px 13px', borderRadius: 8, cursor: 'pointer',
+                    background: 'transparent', border: '1px dashed rgba(201,168,76,.35)',
+                    color: '#C9A84C', fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                  }}>
+                  + Ajouter un arrêt en chemin
+                </button>
+              )}
 
               {/* Arrivée */}
               <div>

@@ -129,6 +129,13 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
   const typeVehicule   = meta.type_vehicule
   const nbPassagers    = parseInt(meta.nb_passagers, 10) || 1
   const prix           = parseFloat(meta.prix) || 0
+  // Arrêts demandés à la réservation et déjà facturés : sans cette reprise, le
+  // client paie l'étape et le chauffeur n'en voit aucune trace.
+  let etapes: string[] = []
+  try {
+    const brut = JSON.parse(meta.etapes ?? '[]')
+    if (Array.isArray(brut)) etapes = brut.filter((e: unknown) => typeof e === 'string' && e.trim()).slice(0, 2)
+  } catch {}
 
   // 1. Trouver ou créer l'utilisateur
   const { data: existingId } = await supabase.rpc('find_user_by_email', { p_email: email })
@@ -175,6 +182,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     type_vehicule:   typeVehicule,
     nb_passagers:    nbPassagers,
     prix_estime:     prix,
+    etapes:          etapes.length > 0 ? etapes : null,
     statut:          'en_attente',
     mode_paiement:   'stripe',
     stripe_payment_intent_id: paymentIntentId,

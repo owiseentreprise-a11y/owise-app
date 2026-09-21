@@ -692,6 +692,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const params = new URLSearchParams()
     if (form.origin)  params.set('depart',  form.origin)
     if (form.dest)    params.set('arrivee', form.dest)
+    // L'arrêt suit jusqu'au paiement, sinon le client paierait le trajet direct.
+    if (etapeOpen && devisEtape.label.trim()) params.set('etape', devisEtape.label.trim())
     if (form.date)    params.set('date',    form.date)
     if (form.time)    params.set('time',    form.time)
     params.set('pax',   String(pax))
@@ -1086,6 +1088,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   const p = new URLSearchParams()
                   if (bcDepart.label)  p.set('depart',  bcDepart.label)
                   if (bcArrivee.label) p.set('arrivee', bcArrivee.label)
+                  // Sans ce report, l'arrêt disparaissait entre l'estimation et
+                  // le paiement : le client voyait le prix avec étape et payait
+                  // celui du trajet direct.
+                  if (bcEtape && bcEtapeAddr.label.trim()) p.set('etape', bcEtapeAddr.label.trim())
                   if (bcDate)    p.set('date',    bcDate)
                   if (bcTime)    p.set('time',    bcTime)
                   p.set('pax', String(bcPax))

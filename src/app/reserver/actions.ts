@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix, calculerPrixKm } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes } from '@/lib/calcPrix'
+import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
 
@@ -37,6 +38,34 @@ async function calculerPrixServeur(
   )
 }
 
+/**
+ * Ajoute au prix ce que coûtent les arrêts demandés : les kilomètres que le
+ * détour ajoute vraiment, plus les frais par étape.
+ *
+ * Les distances sont mesurées ici, côté serveur, à partir des adresses — jamais
+ * reprises du navigateur, au même titre que le prix lui-même. Si une distance
+ * manque, seuls les frais fixes s'appliquent : une étape ne peut jamais sortir
+ * gratuite d'un incident de géocodage.
+ */
+async function appliquerEtapes(
+  prix: number, depart: string, etapes: string[], arrivee: string,
+  vehicule: string, dateHeure: string,
+): Promise<number> {
+  if (etapes.length === 0) return prix
+  const admin = createAdminClient()
+  const [{ data: tarifs }, { data: params }] = await Promise.all([
+    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('parametres').select('supplement_nuit,supplement_weekend,supplement_etape').single(),
+  ])
+  const mesure = await detourKm(depart, etapes, arrivee)
+  return calculerPrixEtapes(
+    prix,
+    mesure ? mesure.directe : 0,
+    mesure ? mesure.troncons : etapes.map(() => 0).concat(0),
+    vehicule, dateHeure, tarifs ?? [], params,
+  )
+}
+
 export async function createReservationCheckout(data: {
   adresse_depart: string
   adresse_arrivee: string
@@ -59,6 +88,8 @@ export async function createReservationCheckout(data: {
   heure_arrivee_vol?: string
   code_parrainage?: string
   distance_km?: number
+  /** Arrêts intermédiaires demandés par le client (2 au plus). */
+  etapes?: string[]
   gclid?: string
   ads_consent?: 'accepted' | 'refused' | 'unknown'
 }): Promise<{ error?: string; checkoutUrl?: string }> {
@@ -94,6 +125,15 @@ export async function createReservationCheckout(data: {
   // Aller-retour : ×2
   if (data.aller_retour && data.date_retour) {
     prixServeur = Math.round(prixServeur * 2 * 100) / 100
+  }
+
+  // Arrêts en chemin — comptés une seule fois, même sur un aller-retour.
+  const etapes = (data.etapes ?? []).map(e => e.trim()).filter(Boolean).slice(0, 2)
+  if (etapes.length > 0) {
+    prixServeur = await appliquerEtapes(
+      prixServeur, data.adresse_depart, etapes, data.adresse_arrivee,
+      data.type_vehicule, data.date_prevue,
+    )
   }
 
   // Code parrainage : -10% si code actif en base
@@ -170,6 +210,11 @@ export async function createReservationCheckout(data: {
   params.set('metadata[telephone]', data.telephone || '')
   params.set('metadata[zone_depart_id]', data.zone_depart_id)
   params.set('metadata[zone_arrivee_id]', data.zone_arrivee_id)
+  if (etapes.length > 0) {
+    // Repris par le webhook pour écrire `courses.etapes` : sans cela le
+    // chauffeur ne saurait jamais qu'un arrêt est prévu.
+    params.set('metadata[etapes]', JSON.stringify(etapes).slice(0, 499))
+  }
   if (data.aller_retour && data.date_retour) {
     params.set('metadata[aller_retour]', 'true')
     params.set('metadata[date_retour]', data.date_retour)

@@ -30,7 +30,7 @@ export default async function ReserverPage() {
     admin.from('zones').select('*').eq('active', true).order('ordre'),
     admin.from('grilles_tarifaires').select('*'),
     admin.from('tarifs').select('*'),
-    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
+    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec').single(),
   ])
 
   let profil: { prenom: string; nom: string; email: string; telephone: string } | null = null
