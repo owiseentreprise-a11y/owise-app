@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { createReservationCheckout } from './actions'
 import { validerCodeParrainage } from '@/app/espace-client/actions-parrainage'
@@ -1062,8 +1063,14 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         overflow: 'hidden', flexShrink: 0,
                       }}>
-                        <img
+                        {/* Ces vignettes s'affichent en 150×96 px, mais les
+                            fichiers source pèsent 1,2 à 1,4 Mo chacun : la page
+                            téléchargeait 4 Mo d'images pour trois miniatures.
+                            next/image les redimensionne et les convertit en
+                            WebP à la volée — mêmes visuels, poids divisé. */}
+                        <Image
                           src={v.image} alt={v.label}
+                          width={300} height={192}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                         />
                       </div>

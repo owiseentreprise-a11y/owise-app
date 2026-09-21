@@ -41,8 +41,44 @@ export default async function BlogPage() {
     comparatif: '#848499',
   }
 
+  // Les articles eux-mêmes déclarent Article et FAQPage ; cette page-ci ne
+  // déclarait rien. Sans elle, un robot voit 129 liens sans savoir qu'il s'agit
+  // d'un blog ni ce que chaque lien contient.
+  const ficheBlog = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'Le blog Owise — VTC, aéroports et Oise',
+    url: 'https://www.owise.fr/blog',
+    inLanguage: 'fr-FR',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Owise',
+      url: 'https://www.owise.fr',
+    },
+    blogPost: posts.map(p => ({
+      '@type': 'BlogPosting',
+      headline: p.titre,
+      url: `https://www.owise.fr/blog/${p.slug}`,
+      ...(p.meta_desc ? { description: p.meta_desc } : {}),
+      ...(p.published_at ? { datePublished: p.published_at } : {}),
+      ...(p.categorie ? { articleSection: categories[p.categorie] ?? p.categorie } : {}),
+      author: { '@type': 'Organization', name: 'Owise' },
+    })),
+  }
+
+  const ficheFilAriane = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://www.owise.fr' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.owise.fr/blog' },
+    ],
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheBlog) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
       <style>{`.blog-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.10)!important}`}</style>
 
       {/* Header */}

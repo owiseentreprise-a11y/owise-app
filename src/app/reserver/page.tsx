@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import ReserverClient from './ReserverClient'
+import TarifsReference from './TarifsReference'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,13 +51,94 @@ export default async function ReserverPage() {
     }
   }
 
+  // Forfaits de référence affichés sous le formulaire.
+  //
+  // Les couples de zones sont un choix éditorial ; les montants, jamais :
+  // ils sont lus dans `grilles_tarifaires`. Un couple sans prix en base est
+  // retiré de la liste au lieu d'afficher une valeur de repli — sans quoi la
+  // page annoncerait un tarif que l'application ne facture pas.
+  const COUPLES: [string, string][] = [
+    ['CHA', 'CDG'], ['CRL', 'CDG'], ['SEN', 'CDG'], ['RPF', 'CDG'],
+    ['Z1', 'CDG'],  ['COM', 'CDG'], ['BEA', 'CDG'], ['ORY', 'CDG'],
+    ['Z1', 'ORY'],  ['CHA', 'ORY'], ['CRL', 'ORY'], ['COM', 'ORY'],
+    ['CHA', 'BVA'], ['CRL', 'BVA'], ['Z1', 'BVA'],
+  ]
+  const parCode = new Map((zonesRes.data ?? []).map(z => [z.code, z]))
+  const forfaits = COUPLES.flatMap(([cd, ca]) => {
+    const zd = parCode.get(cd), za = parCode.get(ca)
+    if (!zd || !za) return []
+    const ligne = (grilleRes.data ?? []).find(
+      g => g.zone_depart_id === zd.id && g.zone_arrivee_id === za.id,
+    )
+    const prix = Number(ligne?.prix_berline ?? 0)
+    if (!prix) return []
+    return [{ depart: zd.nom as string, arrivee: za.nom as string, prix }]
+  })
+
+  const ficheService = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Réservation de VTC en ligne',
+    serviceType: 'Transport avec chauffeur',
+    provider: {
+      '@type': ['LocalBusiness', 'TaxiService'],
+      name: 'Owise',
+      url: 'https://www.owise.fr',
+      areaServed: ['Paris', 'Île-de-France', 'Oise'],
+    },
+    areaServed: ['Paris', 'Île-de-France', 'Oise'],
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: 'https://www.owise.fr/reserver',
+      availableLanguage: 'fr',
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Forfaits aéroport',
+      // Le véhicule est nommé dans chaque offre : ces montants sont ceux de la
+      // berline. Sans cette mention, un assistant pourrait citer 59 € pour un
+      // van, qui coûte moitié plus cher.
+      itemListElement: forfaits.map(f => ({
+        '@type': 'Offer',
+        name: `${f.depart} → ${f.arrivee} — berline`,
+        description: `Trajet ${f.depart} → ${f.arrivee} en berline, prix fixe TTC, péages et accueil compris.`,
+        priceCurrency: 'EUR',
+        price: String(f.prix),
+        priceSpecification: {
+          '@type': 'PriceSpecification',
+          price: String(f.prix),
+          priceCurrency: 'EUR',
+          valueAddedTaxIncluded: true,
+        },
+      })),
+    },
+  }
+
+  const ficheFilAriane = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://www.owise.fr' },
+      { '@type': 'ListItem', position: 2, name: 'Réserver', item: 'https://www.owise.fr/reserver' },
+    ],
+  }
+
   return (
-    <ReserverClient
-      zones={zonesRes.data ?? []}
-      grille={grilleRes.data ?? []}
-      tarifs={tarifsRes.data ?? []}
-      params={paramsRes.data}
-      profil={profil}
-    />
+    <>
+      {/* Ces deux fiches décrivent la page à Google et aux assistants IA.
+          Elles étaient absentes : /reserver ne déclarait rien du tout. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheService) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
+
+      <ReserverClient
+        zones={zonesRes.data ?? []}
+        grille={grilleRes.data ?? []}
+        tarifs={tarifsRes.data ?? []}
+        params={paramsRes.data}
+        profil={profil}
+      />
+
+      <TarifsReference forfaits={forfaits} />
+    </>
   )
 }
