@@ -67,7 +67,7 @@ export default async function EspaceClientPage({
   // Courses : collaborateur → ses propres courses ; client classique → ses courses
   const baseQuery = supabase
     .from('courses')
-    .select('id, statut, adresse_depart, adresse_arrivee, date_prevue, nb_passagers, note_client, chauffeur_id, chauffeurs(profiles(prenom, nom))')
+    .select('id, statut, adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, note_client, chauffeur_id, chauffeurs(profiles(prenom, nom))')
     .order('date_prevue', { ascending: false })
     .limit(50)
 
@@ -312,6 +312,13 @@ function CourseCard({ course, highlight = false }: { course: any; highlight?: bo
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)', marginBottom: 2 }}>
             {course.adresse_depart.split(',')[0]}
           </div>
+          {(Array.isArray((course as any).etapes) ? (course as any).etapes : [])
+            .filter((e: string) => e?.trim())
+            .map((etape: string, i: number) => (
+              <div key={i} style={{ fontSize: 11, color: 'var(--amber)' }}>
+                ↳ arrêt : {etape.split(',')[0]}
+              </div>
+            ))}
           <div style={{ fontSize: 11, color: 'var(--t2)' }}>
             → {course.adresse_arrivee.split(',')[0]}
           </div>
