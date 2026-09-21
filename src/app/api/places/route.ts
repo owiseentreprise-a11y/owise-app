@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { refuser, adresseVisiteur } from '@/lib/quota'
 
 const GOOGLE_KEY = process.env.GOOGLE_MAPS_KEY ?? ''
 
 // Rate limiting simple en mémoire (réinitialisé à chaque cold start — suffisant pour limiter les abus)
-const hits = new Map<string, { count: number; reset: number }>()
-const LIMIT = 60   // requêtes max
-const WINDOW = 60  // secondes
-
-function isRateLimited(ip: string): boolean {
-  const now = Math.floor(Date.now() / 1000)
-  const entry = hits.get(ip)
-  if (!entry || entry.reset <= now) {
-    hits.set(ip, { count: 1, reset: now + WINDOW })
-    return false
-  }
-  entry.count++
-  return entry.count > LIMIT
-}
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (isRateLimited(ip)) {
+  const ip = adresseVisiteur(req)
+  if (refuser('places', ip)) {
     return NextResponse.json({ predictions: [], error: 'rate_limited' }, { status: 429 })
   }
 
