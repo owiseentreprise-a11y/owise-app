@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import DispatchRapideButton from './courses/DispatchRapideButton'
+import { lireHeureCourse } from '@/lib/heure'
 
 type ChauffeurLean = {
   id: string
@@ -80,7 +81,7 @@ export default function PanierCourses({
           ? (client.entreprise_nom ?? '—')
           : client?.profiles ? `${client.profiles.prenom} ${client.profiles.nom}` : 'Invité'
         const collabLabel = collab ? `${collab.prenom} ${collab.nom}`.trim() : null
-        const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+        const date = lireHeureCourse(c.date_prevue)
         const dateValid = !isNaN(date.getTime())
         const prix = c.prix_final ?? c.prix_estime
         const isLast = idx === courses.length - 1

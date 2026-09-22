@@ -1,3 +1,4 @@
+import { dateCourse, heureCourse } from '@/lib/heure'
 import { TYPE_VEHICULE_LABEL, type TypeVehicule } from './types'
 
 export type InfosCourseParams = {
@@ -23,9 +24,10 @@ export type InfosCourseParams = {
 // bord (paiementABord), sinon le chauffeur externe n'a pas besoin de le
 // connaître.
 export function buildInfosCourseTexte(p: InfosCourseParams): string {
-  const date = new Date(p.datePrevue)
-  const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-  const heureStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  // Lecture par @/lib/heure : ce message part parfois d'un poste et parfois du
+  // serveur, et l'heure doit etre la meme dans les deux cas.
+  const dateStr = dateCourse(p.datePrevue, { weekday: 'long', day: 'numeric', month: 'long' })
+  const heureStr = heureCourse(p.datePrevue)
 
   // Les étapes s'intercalent entre le départ et l'arrivée, dans l'ordre du
   // trajet. Elles n'y figuraient pas : un arrêt ajouté après coup n'apparaissait

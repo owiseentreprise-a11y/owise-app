@@ -8,6 +8,7 @@ import CollaborateursSection from './CollaborateursSection'
 import GenererFactureButton from './GenererFactureButton'
 import { togglePayerAbord, toggleAfficherPrix } from './actions'
 import { afficherPrixPourClient } from '@/lib/affichagePrix'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -249,7 +250,7 @@ export default async function ClientDetailPage({
                 Aucune course
               </div>
             ) : courses.map((course: any) => {
-              const date = new Date(course.date_prevue)
+              const date = lireHeureCourse(course.date_prevue)
               const prix = course.prix_final ?? course.prix_estime
               const chauffeur = course.chauffeurs
               const chauffeurNom = chauffeur?.profiles

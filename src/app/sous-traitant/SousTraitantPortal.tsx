@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { progresserCourseSTAction, accepterCourseSTAction, refuserCourseSTAction, updateProfilSTAction } from './actions'
 import { TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
+import { lireHeureCourse } from '@/lib/heure'
 
 const ETAPES = [
   { statut: 'acceptee',        label: 'Acceptée',     action: 'Départ vers le client', color: 'var(--blu)' },
@@ -72,7 +73,7 @@ export default function SousTraitantPortal({
   const todayStr = new Date().toDateString()
   const activeCourse = courses.find(c =>
     ['en_route', 'prise_en_charge'].includes(c.statut) ||
-    (c.statut === 'acceptee' && new Date(c.date_prevue).toDateString() === todayStr)
+    (c.statut === 'acceptee' && lireHeureCourse(c.date_prevue).toDateString() === todayStr)
   ) ?? null
   const etapeIndex = ETAPES.findIndex(e => e.statut === activeCourse?.statut)
   const etape = ETAPES[etapeIndex]
@@ -185,9 +186,9 @@ export default function SousTraitantPortal({
                   <span style={{ fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--blu)', fontWeight: 700 }}>Mission en cours</span>
                 </div>
                 <span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--gold)', fontWeight: 600 }}>
-                  {new Date(activeCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  {lireHeureCourse(activeCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                   {' · '}
-                  {new Date(activeCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  {lireHeureCourse(activeCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
@@ -357,7 +358,7 @@ export default function SousTraitantPortal({
               {selCourses.length === 0 ? (
                 <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>Aucune course ce jour</div>
               ) : selCourses.map((c: any, i: number) => {
-                const date = new Date(c.date_prevue)
+                const date = lireHeureCourse(c.date_prevue)
                 const isExpanded = expandedId === c.id
                 const statutColors: Record<string, { label: string; color: string }> = {
                   acceptee: { label: 'Acceptée', color: 'var(--gold)' },
@@ -497,9 +498,9 @@ export default function SousTraitantPortal({
                 }}>
                   <div>
                     <div style={{ fontSize: 10, color: 'var(--t3)', fontFamily: 'monospace', marginBottom: 3 }}>
-                      {new Date(c.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                      {lireHeureCourse(c.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                       {' · '}
-                      {new Date(c.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      {lireHeureCourse(c.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                       {' '}
                       <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: 'rgba(61,184,122,.1)', color: 'var(--grn)', fontWeight: 500 }}>✓ Terminée</span>
                     </div>

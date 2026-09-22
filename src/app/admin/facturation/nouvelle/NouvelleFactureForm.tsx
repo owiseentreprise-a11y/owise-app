@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { creerFacture } from './actions'
+import { lireHeureCourse } from '@/lib/heure'
 
 type ClientOption = {
   id: string
@@ -189,7 +190,7 @@ export default function NouvelleFactureForm({
                     </div>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                    {new Date(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                    {lireHeureCourse(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, color: isChecked ? 'var(--gold)' : 'var(--t1)' }}>

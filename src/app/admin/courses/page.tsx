@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import UpdateStatutButton from './UpdateStatutButton'
 import DispatchRapideButton from './DispatchRapideButton'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,10 +51,10 @@ export default async function CoursesPage({
     .filter(c => {
       if (c.chauffeur_id) return false
       if (c.statut === 'terminee' || c.statut === 'annulee') return false
-      const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
+      const h = (lireHeureCourse(c.date_prevue).getTime() - Date.now()) / 3_600_000
       return h >= 0 && h < 24
     })
-    .sort((a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime())
+    .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())
 
   // Filtrage par statut
   let list: any[] = all
@@ -247,7 +248,7 @@ export default async function CoursesPage({
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {imminentes.map(c => {
-                const d = new Date(c.date_prevue)
+                const d = lireHeureCourse(c.date_prevue)
                 const h = (d.getTime() - Date.now()) / 3_600_000
                 const dans = h < 1 ? `${Math.max(0, Math.round(h * 60))} min` : `${Math.floor(h)} h`
                 return (
@@ -333,7 +334,7 @@ export default async function CoursesPage({
               const chauffeurNom = chauffeur?.profiles
                 ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
                 : null
-              const date = new Date(course.date_prevue)
+              const date = lireHeureCourse(course.date_prevue)
 
               return (
                 <div

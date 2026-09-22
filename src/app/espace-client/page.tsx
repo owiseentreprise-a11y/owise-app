@@ -7,6 +7,7 @@ import ClientRealtime from './ClientRealtime'
 import ParrainageWidget from './ParrainageWidget'
 import CourseActionsClient from './CourseActionsClient'
 import { getOrCreateParrainageCode, getParrainageStats } from './actions-parrainage'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -282,7 +283,7 @@ export default async function EspaceClientPage({
 }
 
 function CourseCard({ course, highlight = false }: { course: any; highlight?: boolean }) {
-  const date = new Date(course.date_prevue)
+  const date = lireHeureCourse(course.date_prevue)
   const chauffeur = course.chauffeurs
   const chauffeurNom = chauffeur?.profiles
     ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`

@@ -4,6 +4,7 @@ import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
 import AdminRealtime from './AdminRealtime'
 import PanierCourses from './PanierCourses'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -81,10 +82,15 @@ export default async function AdminDashboard() {
     .filter(c => {
       if (c.chauffeur_id || (c as any).sous_traitant_id) return false
       if (c.statut === 'terminee' || c.statut === 'annulee') return false
-      const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
+      // Ecart connu : `date_prevue` porte l'heure murale avec une etiquette
+      // « +00:00 » fausse, donc cette comparaison avec l'instant present est
+      // decalee de 2 heures l'ete. Elle ne sert qu'a colorer un badge
+      // « urgent » sur le tableau de bord — l'heure affichee, elle, est juste.
+      // A corriger quand le stockage passera en instant reel (PROJECT_STATE §17).
+      const h = (lireHeureCourse(c.date_prevue).getTime() - Date.now()) / 3_600_000
       return h >= 0 && h < 24
     })
-    .sort((a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime())
+    .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())
 
   // CA jour : terminée (prix_final) + en attente (prix_estime)
   const caJourTerminee = coursesAujourdHui
@@ -181,7 +187,7 @@ export default async function AdminDashboard() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {imminentes.map(c => {
-                const d = new Date(c.date_prevue)
+                const d = lireHeureCourse(c.date_prevue)
                 const h = (d.getTime() - Date.now()) / 3_600_000
                 const dans = h < 1 ? `${Math.max(0, Math.round(h * 60))} min` : `${Math.floor(h)} h`
                 return (
@@ -300,7 +306,7 @@ export default async function AdminDashboard() {
                 const client = c.clients
                 const collabNom = collab ? `${collab.prenom ?? ''} ${collab.nom ?? ''}`.trim() || '—' : '—'
                 const entreprise = client?.entreprise_nom ?? '—'
-                const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+                const date = lireHeureCourse(c.date_prevue)
                 return (
                   <a key={c.id} href={`/admin/courses/${c.id}`} style={{
                     display: 'grid', gridTemplateColumns: '1fr 160px 120px',
@@ -557,7 +563,7 @@ export default async function AdminDashboard() {
                 const chauffeurNom = chauffeur?.profiles
                   ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
                   : '—'
-                const date = new Date(course.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+                const date = lireHeureCourse(course.date_prevue)
                 return (
                   <a key={course.id} href={`/admin/courses/${course.id}`} style={{
                     display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',

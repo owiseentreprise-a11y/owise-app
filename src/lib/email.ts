@@ -3,6 +3,7 @@ import { TYPE_VEHICULE_LABEL } from './types'
 import { genererFacturePdf } from './facture-pdf'
 import { formaterMontant } from './facture-document'
 import type { InfosCourseParams } from './courseMessage'
+import { dateCourse, heureCourse } from '@/lib/heure'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'OWISE <noreply@owise.fr>'
@@ -51,11 +52,14 @@ function row(label: string, value: string) {
   </tr>`
 }
 
+// L'heure d'une course passe par @/lib/heure : sans cela, le meme e-mail
+// annonce 04:15 s'il part du serveur Vercel et 06:15 s'il part d'un poste
+// regle a l'heure de Paris. C'est exactement ce qui est arrive le 2026-09-19.
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  return dateCourse(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 }
 function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  return heureCourse(iso)
 }
 
 // ── 0a. Bienvenue — nouveau client ───────────────────────────────────────────

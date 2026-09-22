@@ -6,6 +6,7 @@ import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, isForfaitZone, type ParamsCalc } from '@/lib/calcPrix'
+import { lireHeureCourse } from '@/lib/heure'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -376,10 +377,10 @@ export default function NouvelleCourseForm({
       const cible = new Date(dateHeure).getTime()
       const proches = coursesAssignees.filter(c =>
         c.chauffeur_id === chauffeurId &&
-        Math.abs(new Date(c.date_prevue).getTime() - cible) < 2 * 3_600_000
+        Math.abs(lireHeureCourse(c.date_prevue).getTime() - cible) < 2 * 3_600_000
       )
       for (const c of proches) {
-        const quand = new Date(c.date_prevue).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+        const quand = lireHeureCourse(c.date_prevue).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
         out.push(`Ce chauffeur a déjà une course le ${quand} au départ de ${c.adresse_depart}. Vérifiez qu'il peut enchaîner.`)
       }
     }

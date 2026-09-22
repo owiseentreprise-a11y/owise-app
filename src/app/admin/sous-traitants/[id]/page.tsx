@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { modifierSousTraitantAction, genererFactureSTAction, marquerFactureSTPayeeAction, creerCompteSTAction, supprimerCompteSTAction } from '../actions'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -384,7 +385,7 @@ export default async function SousTraitantDetailPage({
                         {c.adresse_arrivee.split(',')[0]}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--t2)' }}>
-                        {new Date(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        {lireHeureCourse(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                         {' · '}{clientNom}
                       </div>
                     </div>
@@ -625,9 +626,9 @@ export default async function SousTraitantDetailPage({
                               {c.adresse_arrivee.split(',')[0]}
                             </div>
                             <div style={{ fontSize: 10, color: 'var(--t3)', marginTop: 1, fontFamily: 'var(--font-jetbrains), monospace' }}>
-                              {new Date(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              {lireHeureCourse(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                               {' · '}
-                              {new Date(c.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                              {lireHeureCourse(c.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
                           <div style={{ fontSize: 11, fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--t2)' }}>

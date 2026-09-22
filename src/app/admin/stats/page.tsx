@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import StatsClient from './StatsClient'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -126,7 +127,9 @@ export default async function StatsPage() {
   // ── Heures de pointe ──
   const heuresCtr: Record<number, number> = {}
   for (const c of terminées) {
-    const h = new Date(c.date_prevue).getHours()
+    // Repartition des courses par heure de la journee : on lit l'heure murale,
+    // sinon le graphique est decale de 2 heures selon la machine qui l'affiche.
+    const h = lireHeureCourse(c.date_prevue).getHours()
     heuresCtr[h] = (heuresCtr[h] ?? 0) + 1
   }
   const heuresData = Object.entries(heuresCtr).map(([h, count]) => ({ heure: Number(h), count }))

@@ -6,6 +6,7 @@ import FactureActions from './FactureActions'
 // Libellés partagés avec la page espace client et le PDF joint aux e-mails :
 // les trois documents doivent dire la même chose, mot pour mot.
 import { MODE_PAIEMENT_LABEL, formaterNombre } from '@/lib/facture-document'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -242,7 +243,7 @@ export default async function FactureDetailPage({
                       )}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
-                      {new Date(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                      {lireHeureCourse(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                       {course.nb_passagers}

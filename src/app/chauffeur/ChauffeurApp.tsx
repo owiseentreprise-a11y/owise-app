@@ -7,6 +7,7 @@ import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur, type CSSV
 import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
 import { useFcmRegistration } from './useFcmRegistration'
 import { soundNouvelleCourse, soundConfirmation, soundTerminee, resumeAudioCtx } from '@/lib/sound'
+import { lireHeureCourse } from '@/lib/heure'
 
 const ETAPES: { statut: StatutCourse; label: string; action: string; color: string }[] = [
   { statut: 'acceptee',        label: 'Course acceptée',  action: 'Départ vers le client', color: 'var(--blu)' },
@@ -186,11 +187,11 @@ export default function ChauffeurApp({
   // Active = vraiment en cours (en_route/prise_en_charge) OU acceptée pour aujourd'hui
   const activeCourse = courses.find(c =>
     ['en_route', 'prise_en_charge'].includes(c.statut) ||
-    (c.statut === 'acceptee' && new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).toDateString() === todayStr)
+    (c.statut === 'acceptee' && lireHeureCourse(c.date_prevue).toDateString() === todayStr)
   ) ?? null
   const todayCourses = [
-    ...courses.filter(c => new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).toDateString() === todayStr),
-    ...historique.filter(c => new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).toDateString() === todayStr),
+    ...courses.filter(c => lireHeureCourse(c.date_prevue).toDateString() === todayStr),
+    ...historique.filter(c => lireHeureCourse(c.date_prevue).toDateString() === todayStr),
   ]
 
   // Prochaine course à venir — affichée quand rien n'est actif/en attente aujourd'hui
@@ -202,9 +203,9 @@ export default function ChauffeurApp({
       .filter(c => {
         if (seen.has(c.id)) return false
         seen.add(c.id)
-        return !['terminee', 'annulee'].includes(c.statut) && new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).getTime() > now
+        return !['terminee', 'annulee'].includes(c.statut) && lireHeureCourse(c.date_prevue).getTime() > now
       })
-      .sort((a, b) => new Date(a.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).getTime() - new Date(b.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')).getTime())[0] ?? null
+      .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())[0] ?? null
   })()
 
   // Courses du jour à afficher sur l'écran principal (hors mission active / demande déjà mises en avant)
@@ -440,9 +441,9 @@ export default function ChauffeurApp({
               {/* Date/heure */}
               <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'flex-end' }}>
                 <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 11, color: 'var(--gold)', fontWeight: 600 }}>
-                  {new Date(activeCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                  {lireHeureCourse(activeCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                   {' · '}
-                  {new Date(activeCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  {lireHeureCourse(activeCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
@@ -657,9 +658,9 @@ export default function ChauffeurApp({
                 )
               )}
               <span style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--gold)', fontWeight: 600 }}>
-                {new Date(pendingCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                {lireHeureCourse(pendingCourse.date_prevue).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                 {' · '}
-                {new Date(pendingCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                {lireHeureCourse(pendingCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
 
@@ -779,7 +780,7 @@ export default function ChauffeurApp({
 
             {nextCourse && (
               <button
-                onClick={() => setSelectedDate(localDateKey(new Date(nextCourse.date_prevue)))}
+                onClick={() => setSelectedDate(localDateKey(lireHeureCourse(nextCourse.date_prevue)))}
                 style={{
                   marginTop: 16, width: '100%', textAlign: 'left',
                   background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)',
@@ -790,7 +791,7 @@ export default function ChauffeurApp({
                   Prochaine course
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)', marginBottom: 3, textTransform: 'capitalize' }}>
-                  {relativeDayLabel(nextCourse.date_prevue)} à {new Date(nextCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  {relativeDayLabel(nextCourse.date_prevue)} à {lireHeureCourse(nextCourse.date_prevue).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--t2)' }}>
                   {nextCourse.adresse_depart.split(',')[0]} → {nextCourse.adresse_arrivee.split(',')[0]}
@@ -820,7 +821,7 @@ export default function ChauffeurApp({
             </div>
 
             {todayCoursesForList.map((c: any, i: number) => {
-              const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+              const date = lireHeureCourse(c.date_prevue)
               const nom = clientNom(c)
               const tel = clientTel(c)
               const prix = c.prix_chauffeur ?? null
@@ -1057,7 +1058,7 @@ export default function ChauffeurApp({
           // Groupe par jour (clé YYYY-MM-DD en heure locale)
           const byDay: Record<string, any[]> = {}
           for (const c of allCal) {
-            const key = localDateKey(new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, '')))
+            const key = localDateKey(lireHeureCourse(c.date_prevue))
             if (!byDay[key]) byDay[key] = []
             byDay[key].push(c)
           }
@@ -1147,7 +1148,7 @@ export default function ChauffeurApp({
                   </div>
                 ) : (
                   selCourses.map((c: any, i: number) => {
-                    const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+                    const date = lireHeureCourse(c.date_prevue)
                     const nom = clientNom(c)
                     const tel = clientTel(c)
                     const prix = c.prix_chauffeur ?? null
@@ -1301,7 +1302,7 @@ export default function ChauffeurApp({
               <span style={{ fontSize: 9, fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--t3)' }}>{historique.length} course{historique.length > 1 ? 's' : ''}</span>
             </div>
             {historique.map((c: any, i: number) => {
-              const date = new Date(c.date_prevue.replace(/([+-]\d{2}:\d{2}|Z)$/, ''))
+              const date = lireHeureCourse(c.date_prevue)
               const nom = clientNom(c)
               const prix = c.prix_chauffeur ?? null
               return (

@@ -7,6 +7,7 @@ import PayerButton from './PayerButton'
 // Libellés partagés avec la page admin et le PDF joint aux e-mails : les
 // trois documents doivent dire la même chose, mot pour mot.
 import { MODE_PAIEMENT_LABEL, STATUT_LABEL, formaterMontant } from '@/lib/facture-document'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -241,7 +242,7 @@ export default async function ClientFacturePage({
                   alignItems: 'center',
                 }}>
                   <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
-                    {new Date(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                    {lireHeureCourse(c.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                   </div>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 1 }}>

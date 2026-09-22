@@ -12,6 +12,7 @@ import {
   type TypeDocument,
 } from '@/lib/types'
 import ChauffeurEditActions from './ChauffeurEditActions'
+import { lireHeureCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -226,7 +227,7 @@ export default async function ChauffeurDetailPage({
                 Aucune course
               </div>
             ) : courses.map((course: any) => {
-              const date = new Date(course.date_prevue)
+              const date = lireHeureCourse(course.date_prevue)
               const prix = course.prix_final ?? course.prix_estime
               const statutColor = STATUT_COURSE_COLOR[course.statut as keyof typeof STATUT_COURSE_COLOR] ?? 'var(--t2)'
               return (
