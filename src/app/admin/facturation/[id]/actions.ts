@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerLienPaiementClient, envoyerNouvelleFacture } from '@/lib/email'
+import { dateCourse } from '@/lib/heure'
 
 /**
  * Envoie la facture elle-même au client, réglée ou non.
@@ -49,7 +50,7 @@ export async function envoyerFactureParEmail(
   const refCourse = !courses?.length
     ? facture.numero
     : courses.length === 1
-      ? `${new Date(courses[0].date_prevue).toLocaleDateString('fr-FR')} — ${courses[0].adresse_depart} → ${courses[0].adresse_arrivee}`
+      ? `${dateCourse(courses[0].date_prevue, { day: '2-digit', month: '2-digit', year: 'numeric' })} — ${courses[0].adresse_depart} → ${courses[0].adresse_arrivee}`
       : `${courses.length} courses`
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'

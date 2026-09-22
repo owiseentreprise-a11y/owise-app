@@ -51,7 +51,9 @@ export default async function CoursesPage({
     .filter(c => {
       if (c.chauffeur_id) return false
       if (c.statut === 'terminee' || c.statut === 'annulee') return false
-      const h = (lireHeureCourse(c.date_prevue).getTime() - Date.now()) / 3_600_000
+      // Distance au moment present : on compare des instants reels, pas des
+      // heures murales — voir l'interdit documente dans @/lib/heure.
+      const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
       return h >= 0 && h < 24
     })
     .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())

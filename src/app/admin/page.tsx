@@ -82,12 +82,9 @@ export default async function AdminDashboard() {
     .filter(c => {
       if (c.chauffeur_id || (c as any).sous_traitant_id) return false
       if (c.statut === 'terminee' || c.statut === 'annulee') return false
-      // Ecart connu : `date_prevue` porte l'heure murale avec une etiquette
-      // « +00:00 » fausse, donc cette comparaison avec l'instant present est
-      // decalee de 2 heures l'ete. Elle ne sert qu'a colorer un badge
-      // « urgent » sur le tableau de bord — l'heure affichee, elle, est juste.
-      // A corriger quand le stockage passera en instant reel (PROJECT_STATE §17).
-      const h = (lireHeureCourse(c.date_prevue).getTime() - Date.now()) / 3_600_000
+      // Distance au moment present : on compare des instants reels, pas des
+      // heures murales — voir l'interdit documente dans @/lib/heure.
+      const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
       return h >= 0 && h < 24
     })
     .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
+import { instantDepuisSaisieParis } from '@/lib/heure'
 
 export async function clientLogoutAction() {
   const supabase = await createClient()
@@ -46,7 +47,8 @@ export async function demanderCourse(formData: FormData): Promise<void> {
     }
   }
 
-  const dateParsed = new Date(date)
+  // Le client saisit une heure francaise dans son navigateur.
+  const dateParsed = instantDepuisSaisieParis(date)
   if (isNaN(dateParsed.getTime())) redirect('/espace-client?error=champs-manquants')
   if (dateParsed < new Date(Date.now() - 5 * 60_000)) redirect('/espace-client?error=champs-manquants')
 
@@ -92,7 +94,7 @@ export async function demanderCourse(formData: FormData): Promise<void> {
 
   // Retour — adresses inversées
   if (allerRetour && dateRetourRaw) {
-    const dateRetourParsed = new Date(dateRetourRaw)
+    const dateRetourParsed = instantDepuisSaisieParis(dateRetourRaw)
     if (!isNaN(dateRetourParsed.getTime())) {
       await supabase.from('courses').insert({
         ...courseBase,
@@ -217,7 +219,9 @@ export async function modifierReservationClient(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
 
-  const dateParsed = new Date(data.date_prevue)
+  // Le client choisit une heure francaise dans son navigateur : on la convertit
+  // en instant reel avant de comparer et avant d'ecrire.
+  const dateParsed = instantDepuisSaisieParis(data.date_prevue)
   if (dateParsed < new Date(Date.now() - 5 * 60_000)) {
     return { error: 'La date ne peut pas être dans le passé' }
   }
@@ -235,7 +239,7 @@ export async function modifierReservationClient(
   if (!course) return { error: 'Course introuvable ou déjà prise en charge' }
 
   const { error } = await admin.from('courses').update({
-    date_prevue:  data.date_prevue,
+    date_prevue:  dateParsed.toISOString(),
     nb_passagers: data.nb_passagers,
   }).eq('id', courseId)
 

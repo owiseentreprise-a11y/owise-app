@@ -203,7 +203,8 @@ export default function ChauffeurApp({
       .filter(c => {
         if (seen.has(c.id)) return false
         seen.add(c.id)
-        return !['terminee', 'annulee'].includes(c.statut) && lireHeureCourse(c.date_prevue).getTime() > now
+        // Instant reel : une course a venir se mesure par rapport a maintenant.
+        return !['terminee', 'annulee'].includes(c.statut) && new Date(c.date_prevue).getTime() > now
       })
       .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())[0] ?? null
   })()

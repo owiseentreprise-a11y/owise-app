@@ -10,6 +10,7 @@ import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
 import { calculerPrixEtapes } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
+import { dateCourse, heureCourse } from '@/lib/heure'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   // Vérification admin via JWT (anon key)
@@ -60,9 +61,8 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
       const clientNom = clientNomCompte || clientNomLibre || 'Passager'
       const clientTelEmail = client?.profiles?.telephone ?? (course as any).passager_tel ?? null
       const refCourse = courseId.slice(-6).toUpperCase()
-      const dateStr = new Date(course.date_prevue).toLocaleString('fr-FR', {
-        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-      })
+      // Notification poussee au chauffeur : heure de Paris, toujours.
+      const dateStr = `${dateCourse(course.date_prevue, { weekday: 'short', day: 'numeric', month: 'short' })} ${heureCourse(course.date_prevue)}`
 
       // Email + push notification en parallèle
       const notifications: Promise<any>[] = [
@@ -152,8 +152,7 @@ export async function changerStatut(courseId: string, statut: StatutCourse, chau
       if (st?.mode_paiement === 'immediat') {
         const depart = courseForST.adresse_depart.split(',')[0]
         const arrivee = courseForST.adresse_arrivee.split(',')[0]
-        const dateLabel = new Date(courseForST.date_prevue)
-          .toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        const dateLabel = dateCourse(courseForST.date_prevue, { day: '2-digit', month: '2-digit', year: 'numeric' })
         const { data: factureImm } = await supabase.from('factures_sous_traitants').insert({
           sous_traitant_id: courseForST.sous_traitant_id,
           periode: `course-${courseId.slice(-8).toUpperCase()}`,

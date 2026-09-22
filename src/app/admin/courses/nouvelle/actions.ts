@@ -5,6 +5,7 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerNotificationChauffeur, envoyerBienvenueClient } from '@/lib/email'
 import { getUserEmail, createAdminClient } from '@/lib/supabase/admin'
 import { afficherPrixPourClient } from '@/lib/affichagePrix'
+import { instantDepuisSaisieParis } from '@/lib/heure'
 
 export async function creerCourseAction(formData: FormData): Promise<{ error?: string } | void> {
   const supabase = await requireAdminClient()
@@ -51,7 +52,10 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     return { error: 'Champs obligatoires manquants' }
   }
 
-  const dateParsed = new Date(date_prevue)
+  // La saisie du formulaire est une heure de Paris : on la convertit en
+  // instant reel avant toute comparaison et avant l'ecriture en base.
+  const dateParsed = instantDepuisSaisieParis(date_prevue)
+  const datePrevueISO = dateParsed.toISOString()
   if (!deja_effectuee && dateParsed < new Date(Date.now() - 15 * 60_000)) {
     return { error: 'La date de prise en charge est dans le passé. Pour une course déjà réalisée, cochez « course déjà effectuée ».' }
   }
@@ -62,7 +66,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
   const { error, data: newCourse } = await supabase.from('courses').insert({
     adresse_depart,
     adresse_arrivee,
-    date_prevue,
+    date_prevue: datePrevueISO,
     type_vehicule,
     nb_passagers,
     prix_estime,
@@ -89,8 +93,8 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
       // les horaires sans fuseau et les réaffiche tels quels : passer par
       // toISOString() les décalerait de l'offset du serveur et les trois dates
       // d'une même course ne concorderaient plus.
-      date_debut: date_prevue,
-      date_fin:   date_prevue,
+      date_debut: datePrevueISO,
+      date_fin:   datePrevueISO,
       mode_paiement,
       // « paye » empêche aussi la facturation mensuelle de la reprendre :
       // une course déjà encaissée ne doit pas être refacturée.
@@ -151,7 +155,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
 
   // Retour — adresses inversées
   if (allerRetour && dateRetourRaw && newCourse) {
-    const dateRetourParsed = new Date(dateRetourRaw)
+    const dateRetourParsed = instantDepuisSaisieParis(dateRetourRaw)
     if (!isNaN(dateRetourParsed.getTime())) {
       await supabase.from('courses').insert({
         adresse_depart:    adresse_arrivee,
