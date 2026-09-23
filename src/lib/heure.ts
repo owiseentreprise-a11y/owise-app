@@ -76,6 +76,51 @@ export function dateCourse(
 }
 
 /**
+ * « 2026-09-25 » — le jour parisien d'un instant, pour regrouper et comparer.
+ *
+ * Découper la chaîne de la base (`date_prevue.slice(0, 10)`) donne le jour
+ * **universel**, qui n'est pas le même en début de nuit : une arrivée à CDG le
+ * 25 à 00:30 heure de Paris est enregistrée « 2026-09-24T22:30:00Z ». Elle
+ * apparaissait donc au 24 dans l'agenda du sous-traitant et dans le compteur
+ * « courses aujourd'hui », et basculait de mois dans les statistiques.
+ */
+export function jourParis(valeur: string | Date): string {
+  const d = heureMuraleParis(valeur)
+  if (isNaN(d.getTime())) return ''
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+
+/** Le jour parisien en cours — jamais `new Date().toISOString().slice(0, 10)`. */
+export function aujourdhuiParis(): string {
+  return jourParis(new Date())
+}
+
+/**
+ * Arithmétique de calendrier sur un jour « AAAA-MM-JJ ».
+ * Passe par midi pour ne jamais tomber sur l'heure manquante du changement
+ * d'heure, où minuit n'existe pas dans certains fuseaux.
+ */
+export function decalerJour(jour: string, nbJours: number): string {
+  const d = new Date(`${jour}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + nbJours)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Le jour de la semaine d'un jour parisien : 0 = dimanche. */
+export function jourDeLaSemaine(jour: string): number {
+  return new Date(`${jour}T12:00:00Z`).getUTCDay()
+}
+
+/**
+ * L'instant où commence un jour parisien, pour borner une requête.
+ * `debutJourParis('2026-09-01')` vaut le 31 août à 22:00 en temps universel.
+ */
+export function debutJourParis(jour: string): Date {
+  return instantDepuisSaisieParis(`${jour}T00:00`)
+}
+
+/**
  * Formatage libre d'un instant, toujours lu à Paris.
  *
  * Pour les écrans qui composent eux-mêmes leurs options (« 24 sept. 2026 »,

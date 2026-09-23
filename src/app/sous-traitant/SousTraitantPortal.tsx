@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { progresserCourseSTAction, accepterCourseSTAction, refuserCourseSTAction, updateProfilSTAction } from './actions'
 import { TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, jourParis, aujourdhuiParis } from '@/lib/heure'
 
 const ETAPES = [
   { statut: 'acceptee',        label: 'Acceptée',     action: 'Départ vers le client', color: 'var(--blu)' },
@@ -42,7 +42,9 @@ export default function SousTraitantPortal({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
+  // Jour parisien : en temps universel, entre minuit et 02:00 l'agenda
+  // s'ouvrait sur la veille — et sur une journee vide.
+  const [selectedDate, setSelectedDate] = useState(() => aujourdhuiParis())
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'courses' | 'factures' | 'profil'>('courses')
 
@@ -70,10 +72,12 @@ export default function SousTraitantPortal({
     router.push('/sous-traitant-login')
   }
 
-  const todayStr = new Date().toDateString()
+  // Jour parisien, comme partout ailleurs : l'horloge de l'appareil ne fait
+  // pas foi, et le serveur tourne en temps universel.
+  const todayStr = aujourdhuiParis()
   const activeCourse = courses.find(c =>
     ['en_route', 'prise_en_charge'].includes(c.statut) ||
-    (c.statut === 'acceptee' && lireHeureCourse(c.date_prevue).toDateString() === todayStr)
+    (c.statut === 'acceptee' && jourParis(c.date_prevue) === todayStr)
   ) ?? null
   const etapeIndex = ETAPES.findIndex(e => e.statut === activeCourse?.statut)
   const etape = ETAPES[etapeIndex]
@@ -83,16 +87,18 @@ export default function SousTraitantPortal({
   const allCal = [...courses, ...planning].filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true })
   const byDay: Record<string, any[]> = {}
   for (const c of allCal) {
-    const key = c.date_prevue.slice(0, 10)
+    // Jour parisien, pas le jour universel de la chaine brute : une course de
+    // nuit a 00:30 se rangeait a la veille dans l'agenda du sous-traitant.
+    const key = jourParis(c.date_prevue)
     if (!byDay[key]) byDay[key] = []
     byDay[key].push(c)
   }
   const days = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() + i)
-    return { key: d.toISOString().split('T')[0], date: d }
+    return { key: jourParis(d), date: d }
   })
   const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
-  const todayKey = new Date().toISOString().split('T')[0]
+  const todayKey = aujourdhuiParis()
   const selCourses = (byDay[selectedDate] ?? []).sort((a: any, b: any) => a.date_prevue.localeCompare(b.date_prevue))
   const selLabel = selectedDate === todayKey ? "Aujourd'hui"
     : new Date(selectedDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })

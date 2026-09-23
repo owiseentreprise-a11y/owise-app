@@ -4,7 +4,7 @@ import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import type { Course } from '@/lib/types'
 import AdminRealtime from './AdminRealtime'
 import PanierCourses from './PanierCourses'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, jourParis, aujourdhuiParis, debutJourParis, decalerJour, jourDeLaSemaine } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,14 +18,20 @@ export default async function AdminDashboard() {
   const supabase = createAdminClient()
 
   const now    = new Date()
-  const today  = now.toISOString().split('T')[0]
-  // Lundi de la semaine en cours — attention, le dimanche getDay()===0 donne un
-  // décalage de -1 sur la formule naïve (-getDay()+1), ce qui renvoyait le lundi
-  // SUIVANT au lieu de celui de la semaine en cours. Cas spécial nécessaire.
-  const weekStart  = new Date(now); weekStart.setDate(now.getDate() + (now.getDay() === 0 ? -6 : 1 - now.getDay())); weekStart.setHours(0,0,0,0)
-  const weekEnd    = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7)
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  // Le jour, la semaine et le mois se comptent à Paris, pas sur l'horloge du
+  // serveur : celui-ci tourne en temps universel, et jusqu'à 02:00 heure
+  // française il annonçait encore la veille. Une course de nuit à 00:30 sortait
+  // du compteur du jour, et celles du 1er du mois avant 02:00 du bilan mensuel.
+  const today  = aujourdhuiParis()
+  // Lundi de la semaine en cours — attention, le dimanche vaut 0 et la formule
+  // naïve (1 - jour) renverrait le lundi SUIVANT. Cas spécial nécessaire.
+  const jsem       = jourDeLaSemaine(today)
+  const lundi      = decalerJour(today, jsem === 0 ? -6 : 1 - jsem)
+  const weekStart  = debutJourParis(lundi)
+  const weekEnd    = debutJourParis(decalerJour(lundi, 7))
+  const premierDuMois = `${today.slice(0, 7)}-01`
+  const monthStart = debutJourParis(premierDuMois)
+  const monthEnd   = debutJourParis(`${decalerJour(premierDuMois, 32).slice(0, 7)}-01`)
 
   const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, docsAlertRes] = await Promise.all([
     supabase
@@ -69,7 +75,7 @@ export default async function AdminDashboard() {
   const facturesRetard = facturesRetardRes.data ?? []
 
   // KPIs jour
-  const coursesAujourdHui    = courses.filter(c => c.date_prevue.startsWith(today))
+  const coursesAujourdHui    = courses.filter(c => jourParis(c.date_prevue) === today)
   const coursesActives       = courses.filter(c => ['en_route', 'prise_en_charge', 'acceptee'].includes(c.statut))
   const coursesEnAttente     = courses.filter(c => c.statut === 'en_attente')
   const demandesCollaborateur = coursesEnAttente.filter(c => !!(c as any).collaborateur_id && !c.chauffeur_id)

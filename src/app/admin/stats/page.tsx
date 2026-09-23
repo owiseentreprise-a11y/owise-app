@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import StatsClient from './StatsClient'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, jourParis } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,8 +56,10 @@ export default async function StatsPage() {
     const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)
     const y = d.getFullYear(); const m = d.getMonth() + 1
     const key = `${y}-${String(m).padStart(2, '0')}`
-    const mTerm = terminées.filter(c => c.date_prevue.startsWith(key))
-    const mAnn  = annulées.filter(c => c.date_prevue.startsWith(key))
+    // Le mois se lit à Paris : une course du 1er à 00:30 est enregistrée la
+    // veille en temps universel, donc dans le mois précédent.
+    const mTerm = terminées.filter(c => jourParis(c.date_prevue).startsWith(key))
+    const mAnn  = annulées.filter(c => jourParis(c.date_prevue).startsWith(key))
     const ca    = mTerm.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
     return {
       key, label: monthLabel(y, m),

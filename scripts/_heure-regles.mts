@@ -157,3 +157,48 @@ export function ecrituresNonConverties(fichiers: string[]): Anomalie[] {
   }
   return trouve
 }
+
+/* ────────────────────── Règle 3 : le regroupement par jour ───────────────── */
+
+/**
+ * Un regroupement ou un filtrage par jour se fait sur le jour **parisien**.
+ *
+ * Découper la chaîne stockée (`date_prevue.slice(0, 10)`, `.startsWith(today)`)
+ * donne le jour universel. Une course de nuit à 00:30 heure de Paris est
+ * enregistrée la veille : elle se rangeait au mauvais jour dans l'agenda du
+ * sous-traitant, sortait du compteur « courses aujourd'hui », et basculait de
+ * mois dans les statistiques.
+ *
+ * `new Date().toISOString().slice(0, 10)` est signalé de la même façon quand il
+ * sert de « aujourd'hui » : sur le serveur Vercel, il annonce encore la veille
+ * jusqu'à 02:00 heure française.
+ */
+export function regroupementsParJourUniversel(fichiers: string[]): Anomalie[] {
+  const trouve: Anomalie[] = []
+  const champs = /\b(date_prevue|date_debut|date_fin)\b/
+
+  for (const f of fichiers) {
+    if (f.endsWith(path.join('lib', 'heure.ts'))) continue
+    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+
+    lignes.forEach((l, i) => {
+      const n = i + 1
+      if (champs.test(l) && /\.slice\(\s*0\s*,\s*10\s*\)/.test(l) && !/jourParis/.test(l)) {
+        trouve.push({ fichier: f, ligne: n, quoi: 'jour obtenu en decoupant la chaine stockee', code: l.trim() })
+        return
+      }
+      if (champs.test(l) && /\.startsWith\(/.test(l) && !passeParLeModule(l) && !/jourParis/.test(l)) {
+        trouve.push({ fichier: f, ligne: n, quoi: 'jour ou mois compare sur la chaine stockee', code: l.trim() })
+        return
+      }
+      // « aujourd'hui » pris sur l'horloge universelle, au voisinage d'une course
+      if (/new Date\(\)\.toISOString\(\)\s*\.?\s*(slice\(\s*0\s*,\s*10\s*\)|split\('T'\)\[0\])/.test(l)) {
+        const autour = lignes.slice(Math.max(0, i - 6), i + 7).join('\n')
+        if (/course|Course|today|Today|jour|Jour/.test(autour) && !/date_emission|date_echeance|DATE_M(IN|AX)|min=/.test(autour)) {
+          trouve.push({ fichier: f, ligne: n, quoi: "« aujourd'hui » pris en temps universel", code: l.trim() })
+        }
+      }
+    })
+  }
+  return trouve
+}

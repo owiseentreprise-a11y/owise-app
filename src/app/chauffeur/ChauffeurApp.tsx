@@ -7,7 +7,7 @@ import { TYPE_VEHICULE_LABEL, type StatutCourse, type StatutChauffeur, type CSSV
 import { accepterCourseAction, refuserCourseAction, progresserCourseAction } from './actions'
 import { useFcmRegistration } from './useFcmRegistration'
 import { soundNouvelleCourse, soundConfirmation, soundTerminee, resumeAudioCtx } from '@/lib/sound'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, jourParis, aujourdhuiParis } from '@/lib/heure'
 
 const ETAPES: { statut: StatutCourse; label: string; action: string; color: string }[] = [
   { statut: 'acceptee',        label: 'Course acceptée',  action: 'Départ vers le client', color: 'var(--blu)' },
@@ -22,13 +22,6 @@ const PROGRESSION: Partial<Record<StatutCourse, StatutCourse>> = {
   prise_en_charge: 'terminee',
 }
 
-// Retourne une clé YYYY-MM-DD en heure locale (évite le décalage UTC)
-function localDateKey(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 function clientNom(course: any): string {
   const c = course.clients
@@ -83,7 +76,7 @@ export default function ChauffeurApp({
   const [pending, startTransition] = useTransition()
   useFcmRegistration()
   const [dispo, setDispo] = useState<StatutChauffeur>(profile?.chauffeurs?.statut ?? 'hors_ligne')
-  const [selectedDate, setSelectedDate] = useState(() => localDateKey(new Date()))
+  const [selectedDate, setSelectedDate] = useState(() => aujourdhuiParis())
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [planningOpen, setPlanningOpen] = useState(false)
@@ -182,16 +175,18 @@ export default function ChauffeurApp({
   }, [courses, soundEnabled])
 
   // Séparer course entrante (en_attente) des courses actives
-  const todayStr = new Date().toDateString()
+  // Le jour de reference vient de Paris, pas de l'horloge de l'appareil :
+  // un telephone regle sur un autre fuseau voyait la mauvaise journee.
+  const todayStr = aujourdhuiParis()
   const pendingCourse = courses.find(c => c.statut === 'en_attente') ?? null
   // Active = vraiment en cours (en_route/prise_en_charge) OU acceptée pour aujourd'hui
   const activeCourse = courses.find(c =>
     ['en_route', 'prise_en_charge'].includes(c.statut) ||
-    (c.statut === 'acceptee' && lireHeureCourse(c.date_prevue).toDateString() === todayStr)
+    (c.statut === 'acceptee' && jourParis(c.date_prevue) === todayStr)
   ) ?? null
   const todayCourses = [
-    ...courses.filter(c => lireHeureCourse(c.date_prevue).toDateString() === todayStr),
-    ...historique.filter(c => lireHeureCourse(c.date_prevue).toDateString() === todayStr),
+    ...courses.filter(c => jourParis(c.date_prevue) === todayStr),
+    ...historique.filter(c => jourParis(c.date_prevue) === todayStr),
   ]
 
   // Prochaine course à venir — affichée quand rien n'est actif/en attente aujourd'hui
@@ -781,7 +776,7 @@ export default function ChauffeurApp({
 
             {nextCourse && (
               <button
-                onClick={() => setSelectedDate(localDateKey(lireHeureCourse(nextCourse.date_prevue)))}
+                onClick={() => setSelectedDate(jourParis(nextCourse.date_prevue))}
                 style={{
                   marginTop: 16, width: '100%', textAlign: 'left',
                   background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)',
@@ -1059,18 +1054,18 @@ export default function ChauffeurApp({
           // Groupe par jour (clé YYYY-MM-DD en heure locale)
           const byDay: Record<string, any[]> = {}
           for (const c of allCal) {
-            const key = localDateKey(lireHeureCourse(c.date_prevue))
+            const key = jourParis(c.date_prevue)
             if (!byDay[key]) byDay[key] = []
             byDay[key].push(c)
           }
 
           // 30 jours à partir d'aujourd'hui
-          const todayKey = localDateKey(new Date())
+          const todayKey = aujourdhuiParis()
           const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
           const days = Array.from({ length: 30 }, (_, i) => {
             const d = new Date()
             d.setDate(d.getDate() + i)
-            return { key: localDateKey(d), date: d }
+            return { key: jourParis(d), date: d }
           })
 
           const selCourses = (byDay[selectedDate] ?? [])

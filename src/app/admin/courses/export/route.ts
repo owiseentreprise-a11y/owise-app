@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { dateCourse, heureCourse } from '@/lib/heure'
+import { dateCourse, heureCourse, aujourdhuiParis } from '@/lib/heure'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
   })
 
   const csv = [header.join(';'), ...rows].join('\n')
-  const date = new Date().toISOString().split('T')[0]
+  const date = aujourdhuiParis()
 
   return new NextResponse(csv, {
     headers: {
