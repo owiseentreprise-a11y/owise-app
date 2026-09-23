@@ -7,6 +7,7 @@ import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
 import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
 import { genererNumeroFacture } from '@/lib/facturation'
+import { instantDepuisSaisieParis } from '@/lib/heure'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -125,7 +126,10 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
   const telephone = meta.telephone || null
   const adresseDepart  = meta.adresse_depart
   const adresseArrivee = meta.adresse_arrivee
-  const datePrevue     = meta.date_prevue
+  // `meta.date_prevue` est la saisie du formulaire de reservation (heure de
+  // Paris, sans fuseau). Ecrite telle quelle, Postgres la lisait comme une
+  // heure universelle : toute reservation en ligne avancait de deux heures.
+  const datePrevue     = instantDepuisSaisieParis(meta.date_prevue).toISOString()
   const typeVehicule   = meta.type_vehicule
   const nbPassagers    = parseInt(meta.nb_passagers, 10) || 1
   const prix           = parseFloat(meta.prix) || 0

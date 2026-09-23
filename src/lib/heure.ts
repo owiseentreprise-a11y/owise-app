@@ -75,12 +75,47 @@ export function dateCourse(
   return new Date(valeur).toLocaleDateString('fr-FR', { timeZone: FUSEAU, ...options })
 }
 
+/**
+ * Formatage libre d'un instant, toujours lu à Paris.
+ *
+ * Pour les écrans qui composent eux-mêmes leurs options (« 24 sept. 2026 »,
+ * « 24/09 16:00 »…) plutôt que d'utiliser `heureCourse` / `dateCourse`.
+ */
+export function formaterAParis(
+  valeur: string | Date | null | undefined,
+  options: Intl.DateTimeFormatOptions,
+  vide = '—',
+): string {
+  if (!valeur) return vide
+  const d = new Date(valeur)
+  if (isNaN(d.getTime())) return vide
+  return d.toLocaleString('fr-FR', { timeZone: FUSEAU, ...options })
+}
+
 /** « 22/09/2026 04:15 ». */
 export function dateHeureCourse(
   valeur: string | Date,
   options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' },
 ): string {
   return `${dateCourse(valeur, options)} ${heureCourse(valeur)}`
+}
+
+/**
+ * « 2026-09-24T14:00 » — le format qu'attend un `<input type="datetime-local">`,
+ * rempli avec l'heure de Paris.
+ *
+ * Indispensable : un champ pré-rempli avec la chaîne brute de la base affiche
+ * l'heure universelle. L'exploitant la voit décalée, la « corrige », et sa
+ * correction décale la course pour de bon.
+ *
+ * Dégât réel, 2026-09-23 : le retour de Mme Bouchard, prévu à 14:00, est passé
+ * à 16:00 après un simple changement d'année dans ce formulaire.
+ */
+export function pourChampSaisie(valeur: string | Date): string {
+  const d = heureMuraleParis(valeur)
+  if (isNaN(d.getTime())) return ''
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
 /**

@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction, estimerSurcoutEtapesAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
+import { pourChampSaisie } from '@/lib/heure'
 
 /** Style commun aux champs du panneau « Modifier la course ». */
 const champStyle: React.CSSProperties = {
@@ -131,7 +132,10 @@ export default function CourseActions({
   const sendEmail = sendMode === 'sous_traitant' ? selectedSTForSend?.email : adhocEmail
 
   const [editOpen, setEditOpen] = useState(false)
-  const [editDate, setEditDate] = useState(course.date_prevue.slice(0, 16))
+  // Le champ montre l'heure de Paris, pas la chaine brute de la base : sinon
+  // l'exploitant voit une heure decalee, la corrige, et sa correction decale
+  // la course pour de bon (retour de Mme Bouchard, 14:00 devenu 16:00).
+  const [editDate, setEditDate] = useState(pourChampSaisie(course.date_prevue))
   const [editVehicule, setEditVehicule] = useState(course.type_vehicule as string)
   const [editPassagers, setEditPassagers] = useState(String(course.nb_passagers))
   const [editDepart, setEditDepart] = useState(course.adresse_depart)

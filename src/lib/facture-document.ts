@@ -89,9 +89,14 @@ function dateLongue(v: string | null | undefined): string {
   return new Date(v).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
+/**
+ * Date d'une course sur une ligne de facture. Le fuseau est obligatoire : une
+ * course du 25 a 00:30 heure de Paris est un instant du 24 en temps universel,
+ * et la facture aurait annonce la veille.
+ */
 function dateCourte(v: string | null | undefined): string {
   if (!v) return '—'
-  return new Date(v).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+  return new Date(v).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit' })
 }
 
 /** « 14 Rue des Coteaux, 60870 Villers-Saint-Paul, France » → « 14 Rue des Coteaux » */

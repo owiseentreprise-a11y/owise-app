@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { dateCourse, heureCourse } from '@/lib/heure'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
@@ -24,10 +25,10 @@ export async function GET(req: NextRequest) {
 
   if (!courses) return NextResponse.json({ error: 'Erreur' }, { status: 500 })
 
-  const fmt = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString('fr-FR') : ''
-  const fmtTime = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''
+  // L'export part du serveur, qui tourne en temps universel : sans fuseau, le
+  // fichier remis au comptable annoncait deux heures de moins que l'ecran.
+  const fmt     = (iso: string | null) => (iso ? dateCourse(iso, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
+  const fmtTime = (iso: string | null) => (iso ? heureCourse(iso) : '')
 
   const escape = (v: string | number | null | undefined) => {
     const s = String(v ?? '')

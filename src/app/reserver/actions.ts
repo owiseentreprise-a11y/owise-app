@@ -6,6 +6,7 @@ import { calculerPrix, calculerPrixKm, calculerPrixEtapes } from '@/lib/calcPrix
 import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
+import { instantDepuisSaisieParis } from '@/lib/heure'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -240,7 +241,8 @@ export async function createReservationCheckout(data: {
   // Créer le retour immédiatement en_attente si aller-retour demandé
   if (data.aller_retour && data.date_retour) {
     try {
-      const dateRetourParsed = new Date(data.date_retour)
+      // Heure saisie par le client, donc parisienne.
+      const dateRetourParsed = instantDepuisSaisieParis(data.date_retour)
       if (!isNaN(dateRetourParsed.getTime())) {
         const supabaseAdmin = createAdminClient()
         await supabaseAdmin.from('courses').insert({

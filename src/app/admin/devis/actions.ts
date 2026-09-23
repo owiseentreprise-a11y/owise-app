@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
+import { instantDepuisSaisieParis } from '@/lib/heure'
 import { revalidatePath } from 'next/cache'
 import { genererNumeroFacture } from '@/lib/facturation'
 
@@ -38,11 +39,13 @@ export async function convertirEnCourse(devis: {
 
   const supabase = createAdminClient()
 
-  // Combine date + heure → timestamp Paris
+  // Date + heure du devis → instant reel. `new Date('2026-09-24T14:00')` lit
+  // la chaine dans le fuseau de la machine : sur le serveur Vercel, qui tourne
+  // en temps universel, un devis a 14:00 devenait une course a 16:00.
   let date_prevue: string
   if (devis.date_course) {
     const h = devis.heure ?? '00:00'
-    date_prevue = new Date(`${devis.date_course}T${h}:00`).toISOString()
+    date_prevue = instantDepuisSaisieParis(`${devis.date_course}T${h}:00`).toISOString()
   } else {
     date_prevue = new Date().toISOString()
   }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
 import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 import { buildInfosCourseTexte } from '@/lib/courseMessage'
+import { formaterAParis } from '@/lib/heure'
 import CourseActions from './CourseActions'
 
 export const dynamic = 'force-dynamic'
@@ -16,9 +17,11 @@ const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: st
   annulee:         { color: 'var(--red)', bg: 'rgba(217,80,80,.12)',  border: 'rgba(217,80,80,.25)' },
 }
 
+// Toujours l'heure de Paris : sans fuseau explicite, cette page affichait
+// l'heure universelle du serveur, soit deux heures de moins en été que les
+// listes Tableau de bord et Courses, qui, elles, passent par `lireHeureCourse`.
 function fmt(iso: string | null, opts: Intl.DateTimeFormatOptions) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('fr-FR', opts)
+  return formaterAParis(iso, opts)
 }
 
 function duree(debut: string | null, fin: string | null) {

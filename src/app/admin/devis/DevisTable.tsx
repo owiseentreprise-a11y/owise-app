@@ -7,9 +7,14 @@ function fmtDate(d: string | null) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
+/**
+ * `date_course` est une date seule, que JavaScript lit a minuit en temps
+ * universel. Sans `timeZone: 'UTC'`, un navigateur a l'ouest de Greenwich
+ * afficherait la veille.
+ */
 function fmtDateCourse(d: string | null) {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(d).toLocaleDateString('fr-FR', { timeZone: 'UTC', day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 const VEHICULE_LABEL: Record<string, string> = {

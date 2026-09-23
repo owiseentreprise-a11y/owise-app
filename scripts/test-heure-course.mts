@@ -12,8 +12,7 @@
  * Lancer depuis owise-app :  npx tsx scripts/test-heure-course.mts
  */
 import { execFileSync } from 'node:child_process'
-import fs from 'node:fs'
-import path from 'node:path'
+import { fichiersSource, affichagesSansFuseau, ecrituresNonConverties } from './_heure-regles.mjs'
 
 let ok = 0, ko = 0
 const dit = (titre: string, vrai: boolean, detail = '') => {
@@ -46,30 +45,23 @@ for (const tz of ['UTC', 'Europe/Paris', 'America/New_York']) {
   }
 }
 
-/* ── Personne ne lit ni n'ecrit l'heure a la main ─────────────────────────── */
-const fichiers: string[] = []
-;(function parcourir(d: string) {
-  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-    const f = path.join(d, e.name)
-    if (e.isDirectory()) parcourir(f)
-    else if (/\.tsx?$/.test(e.name)) fichiers.push(f)
-  }
-})('src')
+/* ── Le code respecte-t-il les deux regles ? ──────────────────────────────── */
+const fichiers = fichiersSource('src')
+console.log(`
+Le code, sur ${fichiers.length} fichiers
+`)
 
-// Formater une heure de course a la main est interdit : c'est ainsi que
-// l'ecart de deux heures est apparu. Comparer l'instant reel a `Date.now()`
-// reste permis — c'est meme la seule facon juste de mesurer une echeance.
-const formateursBruts = fichiers.filter(f => {
-  if (f.endsWith(path.join('lib', 'heure.ts'))) return false
-  const c = fs.readFileSync(f, 'utf8')
-  return /new Date\([^)]*date_prevue[^)]*\)[\s\S]{0,4}\.toLocale/.test(c) || /date_prevue\.replace/.test(c)
-})
-dit('aucun fichier ne formate une heure de course a la main', formateursBruts.length === 0, formateursBruts.join(', '))
+const lectures = affichagesSansFuseau(fichiers)
+dit("aucune heure de course ne s'affiche sans fuseau", lectures.length === 0,
+    `${lectures.length} endroit(s)`)
+for (const a of lectures) console.log(`      ${a.fichier}:${a.ligne}  ${a.quoi}`)
 
-const rustine = fichiers.filter(f =>
-  !f.endsWith(path.join('lib', 'heure.ts')) &&
-  /\[\+\-\]\d\{2\}:\d\{2\}\|Z/.test(fs.readFileSync(f, 'utf8')))
-dit("la rustine de fuseau n'est copiee nulle part", rustine.length === 0, rustine.join(', '))
+const ecritures = ecrituresNonConverties(fichiers)
+dit('toute heure enregistree passe par instantDepuisSaisieParis', ecritures.length === 0,
+    `${ecritures.length} endroit(s)`)
+for (const a of ecritures) console.log(`      ${a.fichier}:${a.ligne}  ${a.quoi}`)
 
-console.log(`\n${ko === 0 ? '✓' : '✗'}  ${ok} controle(s) au vert, ${ko} au rouge\n`)
+console.log(`
+${ko === 0 ? '✓' : '✗'}  ${ok} controle(s) au vert, ${ko} au rouge
+`)
 process.exitCode = ko === 0 ? 0 : 1

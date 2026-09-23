@@ -191,7 +191,7 @@ export default async function FacturationPage() {
                   {(nd?.vehicule || nd?.tel) && (
                     <div style={{ fontSize: 9, color: 'var(--t3)', marginTop: 1, display: 'flex', gap: 8 }}>
                       {nd.vehicule && <span>{nd.vehicule}{nd.pax ? ` · ${nd.pax} pax` : ''}</span>}
-                      {nd.date_course && <span>{new Date(nd.date_course).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' })}{nd.heure ? ` ${nd.heure}` : ''}</span>}
+                      {nd.date_course && <span>{new Date(nd.date_course).toLocaleDateString('fr-FR', { timeZone: 'UTC', day: '2-digit', month: 'short', year: '2-digit' })}{nd.heure ? ` ${nd.heure}` : ''}</span>}
                       {nd.tel && <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{nd.tel}</span>}
                     </div>
                   )}

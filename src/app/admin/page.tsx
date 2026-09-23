@@ -185,7 +185,9 @@ export default async function AdminDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {imminentes.map(c => {
                 const d = lireHeureCourse(c.date_prevue)
-                const h = (d.getTime() - Date.now()) / 3_600_000
+                // `d` est une heure murale, pas un instant : la distance au moment
+                // present se mesure sur la valeur brute (interdit documente dans heure.ts).
+                const h = (new Date(c.date_prevue).getTime() - Date.now()) / 3_600_000
                 const dans = h < 1 ? `${Math.max(0, Math.round(h * 60))} min` : `${Math.floor(h)} h`
                 return (
                   <a key={c.id} href={`/admin/courses/${c.id}`} style={{
