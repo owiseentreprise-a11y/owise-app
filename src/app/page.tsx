@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
-import { IDENTITE_OWISE } from '@/lib/identite-owise'
+import { IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 
 const BASE = 'https://www.owise.fr'
 
@@ -106,13 +106,7 @@ const jsonLd = {
     ],
   },
   sameAs: ['https://owise.fr', 'https://facebook.com/Owise.vtc', 'https://www.tiktok.com/@owise857'],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '5',
-    reviewCount: '5',
-    bestRating: '5',
-    worstRating: '1',
-  },
+  // La note est ajoutee au rendu, depuis le compteur reel (voir plus bas).
 }
 
 const jsonLdWebSite = {
@@ -155,12 +149,16 @@ export default async function VitrinePage() {
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
     admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec,supplement_bagages_actif,supplement_bagages_prix,supplement_panneau_actif,supplement_panneau_prix,supplement_animaux_actif,supplement_animaux_prix,supplement_siege_enfant_actif,supplement_siege_enfant_prix').single(),
   ])
+  // Le nombre d'avis vient de la base, jamais du code : le site a annonce
+  // « 5 avis » alors que la fiche Google en portait 7.
+  const avis = await lireAvis(admin)
+  const jsonLdAvecAvis = { ...jsonLd, aggregateRating: ficheAvis(avis.nombre, avis.note) }
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdAvecAvis) }}
       />
       <script
         type="application/ld+json"

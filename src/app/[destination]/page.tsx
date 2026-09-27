@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
-import { IDENTITE_OWISE, communeDepuisTitre } from '@/lib/identite-owise'
+import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import '../vitrine.css'
 
 // Communes qui ont leur propre page destination → liens cliquables dans la grille zones
@@ -1264,6 +1264,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
     admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec,supplement_bagages_actif,supplement_bagages_prix,supplement_panneau_actif,supplement_panneau_prix,supplement_animaux_actif,supplement_animaux_prix,supplement_siege_enfant_actif,supplement_siege_enfant_prix').single(),
   ])
+  const avis = await lireAvis(admin)
 
   const BASE = 'https://www.owise.fr'
 
@@ -1293,13 +1294,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
       '@type': 'ReserveAction',
       target: { '@type': 'EntryPoint', urlTemplate: `${BASE}/reserver` },
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '5',
-      reviewCount: '5',
-      bestRating: '5',
-      worstRating: '1',
-    },
+    aggregateRating: ficheAvis(avis.nombre, avis.note),
   }
 
   const breadcrumbLd = {
