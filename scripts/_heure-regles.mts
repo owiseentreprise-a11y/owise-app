@@ -202,3 +202,42 @@ export function regroupementsParJourUniversel(fichiers: string[]): Anomalie[] {
   }
   return trouve
 }
+
+/* ───────── Règle 4 : ne jamais construire une Date depuis une saisie ─────── */
+
+/**
+ * Une saisie de formulaire (« 2026-09-29T09:30 ») n'est pas un instant.
+ * `new Date()` la lit dans le fuseau de la machine : juste sur un poste
+ * parisien, faux de deux heures sur le serveur Vercel. Pire, un
+ * `.toISOString()` derrière fige l'erreur dans la chaîne — plus aucune
+ * fonction de lecture ne peut la rattraper ensuite.
+ *
+ * Seul `instantDepuisSaisieParis()` sait convertir une saisie.
+ *
+ * Ne vise que les variables nues (`date_prevue`, `dateRetourRaw`). Une valeur
+ * lue en base s'écrit `course.date_prevue` — c'est un vrai instant, et
+ * `new Date()` dessus est légitime (mesure d'un délai, par exemple).
+ *
+ * Dégât réel, 2026-09-27 : la course #F9557D, prévue 09:30, était annoncée
+ * 11:30 au client, au chauffeur et à l'exploitant. Cinquième retour du même
+ * défaut, parce qu'aucun contrôle ne regardait ce chemin.
+ */
+export function saisiesConstruitesEnDate(fichiers: string[]): Anomalie[] {
+  const trouve: Anomalie[] = []
+  const NUE = /new Date\(\s*(?!\w+[.?])(date_prevue|date_retour|dateRetourRaw|dateRetour|dateHeure|heureSaisie)\b/
+
+  for (const f of fichiers) {
+    if (f.endsWith(path.join('lib', 'heure.ts'))) continue
+    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+    lignes.forEach((l, i) => {
+      if (NUE.test(l) && !/instantDepuisSaisieParis|pourLaBase/.test(l)) {
+        trouve.push({
+          fichier: f, ligne: i + 1,
+          quoi: 'saisie transformee en Date sans instantDepuisSaisieParis',
+          code: l.trim(),
+        })
+      }
+    })
+  }
+  return trouve
+}

@@ -6,7 +6,7 @@ import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, isForfaitZone, type ParamsCalc } from '@/lib/calcPrix'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, instantDepuisSaisieParis, formaterAParis } from '@/lib/heure'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -327,7 +327,10 @@ export default function NouvelleCourseForm({
   const isInternalChauffeur = !!chauffeurId && !selectedChauffeur?.sous_traitant_id
 
   /** Vrai si la date saisie est dans le passé. */
-  const datePassee = !isNaN(new Date(dateHeure).getTime()) && new Date(dateHeure).getTime() < Date.now()
+  // La saisie est une heure de Paris. `new Date()` la lisait dans le fuseau
+  // de la machine : ce calcul differait entre le rendu serveur et le navigateur.
+  const instantSaisi = instantDepuisSaisieParis(dateHeure)
+  const datePassee = !isNaN(instantSaisi.getTime()) && instantSaisi.getTime() < Date.now()
 
   /**
    * Seule une date illisible est bloquante.
@@ -339,9 +342,9 @@ export default function NouvelleCourseForm({
    * l'enregistre directement comme terminée.
    */
   function erreurBloquante(): string | null {
-    if (isNaN(new Date(dateHeure).getTime())) return 'Date invalide.'
+    if (isNaN(instantSaisi.getTime())) return 'Date invalide.'
     if (datePassee && !dejaEffectuee) {
-      return `La date saisie (${new Date(dateHeure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}) est déjà passée. `
+      return `La date saisie (${formaterAParis(instantSaisi, { dateStyle: 'full', timeStyle: 'short' })}) est déjà passée. `
         + `S'il s'agit d'une course déjà réalisée, cochez « course déjà effectuée » juste en dessous du champ de date.`
     }
     return null
@@ -350,7 +353,7 @@ export default function NouvelleCourseForm({
   /** Situations douteuses mais parfois légitimes : on demande confirmation. */
   function calculerAvertissements(): string[] {
     const out: string[] = []
-    const heures = (new Date(dateHeure).getTime() - Date.now()) / 3_600_000
+    const heures = (instantSaisi.getTime() - Date.now()) / 3_600_000
 
     if (heures < 24) {
       // Arrondir en minutes d'abord : sinon 2,999 h donne « 2 h 60 ».
@@ -361,7 +364,7 @@ export default function NouvelleCourseForm({
       out.push(`Cette course démarre dans ${delai}. Vérifiez qu'un chauffeur est disponible.`)
     }
     if (heures > 24 * 183) {
-      out.push(`La date est à plus de 6 mois (${new Date(dateHeure).toLocaleDateString('fr-FR', { dateStyle: 'long' })}). Erreur d'année ?`)
+      out.push(`La date est à plus de 6 mois (${formaterAParis(instantSaisi, { dateStyle: 'long' })}). Erreur d'année ?`)
     }
     if (prixFinal === null) {
       out.push("Aucun prix n'est renseigné. Sans prix, le client ne recevra ni reçu ni demande d'avis Google à la fin de la course.")
@@ -374,10 +377,10 @@ export default function NouvelleCourseForm({
     // Chauffeur déjà pris. Les courses n'ont pas de durée en base : on signale
     // toute autre course du même chauffeur à moins de 2 h, à l'admin de juger.
     if (chauffeurId) {
-      const cible = new Date(dateHeure).getTime()
+      const cible = instantSaisi.getTime()
       const proches = coursesAssignees.filter(c =>
         c.chauffeur_id === chauffeurId &&
-        Math.abs(lireHeureCourse(c.date_prevue).getTime() - cible) < 2 * 3_600_000
+        Math.abs(new Date(c.date_prevue).getTime() - cible) < 2 * 3_600_000
       )
       for (const c of proches) {
         const quand = lireHeureCourse(c.date_prevue).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })

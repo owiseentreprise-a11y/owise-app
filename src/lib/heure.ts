@@ -60,9 +60,37 @@ export function pourLaBase(saisie: string | Date): string {
   return instantDepuisSaisieParis(saisie).toISOString()
 }
 
+/**
+ * Ramène n'importe quelle valeur à un instant réel, avant lecture.
+ *
+ * `new Date("2026-09-29T09:30")` — une date-heure **sans marqueur de fuseau** —
+ * est lue par JavaScript dans le fuseau de la machine. Sur un poste parisien
+ * elle donne 09:30 ; sur le serveur Vercel, qui tourne en temps universel, elle
+ * donne 09:30 UTC, soit 11:30 à Paris. Le même e-mail annonce donc deux heures
+ * différentes selon l'endroit d'où il part — et le défaut est **invisible en
+ * développement**, ce qui l'a fait revenir cinq fois.
+ *
+ * Ici, une date-heure sans fuseau ne peut vouloir dire qu'une chose : une heure
+ * saisie à Paris. On la convertit comme telle, au lieu de laisser la machine
+ * deviner.
+ *
+ * Dégâts réels : Mme Ménagé attendue à 04:15 avertie pour 06:15, son retour de
+ * 20:15 annoncé à 22:15, la course de M. Gylden du 29/09 à 09:30 annoncée à
+ * 11:30 dans l'e-mail d'exploitation (#F9557D, 2026-09-27).
+ */
+function instantReel(valeur: string | Date): Date {
+  if (valeur instanceof Date) return valeur
+  const s = String(valeur)
+  const aUneHeure = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(s)
+  const aUnFuseau = /([+-]\d{2}:?\d{2}|Z)$/.test(s)
+  // Une date seule (« 2026-09-29 ») est laissée à JavaScript, qui la lit à
+  // minuit en temps universel — c'est le comportement attendu ailleurs.
+  return aUneHeure && !aUnFuseau ? instantDepuisSaisieParis(s) : new Date(s)
+}
+
 /** « 04:15 » — toujours en heure de Paris, quelle que soit la machine. */
 export function heureCourse(valeur: string | Date): string {
-  return new Date(valeur).toLocaleTimeString('fr-FR', {
+  return instantReel(valeur).toLocaleTimeString('fr-FR', {
     timeZone: FUSEAU, hour: '2-digit', minute: '2-digit',
   })
 }
@@ -72,7 +100,7 @@ export function dateCourse(
   valeur: string | Date,
   options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
 ): string {
-  return new Date(valeur).toLocaleDateString('fr-FR', { timeZone: FUSEAU, ...options })
+  return instantReel(valeur).toLocaleDateString('fr-FR', { timeZone: FUSEAU, ...options })
 }
 
 /**
@@ -132,7 +160,7 @@ export function formaterAParis(
   vide = '—',
 ): string {
   if (!valeur) return vide
-  const d = new Date(valeur)
+  const d = instantReel(valeur)
   if (isNaN(d.getTime())) return vide
   return d.toLocaleString('fr-FR', { timeZone: FUSEAU, ...options })
 }
@@ -181,7 +209,7 @@ export function heureMuraleParis(valeur: string | Date): Date {
     timeZone: FUSEAU, hour12: false,
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
-  }).formatToParts(new Date(valeur))
+  }).formatToParts(instantReel(valeur))
   const v = (t: string) => Number(parts.find(p => p.type === t)!.value)
   return new Date(v('year'), v('month') - 1, v('day'), v('hour') % 24, v('minute'), v('second'))
 }

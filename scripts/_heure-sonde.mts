@@ -9,5 +9,11 @@ console.log(JSON.stringify({
   date: dateCourse(instant),
   murale: heureMuraleParis(instant).getHours() + 'h' + String(heureMuraleParis(instant).getMinutes()).padStart(2, '0'),
   jour: jourParis(instant),
+  // Le point aveugle de tous les controles precedents : ce que donnent les
+  // fonctions d'affichage quand on leur passe la SAISIE NUE, sans fuseau,
+  // au lieu de l'instant converti. Sur un poste parisien c'est juste ; sur
+  // le serveur Vercel, en temps universel, cela decale de deux heures.
+  heureBrute: heureCourse(saisie),
+  jourBrut: jourParis(saisie),
   champ: pourChampSaisie(instant),
 }))

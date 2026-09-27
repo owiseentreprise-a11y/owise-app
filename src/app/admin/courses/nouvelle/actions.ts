@@ -194,7 +194,7 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
         chauffeurEmail,
         chauffeurPrenom: chauffeurProfileRes.data?.prenom ?? '',
         adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
-        datePrevue: date_prevue, clientNom: '—',
+        datePrevue: datePrevueISO, clientNom: '—',
         nbPassagers: nb_passagers, notes: notes ?? null, refCourse,
         etapes: etapes.length > 0 ? etapes : null,
       })
@@ -258,19 +258,19 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
     clientEmail && !deja_effectuee ? envoyerConfirmationClient({
       clientEmail, clientPrenom,
       adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
-      datePrevue: date_prevue, typeVehicule: type_vehicule,
+      datePrevue: datePrevueISO, typeVehicule: type_vehicule,
       nbPassagers: nb_passagers, prixEstime: prix_estime, refCourse,
       etapes: etapes.length > 0 ? etapes : null,
       // Le retour existe en base mais n'apparaissait pas dans la confirmation :
       // le client ignorait qu'il était réservé.
-      retour: allerRetour && dateRetourRaw && !isNaN(new Date(dateRetourRaw).getTime())
-        ? { datePrevue: new Date(dateRetourRaw).toISOString(), adresseArrivee: arriveeRetour || undefined }
+      retour: allerRetour && dateRetourRaw && !isNaN(instantDepuisSaisieParis(dateRetourRaw).getTime())
+        ? { datePrevue: instantDepuisSaisieParis(dateRetourRaw).toISOString(), adresseArrivee: arriveeRetour || undefined }
         : null,
       afficherPrix,
     }) : Promise.resolve(),
     envoyerNotificationAdmin({
       adresseDepart: adresse_depart, adresseArrivee: adresse_arrivee,
-      datePrevue: date_prevue, clientNom: clientNomComplet, typeVehicule: type_vehicule, refCourse,
+      datePrevue: datePrevueISO, clientNom: clientNomComplet, typeVehicule: type_vehicule, refCourse,
     }),
   ])
 

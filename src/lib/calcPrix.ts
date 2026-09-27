@@ -1,3 +1,4 @@
+import { heureMuraleParis } from './heure'
 export type ZoneCalc   = { id: string; code: string; type: string; prefixes_postaux: string[] }
 export type GrilleCalc = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 export type TarifCalc  = {
@@ -153,10 +154,22 @@ export function isForfaitZone(zone: ZoneCalc): boolean {
   return zone.type === 'aeroport' || zone.type === 'gare' || zone.code === 'Z1'
 }
 
-/** Majorations nuit (22h-6h) et weekend, appliquées multiplicativement sur le prix de base */
+/**
+ * Majorations nuit (22h-6h) et weekend, appliquées multiplicativement sur le prix de base.
+ *
+ * L'heure et le jour se lisent **à Paris**, jamais sur l'horloge de la machine.
+ * `new Date(x).getHours()` donnait deux résultats : juste quand `x` était la
+ * saisie brute d'un formulaire (les deux erreurs s'annulent), faux quand `x`
+ * venait de la base — sur le serveur Vercel, en temps universel, une course du
+ * mardi 23:30 perdait sa majoration de nuit, une course de 07:30 en gagnait une
+ * qu'elle ne devait pas, et un lundi 00:30 était facturé comme un dimanche.
+ * `heureMuraleParis` rend les deux formes correctes sur toutes les machines.
+ * (Mesuré le 2026-09-27, en remontant l'écart d'heure de la course #F9557D.)
+ */
 export function appliquerSupplements(prix: number, dateHeure: string, params?: ParamsCalc | null): number {
   if (!dateHeure) return prix
-  const d = new Date(dateHeure)
+  const d = heureMuraleParis(dateHeure)
+  if (isNaN(d.getTime())) return prix
   const h = d.getHours()
   const j = d.getDay()
   let p = prix

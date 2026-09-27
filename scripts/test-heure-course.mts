@@ -12,7 +12,7 @@
  * Lancer depuis owise-app :  npx tsx scripts/test-heure-course.mts
  */
 import { execFileSync } from 'node:child_process'
-import { fichiersSource, affichagesSansFuseau, ecrituresNonConverties, regroupementsParJourUniversel } from './_heure-regles.mjs'
+import { fichiersSource, affichagesSansFuseau, ecrituresNonConverties, regroupementsParJourUniversel, saisiesConstruitesEnDate } from './_heure-regles.mjs'
 
 let ok = 0, ko = 0
 const dit = (titre: string, vrai: boolean, detail = '') => {
@@ -51,6 +51,11 @@ for (const tz of ['UTC', 'Europe/Paris', 'America/New_York']) {
     dit(`${tz.padEnd(17)} ${saisie} -> affiche ${r.heure}`, r.heure === attenduAffiche, `attendu ${attenduAffiche}`)
     dit(`${tz.padEnd(17)} ${saisie} -> jour ${r.jour}`, r.jour === attenduJour, `attendu ${attenduJour}`)
     dit(`${tz.padEnd(17)} ${saisie} -> champ ${r.champ}`, r.champ === saisie, `attendu ${saisie}`)
+    // Une saisie nue passee telle quelle a l'affichage doit donner la meme
+    // heure que l'instant converti. Sinon un e-mail annonce autre chose que
+    // l'ecran (course #F9557D : 11:30 dans l'e-mail, 09:30 en base).
+    dit(`${tz.padEnd(17)} ${saisie} -> saisie nue affichee ${r.heureBrute}`, r.heureBrute === attenduAffiche, `attendu ${attenduAffiche}`)
+    dit(`${tz.padEnd(17)} ${saisie} -> saisie nue, jour ${r.jourBrut}`, r.jourBrut === attenduJour, `attendu ${attenduJour}`)
   }
 }
 
@@ -69,6 +74,11 @@ const jours = regroupementsParJourUniversel(fichiers)
 dit('aucun regroupement par jour ne decoupe la chaine brute', jours.length === 0,
     `${jours.length} endroit(s)`)
 for (const a of jours) console.log(`      ${a.fichier}:${a.ligne}  ${a.quoi}`)
+
+const saisies = saisiesConstruitesEnDate(fichiers)
+dit('aucune saisie de formulaire transformee en Date a la main', saisies.length === 0,
+    `${saisies.length} endroit(s)`)
+for (const a of saisies) console.log(`      ${a.fichier}:${a.ligne}  ${a.quoi}`)
 
 const ecritures = ecrituresNonConverties(fichiers)
 dit('toute heure enregistree passe par instantDepuisSaisieParis', ecritures.length === 0,
