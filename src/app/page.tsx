@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
+import { IDENTITE_OWISE } from '@/lib/identite-owise'
 
 const BASE = 'https://www.owise.fr'
 
@@ -53,27 +54,11 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': ['TaxiService', 'LocalBusiness'],
-  name: 'Owise — Chauffeur Privé VTC',
+  // Nom, image, adresse, position, téléphone : une seule définition pour tout
+  // le site, dans src/lib/identite-owise.ts.
+  ...IDENTITE_OWISE,
   description: 'Service VTC de prestige à Paris, Île-de-France et Oise. Transferts aéroport CDG, Orly, Beauvais. Tarif fixe garanti, disponible 24h/24. Creil, Chantilly, Senlis, Compiègne.',
   url: BASE,
-  logo: `${BASE}/brand_assets/logo.svg`,
-  image: `${BASE}/brand_assets/hero-paris-night.webp`,
-  telephone: '+33619106356',
-  email: 'owise.entreprise@gmail.com',
-  currenciesAccepted: 'EUR',
-  paymentAccepted: 'Cash, Credit Card, Stripe',
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Creil',
-    addressRegion: 'Oise',
-    postalCode: '60100',
-    addressCountry: 'FR',
-  },
-  geo: {
-    '@type': 'GeoCoordinates',
-    latitude: 49.2583,
-    longitude: 2.4797,
-  },
   areaServed: [
     { '@type': 'City', name: 'Paris' },
     { '@type': 'State', name: 'Île-de-France' },
@@ -145,19 +130,12 @@ const jsonLdWebSite = {
 const jsonLdOrganization = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  ...IDENTITE_OWISE,
+  // L'entite juridique porte le nom court ; la fiche commerciale garde le nom
+  // complet. L'ordre compte : ces deux lignes doivent rester apres le socle.
   name: 'Owise',
   legalName: 'Owise',
   url: BASE,
-  logo: `${BASE}/brand_assets/logo.svg`,
-  telephone: '+33619106356',
-  email: 'owise.entreprise@gmail.com',
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Creil',
-    addressRegion: 'Oise',
-    postalCode: '60100',
-    addressCountry: 'FR',
-  },
   sameAs: [
     'https://owise.fr',
     'https://www.owise.fr',

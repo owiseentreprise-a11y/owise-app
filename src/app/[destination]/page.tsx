@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
+import { IDENTITE_OWISE, communeDepuisTitre } from '@/lib/identite-owise'
 import '../vitrine.css'
 
 // Communes qui ont leur propre page destination → liens cliquables dans la grille zones
@@ -1273,13 +1274,14 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': ['LocalBusiness', 'TaxiService'],
-    name: 'Owise — Chauffeur Privé VTC',
+    // Image, adresse, position et téléphone viennent de la définition unique :
+    // sans eux, ces 38 pages déclaraient une entreprise sans lieu ni visage.
+    ...IDENTITE_OWISE,
     description: dest.metaDesc,
     url: `${BASE}/${dest.slug}`,
-    telephone: '+33619106356',
     areaServed: dest.zones && dest.zones.length > 0
       ? dest.zones.map(z => ({ '@type': 'City', name: z.nom, postalCode: z.cp }))
-      : [{ '@type': 'City', name: dest.title.replace(/VTC\s+/, '').split(' &')[0] }],
+      : [{ '@type': 'City', name: communeDepuisTitre(dest.title) }],
     makesOffer: {
       '@type': 'Offer',
       priceCurrency: 'EUR',
