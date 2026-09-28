@@ -103,7 +103,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Creil, Senlis, Gouvieux & Oise Sud',
     intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers CDG, Orly, Beauvais et Paris. Disponible 24h/24.',
     prix: 'dès 59€ vers CDG',
-    duree: '35–50 min vers CDG',
+    duree: '30–35 min vers CDG',
     zones: [
       { nom: 'Creil', cp: '60100', km: 0 },
       { nom: 'Nogent-sur-Oise', cp: '60180', km: 2.1 },
@@ -158,7 +158,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Compiègne & Oise Nord',
     intro: 'Votre chauffeur VTC depuis Compiègne et les communes de l\'Oise Nord : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Lacroix-Saint-Ouen, Choisy-au-Bac et toutes les localités dans un rayon de 10 km. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24.',
     prix: 'dès 100€ vers CDG',
-    duree: '70–90 min vers CDG',
+    duree: '45–55 min vers CDG',
     zones: [
       { nom: 'Compiègne', cp: '60200', km: 0 },
       { nom: 'Margny-lès-Compiègne', cp: '60280', km: 2.3 },
@@ -180,7 +180,7 @@ const DESTINATIONS: Record<string, {
     faq: [
       { q: 'Quel est le tarif depuis Compiègne vers CDG ?', a: 'Owise est l\'une des rares plateformes à proposer un tarif fixe garanti depuis Compiègne vers CDG — le prix est calculé à l\'avance, confirmé à la réservation, et ne varie pas en cas de retard ou de bouchon. Prise en charge à domicile, chauffeur professionnel disponible 24h/24. Estimez votre course sur owise.fr.' },
       { q: 'Desservez-vous Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes dans un rayon de 10 km autour de Compiègne sont couvertes : Margny, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen et bien d\'autres.' },
-      { q: 'Combien de temps pour aller de Compiègne à CDG ?', a: 'Environ 70 à 90 minutes selon les conditions de circulation. Le matin très tôt (avant 6h), le trajet est plus rapide, autour de 65-70 minutes.' },
+      { q: 'Combien de temps pour aller de Compiègne à CDG ?', a: '58 km, soit 44 à 48 minutes selon l\'heure. Le trajet est plus long en distance que depuis Chantilly ou Senlis, mais presque entièrement sur voie rapide : 44 minutes avant 6h, 48 aux heures chargées.' },
       { q: 'Pouvez-vous partir très tôt le matin depuis Compiègne ?', a: 'Absolument, nous sommes disponibles 24h/24. Pour les départs avant 6h, le supplément nuit (+20%) s\'applique et est intégré dans l\'estimation affichée.' },
       { q: 'Quel est le prix Compiègne → Orly ?', a: 'Le forfait Compiègne → Orly est de 149€ en berline, prix fixe garanti. Orly étant plus au sud, le trajet est un peu plus long que vers CDG.' },
     ],
@@ -199,7 +199,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Senlis & Environs',
     intro: 'Chauffeur VTC depuis Senlis et ses communes voisines : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant, Courteuil et toutes les localités dans un rayon de 10 km. Tarif fixe vers CDG, Orly et Paris.',
     prix: 'dès 59€ vers CDG',
-    duree: '45–60 min vers CDG',
+    duree: '25–30 min vers CDG',
     zones: [
       { nom: 'Senlis', cp: '60300', km: 0 },
       { nom: 'Courteuil', cp: '60300', km: 3.1 },
@@ -225,7 +225,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Senlis vers CDG ?', a: 'Owise propose un tarif fixe garanti, calculé à l\'avance selon votre adresse — pas de compteur, pas de mauvaise surprise à l\'arrivée. Le prix est confirmé dès la réservation et reste le même quelle que soit la circulation. Obtenez votre estimation personnalisée en 30 secondes sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Senlis à l\'aéroport CDG ?', a: 'Environ 45 à 60 minutes depuis Senlis centre. Tôt le matin (avant 6h), comptez 40 à 45 minutes sans circulation.' },
+      { q: 'Combien de temps pour aller de Senlis à l\'aéroport CDG ?', a: '27 km, soit 22 à 24 minutes quelle que soit l\'heure. Senlis est la ville de l\'Oise la plus proche de CDG en temps de trajet : l\'A1 se prend à Survilliers, sans traversée urbaine.' },
       { q: 'Desservez-vous Aumont-en-Halatte et Fleurines ?', a: 'Oui. Toutes les communes autour de Senlis sont couvertes : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant et leurs alentours.' },
       { q: 'Peut-on réserver un VTC Senlis depuis le Château ?', a: 'Oui. Nous intervenons pour les événements au Château Royal de Senlis, les séminaires et les sorties touristiques. Réservation possible à l\'avance ou le jour même.' },
       { q: 'Quel est le prix Senlis → Paris ?', a: 'Le trajet Senlis → Paris intramuros est d\'environ 80 à 90€ en berline. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
@@ -245,7 +245,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Gouvieux, Lamorlaye & Chantilly Sud',
     intro: 'Votre chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Saint-Leu-d\'Esserent, Précy-sur-Oise et toutes les communes du secteur Chantilly Sud. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
-    duree: '40–55 min vers CDG',
+    duree: '30–40 min vers CDG',
     zones: [
       { nom: 'Gouvieux', cp: '60270', km: 0 },
       { nom: 'Saint-Maximin', cp: '60740', km: 3.1 },
@@ -288,7 +288,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Saint-Maximin & Environs',
     intro: 'Votre chauffeur VTC depuis Saint-Maximin et les communes voisines : Villers-Saint-Paul, Thiverny, Montataire, Creil, Gouvieux et tout le secteur entre Creil et Chantilly. Tarif fixe garanti vers CDG, Orly, Beauvais et Paris. Disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
-    duree: '40–55 min vers CDG',
+    duree: '35–40 min vers CDG',
     zones: [
       { nom: 'Saint-Maximin', cp: '60740', km: 0 },
       { nom: 'Thiverny', cp: '60160', km: 2.0 },
@@ -304,7 +304,7 @@ const DESTINATIONS: Record<string, {
     faq: [
       { q: 'Quel est le tarif depuis Saint-Maximin vers CDG ?', a: 'Le forfait Saint-Maximin → CDG est de 59€ en berline, prix fixe garanti — le même tarif que Gouvieux et Chantilly, ces communes étant dans la même zone tarifaire. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
       { q: 'Desservez-vous les communes autour de Saint-Maximin ?', a: 'Oui. Villers-Saint-Paul, Thiverny, Montataire, Creil, Saint-Leu-d\'Esserent, Nogent-sur-Oise, Gouvieux et toutes les localités dans un rayon de 10 km sont couvertes avec le même niveau de service.' },
-      { q: 'Combien de temps pour aller de Saint-Maximin à CDG ?', a: 'Environ 40 à 55 minutes selon les conditions de circulation. Tôt le matin (avant 6h), comptez 35 à 40 minutes via l\'A1.' },
+      { q: 'Combien de temps pour aller de Saint-Maximin à CDG ?', a: '42 km, soit 33 à 36 minutes via l\'A1. Le trajet est régulier : trois minutes d\'écart entre le départ de 5h et celui de 8h.' },
       { q: 'Quel est le prix Saint-Maximin → Orly ?', a: 'Le forfait Saint-Maximin → Orly est de 139€ en berline, prix fixe garanti. Orly étant plus au sud, le trajet est un peu plus long que vers CDG.' },
       { q: 'Puis-je réserver un VTC Saint-Maximin tôt le matin ou tard le soir ?', a: 'Oui, nous sommes disponibles 24h/24, 7j/7. Pour les départs avant 6h ou après 22h, le supplément nuit (+20%) s\'applique automatiquement et est inclus dans votre estimation.' },
     ],
@@ -318,7 +318,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Chantilly — Chauffeur Privé',
     intro: 'Chauffeur VTC depuis Chantilly et ses environs vers CDG, Orly, Paris et toute l\'Île-de-France. Idéal pour le Château de Chantilly, l\'hippodrome, les hôtels de luxe et les événements.',
     prix: 'dès 59€ vers CDG',
-    duree: '40–55 min vers CDG',
+    duree: '25–40 min vers CDG',
     faq: [
       { q: 'Quel est le prix d\'un VTC Chantilly → CDG ?', a: 'Le forfait Chantilly → CDG est de 59€ en berline, prix fixe garanti. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
       { q: 'Proposez-vous des transferts pour le Château de Chantilly ?', a: 'Oui. Nous sommes disponibles pour les événements privés, séminaires et visites du Château et du Domaine de Chantilly. Tarif sur devis pour les groupes.' },
@@ -362,7 +362,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Beauvais — Chauffeur Privé',
     intro: 'Votre chauffeur VTC depuis Beauvais (60000) et son agglomération, vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, chauffeur professionnel, véhicule haut de gamme. Disponible 24h/24, 7j/7 — pour vos déplacements professionnels, familiaux ou vos correspondances aéroport.',
     prix: 'dès 69€',
-    duree: '60–80 min vers CDG selon trafic',
+    duree: '50–65 min vers CDG selon trafic',
     faq: [
       { q: 'Quel est le tarif depuis Beauvais vers CDG ?', a: 'Le forfait Beauvais → CDG est de 119€ en berline, prix fixe garanti — annoncé avant la course, jamais de compteur ni de mauvaise surprise à l\'arrivée. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
       { q: 'Desservez-vous Beauvais vers Paris ?', a: 'Oui. Le forfait Beauvais → Paris intramuros est de 139€ en berline, prix fixe garanti, quelle que soit la circulation.' },
@@ -386,7 +386,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Lamorlaye, Coye-la-Forêt & Forêt de Chantilly',
     intro: 'Votre chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Luzarches et toutes les communes de la forêt de Chantilly. Tarif fixe garanti vers CDG, Orly, Paris et Beauvais. Service premium, prise en charge à domicile, disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
-    duree: '40–55 min vers CDG',
+    duree: '25–35 min vers CDG',
     zones: [
       { nom: 'Lamorlaye', cp: '60260', km: 0 },
       { nom: 'Coye-la-Forêt', cp: '60580', km: 2.5 },
@@ -403,7 +403,7 @@ const DESTINATIONS: Record<string, {
     faq: [
       { q: 'Quel est le tarif depuis Lamorlaye vers CDG ?', a: 'Le forfait Lamorlaye → CDG est de 59€ en berline, prix fixe garanti quelle que soit la circulation. Depuis Coye-la-Forêt, Gouvieux ou Orry-la-Ville, le tarif est identique : 59€.' },
       { q: 'Desservez-vous Coye-la-Forêt et Orry-la-Ville ?', a: 'Oui. Toutes les communes autour de Lamorlaye sont couvertes : Coye-la-Forêt, Orry-la-Ville, Avilly-Saint-Léonard, Gouvieux, Chantilly, Luzarches, Boran-sur-Oise et leurs environs forestiers.' },
-      { q: 'Combien de temps pour aller de Lamorlaye à CDG ?', a: 'Environ 40 à 55 minutes selon les conditions de circulation. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Le trajet via l\'A104 est direct.' },
+      { q: 'Combien de temps pour aller de Lamorlaye à CDG ?', a: '32 km, soit 27 à 31 minutes selon l\'heure. Quatre minutes séparent le trajet de 5h de celui de 8h : l\'accès à l\'A1 se fait par Survilliers, sans traversée urbaine.' },
       { q: 'Puis-je réserver depuis un gîte ou une résidence dans la forêt ?', a: 'Absolument. Précisez votre adresse exacte lors de la réservation. Votre chauffeur se rend directement à votre point de prise en charge, même en chemin forestier.' },
       { q: 'Proposez-vous des courses vers Luzarches et le Val-d\'Oise ?', a: 'Oui. Luzarches et les communes limitrophes du Val-d\'Oise (95) sont dans notre zone de desserte. Le tarif est calculé selon la distance exacte via notre estimateur en ligne.' },
     ],
@@ -438,7 +438,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Pontoise vers CDG ?', a: 'Owise propose un tarif fixe calculé à l\'avance depuis Pontoise, Cergy, Osny et toutes les communes du Val-d\'Oise — le prix est confirmé à la réservation et ne change pas, bouchons ou pas. Chauffeur professionnel, prise en charge à domicile, disponible 24h/24. Estimez votre course sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Pontoise à CDG ?', a: 'Environ 30 à 50 minutes selon les conditions de circulation. Tôt le matin (avant 6h), comptez 30 à 35 minutes. Via l\'A15, le trajet est direct.' },
+      { q: 'Combien de temps pour aller de Pontoise à CDG ?', a: '40 à 48 minutes selon l\'heure, via l\'A15 puis la Francilienne. Contrairement aux communes de l\'Oise, le trajet depuis le Val-d\'Oise contourne l\'agglomération par le nord : comptez huit minutes de plus aux heures chargées.' },
       { q: 'Desservez-vous Cergy et ses quartiers ?', a: 'Oui. Nous couvrons toutes les communes de Cergy-Pontoise : Cergy, Pontoise, Osny, Éragny, Jouy-le-Moutier, Vauréal, Courdimanche, Neuville-sur-Oise et leurs alentours.' },
       { q: 'Proposez-vous un service vers Orly depuis le Val-d\'Oise ?', a: 'Oui. Depuis Pontoise ou Cergy, le trajet vers Orly est d\'environ 50 à 70 minutes, pour un tarif de 80 à 100€. Tous les aéroports parisiens sont desservis depuis le Val-d\'Oise.' },
       { q: 'Pouvez-vous me prendre dans ma copropriété à Cergy ?', a: 'Absolument. Votre chauffeur se gare devant votre adresse précise. Pour les grandes copropriétés, précisez le bâtiment ou le numéro d\'interphone dans les commentaires de réservation.' },
@@ -492,7 +492,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Coye-la-Forêt & Forêt de Chantilly',
     intro: 'Votre chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard et toute la Forêt de Chantilly. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
     prix: 'dès 65€ vers CDG',
-    duree: '45–55 min vers CDG',
+    duree: '25–30 min vers CDG',
     zones: [
       { nom: 'Coye-la-Forêt', cp: '60580', km: 0 },
       { nom: 'Lamorlaye', cp: '60260', km: 2.5 },
@@ -507,7 +507,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Coye-la-Forêt vers CDG ?', a: 'Chez Owise, le prix est fixe et calculé à l\'avance — vous savez exactement ce que vous payez avant de monter dans le véhicule. Votre chauffeur vous prend en charge à domicile, suivi de vol inclus, disponible 24h/24. Estimez votre tarif personnalisé en 30 secondes sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Coye-la-Forêt à CDG ?', a: 'Environ 45 à 55 minutes selon les conditions de circulation. Via l\'A1 depuis la Forêt de Chantilly, le trajet est direct. Tôt le matin (avant 6h), comptez 40 à 45 minutes.' },
+      { q: 'Combien de temps pour aller de Coye-la-Forêt à CDG ?', a: '21 km, soit 23 à 26 minutes. C\'est l\'une des communes les plus proches de CDG en distance : la traversée de la forêt de Chantilly rejoint l\'A1 directement, et le trajet varie de trois minutes seulement entre 5h et 8h.' },
       { q: 'Desservez-vous Lamorlaye et Orry-la-Ville depuis Coye-la-Forêt ?', a: 'Oui. Nous couvrons toutes les communes autour de Coye-la-Forêt : Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard, Chantilly, Gouvieux, Boran-sur-Oise, Luzarches et leurs environs.' },
       { q: 'Proposez-vous des courses vers Paris depuis la Forêt de Chantilly ?', a: 'Absolument. Depuis Coye-la-Forêt, Paris (porte Maillot, gare du Nord, etc.) est à environ 55 à 70 minutes pour un tarif de 80 à 100€. Idéal pour les déplacements professionnels depuis la région de Chantilly.' },
       { q: 'Puis-je réserver un VTC depuis Coye-la-Forêt vers Orly ?', a: 'Oui. Le forfait Coye-la-Forêt → Orly est d\'environ 100 à 120€ en berline. Tous les aéroports parisiens sont desservis : CDG, Orly et Beauvais-Tillé.' },
@@ -526,7 +526,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Orry-la-Ville & Environs',
     intro: 'Votre chauffeur VTC depuis Orry-la-Ville, La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt et les communes situées entre Chantilly et l\'aéroport CDG. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 60€ vers CDG',
-    duree: '35–50 min vers CDG',
+    duree: '20–25 min vers CDG',
     zones: [
       { nom: 'Orry-la-Ville', cp: '60560', km: 0 },
       { nom: 'La Chapelle-en-Serval', cp: '60520', km: 3.5 },
@@ -540,8 +540,8 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Orry-la-Ville est l\'une des communes les mieux placées pour rejoindre CDG — moins de 35 minutes via l\'A1. Owise propose un tarif fixe calculé à l\'avance, sans compteur : le prix affiché est celui que vous payez, point. Estimez votre course en 30 secondes sur owise.fr.' },
-      { q: 'Combien de temps pour aller d\'Orry-la-Ville à CDG ?', a: 'Environ 35 à 50 minutes via l\'A1. Orry-la-Ville est idéalement situé entre Chantilly et l\'aéroport CDG. Tôt le matin, comptez 30 à 35 minutes.' },
+      { q: 'Quel est le tarif depuis Orry-la-Ville vers CDG ?', a: 'Orry-la-Ville est à 18 km de CDG, soit moins de vingt minutes avant 6h — l\'une des deux communes de l\'Oise les plus proches de l\'aéroport. Owise propose un tarif fixe calculé à l\'avance, sans compteur : le prix affiché est celui que vous payez, point. Estimez votre course en 30 secondes sur owise.fr.' },
+      { q: 'Combien de temps pour aller d\'Orry-la-Ville à CDG ?', a: '18 km, soit 18 à 21 minutes via l\'A1 — moins de vingt minutes avant 6h. Seule La Chapelle-en-Serval, un kilomètre plus près, fait mieux dans l\'Oise.' },
       { q: 'Desservez-vous La Chapelle-en-Serval depuis Orry-la-Ville ?', a: 'Oui. Nous couvrons toutes les communes autour d\'Orry-la-Ville : La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt, Lamorlaye, Avilly-Saint-Léonard, Survilliers, Luzarches et Chantilly.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Orry-la-Ville ?', a: 'Absolument. Depuis Orry-la-Ville, Paris est à environ 50 à 65 minutes pour un tarif de 80 à 100€. Votre chauffeur vous prend en charge directement à votre adresse, 24h/24.' },
       { q: 'Couvrez-vous Mortefontaine et Avilly-Saint-Léonard ?', a: 'Oui. Mortefontaine, Avilly-Saint-Léonard, Thiers-sur-Thève, Pontarmé et toutes les communes entre Senlis et Roissy sont desservies avec le même niveau de service premium.' },
@@ -560,7 +560,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC La Chapelle-en-Serval & Mortefontaine',
     intro: 'Votre chauffeur VTC depuis La Chapelle-en-Serval, Mortefontaine, Plailly, Orry-la-Ville et les communes proches de l\'A1 entre Chantilly et CDG. Accès direct à l\'autoroute A1 — l\'un des trajets les plus rapides vers Roissy depuis l\'Oise. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 60€ vers CDG',
-    duree: '30–40 min vers CDG',
+    duree: '20–25 min vers CDG',
     zones: [
       { nom: 'La Chapelle-en-Serval', cp: '60520', km: 0 },
       { nom: 'Mortefontaine', cp: '60128', km: 3.0 },
@@ -574,9 +574,9 @@ const DESTINATIONS: Record<string, {
       { nom: 'Senlis', cp: '60300', km: 10.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'La Chapelle-en-Serval est à moins de 30 minutes de CDG via l\'A1 — l\'un des trajets les plus courts de toute l\'Oise. Owise garantit un tarif fixe calculé à l\'avance selon votre adresse : le chauffeur vient vous chercher chez vous, le prix ne change pas en cas de bouchon. Estimez votre course sur owise.fr.' },
-      { q: 'La Chapelle-en-Serval est-elle proche de CDG ?', a: 'Oui, c\'est l\'une des communes les plus proches de CDG dans l\'Oise. Via l\'A1 (accès Survilliers ou Louvres), La Chapelle-en-Serval est à seulement 30 à 40 minutes de l\'aéroport — bien moins que depuis Paris.' },
-      { q: 'Combien de temps pour aller de La Chapelle-en-Serval à CDG ?', a: 'Environ 30 à 40 minutes en conditions normales. Tôt le matin (avant 6h), le trajet descend à 25 minutes. L\'accès à l\'A1 depuis La Chapelle-en-Serval est direct, sans traverser aucune zone urbaine dense.' },
+      { q: 'Quel est le tarif depuis La Chapelle-en-Serval vers CDG ?', a: 'La Chapelle-en-Serval est à 18 minutes de CDG via l\'A1 — le trajet le plus court de toute l\'Oise. Owise garantit un tarif fixe calculé à l\'avance selon votre adresse : le chauffeur vient vous chercher chez vous, le prix ne change pas en cas de bouchon. Estimez votre course sur owise.fr.' },
+      { q: 'La Chapelle-en-Serval est-elle proche de CDG ?', a: 'Oui, c\'est la plus proche de toutes celles que nous desservons dans l\'Oise. Via l\'A1 (accès Survilliers ou Louvres), La Chapelle-en-Serval est à 17 km et 18 à 19 minutes de l\'aéroport — bien moins que depuis Paris.' },
+      { q: 'Combien de temps pour aller de La Chapelle-en-Serval à CDG ?', a: '17 km, soit 18 à 19 minutes — la distance la plus courte de toutes nos communes de l\'Oise. Le trajet ne varie pratiquement pas selon l\'heure : l\'accès à l\'A1 est direct, sans traverser aucune zone urbaine dense.' },
       { q: 'Desservez-vous Mortefontaine et Plailly ?', a: 'Oui. Nous couvrons La Chapelle-en-Serval et ses environs : Mortefontaine, Plailly, Orry-la-Ville, Thiers-sur-Thève, Pontarmé, Ermenonville et Survilliers. Même tarif depuis chacune de ces communes.' },
       { q: 'Proposez-vous des courses vers Paris depuis La Chapelle-en-Serval ?', a: 'Absolument. Depuis La Chapelle-en-Serval, Paris (porte de la Chapelle, gare du Nord) est à environ 40 à 55 minutes pour un tarif de 75 à 95€. Service disponible 24h/24, 7j/7.' },
     ],
@@ -594,7 +594,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Boran-sur-Oise & Vallée de l\'Oise',
     intro: 'Votre chauffeur VTC depuis Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle, Chambly et toutes les communes de la Vallée de l\'Oise entre Creil et Pontoise. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 80€ vers CDG',
-    duree: '50–65 min vers CDG',
+    duree: '30–40 min vers CDG',
     zones: [
       { nom: 'Boran-sur-Oise', cp: '60820', km: 0 },
       { nom: 'Précy-sur-Oise', cp: '60460', km: 3.5 },
@@ -612,7 +612,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Boran-sur-Oise vers CDG ?', a: 'Owise garantit un tarif fixe confirmé avant le départ — pas de compteur, pas de surplus pour les bouchons. Votre chauffeur vient vous chercher à Boran-sur-Oise, suivi de vol en temps réel inclus si vous rentrez d\'un voyage. Obtenez votre prix exact en 30 secondes sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Boran-sur-Oise à CDG ?', a: 'Environ 50 à 65 minutes selon les conditions de circulation. Via l\'A1 (accès par Gouvieux ou Survilliers), le trajet est direct. Tôt le matin (avant 6h), comptez 45 à 50 minutes.' },
+      { q: 'Combien de temps pour aller de Boran-sur-Oise à CDG ?', a: '37 km, soit 30 à 35 minutes selon l\'heure. L\'accès à l\'A1 se fait par Gouvieux ou Survilliers ; cinq minutes séparent le départ de 5h de celui de 8h.' },
       { q: 'Desservez-vous Précy-sur-Oise et Le Mesnil-en-Thelle ?', a: 'Oui. Nous couvrons toutes les communes autour de Boran-sur-Oise : Précy-sur-Oise, Le Mesnil-en-Thelle, Crouy-en-Thelle, Coye-la-Forêt, Gouvieux, Saint-Leu-d\'Esserent et Chambly.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Boran-sur-Oise ?', a: 'Absolument. Depuis Boran-sur-Oise, Paris est à environ 60 à 75 minutes pour un tarif de 95 à 115€ selon votre destination précise. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Couvrez-vous les communes de la Vallée de l\'Oise entre Creil et Pontoise ?', a: 'Oui. Nous desservons toute la Vallée de l\'Oise : Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle, Chambly et les communes des deux rives de l\'Oise jusqu\'à Pontoise et Creil.' },
@@ -631,7 +631,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Précy-sur-Oise & Oise Nord',
     intro: 'Votre chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie, Le Mesnil-en-Thelle et les communes de l\'Oise Nord entre Creil et la Vallée de l\'Oise. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 85€ vers CDG',
-    duree: '50–65 min vers CDG',
+    duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Précy-sur-Oise', cp: '60460', km: 0 },
       { nom: 'Boran-sur-Oise', cp: '60820', km: 3.5 },
@@ -648,7 +648,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Précy-sur-Oise vers CDG ?', a: 'Owise calcule un tarif fixe à l\'avance selon votre adresse exacte : le prix est bloqué dès la réservation, même si vous annulez et reréservez. Prise en charge à domicile, chauffeur professionnel, disponible dès 4h du matin pour les vols matinaux. Estimez votre course sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Précy-sur-Oise à CDG ?', a: 'Environ 50 à 65 minutes selon les conditions de circulation. Le trajet passe par l\'A1 via Gouvieux ou Survilliers. Tôt le matin (avant 6h), comptez 45 à 50 minutes.' },
+      { q: 'Combien de temps pour aller de Précy-sur-Oise à CDG ?', a: '42 km, soit 37 à 42 minutes selon l\'heure. Le trajet rejoint l\'A1 par Gouvieux ou Survilliers ; comptez cinq minutes de plus aux heures chargées du matin.' },
       { q: 'Desservez-vous Boran-sur-Oise et Le Mesnil-en-Thelle depuis Précy ?', a: 'Oui. Nous couvrons toutes les communes autour de Précy-sur-Oise : Boran-sur-Oise, Villeneuve-sur-Verberie, Bury, Le Mesnil-en-Thelle, Crouy-en-Thelle, Gouvieux et Saint-Leu-d\'Esserent.' },
       { q: 'Proposez-vous des courses vers Creil depuis Précy-sur-Oise ?', a: 'Oui. Nous effectuons tous types de transferts locaux : Précy-sur-Oise → gare de Creil, Creil → CDG et toutes destinations depuis Précy. Le tarif local est calculé au kilomètre depuis votre adresse.' },
       { q: 'Proposez-vous un service vers Orly depuis Précy-sur-Oise ?', a: 'Oui. Le forfait Précy-sur-Oise → Orly est d\'environ 110 à 130€ en berline. Le trajet prend environ 70 à 90 minutes. Tous les aéroports parisiens sont desservis depuis l\'Oise Nord.' },
@@ -667,7 +667,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Luzarches & Pays de France',
     intro: 'Votre chauffeur VTC depuis Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine et les communes du Pays de France (Val-d\'Oise 95). Idéalement situé entre Chantilly et l\'aéroport CDG. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 65€ vers CDG',
-    duree: '35–50 min vers CDG',
+    duree: '20–30 min vers CDG',
     zones: [
       { nom: 'Luzarches', cp: '95270', km: 0 },
       // Nom officiel de la commune : « Le Plessis-Luzarches ». Il manquait
@@ -693,7 +693,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Luzarches vers CDG ?', a: 'Luzarches est parfaitement placée entre Chantilly et l\'aéroport CDG. Owise propose un tarif fixe calculé selon votre adresse, confirmé avant le départ — le même prix qu\'il pleuve, qu\'il y ait des bouchons ou un retard. Chauffeur professionnel, prise en charge à domicile. Estimez sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Luzarches à CDG ?', a: 'Environ 35 à 50 minutes via l\'A1. Depuis Luzarches, l\'accès à l\'autoroute se fait par Survilliers ou Louvres. Tôt le matin (avant 6h), le trajet descend à 30 à 35 minutes.' },
+      { q: 'Combien de temps pour aller de Luzarches à CDG ?', a: '27 km, soit 21 à 24 minutes via l\'A1 — l\'accès se fait par Survilliers ou Louvres. Trois minutes d\'écart entre le départ de 5h et celui de 8h.' },
       { q: 'Desservez-vous Asnières-sur-Oise et Chaumontel ?', a: 'Oui. Nous couvrons toutes les communes du Pays de France : Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine, Plessis-Luzarches, ainsi que Lamorlaye et Coye-la-Forêt dans l\'Oise.' },
       { q: 'Proposez-vous des transferts vers Paris depuis Luzarches ?', a: 'Absolument. Depuis Luzarches, Paris (gare du Nord, Châtelet, La Défense) est à environ 50 à 65 minutes pour un tarif de 80 à 100€. Prise en charge directement à votre adresse, 24h/24.' },
       { q: 'Couvrez-vous les communes du Pays de France entre Chantilly et CDG ?', a: 'Oui. Nous desservons tout le Pays de France (Val-d\'Oise 95) : Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine, Maffliers, et les communes limitrophes de l\'Oise comme Lamorlaye, Coye-la-Forêt et Orry-la-Ville.' },
@@ -762,7 +762,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Clermont-de-l\'Oise & Clermontois',
     intro: 'Votre chauffeur VTC depuis Clermont-de-l\'Oise et les communes du Clermontois (Oise 60) : Agnetz, Lamécourt, Breuil-le-Vert, Breuil-le-Sec, Étouy et les villages voisins. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 105€ vers CDG',
-    duree: '65–80 min vers CDG',
+    duree: '45–60 min vers CDG',
     zones: [
       { nom: 'Clermont', cp: '60600', km: 0 },
       { nom: 'Agnetz', cp: '60600', km: 2.5 },
@@ -777,7 +777,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Clermont vers CDG ?', a: 'Owise propose un tarif fixe depuis Clermont-de-l\'Oise — le prix est bloqué dès la réservation, que vous partiez à 4h du matin ou en plein rush. Votre chauffeur vient chez vous, sans stress de stationnement ni de navette. Estimez votre course sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Clermont à CDG ?', a: 'Environ 65 à 80 minutes via l\'A16 puis l\'A1. Tôt le matin (avant 6h), comptez 55 à 65 minutes sans trafic. Depuis Clermont, l\'accès à l\'autoroute se fait par Breuil-le-Vert ou Laigneville.' },
+      { q: 'Combien de temps pour aller de Clermont à CDG ?', a: '56 km, soit 45 à 51 minutes via l\'A16 puis l\'A1 — l\'accès à l\'autoroute se fait par Breuil-le-Vert ou Laigneville. Six minutes séparent le départ de 5h de celui de 8h.' },
       { q: 'Desservez-vous Agnetz, Breuil-le-Vert et Breuil-le-Sec ?', a: 'Oui. Nous couvrons toutes les communes du Clermontois : Agnetz, Breuil-le-Vert, Breuil-le-Sec, Étouy, Lamécourt, Rantigny et Cauffry. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Clermont ?', a: 'Oui. Nous effectuons tous les transferts locaux : Clermont → gare de Creil, Clermont → Liancourt, Creil → CDG. Le tarif local est calculé au kilomètre depuis votre adresse.' },
       { q: 'Proposez-vous un service vers Orly depuis Clermont ?', a: 'Oui. Le forfait Clermont → Orly est d\'environ 130 à 150€ en berline. Le trajet prend environ 85 à 100 minutes. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis l\'Oise Nord.' },
@@ -797,7 +797,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Liancourt, Rantigny & Cauffry',
     intro: 'Votre chauffeur VTC depuis Liancourt et les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Entre Creil et Clermont, transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 100€ vers CDG',
-    duree: '60–75 min vers CDG',
+    duree: '40–50 min vers CDG',
     zones: [
       { nom: 'Liancourt', cp: '60140', km: 0 },
       { nom: 'Rantigny', cp: '60290', km: 2.0 },
@@ -820,7 +820,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Liancourt vers CDG ?', a: 'Owise couvre Liancourt, Rantigny, Cauffry et toutes les communes voisines avec un tarif fixe calculé à l\'avance — le prix confirmé à la réservation ne changera pas, même en cas de retard de vol ou de bouchon sur l\'A1. Prise en charge à domicile, disponible dès 4h du matin. Estimez sur owise.fr.' },
-      { q: 'Combien de temps pour aller de Liancourt à CDG ?', a: 'Environ 60 à 75 minutes via l\'A1 depuis Creil. Tôt le matin (avant 6h), comptez 50 à 60 minutes. Depuis Liancourt, l\'accès à l\'autoroute se fait par Creil ou Laigneville.' },
+      { q: 'Combien de temps pour aller de Liancourt à CDG ?', a: '50 km, soit 38 à 43 minutes via l\'A1 — l\'accès se fait par Creil ou Laigneville. Le trajet reste sous les trois quarts d\'heure même aux heures chargées.' },
       { q: 'Desservez-vous Rantigny, Cauffry et Laigneville ?', a: 'Oui. Nous couvrons Liancourt et toutes les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Liancourt ?', a: 'Oui. Nous effectuons tous les transferts locaux : Liancourt → gare de Creil, Liancourt → Clermont, et toutes destinations depuis Liancourt. Le tarif local est calculé au kilomètre depuis votre adresse.' },
       { q: 'Proposez-vous un service vers Paris depuis Liancourt ?', a: 'Oui. Depuis Liancourt, Paris (gare du Nord, Châtelet, La Défense) est à environ 70 à 90 minutes pour un tarif de 110 à 130€. Prise en charge directement à votre adresse, disponible 24h/24, 7j/7.' },
@@ -839,10 +839,10 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Chantilly → CDG — Tarif Fixe 59€',
     intro: 'Votre transfert VTC depuis Chantilly (et Gouvieux, Lamorlaye, Coye-la-Forêt) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur professionnel, suivi de vol en temps réel. Prise en charge à votre domicile, disponible 24h/24.',
     prix: '59€ vers CDG',
-    duree: '40–55 min',
+    duree: '25–40 min',
     faq: [
       { q: 'Quel est le tarif exact d\'un VTC de Chantilly à CDG ?', a: 'Le tarif fixe garanti est de 59€ en berline depuis Chantilly et Gouvieux. Ce prix est confirmé avant le départ, ne varie pas selon la circulation et inclut la prise en charge à domicile ainsi que le suivi de vol.' },
-      { q: 'Combien de temps prend le trajet Chantilly → CDG ?', a: 'Environ 40 à 55 minutes selon les conditions de circulation, via l\'A1 ou la N16. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Votre chauffeur calcule l\'heure de départ au plus juste pour respecter votre embarquement.' },
+      { q: 'Combien de temps prend le trajet Chantilly → CDG ?', a: '26 km, soit 27 à 33 minutes selon l\'heure — via l\'A1 ou la N16. Le trajet est à son plus rapide avant 6h (27 minutes) et à son plus lent vers 8h (33 minutes). L\'écart reste faible : Chantilly rejoint l\'A1 sans traverser de zone dense. Votre chauffeur calcule l\'heure de départ au plus juste pour votre embarquement.' },
       { q: 'Mon chauffeur attend-il si mon vol est retardé à CDG ?', a: 'Oui. Owise suit votre vol en temps réel. En cas de retard, votre chauffeur ajuste automatiquement son heure d\'arrivée sans frais supplémentaires. Vous n\'avez rien à faire.' },
       { q: 'Le tarif 59€ couvre-t-il aussi Gouvieux et Lamorlaye ?', a: 'Oui. Le tarif de 59€ vers CDG couvre Chantilly, Gouvieux, Lamorlaye et toutes les communes dans un rayon de 5 km autour de Chantilly. Prise en charge directement à votre adresse.' },
       { q: 'Peut-on réserver un VTC Chantilly–CDG la veille ou à la dernière minute ?', a: 'Oui, la réservation est possible à l\'avance (jours ou semaines) ou le jour même. Pour les départs tôt le matin, une réservation la veille est recommandée pour garantir la disponibilité.' },
@@ -858,10 +858,10 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Creil → CDG — Tarif Fixe 59€',
     intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
     prix: '59€ vers CDG',
-    duree: '40–55 min',
+    duree: '30–35 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Creil à CDG ?', a: 'Le tarif fixe est de 59€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Prix garanti à la réservation, sans compteur — aucune mauvaise surprise en cas de bouchon ou de retard de vol.' },
-      { q: 'Combien de temps met-on de Creil à CDG ?', a: 'Environ 40 à 55 minutes via l\'A1 depuis Creil. Tôt le matin (avant 6h), le trajet prend 35 à 40 minutes. Votre chauffeur part à l\'heure calculée pour respecter votre vol.' },
+      { q: 'Combien de temps met-on de Creil à CDG ?', a: '37 km, soit 28 à 31 minutes selon l\'heure, via l\'A1. C\'est l\'un des trajets les plus réguliers de l\'Oise : 28 minutes avant 6h, 31 minutes au pire de la matinée — trois minutes d\'écart seulement. Votre chauffeur part à l\'heure calculée pour votre vol.' },
       { q: 'Le tarif 59€ inclut-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise et Montataire sont dans la même zone tarifaire. Le forfait de 59€ vers CDG couvre toutes ces communes et leurs alentours immédiats.' },
       { q: 'Owise suit-il les vols retardés depuis CDG ?', a: 'Oui, le suivi de vol en temps réel est inclus dans chaque course. En cas de retard, votre chauffeur ajuste son heure d\'arrivée automatiquement — vous attendez le moins longtemps possible à l\'aéroport.' },
       { q: 'Comment se fait la prise en charge à CDG pour un retour ?', a: 'À l\'arrivée à CDG, votre chauffeur vous attend dans le hall des arrivées avec une pancarte à votre nom, au terminal indiqué dans votre confirmation de réservation.' },
@@ -877,10 +877,10 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Senlis → CDG — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Disponible 24h/24.',
     prix: 'dès 59€ vers CDG',
-    duree: '45–60 min',
+    duree: '25–30 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Senlis à CDG ?', a: 'Le tarif fixe est calculé selon votre adresse précise à Senlis ou dans ses environs. Owise garantit le prix affiché à la réservation — sans compteur, sans surprise. Estimez votre course en 30 secondes sur owise.fr.' },
-      { q: 'Combien de temps prend le trajet Senlis → CDG ?', a: 'Environ 45 à 60 minutes depuis Senlis, via l\'A1 (sortie Survilliers ou Roissy). Tôt le matin, comptez 40 à 45 minutes. Senlis est bien desservi par l\'A1 — l\'un des accès les plus rapides vers CDG depuis l\'Oise.' },
+      { q: 'Combien de temps prend le trajet Senlis → CDG ?', a: '27 km, soit 22 à 24 minutes — via l\'A1, sortie Survilliers ou Roissy. C\'est le trajet le plus stable que nous desservions : deux minutes d\'écart entre 6h du matin et le milieu de journée. Senlis est l\'accès le plus rapide vers CDG depuis l\'Oise.' },
       { q: 'Le tarif couvre-t-il Aumont-en-Halatte et Fleurines ?', a: 'Oui. Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil, Chamant, Pontarmé et toutes les communes dans un rayon de 10 km autour de Senlis sont couvertes. Prise en charge à domicile.' },
       { q: 'Y a-t-il un supplément pour un départ nocturne depuis Senlis ?', a: 'Oui, un supplément de 20% s\'applique pour les départs entre 20h et 6h (supplément nuit), ainsi que les dimanches et jours fériés. Ce supplément est toujours inclus dans l\'estimation affichée sur owise.fr — aucune surprise.' },
       { q: 'Peut-on réserver depuis la gare de Senlis ou le musée de la Chasse ?', a: 'Oui, la prise en charge peut se faire à n\'importe quelle adresse à Senlis — domicile, hôtel, restaurant, site touristique. Il vous suffit de renseigner l\'adresse exacte lors de la réservation.' },
@@ -896,10 +896,10 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Compiègne → CDG — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Compiègne et l\'Oise Nord (Margny-lès-Compiègne, Venette, Lacroix-Saint-Ouen, Thourotte) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
     prix: 'dès 100€ vers CDG',
-    duree: '70–90 min',
+    duree: '45–55 min',
     faq: [
       { q: 'Quel est le tarif d\'un VTC de Compiègne à CDG ?', a: 'Depuis Compiègne, le tarif vers CDG est calculé à l\'avance et garanti. Owise est l\'une des rares plateformes à proposer un forfait fixe depuis Compiègne — le prix ne change pas selon la circulation. Estimez votre course sur owise.fr.' },
-      { q: 'Combien de temps prend le trajet Compiègne → CDG ?', a: 'Environ 70 à 90 minutes via l\'A1. Tôt le matin (avant 6h), comptez 65 à 75 minutes. Depuis Compiègne, l\'accès à l\'A1 se fait par Verberie ou Lacroix-Saint-Ouen.' },
+      { q: 'Combien de temps prend le trajet Compiègne → CDG ?', a: '58 km, soit 44 à 48 minutes via l\'A1 — l\'accès se fait par Verberie ou Lacroix-Saint-Ouen. Quatre minutes séparent le trajet de 6h de celui de 8h : la portion autoroutière absorbe l\'essentiel du parcours.' },
       { q: 'Y a-t-il des alternatives moins chères depuis Compiègne pour aller à CDG ?', a: 'Les bus et navettes collectifs existent mais ont des horaires fixes et des trajets avec arrêts multiples. Le VTC Owise depuis Compiègne offre la prise en charge directe à domicile, à l\'heure voulue, sans correspondance — avec un chauffeur dédié.' },
       { q: 'Le service couvre-t-il Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes de l\'agglomération de Compiègne sont couvertes : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen et leurs environs.' },
       { q: 'Peut-on réserver un VTC Compiègne–CDG pour plusieurs personnes ?', a: 'Oui. Owise propose des berlines (jusqu\'à 4 passagers) et des vans 7 places pour les groupes. Réservez le véhicule adapté à votre groupe sur owise.fr.' },
@@ -953,11 +953,11 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Senlis → Orly — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Senlis et ses environs (Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti en berline, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
     prix: 'dès 139€ vers Orly',
-    duree: '70–90 min',
+    duree: '50–85 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Senlis à Orly ?', a: 'Depuis Senlis, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet traverse ou contourne Paris, ce qui explique le tarif plus élevé que vers CDG. Estimez votre course sur owise.fr.' },
-      { q: 'Combien de temps prend le trajet Senlis → Orly ?', a: 'Environ 70 à 90 minutes selon la circulation. Tôt le matin (avant 6h), comptez 60 à 70 minutes via la Francilienne ou l\'A86. Votre chauffeur sélectionne l\'itinéraire optimal selon les conditions en temps réel.' },
-      { q: 'Quel aéroport choisir depuis Senlis : CDG ou Orly ?', a: 'Si votre vol vous laisse le choix, CDG est nettement plus avantageux depuis Senlis — il est situé directement sur l\'axe Senlis-Paris, à 45-60 minutes, contre 70-90 minutes pour Orly et un tarif plus bas. Owise dessert les deux aéroports 24h/24.' },
+      { q: 'Combien de temps prend le trajet Senlis → Orly ?', a: '51 à 74 minutes selon l\'heure, via la Francilienne ou l\'A86. C\'est le trajet le plus sensible au trafic que nous desservions : 51 minutes avant 6h, jusqu\'à 74 aux heures de pointe. Votre chauffeur choisit l\'itinéraire selon les conditions du moment.' },
+      { q: 'Quel aéroport choisir depuis Senlis : CDG ou Orly ?', a: 'Si votre vol vous laisse le choix, CDG est nettement plus avantageux depuis Senlis — il est situé directement sur l\'axe Senlis-Paris, à 22-24 minutes, contre 51-74 minutes pour Orly, et un tarif plus bas. Owise dessert les deux aéroports 24h/24.' },
       { q: 'Le tarif couvre-t-il Aumont-en-Halatte et Fleurines ?', a: 'Oui. Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil et toutes les communes proches de Senlis sont couvertes. Le tarif varie légèrement selon votre adresse précise — estimez en 30 secondes sur owise.fr.' },
       { q: 'Proposez-vous le retour Orly → Senlis ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte à votre nom, en suivant votre vol en temps réel pour s\'adapter à tout retard.' },
     ],
@@ -975,7 +975,7 @@ const DESTINATIONS: Record<string, {
     duree: '80–100 min',
     faq: [
       { q: 'Quel est le tarif d\'un VTC de Compiègne à Orly ?', a: 'Depuis Compiègne, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet depuis Compiègne traverse ou contourne Paris, ce qui représente environ 80 à 100 minutes. Le prix est confirmé avant le départ, sans surprise.' },
-      { q: 'Combien de temps prend le trajet Compiègne → Orly ?', a: 'Environ 80 à 100 minutes selon la circulation. Tôt le matin (avant 6h), comptez 70 à 80 minutes. L\'itinéraire passe par l\'A1 puis l\'A86 ou la Francilienne selon les conditions. Votre chauffeur optimise en temps réel.' },
+      { q: 'Combien de temps prend le trajet Compiègne → Orly ?', a: '74 à 96 minutes selon l\'heure, via l\'A1 puis l\'A86 ou la Francilienne. L\'écart est important — vingt-deux minutes entre le petit matin et l\'heure de pointe — parce que l\'approche d\'Orly traverse la couronne sud. Votre chauffeur choisit l\'itinéraire selon les conditions du moment.' },
       { q: 'CDG est-il moins cher depuis Compiègne qu\'Orly ?', a: 'Oui. CDG est situé directement sur l\'axe Compiègne–Paris via l\'A1, ce qui le rend plus proche et moins coûteux. Si votre vol vous laisse le choix de l\'aéroport, CDG est logistiquement plus avantageux depuis Compiègne — environ 70 à 90 minutes et un tarif inférieur.' },
       { q: 'Le service couvre-t-il Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes de l\'agglomération compiégnoise sont couvertes : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen. Le tarif est calculé depuis votre adresse exacte.' },
       { q: 'Proposez-vous le retour Orly → Compiègne ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte à votre nom, en suivant votre vol en temps réel pour s\'adapter aux retards.' },
@@ -994,7 +994,7 @@ const DESTINATIONS: Record<string, {
     duree: '40–55 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Chantilly à l\'aéroport de Beauvais ?', a: 'Le forfait Chantilly → Beauvais-Tillé est de 79€ en berline, prix fixe garanti. Le prix est confirmé avant le départ — sans compteur, sans surprise.' },
-      { q: 'Combien de temps prend le trajet Chantilly → Beauvais ?', a: 'Environ 40 à 55 minutes via la N31 ou la D1016. Tôt le matin (avant 6h), comptez 35 à 40 minutes. Beauvais est situé à l\'ouest de Chantilly — le trajet est plus direct que vers CDG ou Orly, sans traverser Paris.' },
+      { q: 'Combien de temps prend le trajet Chantilly → Beauvais ?', a: '40 à 42 minutes via la N31 ou la D1016, quelle que soit l\'heure. Beauvais est à l\'ouest de Chantilly : le trajet ne traverse pas Paris et ne varie pratiquement pas — deux minutes d\'écart entre le petit matin et l\'heure de pointe.' },
       { q: 'Y a-t-il un bus direct Chantilly–Beauvais pour l\'aéroport ?', a: 'Aucune navette directe Chantilly–Beauvais n\'existe. Les navettes Ryanair partent de Paris Beauvais ou de quelques gares RER — avec des horaires contraints et du temps de rabattement. Le VTC Owise part de votre domicile à l\'heure de votre choix, sans correspondance.' },
       { q: 'Le tarif couvre-t-il aussi Gouvieux et Lamorlaye ?', a: 'Oui. La prise en charge est possible depuis Chantilly, Gouvieux, Lamorlaye, Coye-la-Forêt et les communes voisines. Le tarif final est calculé selon votre adresse exacte lors de la réservation.' },
       { q: 'Proposez-vous le retour Beauvais → Chantilly ?', a: 'Oui. Le tarif retour est identique. Votre chauffeur vous attend à l\'aéroport de Beauvais-Tillé avec une pancarte nominative. Pour les vols Ryanair avec des horaires tardifs ou matinaux, Owise est disponible 24h/24.' },
@@ -1050,7 +1050,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Méru, Noailles & Oise Ouest',
     intro: 'Votre chauffeur VTC depuis Méru et les communes de l\'Oise Ouest : Noailles, Saint-Crépin-Ibouvillers, Bornel, Hénonville, Puiseux-en-Bray. Méru est idéalement situé entre Cergy-Pontoise et Beauvais — 35 km seulement de l\'aéroport Beauvais-Tillé (Ryanair). Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 80€ vers CDG',
-    duree: '40–55 min vers CDG',
+    duree: '35–45 min vers CDG',
     zones: [
       { nom: 'Méru', cp: '60110', km: 0 },
       { nom: 'Noailles', cp: '60430', km: 7.0 },
@@ -1063,7 +1063,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Méru vers l\'aéroport de Beauvais ?', a: 'Méru est à seulement 35 km de Beauvais-Tillé, hub Ryanair. Le forfait Owise depuis Méru vers Beauvais est estimé dès 55€ en berline. C\'est l\'un des trajets les plus directs depuis l\'Oise Ouest — aucune correspondance, prise en charge à domicile, disponible 24h/24.' },
-      { q: 'Combien de temps pour aller de Méru à CDG ?', a: 'Environ 40 à 55 minutes via la D1001 ou la N184 puis l\'A15. Depuis Méru, CDG est accessible sans traverser Paris. Le matin tôt, comptez 35 à 45 minutes.' },
+      { q: 'Combien de temps pour aller de Méru à CDG ?', a: '51 km, soit 36 à 40 minutes via la D1001 ou la N184 puis l\'A15. Depuis Méru, CDG est accessible sans traverser Paris — quatre minutes seulement séparent le départ de 5h de celui de 8h.' },
       { q: 'Desservez-vous Noailles et Saint-Crépin-Ibouvillers ?', a: 'Oui. Toutes les communes de l\'Oise Ouest autour de Méru sont couvertes : Noailles, Saint-Crépin-Ibouvillers, Bornel, Hénonville, Puiseux-en-Bray, Labosse. Prise en charge directement à votre adresse.' },
       { q: 'Proposez-vous des courses vers Orly depuis Méru ?', a: 'Oui. Le forfait Méru → Orly est estimé entre 85 et 100€ en berline. Le trajet prend 55 à 70 minutes. Les trois aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis Méru.' },
       { q: 'Le VTC est-il la meilleure option depuis Méru pour aller à Beauvais ?', a: 'Pour l\'aéroport de Beauvais-Tillé (Ryanair, Wizzair), le VTC Owise est la solution la plus directe depuis Méru. Aucun bus aéroport ne dessert l\'Oise Ouest — le VTC part de chez vous, sans correspondance, en 30 à 40 minutes.' },
@@ -1084,7 +1084,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Verberie, Longueil-Sainte-Marie & Vallée de l\'Oise',
     intro: 'Votre chauffeur VTC depuis Verberie et les communes de la vallée de l\'Oise entre Senlis et Compiègne : Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis et Pont-Sainte-Maxence. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24.',
     prix: 'dès 95€ vers CDG',
-    duree: '55–70 min vers CDG',
+    duree: '35–45 min vers CDG',
     zones: [
       { nom: 'Verberie', cp: '60410', km: 0 },
       { nom: 'Longueil-Sainte-Marie', cp: '60126', km: 5.5 },
@@ -1098,7 +1098,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Verberie vers CDG ?', a: 'Le forfait Owise depuis Verberie vers CDG est estimé dès 95€ en berline, prix fixe garanti. Verberie est à 72 km de CDG via l\'A1 ou la Francilienne. Le tarif exact depuis votre adresse s\'obtient sur owise.fr en quelques secondes.' },
-      { q: 'Combien de temps pour aller de Verberie à CDG ?', a: 'Environ 55 à 70 minutes selon la circulation, via la D130 puis l\'A1. Tôt le matin (avant 6h), le trajet descend à 45 à 55 minutes. Le passage par Senlis ou par la Francilienne permet d\'éviter les bouchons parisiens.' },
+      { q: 'Combien de temps pour aller de Verberie à CDG ?', a: '42 km, soit 34 à 37 minutes via la D130 puis l\'A1. Trois minutes d\'écart entre le départ de 5h et celui de 8h : la portion autoroutière évite entièrement les bouchons parisiens.' },
       { q: 'Desservez-vous Longueil-Sainte-Marie et Pont-Sainte-Maxence ?', a: 'Oui. Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis, Bétisy-Saint-Pierre et Pont-Sainte-Maxence sont dans notre zone de desserte. Prise en charge directement à votre adresse, 24h/24.' },
       { q: 'Proposez-vous des courses vers Paris depuis Verberie ?', a: 'Oui. Le forfait Verberie → Paris est estimé entre 85 et 100€ en berline. Nous déposons à votre adresse exacte à Paris, que ce soit gare, hôtel ou domicile.' },
       { q: 'Desservez-vous la zone entre Senlis et Compiègne ?', a: 'Oui. Nous couvrons toute la vallée de l\'Oise entre Senlis et Compiègne : Verberie, Longueil-Sainte-Marie, Lacroix-Saint-Ouen, Saint-Vaast-de-Longmont, Roberval et les communes riveraines. Un seul chauffeur pour tout le secteur.' },
@@ -1119,7 +1119,7 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Noyon & Oise Nord — Transferts Aéroport',
     intro: 'Votre chauffeur VTC depuis Noyon et les communes du nord de l\'Oise : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Guiscard, Salency. Noyon, ancienne cité épiscopale, est à 120 km de CDG — un trajet long en transports en commun, mais confortable et direct en VTC. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 165€ vers CDG',
-    duree: '80–100 min vers CDG',
+    duree: '55–70 min vers CDG',
     zones: [
       { nom: 'Noyon', cp: '60400', km: 0 },
       { nom: 'Sempigny', cp: '60400', km: 3.5 },
@@ -1132,7 +1132,7 @@ const DESTINATIONS: Record<string, {
     ],
     faq: [
       { q: 'Quel est le tarif depuis Noyon vers CDG ?', a: 'Le forfait Owise depuis Noyon vers CDG est estimé dès 165€ en berline, prix fixe garanti. Noyon est à 120 km de CDG — un trajet qui nécessiterait plusieurs correspondances en transport en commun. En VTC, vous partez directement de chez vous, sans escale.' },
-      { q: 'Combien de temps pour aller de Noyon à CDG ?', a: 'Entre 80 et 100 minutes selon la circulation, via la N32 puis l\'A1. Tôt le matin (avant 6h), sans trafic, le trajet peut se faire en 70 à 80 minutes. Votre chauffeur est ponctuel et calculé pour votre heure de vol.' },
+      { q: 'Combien de temps pour aller de Noyon à CDG ?', a: '83 km, soit 57 à 61 minutes via la N32 puis l\'A1. C\'est le trajet le plus long que nous desservions depuis l\'Oise, mais aussi l\'un des plus réguliers : quatre minutes d\'écart entre 5h et 8h, la quasi-totalité du parcours étant sur voie rapide.' },
       { q: 'Desservez-vous Ribécourt-Dreslincourt, Sempigny et Guiscard ?', a: 'Oui. Toutes les communes du secteur de Noyon sont couvertes : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Cuts, Salency, Guiscard, Lassigny. Prise en charge à domicile, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Orly depuis Noyon ?', a: 'Oui. Le forfait Noyon → Orly est estimé entre 190 et 220€ en berline. Le trajet vers Orly, au sud de Paris, est un peu plus long que vers CDG. Nous desservons les trois aéroports parisiens depuis Noyon.' },
       { q: 'Quel est l\'avantage du VTC depuis Noyon par rapport aux transports en commun ?', a: 'Depuis Noyon, rejoindre CDG en transports en commun nécessite Noyon → Compiègne en TER, puis RER B ou navette — avec des horaires limités tôt le matin. En VTC Owise, vous partez de chez vous à l\'heure exacte, sans correspondance, et arrivez directement au terminal.' },
@@ -1148,11 +1148,11 @@ const DESTINATIONS: Record<string, {
     h1: 'VTC Creil → Beauvais-Tillé — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Creil (et Nogent-sur-Oise, Montataire, Saint-Maximin) jusqu\'à l\'aéroport de Beauvais-Tillé, hub Ryanair. Tarif fixe garanti, chauffeur habilité, prise en charge à domicile. Disponible 24h/24.',
     prix: 'dès 69€ vers Beauvais',
-    duree: '45–60 min',
+    duree: '30–40 min',
     faq: [
       { q: 'Quel est le prix d\'un VTC de Creil à l\'aéroport de Beauvais ?', a: 'Le forfait Creil → Beauvais-Tillé est de 69€ en berline, prix fixe garanti depuis Creil, Nogent-sur-Oise ou Montataire. Le prix est confirmé avant le départ.' },
-      { q: 'Combien de temps prend le trajet Creil → Beauvais ?', a: 'Environ 45 à 60 minutes selon les conditions, via la N31 ou la D1016. Beauvais est à l\'ouest de Creil — le trajet est direct, sans traverser Paris, ce qui le rend plus prévisible que vers CDG ou Orly.' },
-      { q: 'Peut-on aller à Beauvais-Tillé en train depuis Creil ?', a: 'Aucune liaison ferroviaire directe n\'existe entre Creil et Beauvais pour l\'aéroport. Les alternatives (bus Ryanair depuis Paris, RER puis correspondance) nécessitent plusieurs heures de trajet total. Le VTC Owise part directement de votre adresse en 45-60 minutes.' },
+      { q: 'Combien de temps prend le trajet Creil → Beauvais ?', a: '32 à 35 minutes selon l\'heure, via la N31 ou la D1016. Beauvais est à l\'ouest de Creil : le trajet ne traverse aucune agglomération dense, ce qui le rend plus prévisible que vers CDG ou Orly — trois minutes d\'écart sur la journée.' },
+      { q: 'Peut-on aller à Beauvais-Tillé en train depuis Creil ?', a: 'Aucune liaison ferroviaire directe n\'existe entre Creil et Beauvais pour l\'aéroport. Les alternatives (bus Ryanair depuis Paris, RER puis correspondance) nécessitent plusieurs heures de trajet total. Le VTC Owise part directement de votre adresse en 32 à 35 minutes.' },
       { q: 'Le service couvre-t-il Nogent-sur-Oise et Montataire ?', a: 'Oui. Creil, Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville et leurs environs sont dans la zone de desserte. Le tarif est calculé depuis votre adresse exacte.' },
       { q: 'Proposez-vous le retour Beauvais → Creil ?', a: 'Oui. Le tarif retour est identique. Pour les vols Ryanair dont les horaires sont souvent très tôt le matin ou tard le soir, Owise est disponible 24h/24 — votre chauffeur sera là, quelle que soit l\'heure d\'arrivée.' },
     ],
