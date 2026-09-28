@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Chaque page ville ou trajet annonce sa version Markdown. Un agent la
+        // decouvre sans deviner l'adresse ; la plupart n'executent pas
+        // JavaScript et n'ont que faire de la mise en page.
+        source: '/:slug(vtc-[a-z0-9-]+)',
+        headers: [
+          { key: 'Link', value: '</md/:slug>; rel="alternate"; type="text/markdown"' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           // Empêche le clickjacking

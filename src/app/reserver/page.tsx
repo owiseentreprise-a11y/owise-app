@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import ReserverClient from './ReserverClient'
 import TarifsReference from './TarifsReference'
+import { lireAvis } from '@/lib/identite-owise'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
 
 export default async function ReserverPage() {
   const admin    = createAdminClient()
+  const avis = await lireAvis(admin)
   const supabase = await createClient()
 
   const [{ data: { user } }, zonesRes, grilleRes, tarifsRes, paramsRes] = await Promise.all([
@@ -131,6 +133,7 @@ export default async function ReserverPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
 
       <ReserverClient
+        avis={avis}
         zones={zonesRes.data ?? []}
         grille={grilleRes.data ?? []}
         tarifs={tarifsRes.data ?? []}

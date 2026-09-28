@@ -269,7 +269,9 @@ const DATE_MAX = new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
 
-export default function ReserverClient({ zones, grille, tarifs, params, profil }: {
+export default function ReserverClient({ avis, zones, grille, tarifs, params, profil }: {
+  /** Note et nombre d'avis, lus en base par la page serveur — jamais écrits ici. */
+  avis: { nombre: number; note: number }
   zones: Zone[]
   grille: Grille[]
   tarifs: TarifVehicule[]
@@ -704,8 +706,8 @@ export default function ReserverClient({ zones, grille, tarifs, params, profil }
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13, color: '#C9A84C', letterSpacing: 1 }}>★★★★★</span>
                 <span style={{ fontSize: 12, color: '#9B9B9B' }}>
-                  <span style={{ color: '#09091A', fontWeight: 600 }}>5 / 5</span>
-                  {' · '}5 avis Google vérifiés
+                  <span style={{ color: '#09091A', fontWeight: 600 }}>{avis.note} / 5</span>
+                  {` · ${avis.nombre} avis Google vérifiés`}
                 </span>
               </div>
             </div>

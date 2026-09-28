@@ -41,7 +41,7 @@ const NOM_VERS_SLUG: Record<string, string> = {
   'Marly-la-Ville':         'vtc-goussainville',
 }
 
-const DESTINATIONS: Record<string, {
+export const DESTINATIONS: Record<string, {
   slug: string
   title: string
   metaTitle: string
@@ -1428,8 +1428,11 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
             <span style={{ fontSize: 22, letterSpacing: 2, color: '#C9A84C' }}>★★★★★</span>
             <span style={{ fontSize: 14, color: '#848499' }}>
-              <span style={{ color: '#EDE8DF', fontWeight: 600 }}>5 / 5</span>
-              {' · '}4 avis Google vérifiés
+              {/* Note et nombre d'avis viennent du meme compteur que le
+                  balisage structure : trois chiffres differents cohabitaient
+                  sur le site (4 ici, 5 sur /reserver, 7 en donnees). */}
+              <span style={{ color: '#EDE8DF', fontWeight: 600 }}>{avis.note} / 5</span>
+              {` · ${avis.nombre} avis Google vérifiés`}
             </span>
           </div>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 40 }}>
