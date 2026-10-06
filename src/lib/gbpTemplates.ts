@@ -13,7 +13,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
   {
     id: 'cdg-tarif',
     summary:
-      '✈️ VTC Aéroport CDG — Tarif fixe garanti dès 65€\n\n' +
+      '✈️ VTC Aéroport CDG — Tarif fixe garanti dès 59€\n\n' +
       'Votre vol décolle tôt le matin ? Nous assurons vos transferts vers Roissy-Charles-de-Gaulle 24h/24, 7j/7.\n\n' +
       '• Berline ou Van jusqu\'à 7 passagers\n' +
       '• Suivi de vol en temps réel\n' +
@@ -119,8 +119,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '👑 VTC Versailles — Transferts aéroport et courses longue distance\n\n' +
       'Owise dessert désormais Versailles et les Yvelines pour vos transferts vers CDG, Orly et Beauvais.\n\n' +
-      '• Versailles → CDG dès 99€\n' +
-      '• Versailles → Orly dès 72€\n' +
+      '• Tarif fixe calculé à votre adresse, annoncé avant de réserver\n' +
+      '• Transferts CDG, Orly et Beauvais\n' +
       '• Service de qualité premium\n' +
       '• Chauffeur anglophone disponible\n\n' +
       'Réservez votre VTC depuis Versailles.',
@@ -132,8 +132,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
     summary:
       '📍 Nouveau : Owise dessert Pontoise & Cergy-Pontoise\n\n' +
       'Vous habitez dans le Val-d\'Oise ? Nous assurons vos transferts aéroport depuis Cergy, Pontoise et toutes les communes environnantes.\n\n' +
-      '• Pontoise → CDG dès 102€\n' +
-      '• Cergy → Orly dès 110€\n' +
+      '• Tarif fixe calculé à votre adresse, annoncé avant de réserver\n' +
+      '• Prise en charge à domicile, suivi de vol\n' +
       '• Berline ou Van, selon vos besoins\n\n' +
       'Calculez votre tarif en ligne dès maintenant.',
     cta: 'BOOK',
