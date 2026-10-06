@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
           subject: `[OWISE] Aperçu post GBP (non publié) : ${template.id}`,
           html:    `<p>Publication automatique désactivée — voici ce qui aurait été publié sur votre fiche Google Business Profile.</p>
                     <p><strong>Template :</strong> ${template.id}</p>
+                    <img src="${template.image}" alt="" style="max-width:100%;border-radius:10px;margin:8px 0;">
                     <pre style="white-space:pre-wrap;font-family:inherit;background:#F8F6F1;padding:16px;border-radius:8px;">${template.summary}</pre>
                     <p>Pour activer la publication automatique de ces posts, mettez la variable d'environnement <code>GBP_AUTO_PUBLISH=true</code> sur Vercel.</p>`,
         })
@@ -59,6 +60,7 @@ export async function GET(req: NextRequest) {
         actionType: template.cta,
         url:        template.url,
       },
+      media:        [{ mediaFormat: 'PHOTO', sourceUrl: template.image }],
     })
 
     // Email de confirmation

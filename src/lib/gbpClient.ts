@@ -27,6 +27,9 @@ export type GbpPostPayload = {
   callToAction?: { actionType: 'BOOK' | 'CALL' | 'LEARN_MORE' | 'ORDER'; url?: string }
   topicType:     'STANDARD' | 'EVENT' | 'OFFER'
   languageCode:  string
+  /** Google va CHERCHER cette image a l'adresse donnee : elle doit etre en
+   *  ligne et accessible sans authentification avant la publication. */
+  media?:        { mediaFormat: 'PHOTO'; sourceUrl: string }[]
 }
 
 /**

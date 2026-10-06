@@ -5,6 +5,10 @@ export type GbpTemplate = {
   summary:  string
   cta:      'BOOK' | 'LEARN_MORE' | 'CALL'
   url:      string
+  /** Illustration jointe au post. Les 13 publications deja en ligne en ont
+   *  une chacune ; un post automatique sans image se voit immediatement sur
+   *  la fiche. Images fabriquees par scripts/images-posts-gbp.mjs. */
+  image:    string
 }
 
 const BASE_URL = 'https://www.owise.fr'
@@ -22,6 +26,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Réservez maintenant et recevez votre confirmation instantanément.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline-premium.jpg`,
   },
   {
     id: 'orly-tarif',
@@ -35,6 +40,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Calculez votre tarif en 30 secondes sur notre site.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline.jpg`,
   },
   {
     id: 'beauvais-tarif',
@@ -47,6 +53,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Réservez votre VTC dès maintenant.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline.jpg`,
   },
   {
     id: 'entreprise',
@@ -60,6 +67,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Contactez-nous pour un devis personnalisé.',
     cta: 'LEARN_MORE',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-grand-van.jpg`,
   },
   {
     id: 'van-groupe',
@@ -73,6 +81,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Calculez votre tarif groupe en ligne.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-van7.jpg`,
   },
   {
     id: 'reservation-anticipee',
@@ -87,6 +96,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Serein le jour J. Réservez dès maintenant.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline.jpg`,
   },
   {
     id: 'chantilly-gouvieux',
@@ -100,6 +110,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Réservez en ligne, payez en ligne.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline-premium.jpg`,
   },
   {
     id: 'nuit-madrugada',
@@ -113,6 +124,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'La sécurité d\'un chauffeur fiable, à n\'importe quelle heure.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline-premium.jpg`,
   },
   {
     id: 'versailles',
@@ -126,6 +138,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Réservez votre VTC depuis Versailles.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline-premium.jpg`,
   },
   {
     id: 'pontoise-cergy',
@@ -138,6 +151,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Calculez votre tarif en ligne dès maintenant.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline.jpg`,
   },
   {
     id: 'qualite-service',
@@ -152,6 +166,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Parce que vos déplacements méritent le meilleur.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-berline-premium.jpg`,
   },
   {
     id: 'gare-tgv',
@@ -165,6 +180,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Voyagez serein, du départ jusqu\'au quai.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
+    image: `${BASE_URL}/brand_assets/post-van7.jpg`,
   },
 ]
 
