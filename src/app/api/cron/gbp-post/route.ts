@@ -29,7 +29,10 @@ export async function GET(req: NextRequest) {
   // "true", on n'envoie qu'un aperçu par email — aucune publication réelle
   // sur la fiche Google. Permet de relire les textes en conditions réelles
   // avant d'activer la publication automatique.
-  if (process.env.GBP_AUTO_PUBLISH !== 'true') {
+  // .trim() : mesure du 2026-10-06 — la valeur enregistree sur Vercel
+  // portait un retour a la ligne en plus. La comparaison stricte echouait
+  // donc, et l'interrupteur restait eteint sans qu'aucun message ne le dise.
+  if (process.env.GBP_AUTO_PUBLISH?.trim() !== 'true') {
     try {
       if (resend) {
         await resend.emails.send({

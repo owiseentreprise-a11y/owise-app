@@ -8,9 +8,12 @@ export async function getAccessToken(): Promise<string> {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      client_id:     process.env.GBP_CLIENT_ID     ?? '',
-      client_secret: process.env.GBP_CLIENT_SECRET ?? '',
-      refresh_token: process.env.GBP_REFRESH_TOKEN ?? '',
+      // .trim() pour la meme raison que GBP_AUTO_PUBLISH : un reglage recopie
+      // a la main peut arriver avec un espace ou un retour a la ligne en plus,
+      // et un jeton ainsi suivi est refuse par Google sans explication utile.
+      client_id:     (process.env.GBP_CLIENT_ID     ?? '').trim(),
+      client_secret: (process.env.GBP_CLIENT_SECRET ?? '').trim(),
+      refresh_token: (process.env.GBP_REFRESH_TOKEN ?? '').trim(),
       grant_type:    'refresh_token',
     }),
   })
