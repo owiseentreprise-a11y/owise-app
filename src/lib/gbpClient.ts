@@ -26,10 +26,27 @@ export type GbpPostPayload = {
   languageCode:  string
 }
 
+/**
+ * Retire le prefixe « accounts/ » ou « locations/ » s'il est deja la.
+ *
+ * Google affiche ces identifiants sous leur forme complete — « accounts/123 »,
+ * « locations/456 » — et c'est donc sous cette forme qu'ils ont ete recopies
+ * dans les reglages. Le code recollait son propre prefixe par-dessus et
+ * appelait /accounts/accounts/123/locations/locations/456 : un 404 systematique.
+ *
+ * Mesure du 2026-10-06 : l'adresse recollee repond 404, la meme sans le
+ * doublon repond 200 et rend les 13 publications de la fiche. On accepte donc
+ * les deux ecritures plutot que de dependre de la facon dont un reglage a ete
+ * recopie un jour.
+ */
+export function idNu(valeur: string | undefined): string {
+  return (valeur ?? '').trim().replace(/^(?:accounts|locations)\//, '')
+}
+
 export async function publishGbpPost(payload: GbpPostPayload): Promise<{ name: string }> {
   const token      = await getAccessToken()
-  const accountId  = process.env.GBP_ACCOUNT_ID  ?? ''
-  const locationId = process.env.GBP_LOCATION_ID ?? ''
+  const accountId  = idNu(process.env.GBP_ACCOUNT_ID)
+  const locationId = idNu(process.env.GBP_LOCATION_ID)
 
   const res = await fetch(
     `${GBP_BASE}/accounts/${accountId}/locations/${locationId}/localPosts`,
