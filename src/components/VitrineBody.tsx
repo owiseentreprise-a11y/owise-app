@@ -142,10 +142,10 @@ function TrustIcon({ name }: { name: string }) {
 
 /* ── vehicles display ──────────────────────────────────── */
 const VEH_DISPLAY = [
-  { name:'Berline',         cap:'1 à 3 passagers', feats:['Peugeot 508, Volkswagen Passat','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline-real.webp',          alt:'Berline noire élégante, illustration catégorie Berline Owise' },
-  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['BMW Série 5, Mercedes Classe E','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium-real.webp', alt:'Berline premium noire de type Mercedes Classe E, illustration catégorie Berline Premium Owise' },
-  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Mercedes Vito, VW Caravelle','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7-real.webp',             alt:'Van noir premium, illustration catégorie Van 7 places Owise' },
-  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Mercedes Sprinter','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van-real.webp',        alt:'Grand van noir premium, illustration catégorie Grand Van 8 places Owise' },
+  { name:'Berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
+  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
+  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
+  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
@@ -1231,7 +1231,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}${v.dark?' vc-dark':''}`} style={v.badge?{borderColor:'rgba(255,255,255,.22)'}:{}}>
               <div className="vc-visual" style={{background:v.bg}}>
                 {v.badge && <span className="vc-badge" style={{position:'absolute',top:12,right:12,zIndex:5,color:'rgba(255,255,255,.82)',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.14)',backdropFilter:'blur(4px)'}}>{v.badge}</span>}
-                <Image src={v.img} alt={v.alt} fill sizes="(max-width:900px) 50vw, 25vw" style={{objectFit:'cover',objectPosition:'center'}}/>
+                <Image src={v.img} alt={v.alt} fill sizes="(max-width:900px) 50vw, 25vw" style={{objectFit:'contain',objectPosition:'center'}}/>
               </div>
               <div className="vc-name">{v.name}</div>
               <div className="vc-cap">

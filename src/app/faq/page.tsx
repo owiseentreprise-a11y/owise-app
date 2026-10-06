@@ -33,7 +33,7 @@ const faqs = [
   },
   {
     q: "Owise est-il disponible 24h/24 et 7j/7 ?",
-    a: "Oui, Owise est disponible 24 heures sur 24, 7 jours sur 7, y compris les jours fériés. Des suppléments nuit et jours fériés peuvent s'appliquer selon les horaires — le tarif exact est toujours affiché avant la confirmation.",
+    a: "Oui, Owise est disponible 24 heures sur 24, 7 jours sur 7, y compris les jours fériés. Les trajets de nuit, les dimanches et les jours fériés sont au même tarif qu'en journée — le prix exact est toujours affiché avant la confirmation.",
   },
   {
     q: "Quels modes de paiement acceptez-vous ?",

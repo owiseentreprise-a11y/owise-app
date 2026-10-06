@@ -287,7 +287,7 @@ export default function MentionsLegalesClient() {
               <DefTable rows={[
                 ['Prise en charge', 'Montant fixe selon la catégorie de véhicule'],
                 ['Prix au km', 'Tarif kilométrique variable selon le véhicule'],
-                ['Majorations', 'Nuit (+20%), week-end et jours fériés (+15–25%), aéroport (montant fixe)'],
+                ['Majorations', 'Aucune majoration de nuit, de week-end ni de jour férié. Aéroports et gares : forfait fixe.'],
                 ['Attente', 'Gratuit les 5 premières minutes, puis tarif/min selon le véhicule'],
                 ['Péages', 'Répercutés au coût réel si activé dans les paramètres'],
               ]} />
