@@ -215,6 +215,18 @@ export async function createReservationCheckout(data: {
   params.set('metadata[prenom]', data.prenom)
   params.set('metadata[email]', data.email)
   params.set('metadata[telephone]', data.telephone || '')
+  /* Vol ou train d'arrivee.
+   *
+   * Le formulaire les demande depuis le debut, l'action les recoit (voir le
+   * type ci-dessus) — mais ils ne partaient pas dans les metadonnees, et le
+   * webhook ne construit la course QUE depuis les metadonnees. Resultat :
+   * l'information etait saisie par le client puis jetee au paiement.
+   * Constate le 2026-10-08 sur la course de M. Galligan, dont le vol a du
+   * etre redemande par WhatsApp. Sans numero de vol, un retard d'avion n'est
+   * pas vu et l'accueil a l'aeroport rate. */
+  if (data.num_vol_train)     params.set('metadata[num_vol_train]', data.num_vol_train.slice(0, 99))
+  if (data.terminal)          params.set('metadata[terminal]', data.terminal.slice(0, 99))
+  if (data.heure_arrivee_vol) params.set('metadata[heure_arrivee_vol]', data.heure_arrivee_vol.slice(0, 19))
   params.set('metadata[zone_depart_id]', data.zone_depart_id)
   params.set('metadata[zone_arrivee_id]', data.zone_arrivee_id)
   if (etapes.length > 0) {

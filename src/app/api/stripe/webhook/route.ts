@@ -241,6 +241,10 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     nb_passagers:    nbPassagers,
     prix_estime:     prix,
     etapes:          etapes.length > 0 ? etapes : null,
+    // Vol ou train d'arrivee, quand le client les a renseignes.
+    num_vol_train:     meta.num_vol_train || null,
+    terminal:          meta.terminal || null,
+    heure_arrivee_vol: meta.heure_arrivee_vol || null,
     statut:          'en_attente',
     mode_paiement:   'stripe',
     stripe_payment_intent_id: paymentIntentId,
