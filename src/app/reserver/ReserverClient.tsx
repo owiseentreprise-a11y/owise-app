@@ -11,6 +11,7 @@ import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSugg
 import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import { logFunnel } from '@/lib/funnel'
 import ReservationSummary from './ReservationSummary'
+import { verifierReservation } from '@/lib/validationReservation'
 import {
   calculerPrix,
   calculerPrixKm,
@@ -521,8 +522,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   function handlePayer() {
     logFunnel('reserver_payer_click', { prix: prixFinal })
     const fail = (msg: string) => { logFunnel('reserver_step2_error', { reason: msg }); setStep2Error(msg) }
-    if (!nom.trim() || !prenom.trim())        return fail('Nom et prénom requis.')
-    if (!email.trim() || !email.includes('@')) return fail('Email valide requis.')
+    /* La meme verification que le serveur, pour prevenir ici plutot qu'au
+     * moment de payer. Le serveur reste la vraie barriere. */
+    const verdict = verifierReservation({
+      nom, prenom, email, telephone,
+      date_prevue: date,
+      adresse_depart: depart.label,
+      adresse_arrivee: arrivee.label,
+    })
+    if (!verdict.ok) return fail(verdict.erreur)
     if (prixFinal === null) return fail('Erreur de tarification.')
     setStep2Error(null)
     fbLead({ value: prixFinal, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
@@ -1255,7 +1263,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             </div>
             {[
               { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'jean.dupont@email.com' },
-              { label: 'Téléphone (optionnel)', val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 00 00 00 00' },
+              { label: 'Téléphone', val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 12 34 56 78' },
             ].map(f => (
               <div key={f.label} style={{ marginBottom: 14 }}>
                 <FieldLabel>{f.label}</FieldLabel>

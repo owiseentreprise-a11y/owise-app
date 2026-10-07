@@ -8,6 +8,7 @@ import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
+import { verifierReservation } from '@/lib/validationReservation'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -97,6 +98,14 @@ export async function createReservationCheckout(data: {
 }): Promise<{ error?: string; checkoutUrl?: string }> {
   const key = nettoyerCleEnv(process.env.STRIPE_SECRET_KEY)
   if (!key) return { error: 'Clé Stripe manquante' }
+
+  /* La verification arrive AVANT la session de paiement : une fois l'argent
+   * encaisse, il est trop tard pour decouvrir qu'on n'a pas de telephone.
+   * Jusqu'au 2026-10-08 le serveur ne verifiait que le prix — le formulaire
+   * seul faisait barrage, et il ne demandait meme pas le telephone. */
+  const verdict = verifierReservation(data)
+  if (!verdict.ok) return { error: verdict.erreur }
+  const telephoneNormalise = verdict.telephone
 
   // Recalculer le prix côté serveur — ne jamais faire confiance au prix client
   let prixServeur = await calculerPrixServeur(
@@ -214,7 +223,7 @@ export async function createReservationCheckout(data: {
   params.set('metadata[nom]', data.nom)
   params.set('metadata[prenom]', data.prenom)
   params.set('metadata[email]', data.email)
-  params.set('metadata[telephone]', data.telephone || '')
+  params.set('metadata[telephone]', telephoneNormalise)
   /* Vol ou train d'arrivee.
    *
    * Le formulaire les demande depuis le debut, l'action les recoit (voir le
@@ -272,7 +281,7 @@ export async function createReservationCheckout(data: {
           statut:          'en_attente',
           passager_prenom: data.prenom || null,
           passager_nom:    data.nom || null,
-          passager_tel:    data.telephone || null,
+          passager_tel:    telephoneNormalise,
         })
       }
     } catch { /* non-bloquant */ }
