@@ -5,6 +5,7 @@ import { requireAdminClient } from '@/lib/supabase/server'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { revalidatePath } from 'next/cache'
 import { genererNumeroFacture } from '@/lib/facturation'
+import { vehiculePourBase } from '@/lib/vehicule'
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -69,7 +70,7 @@ export async function convertirEnCourse(devis: {
     date_prevue,
     statut:           'en_attente',
     prix_estime:      devis.price ?? null,
-    type_vehicule:    VH_MAP[devis.vehicle ?? ''] ?? 'berline',
+    type_vehicule:    vehiculePourBase(VH_MAP[devis.vehicle ?? ''] ?? 'berline'),
     nb_passagers:     devis.pax ?? null,
     passager_prenom:  prenom,
     passager_nom:     nomFamille,

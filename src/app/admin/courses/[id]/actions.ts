@@ -11,6 +11,7 @@ import { stripe } from '@/lib/stripe'
 import { calculerPrixEtapes } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
 import { dateCourse, heureCourse, instantDepuisSaisieParis } from '@/lib/heure'
+import { vehiculePourBase } from '@/lib/vehicule'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   // Vérification admin via JWT (anon key)
@@ -302,7 +303,7 @@ export async function modifierCourseDetails(
   // modification (retour de Mme Bouchard, 2026-09-23).
   const { error } = await supabase.from('courses').update({
     date_prevue:       instantDepuisSaisieParis(data.date_prevue).toISOString(),
-    type_vehicule:     data.type_vehicule,
+    type_vehicule:     vehiculePourBase(data.type_vehicule),
     nb_passagers:      data.nb_passagers,
     adresse_depart:    data.adresse_depart,
     adresse_arrivee:   data.adresse_arrivee,

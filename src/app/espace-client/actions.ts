@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
 import { instantDepuisSaisieParis } from '@/lib/heure'
+import { vehiculePourBase } from '@/lib/vehicule'
 
 export async function clientLogoutAction() {
   const supabase = await createClient()
@@ -74,7 +75,7 @@ export async function demanderCourse(formData: FormData): Promise<void> {
   const courseBase = {
     client_id:        clientId,
     collaborateur_id: collabId,
-    type_vehicule:    vehicule,
+    type_vehicule:    vehiculePourBase(vehicule),
     nb_passagers:     passagers,
     mode_paiement:    modePaiement,
     statut:           'en_attente' as const,

@@ -8,6 +8,7 @@ import { capiPurchase } from '@/lib/capi'
 import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { instantDepuisSaisieParis } from '@/lib/heure'
+import { vehiculePourBase } from '@/lib/vehicule'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -59,11 +60,28 @@ export async function POST(req: Request) {
     }
 
     if (session.metadata?.type === 'reservation') {
+      const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
       try {
-        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
         await handleNewReservation(session.metadata, paymentIntentId)
       } catch (err) {
+        /* Une erreur ici veut dire : l'argent est encaisse et la course
+         * n'existe pas. C'est le pire etat possible, et il etait jusqu'ici
+         * simplement journalise — donc invisible.
+         *
+         * Le 2026-10-07, deux clients ont paye 89 EUR chacun pour un van et
+         * n'ont jamais eu de course : le type de vehicule envoye (`van`)
+         * n'existe pas dans l'enum de la base (`van_7`). Le webhook repondait
+         * « recu » a Stripe, personne n'etait prevenu, et la seule copie de
+         * leur trajet restait dans les metadonnees Stripe.
+         *
+         * Desormais : un e-mail part avec TOUTES les metadonnees, de quoi
+         * recreer la reservation a la main ; et on repond 500 pour que Stripe
+         * reessaie et que l'echec soit visible dans son tableau de bord.
+         * handleNewReservation retrouve un client existant au lieu de le
+         * recreer, une nouvelle tentative est donc sans danger. */
         console.error('[webhook] reservation error', err)
+        await alerterEchecReservation(session, paymentIntentId, err)
+        return NextResponse.json({ error: 'reservation failed' }, { status: 500 })
       }
       return NextResponse.json({ received: true })
     }
@@ -115,6 +133,42 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ received: true })
+}
+
+/**
+ * Prevenir un humain quand un paiement aboutit sans course.
+ *
+ * L'e-mail porte l'integralite des metadonnees Stripe : c'est la seule copie
+ * du trajet demande, et sans elle la reservation est irrecuperable.
+ */
+async function alerterEchecReservation(session: any, paymentIntentId: string | null, err: unknown) {
+  try {
+    const { Resend } = await import('resend')
+    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+    if (!resend) return
+
+    const meta = session?.metadata ?? {}
+    const lignes = Object.entries(meta)
+      .map(([k, v]) => `<tr><td style="padding:3px 12px 3px 0;color:#848499">${k}</td><td style="padding:3px 0"><strong>${String(v)}</strong></td></tr>`)
+      .join('')
+
+    await resend.emails.send({
+      from:    'OWISE <noreply@owise.fr>',
+      to:      ADMIN_EMAIL,
+      subject: `[OWISE] URGENT — paiement encaisse SANS course creee`,
+      html: `<p><strong>Un client a paye et sa course n'a pas pu etre enregistree.</strong></p>
+             <p>Il n'a recu aucune confirmation et aucun chauffeur ne lui est affecte.
+                Les informations ci-dessous sont la seule copie de sa demande.</p>
+             <p><strong>Montant :</strong> ${((session?.amount_total ?? 0) / 100).toFixed(2)} €<br>
+                <strong>Paiement :</strong> <code>${paymentIntentId ?? '—'}</code><br>
+                <strong>Session :</strong> <code>${session?.id ?? '—'}</code></p>
+             <p><strong>Erreur :</strong> <code>${String((err as any)?.message ?? err).slice(0, 400)}</code></p>
+             <table style="border-collapse:collapse;font-family:monospace;font-size:13px">${lignes}</table>
+             <p><a href="https://dashboard.stripe.com/payments/${paymentIntentId ?? ''}">Voir le paiement sur Stripe →</a></p>`,
+    })
+  } catch (e) {
+    console.error('[webhook] alerte echec reservation non envoyee', e)
+  }
 }
 
 async function handleNewReservation(meta: Record<string, string>, paymentIntentId: string | null) {
@@ -183,7 +237,7 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     adresse_depart:  adresseDepart,
     adresse_arrivee: adresseArrivee,
     date_prevue:     datePrevue,
-    type_vehicule:   typeVehicule,
+    type_vehicule:   vehiculePourBase(typeVehicule),
     nb_passagers:    nbPassagers,
     prix_estime:     prix,
     etapes:          etapes.length > 0 ? etapes : null,

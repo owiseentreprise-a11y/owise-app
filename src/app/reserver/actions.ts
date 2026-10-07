@@ -7,6 +7,7 @@ import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
 import { instantDepuisSaisieParis } from '@/lib/heure'
+import { vehiculePourBase } from '@/lib/vehicule'
 
 const VEHICULE_LABEL: Record<string, string> = {
   berline: 'Berline',
@@ -249,7 +250,7 @@ export async function createReservationCheckout(data: {
           adresse_depart:  data.adresse_arrivee,
           adresse_arrivee: data.adresse_arrivee_retour?.trim() || data.adresse_depart,
           date_prevue:     dateRetourParsed.toISOString(),
-          type_vehicule:   data.type_vehicule,
+          type_vehicule:   vehiculePourBase(data.type_vehicule),
           nb_passagers:    data.nb_passagers,
           // Le surcoût des arrêts est retiré avant de partager en deux : il
           // porte sur l'aller, pas sur le retour.
