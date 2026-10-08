@@ -108,23 +108,18 @@ export function priseEnChargeAeroportOuGare(
 const EMAIL = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
 
 /**
+ * Le trajet seul : adresses, date, vol. Tout ce que le client saisit au
+ * PREMIER ecran du formulaire.
+ *
+ * Separe du reste pour une raison concrete, vue le 2026-10-08 : la regle du
+ * numero de vol etait verifiee au moment de payer, alors que le champ se
+ * trouve a l'ecran precedent. Le client lisait « indiquez votre numero de
+ * vol » sans aucun champ ou le saisir — une impasse. Un controle doit
+ * s'exprimer la ou l'on peut le corriger.
+ *
  * @param maintenant injectable pour que les tests ne dependent pas de l'heure.
  */
-export function verifierReservation(d: ChampsReservation, maintenant: Date = new Date()): Verdict {
-  const nom = String(d.nom ?? '').trim()
-  const prenom = String(d.prenom ?? '').trim()
-  const email = String(d.email ?? '').trim()
-
-  if (nom.length < 2) return refus('nom', 'Merci d’indiquer votre nom.')
-  if (prenom.length < 2) return refus('prenom', 'Merci d’indiquer votre prénom.')
-  if (!EMAIL.test(email)) return refus('email', 'Cette adresse e-mail semble incomplète.')
-
-  const telephone = normaliserTelephone(d.telephone)
-  if (!telephone) {
-    return refus('telephone',
-      'Merci d’indiquer un téléphone joignable, avec l’indicatif du pays — par exemple +33 6 12 34 56 78 ou +1 623 300 5065. Votre chauffeur en a besoin le jour du trajet.')
-  }
-
+export function verifierTrajet(d: ChampsReservation, maintenant: Date = new Date()): Verdict {
   if (!String(d.adresse_depart ?? '').trim()) return refus('adresse_depart', 'Adresse de départ requise.')
   if (!String(d.adresse_arrivee ?? '').trim()) return refus('adresse_arrivee', 'Adresse d’arrivée requise.')
 
@@ -155,6 +150,36 @@ export function verifierReservation(d: ChampsReservation, maintenant: Date = new
       return refus('heure_arrivee_vol', 'Merci d’indiquer l’heure d’arrivée de votre vol ou de votre train.')
     }
   }
+
+  return { ok: true, telephone: '' }
+}
+
+/**
+ * La reservation entiere : l'identite du client, puis le trajet.
+ *
+ * C'est la verification du serveur, et celle du bouton « Payer ». Elle appelle
+ * verifierTrajet pour ne pas dedoubler les regles : un controle recopie finit
+ * toujours par diverger de l'autre.
+ *
+ * @param maintenant injectable pour que les tests ne dependent pas de l'heure.
+ */
+export function verifierReservation(d: ChampsReservation, maintenant: Date = new Date()): Verdict {
+  const nom = String(d.nom ?? '').trim()
+  const prenom = String(d.prenom ?? '').trim()
+  const email = String(d.email ?? '').trim()
+
+  if (nom.length < 2) return refus('nom', 'Merci d’indiquer votre nom.')
+  if (prenom.length < 2) return refus('prenom', 'Merci d’indiquer votre prénom.')
+  if (!EMAIL.test(email)) return refus('email', 'Cette adresse e-mail semble incomplète.')
+
+  const telephone = normaliserTelephone(d.telephone)
+  if (!telephone) {
+    return refus('telephone',
+      'Merci d’indiquer un téléphone joignable, avec l’indicatif du pays — par exemple +33 6 12 34 56 78 ou +1 623 300 5065. Votre chauffeur en a besoin le jour du trajet.')
+  }
+
+  const trajet = verifierTrajet(d, maintenant)
+  if (!trajet.ok) return trajet
 
   return { ok: true, telephone }
 }

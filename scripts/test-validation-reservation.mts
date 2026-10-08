@@ -23,7 +23,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { normaliserTelephone, verifierReservation } from '../src/lib/validationReservation'
+import { normaliserTelephone, verifierReservation, verifierTrajet } from '../src/lib/validationReservation'
 
 const ok: string[] = []
 const ko: string[] = []
@@ -130,6 +130,30 @@ const course = { ...COMPLET, date_prevue: '2026-10-10T13:00' }
 dire(!verifierReservation(course, PASSEE).ok, 'une course de 13h00 Paris est passee a 11h30 UTC')
 dire(verifierReservation(course, AVENIR).ok, 'la meme est encore a venir a 10h30 UTC')
 
+const formulaire = readFileSync(new URL('../src/app/reserver/ReserverClient.tsx', import.meta.url), 'utf8')
+
+/* ── 3 bis. La regle du vol s'exprime-t-elle la ou le champ se trouve ? ── */
+// Le 2026-10-08, le message « indiquez votre numero de vol » apparaissait a
+// l'ecran du PAIEMENT, alors que le champ est a l'ecran precedent. Le client
+// etait bloque sans aucun moyen de corriger. Un controle doit s'exprimer la
+// ou l'on peut y repondre.
+const TRAJET_SEUL = {
+  adresse_depart: 'Aéroport Paris-Charles de Gaulle (CDG)',
+  adresse_arrivee: '11 Av. du Maréchal Joffre, 60500 Chantilly',
+  date_prevue: '2030-01-01T10:00',
+  type_zone_depart: 'aeroport',
+}
+dire(!verifierTrajet(TRAJET_SEUL).ok,
+  'verifierTrajet refuse un depart d aeroport sans vol, sans connaitre le client')
+dire(verifierTrajet({ ...TRAJET_SEUL, num_vol_train: 'AF1234', heure_arrivee_vol: '10:00' }).ok,
+  'verifierTrajet accepte des que le vol est renseigne')
+
+const ecran1 = formulaire.slice(formulaire.indexOf('function handleStep1'), formulaire.indexOf('function handlePayer'))
+dire(ecran1.includes('verifierTrajet('),
+  'le premier ecran verifie le trajet avant de passer au paiement')
+dire(ecran1.includes('num_vol_train'),
+  'le premier ecran transmet bien le numero de vol a la verification')
+
 /* ── 4. Le serveur verifie-t-il AVANT de creer le paiement ? ───────────────── */
 const actions = readFileSync(new URL('../src/app/reserver/actions.ts', import.meta.url), 'utf8')
 const posVerif = actions.indexOf('verifierReservation(')
@@ -137,7 +161,6 @@ const posStripe = actions.indexOf('checkout/sessions')
 dire(posVerif > 0 && posStripe > 0 && posVerif < posStripe,
   'actions.ts appelle verifierReservation AVANT de creer la session Stripe')
 
-const formulaire = readFileSync(new URL('../src/app/reserver/ReserverClient.tsx', import.meta.url), 'utf8')
 dire(formulaire.includes('verifierReservation('), 'le formulaire utilise la meme verification')
 dire(!formulaire.includes("Téléphone (optionnel)"), 'le telephone n est plus annonce comme optionnel')
 

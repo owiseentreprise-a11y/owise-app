@@ -11,7 +11,7 @@ import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSugg
 import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import { logFunnel } from '@/lib/funnel'
 import ReservationSummary from './ReservationSummary'
-import { verifierReservation } from '@/lib/validationReservation'
+import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
 import {
   calculerPrix,
   calculerPrixKm,
@@ -512,6 +512,19 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     if (!depart.codePostal && !zoneDepart && !depart.lat)    return fail('Sélectionnez une adresse de départ dans la liste.')
     if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return fail('Sélectionnez une adresse d\'arrivée dans la liste.')
     if (prix === null && !loadingRoute) return fail('Prix non calculé — vérifiez les adresses.')
+
+    /* Le vol se verifie ICI, pas au paiement : son champ est sur cet ecran.
+     * Le 2026-10-08, la regle s'exprimait a l'etape suivante et le client
+     * lisait « indiquez votre numero de vol » sans aucun champ ou le saisir. */
+    const trajet = verifierTrajet({
+      adresse_depart: depart.label,
+      adresse_arrivee: arrivee.label,
+      date_prevue: date,
+      type_zone_depart: zoneDepart?.type ?? null,
+      num_vol_train: numVolTrain,
+      heure_arrivee_vol: heureArrivee,
+    })
+    if (!trajet.ok) return fail(trajet.erreur)
     setStep1Error(null)
     logFunnel('reserver_step2_view', { prix: prixTotal })
     fbInitCheckout({ value: prixTotal ?? undefined, currency: 'EUR', content_category: 'VTC', num_items: 1 })
