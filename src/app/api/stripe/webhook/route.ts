@@ -245,7 +245,28 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     ])
   }
 
-  // 2. Créer la course
+  /* 2. La course existe-t-elle deja pour ce paiement ?
+   *
+   * Stripe reessaie un evenement en echec pendant trois jours. Le 2026-10-08,
+   * apres avoir remis la bonne cle de signature, les tentatives encore en file
+   * ont abouti les unes apres les autres : DEUX courses et DEUX factures pour
+   * le meme paiement, chez M. Galligan comme chez M. Sillers.
+   *
+   * J'avais ecrit dans ce fichier qu'une nouvelle tentative etait « sans
+   * danger » parce que le client est retrouve au lieu d'etre recree. C'etait
+   * faux : la course, elle, etait reinseree.
+   *
+   * L'identifiant de paiement est unique par reservation : il sert de verrou. */
+  if (paymentIntentId) {
+    const { data: deja } = await supabase
+      .from('courses').select('id').eq('stripe_payment_intent_id', paymentIntentId).maybeSingle()
+    if (deja) {
+      console.log(`[webhook] course deja creee pour ${paymentIntentId} — rien a faire`)
+      return
+    }
+  }
+
+  // Créer la course
   const { data: course, error: courseErr } = await supabase.from('courses').insert({
     client_id:       userId,
     adresse_depart:  adresseDepart,
