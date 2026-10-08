@@ -57,6 +57,12 @@ const COMPLET = {
   telephone: '+1 623 300 5065', date_prevue: '2030-01-01T13:00',
   adresse_depart: 'Aéroport Paris-Charles de Gaulle (CDG)',
   adresse_arrivee: 'Le Château, All. des Marronniers, 60520 La Chapelle-en-Serval',
+  // Depart de CDG : depuis le 2026-10-08 le vol et son heure sont requis.
+  // C'est exactement la reservation de M. Galligan, telle qu'elle aurait du
+  // etre saisie.
+  type_zone_depart: 'aeroport',
+  num_vol_train: 'FI542',
+  heure_arrivee_vol: '13:00',
 }
 dire(verifierReservation(COMPLET).ok, 'une reservation complete est acceptee')
 
@@ -77,6 +83,43 @@ for (const [champ, remplacement] of MANQUES) {
   const valeur = JSON.stringify(Object.values(remplacement)[0])
   dire(!v.ok && v.champ === champ, `refuse ${champ} = ${valeur}`)
 }
+
+/* ── 2 bis. Depart d'un aeroport ou d'une gare : vol et heure requis ───── */
+// Les deux seules reservations en ligne encaissees etaient deux accueils a CDG,
+// sans numero de vol ni heure d'arrivee. Il a fallu les redemander par WhatsApp.
+// Le depart est un aeroport, et les deux champs sont VIDES : c'est l'etat
+// dans lequel MM. Sillers et Galligan ont pu payer.
+const AEROPORT = {
+  ...COMPLET,
+  adresse_depart: 'Aéroport Paris-Charles de Gaulle (CDG)',
+  type_zone_depart: 'aeroport',
+  num_vol_train: '',
+  heure_arrivee_vol: '',
+}
+
+dire(!verifierReservation(AEROPORT).ok,
+  'depart d un aeroport sans numero de vol : refuse')
+dire(!verifierReservation({ ...AEROPORT, num_vol_train: 'FI542' }).ok,
+  'numero de vol mais pas d heure d arrivee : refuse')
+dire(verifierReservation({ ...AEROPORT, num_vol_train: 'FI542', heure_arrivee_vol: '13:00' }).ok,
+  'numero de vol + heure : accepte')
+dire(verifierReservation({ ...AEROPORT, num_vol_train: 'Reykjavik', heure_arrivee_vol: '13:00' }).ok,
+  'la provenance vaut le numero de vol')
+dire(!verifierReservation({ ...AEROPORT, num_vol_train: 'FI542', heure_arrivee_vol: '25:00' }).ok,
+  'une heure impossible est refusee')
+dire(verifierReservation({ ...COMPLET, adresse_depart: 'Gare de Lyon, Paris', type_zone_depart: 'gare', num_vol_train: 'TGV 6423', heure_arrivee_vol: '09:12' }).ok,
+  'depart d une gare avec train et heure : accepte')
+
+// Le piege a eviter : une adresse de particulier qui contient le mot « gare ».
+// Exiger un numero de vol l'empecherait purement et simplement de reserver.
+for (const adresse of ['12 rue de la Gare, 60300 Senlis', '3 avenue des Aéronautes, Creil', 'Place de la Bastille, Paris']) {
+  dire(verifierReservation({ ...COMPLET, adresse_depart: adresse, type_zone_depart: null, num_vol_train: '', heure_arrivee_vol: '' }).ok,
+    `« ${adresse} » n exige pas de numero de vol`)
+}
+
+// Mais le libelle d'un aeroport, lui, suffit meme sans type de zone.
+dire(!verifierReservation({ ...COMPLET, adresse_depart: 'Aéroport de Beauvais-Tillé', type_zone_depart: null, num_vol_train: '', heure_arrivee_vol: '' }).ok,
+  'un libelle d aeroport suffit a rendre le vol obligatoire')
 
 /* ── 3. Une date se juge a Paris, pas sur la machine ───────────────────────── */
 // 2026-10-10 13:00 a Paris = 11:00 UTC. A 11:30 UTC la course est passee ;

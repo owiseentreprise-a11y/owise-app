@@ -28,6 +28,12 @@ export type ChampsReservation = {
   date_prevue?: string
   adresse_depart?: string
   adresse_arrivee?: string
+  /** Le type de la zone de depart, lu en base : « aeroport », « gare »… */
+  type_zone_depart?: string | null
+  /** Numero de vol ou de train, ou a defaut la provenance. */
+  num_vol_train?: string
+  /** Heure d'atterrissage ou d'arrivee en gare, au format HH:MM. */
+  heure_arrivee_vol?: string
 }
 
 export type Verdict =
@@ -76,6 +82,28 @@ export function normaliserTelephone(valeur: string | null | undefined): string |
   return null
 }
 
+/**
+ * La prise en charge se fait-elle dans un aeroport ou une gare ?
+ *
+ * Le type de zone, lu en base, fait foi. Le libelle n'est utilise QUE pour les
+ * aeroports, ou il est sans ambiguite — « aeroport », « CDG », « Orly »,
+ * « Beauvais-Tille ». On ne cherche surtout pas le mot « gare » dans une
+ * adresse : « 12 rue de la Gare » a Senlis est une adresse de particulier, et
+ * exiger un numero de vol l'empecherait de reserver.
+ *
+ * Meme famille de piege que detectZone, ou « Place de la Bastille » etait lue
+ * comme un depart de Beauvais-Tille parce que « bastille » contient « tille ».
+ */
+const RE_AEROPORT = /a[ée]roport|\bcdg\b|\borly\b|roissy[- ]charles|beauvais[- ]till[ée]|le bourget/i
+
+export function priseEnChargeAeroportOuGare(
+  adresse: string | null | undefined,
+  typeZone?: string | null,
+): boolean {
+  if (typeZone === 'aeroport' || typeZone === 'gare') return true
+  return RE_AEROPORT.test(String(adresse ?? ''))
+}
+
 /** Un e-mail doit au moins avoir un nom, un arobase, un domaine et une extension. */
 const EMAIL = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
 
@@ -109,6 +137,23 @@ export function verifierReservation(d: ChampsReservation, maintenant: Date = new
   if (isNaN(quand.getTime())) return refus('date_prevue', 'Date et heure invalides.')
   if (quand.getTime() <= maintenant.getTime()) {
     return refus('date_prevue', 'Cette date est déjà passée. Merci de choisir un horaire à venir.')
+  }
+
+  /* Depart d'un aeroport ou d'une gare : sans le vol et son heure, un retard
+   * n'est pas vu et le chauffeur repart. Les deux seules reservations en ligne
+   * encaissees avant cette regle etaient justement deux accueils a CDG, sans
+   * aucune de ces informations. On accepte la PROVENANCE a defaut du numero :
+   * « Reykjavik », « TGV depuis Lyon » valent mieux que rien. */
+  if (priseEnChargeAeroportOuGare(d.adresse_depart, d.type_zone_depart)) {
+    const vol = String(d.num_vol_train ?? '').trim()
+    if (vol.length < 2) {
+      return refus('num_vol_train',
+        'Merci d’indiquer votre numéro de vol ou de train — ou, à défaut, votre ville de provenance. Votre chauffeur suit votre arrivée et vous attend en cas de retard.')
+    }
+    const heure = String(d.heure_arrivee_vol ?? '').trim()
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(heure)) {
+      return refus('heure_arrivee_vol', 'Merci d’indiquer l’heure d’arrivée de votre vol ou de votre train.')
+    }
   }
 
   return { ok: true, telephone }

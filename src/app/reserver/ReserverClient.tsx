@@ -529,6 +529,9 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
       date_prevue: date,
       adresse_depart: depart.label,
       adresse_arrivee: arrivee.label,
+      type_zone_depart: zoneDepart?.type ?? null,
+      num_vol_train: numVolTrain,
+      heure_arrivee_vol: heureArrivee,
     })
     if (!verdict.ok) return fail(verdict.erreur)
     if (prixFinal === null) return fail('Erreur de tarification.')
@@ -1017,12 +1020,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               }}>
                 <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? '#4D8ED4' : '#3DB87A' }}>
                   {isAero ? '✈ Informations de vol' : '🚄 Informations train'}
+                  {(isAeroDepart || isGareDepart) && <span style={{ color: '#D95454', marginLeft: 6 }}>— requis</span>}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                   <div>
-                    <FieldLabel>N° de {typeVol}</FieldLabel>
+                    <FieldLabel>N° de {typeVol}{(isAeroDepart || isGareDepart) ? ' ou provenance' : ''}</FieldLabel>
                     <input className="res-input" value={numVolTrain}
-                      placeholder={isAero ? 'AF1234, EZY8521…' : 'TGV 6423…'}
+                      placeholder={isAero ? 'AF1234, ou Reykjavik' : 'TGV 6423, ou Lyon'}
                       onChange={e => setNumVolTrain(e.target.value)}
                       style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
                   </div>

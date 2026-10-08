@@ -103,7 +103,17 @@ export async function createReservationCheckout(data: {
    * encaisse, il est trop tard pour decouvrir qu'on n'a pas de telephone.
    * Jusqu'au 2026-10-08 le serveur ne verifiait que le prix — le formulaire
    * seul faisait barrage, et il ne demandait meme pas le telephone. */
-  const verdict = verifierReservation(data)
+  /* Le type de la zone de depart est lu EN BASE, pas recu du client : c'est lui
+   * qui decide si le numero de vol devient obligatoire, et un champ envoye par
+   * le navigateur se modifie. */
+  let typeZoneDepart: string | null = null
+  if (/^[0-9a-f-]{36}$/i.test(String(data.zone_depart_id ?? ''))) {
+    const { data: zone } = await createAdminClient()
+      .from('zones').select('type').eq('id', data.zone_depart_id).maybeSingle()
+    typeZoneDepart = zone?.type ?? null
+  }
+
+  const verdict = verifierReservation({ ...data, type_zone_depart: typeZoneDepart })
   if (!verdict.ok) return { error: verdict.erreur }
   const telephoneNormalise = verdict.telephone
 
