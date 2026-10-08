@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { stripe, nettoyerCleEnv } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { envoyerConfirmationClient, envoyerNotificationAdmin } from '@/lib/email'
+import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerBienvenueClient } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
 import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
@@ -223,6 +223,20 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     }
 
     userId = newUser.user.id
+
+    /* Le compte vient d'etre cree avec un mot de passe aleatoire que le client
+     * n'a jamais vu. Sans cet e-mail, il ne peut PAS se connecter : la page de
+     * remerciement propose « voir ma reservation », qui mene a l'ecran de
+     * connexion, et il reste devant.
+     *
+     * Constate le 2026-10-08 en testant une vraie reservation en production.
+     * L'e-mail existait depuis longtemps — il n'etait envoye que lorsque
+     * l'exploitant creait un client depuis l'admin, jamais lors d'une
+     * reservation en ligne. */
+    envoyerBienvenueClient({
+      email, prenom, nom, password,
+      typeCompte: 'particulier',
+    }).catch(err => console.error('[webhook] bienvenue client', err))
 
     // Créer profil et client (upsert pour éviter les doublons)
     await Promise.all([
