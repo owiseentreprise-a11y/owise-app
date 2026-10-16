@@ -423,11 +423,18 @@ export default async function ChantillyCdgEnPage() {
         {/* ---- pied -------------------------------------------------- */}
         <footer style={{ background: '#09091A', borderTop: '1px solid rgba(201,168,76,.14)', padding: '40px 20px' }}>
           <div style={{ maxWidth: 940, margin: '0 auto', fontSize: 13, color: '#848499', lineHeight: 1.8 }}>
+            {/* Ni le nom de l'exploitant, ni l'adresse de son domicile.
+                Le reste du site ne les publie nulle part : `identite-owise.ts`
+                omet volontairement la rue et ne déclare que la commune, et le
+                pied de page français ne porte que le SIRET. Cette page avait
+                été la seule du site à les afficher — ils viennent des factures,
+                où la loi les impose, et n'avaient rien à y faire.
+                Signalé par l'exploitant le 2026-10-16. */}
             <p style={{ margin: '0 0 10px', color: '#EDE8DF' }}>
-              Owise — Houna Hassan, sole trader
+              Owise — private chauffeur service
             </p>
             <p style={{ margin: '0 0 10px' }}>
-              14 rue du Vieux Moulin, 60740 Saint-Maximin, France · SIRET 477 534 135 00041
+              Paris · Île-de-France · Oise · Airports · SIRET 477 534 135 00041
             </p>
             <p style={{ margin: '0 0 16px' }}>
               <a href={`tel:${tel}`} style={{ color: '#C9A84C', textDecoration: 'none' }}>{telLisible}</a>
