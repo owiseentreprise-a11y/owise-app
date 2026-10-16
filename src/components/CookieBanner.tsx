@@ -84,7 +84,10 @@ export default function CookieBanner() {
   if (!visible) return null
 
   return (
-    <div ref={ref} style={{
+    /* `bandeau-cookies` : le bandeau n'avait aucune classe, donc aucun moyen
+       de le retirer à l'impression. Il apparaissait en bas des factures
+       imprimées depuis /admin — constaté le 2026-10-16. */
+    <div ref={ref} className="bandeau-cookies" style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
       background: '#09091A',
       borderTop: '1px solid rgba(201,168,76,.2)',

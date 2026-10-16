@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { changerStatutFacture, envoyerLienPaiement, envoyerFactureParEmail } from './actions'
-import PrintButton from '@/components/PrintButton'
+import Link from 'next/link'
 
 export default function FactureActions({
   factureId,
@@ -48,7 +48,25 @@ export default function FactureActions({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <PrintButton />
+      {/* Menait a window.print() sur CET ecran : on imprimait le tableau de
+          bord — barre laterale, boutons, bandeau cookies — et pas la facture.
+          Le document se trouve sur sa propre page, mis en forme pour le
+          papier. Signale par l'exploitant le 2026-10-16. */}
+      <Link
+        href={`/admin/facturation/${factureId}/document`}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 7,
+          padding: '9px 16px', borderRadius: 9,
+          background: 'var(--elevated)', border: '1px solid var(--t3)',
+          color: 'var(--t2)', fontSize: 12, fontWeight: 500,
+          textDecoration: 'none', fontFamily: 'var(--font-dm-sans), sans-serif',
+        }}
+      >
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm1-4h4m-4 4h4"/>
+        </svg>
+        Voir la facture / PDF
+      </Link>
 
       {/* Toujours disponible, réglée ou non : c'est le document que le client
           attend. Le lien de paiement, lui, n'a de sens que si elle est impayée. */}
