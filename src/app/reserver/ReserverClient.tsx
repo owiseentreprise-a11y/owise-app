@@ -366,6 +366,11 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   }, [])
 
   // Code parrainage
+  /* « Comment nous avez-vous connus ? » — facultatif, jamais bloquant.
+   * Ajoute le 2026-10-16 : quatre reservations etrangeres en dix jours que
+   * PostHog classait toutes en « direct », sans referent. Aucun outil ne sait
+   * dire si un client vient d'un hotel, d'un ami ou d'un assistant ; lui, si. */
+  const [origine,      setOrigine]      = useState('')
   const [codeParrain,  setCodeParrain]  = useState('')
   const [codeValide,   setCodeValide]   = useState(false)
   const [codeLoading,  setCodeLoading]  = useState(false)
@@ -572,6 +577,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
         date_retour:     allerRetour ? dateRetour : '',
         adresse_arrivee_retour: allerRetour && arriveeRetour.label ? arriveeRetour.label : undefined,
         num_vol_train:   numVolTrain || undefined,
+        origine:         origine || undefined,
         terminal:        terminal || undefined,
         heure_arrivee_vol: heureArrivee || undefined,
         code_parrainage: codeValide ? codeParrain.toUpperCase().trim() : undefined,
@@ -1287,6 +1293,29 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 <input className="res-input" style={baseInput} type={f.type} placeholder={f.ph} value={f.val} onChange={e => f.set(e.target.value)} />
               </div>
             ))}
+
+            {/* Comment nous avez-vous connus ? */}
+            <div style={{ marginBottom: 14 }}>
+              <label htmlFor="res-origine" style={{ fontSize: 11, fontWeight: 600, color: '#6B6B6B', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+                Comment nous avez-vous connus&nbsp;? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel)</span>
+              </label>
+              <select
+                id="res-origine"
+                className="res-input"
+                style={baseInput}
+                value={origine}
+                onChange={e => setOrigine(e.target.value)}
+              >
+                <option value="">Je préfère ne pas répondre</option>
+                <option value="Recherche Google">Recherche Google</option>
+                <option value="ChatGPT ou autre assistant">ChatGPT ou un autre assistant</option>
+                <option value="Recommandation d’un hôtel">Recommandation d&apos;un hôtel ou d&apos;un château</option>
+                <option value="Bouche-à-oreille">Bouche-à-oreille</option>
+                <option value="Réseaux sociaux">Réseaux sociaux</option>
+                <option value="Déjà client">Je suis déjà client</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
 
             {/* Code parrainage */}
             <div style={{ marginBottom: 20 }}>

@@ -95,6 +95,17 @@ export async function createReservationCheckout(data: {
   etapes?: string[]
   gclid?: string
   ads_consent?: 'accepted' | 'refused' | 'unknown'
+  /**
+   * Reponse a « Comment nous avez-vous connus ? ».
+   *
+   * Le 2026-10-16, quatre reservations etrangeres en dix jours (Etats-Unis,
+   * Irlande, Portugal, 431 EUR) sans qu'aucun outil ne sache dire par ou ces
+   * clients etaient arrives : PostHog les classait tous en « direct », aucun
+   * referent. Une question au client est la seule source qui capte le
+   * bouche-a-oreille, la recommandation d'un hotel et les assistants qui ne
+   * transmettent rien. Facultative : elle ne doit jamais bloquer un paiement.
+   */
+  origine?: string
 }): Promise<{ error?: string; checkoutUrl?: string }> {
   const key = nettoyerCleEnv(process.env.STRIPE_SECRET_KEY)
   if (!key) return { error: 'Clé Stripe manquante' }
@@ -244,6 +255,7 @@ export async function createReservationCheckout(data: {
    * etre redemande par WhatsApp. Sans numero de vol, un retard d'avion n'est
    * pas vu et l'accueil a l'aeroport rate. */
   if (data.num_vol_train)     params.set('metadata[num_vol_train]', data.num_vol_train.slice(0, 99))
+  if (data.origine)           params.set('metadata[origine]', data.origine.slice(0, 99))
   if (data.terminal)          params.set('metadata[terminal]', data.terminal.slice(0, 99))
   if (data.heure_arrivee_vol) params.set('metadata[heure_arrivee_vol]', data.heure_arrivee_vol.slice(0, 19))
   params.set('metadata[zone_depart_id]', data.zone_depart_id)

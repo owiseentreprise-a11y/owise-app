@@ -281,6 +281,11 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     num_vol_train:     meta.num_vol_train || null,
     terminal:          meta.terminal || null,
     heure_arrivee_vol: meta.heure_arrivee_vol || null,
+    // « Comment nous avez-vous connus ? ». Faute de colonne dediee, la reponse
+    // va dans les notes, la ou l'exploitant la lit deja. Elle repond a la
+    // seule question que les outils de mesure ne savent pas trancher : d'ou
+    // vient un visiteur classe « direct ».
+    notes:           meta.origine ? `Connu par : ${meta.origine}` : null,
     statut:          'en_attente',
     mode_paiement:   'stripe',
     stripe_payment_intent_id: paymentIntentId,
