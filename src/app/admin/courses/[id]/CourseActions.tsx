@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction, estimerSurcoutEtapesAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 import { pourChampSaisie } from '@/lib/heure'
+import { formaterMontant } from '@/lib/montant'
 
 /** Style commun aux champs du panneau « Modifier la course ». */
 const champStyle: React.CSSProperties = {
@@ -568,7 +569,7 @@ export default function CourseActions({
               fontFamily: 'var(--font-jetbrains), monospace',
               fontSize: 20, color: 'var(--t2)',
             }}>
-              {course.prix_estime.toFixed(2)} €
+              {formaterMontant(course.prix_estime)}
             </div>
           </div>
         )}
@@ -616,7 +617,7 @@ export default function CourseActions({
               fontFamily: 'var(--font-jetbrains), monospace',
               fontSize: 22, color: 'var(--gold)', marginTop: 8, fontWeight: 500,
             }}>
-              {course.prix_final.toFixed(2)} €
+              {formaterMontant(course.prix_final)}
             </div>
           )}
         </div>
@@ -675,7 +676,7 @@ export default function CourseActions({
               <div style={{ background: 'var(--elevated)', borderRadius: 8, padding: '10px 12px' }}>
                 <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4 }}>Coût ST</div>
                 <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600, color: 'var(--red)' }}>
-                  {course.prix_sous_traitant != null ? `${course.prix_sous_traitant.toFixed(2)} €` : '—'}
+                  {course.prix_sous_traitant != null ? `${formaterMontant(course.prix_sous_traitant)}` : '—'}
                 </div>
               </div>
               <div style={{ background: 'var(--elevated)', borderRadius: 8, padding: '10px 12px' }}>
@@ -689,7 +690,7 @@ export default function CourseActions({
                       fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600,
                       color: marge == null ? 'var(--t3)' : marge >= 0 ? 'var(--grn)' : 'var(--red)',
                     }}>
-                      {marge != null ? `${marge.toFixed(2)} €` : '—'}
+                      {marge != null ? `${formaterMontant(marge)}` : '—'}
                     </div>
                   )
                 })()}
@@ -1294,7 +1295,7 @@ export default function CourseActions({
           </div>
           {course.paiement_statut === 'remboursee' || refundDone !== null ? (
             <div style={{ fontSize: 12, color: 'var(--t2)' }}>
-              ✓ Remboursé{refundDone !== null ? ` (${refundDone.toFixed(2)} €)` : ''}
+              ✓ Remboursé{refundDone !== null ? ` (${formaterMontant(refundDone)})` : ''}
             </div>
           ) : !refundOpen ? (
             <button

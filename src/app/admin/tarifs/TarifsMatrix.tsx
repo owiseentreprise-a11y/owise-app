@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updatePrixGrille } from './actions'
+import { formaterNombre } from '@/lib/montant'
 
 type Zone = { id: string; nom: string; code: string; type: string }
 type Grille = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
@@ -49,7 +50,10 @@ function PrixCell({
   // (calculerPrix ignore une valeur nulle et rend null). Afficher « 0 € » se
   // lisait comme un prix, d'où cet affichage explicite avec la formule réelle.
   const sansForfait = berline <= 0
-  const libelleKm = `${pecBerline.toFixed(0)} € + ${kmBerline.toFixed(2).replace('.', ',')} €/km`
+  // La virgule decimale venait d'un .replace('.', ',') ecrit ici : une
+  // deuxieme ecriture du format francais, a cote de celle de montant.ts.
+  // Le prix de prise en charge reste sans decimale, c'est voulu.
+  const libelleKm = `${pecBerline.toFixed(0)} € + ${formaterNombre(kmBerline)} €/km`
 
   // Case symétrique : non éditable. Les deux sens portent forcément le même
   // prix, une saisie des deux côtés ne pourrait que créer une divergence.

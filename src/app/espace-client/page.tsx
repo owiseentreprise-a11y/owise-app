@@ -8,6 +8,7 @@ import ParrainageWidget from './ParrainageWidget'
 import CourseActionsClient from './CourseActionsClient'
 import { getOrCreateParrainageCode, getParrainageStats } from './actions-parrainage'
 import { lireHeureCourse } from '@/lib/heure'
+import { formaterMontant } from '@/lib/montant'
 
 export const dynamic = 'force-dynamic'
 
@@ -259,7 +260,7 @@ export default async function EspaceClientPage({
                       )}
                     </div>
                     <div style={{ textAlign: 'right', fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>
-                      {Number(f.montant_ttc).toFixed(2)} €
+                      {formaterMontant(Number(f.montant_ttc))}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{

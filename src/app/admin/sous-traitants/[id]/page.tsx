@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { modifierSousTraitantAction, genererFactureSTAction, marquerFactureSTPayeeAction, creerCompteSTAction, supprimerCompteSTAction } from '../actions'
 import { STATUT_COURSE_LABEL, STATUT_COURSE_COLOR } from '@/lib/types'
 import { lireHeureCourse } from '@/lib/heure'
+import { formaterMontant } from '@/lib/montant'
 
 export const dynamic = 'force-dynamic'
 
@@ -137,7 +138,7 @@ export default async function SousTraitantDetailPage({
           {[
             { label: 'Courses totales', value: courses.length, mono: true },
             { label: 'Courses terminées', value: nbTerminees, mono: true },
-            { label: 'CA client', value: totalCA > 0 ? `${totalCA.toFixed(2)} €` : '—', mono: true, gold: true },
+            { label: 'CA client', value: totalCA > 0 ? `${formaterMontant(totalCA)}` : '—', mono: true, gold: true },
           ].map(k => (
             <div key={k.label} style={{
               background: 'var(--surface)', border: '1px solid var(--gb)',
@@ -160,8 +161,8 @@ export default async function SousTraitantDetailPage({
         {/* KPIs financiers */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'Coût sous-traitant', value: totalCout > 0 ? `${totalCout.toFixed(2)} €` : '—', color: 'var(--red)' },
-            { label: 'Marge Owise', value: totalCout > 0 ? `${totalMarge.toFixed(2)} €` : '—', color: totalMarge >= 0 ? 'var(--grn)' : 'var(--red)' },
+            { label: 'Coût sous-traitant', value: totalCout > 0 ? `${formaterMontant(totalCout)}` : '—', color: 'var(--red)' },
+            { label: 'Marge Owise', value: totalCout > 0 ? `${formaterMontant(totalMarge)}` : '—', color: totalMarge >= 0 ? 'var(--grn)' : 'var(--red)' },
             { label: 'Taux de marge', value: totalCA > 0 && totalCout > 0 ? `${((totalMarge / totalCA) * 100).toFixed(1)} %` : '—', color: 'var(--blu)' },
           ].map(k => (
             <div key={k.label} style={{
@@ -576,7 +577,7 @@ export default async function SousTraitantDetailPage({
                       )}
                     </div>
                     <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 700, color: 'var(--t1)' }}>
-                      {Number(f.montant_ht).toFixed(2)} €
+                      {formaterMontant(Number(f.montant_ht))}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{

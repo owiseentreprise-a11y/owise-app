@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { progresserCourseSTAction, accepterCourseSTAction, refuserCourseSTAction, updateProfilSTAction } from './actions'
 import { TYPE_VEHICULE_LABEL, type StatutCourse } from '@/lib/types'
 import { lireHeureCourse, jourParis, aujourdhuiParis } from '@/lib/heure'
+import { formaterMontant } from '@/lib/montant'
 
 const ETAPES = [
   { statut: 'acceptee',        label: 'Acceptée',     action: 'Départ vers le client', color: 'var(--blu)' },
@@ -528,8 +529,8 @@ export default function SousTraitantPortal({
             {/* Résumé */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {[
-                { label: 'À recevoir', value: totalDu > 0 ? `${totalDu.toFixed(2)} €` : '—', color: 'var(--amb)' },
-                { label: 'Déjà reçu', value: totalPaye > 0 ? `${totalPaye.toFixed(2)} €` : '—', color: 'var(--grn)' },
+                { label: 'À recevoir', value: totalDu > 0 ? `${formaterMontant(totalDu)}` : '—', color: 'var(--amb)' },
+                { label: 'Déjà reçu', value: totalPaye > 0 ? `${formaterMontant(totalPaye)}` : '—', color: 'var(--grn)' },
               ].map(k => (
                 <div key={k.label} style={{ background: '#FFFFFF', border: '1px solid rgba(201,168,76,.18)', borderRadius: 14, padding: '16px 18px' }}>
                   <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>{k.label}</div>
@@ -562,7 +563,7 @@ export default function SousTraitantPortal({
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: 'var(--t1)', marginBottom: 4 }}>
-                        {f.montant_ht.toFixed(2)} €
+                        {formaterMontant(f.montant_ht)}
                       </div>
                       <span style={{
                         fontSize: 9, padding: '2px 8px', borderRadius: 4, fontWeight: 600,

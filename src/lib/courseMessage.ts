@@ -1,5 +1,6 @@
 import { dateCourse, heureCourse } from '@/lib/heure'
 import { TYPE_VEHICULE_LABEL, type TypeVehicule } from './types'
+import { formaterMontant } from './montant'
 
 export type InfosCourseParams = {
   ref: string
@@ -53,7 +54,7 @@ export function buildInfosCourseTexte(p: InfosCourseParams): string {
     lignes.push(`Client : ${p.passagerNom}${p.passagerTel ? ` — ${p.passagerTel}` : ''}`)
   }
   if (p.paiementABord && p.prix != null) {
-    lignes.push(`Montant à percevoir (paiement à bord) : ${p.prix.toFixed(2)} €`)
+    lignes.push(`Montant à percevoir (paiement à bord) : ${formaterMontant(p.prix)}`)
   }
   if (p.notes) {
     lignes.push(`Notes : ${p.notes}`)

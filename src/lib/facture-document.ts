@@ -41,14 +41,13 @@ export const STATUT_LABEL: Record<string, string> = {
  * admin, « 59.00 € » sur la copie remise au client. La seconde est fautive en
  * français. Une seule définition ici, pour que l'écran, le document imprimé et
  * le PDF joint à l'e-mail écrivent la même somme de la même façon.
+ *
+ * Déplacées dans `montant.ts` le 2026-10-16 et réexportées ici : ce fichier
+ * importe `createAdminClient`, et les composants qui tournent dans le
+ * navigateur ne peuvent donc pas s'en servir sans embarquer du code serveur.
+ * Il n'existe toujours qu'une seule écriture d'un montant dans le projet.
  */
-export function formaterNombre(v: number): string {
-  return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-export function formaterMontant(v: number | null | undefined): string {
-  return v === null || v === undefined ? '—' : `${formaterNombre(Number(v))} €`
-}
+export { formaterNombre, formaterMontant } from './montant'
 
 export type LigneFacture = {
   /** Date de la course, déjà formatée en jj/mm. */

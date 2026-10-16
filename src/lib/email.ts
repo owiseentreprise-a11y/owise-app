@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { TYPE_VEHICULE_LABEL } from './types'
 import { genererFacturePdf } from './facture-pdf'
-import { formaterMontant } from './facture-document'
+import { formaterMontant } from './montant'
 import type { InfosCourseParams } from './courseMessage'
 import { dateCourse, heureCourse } from '@/lib/heure'
 
@@ -234,7 +234,7 @@ export async function envoyerConfirmationClient(params: {
         ${row('Départ', depart)}
         ${arretsBloc}
         ${row('Arrivée', arrivee)}
-        ${prixEstime ? row('Tarif estimé', `${prixEstime.toFixed(2)} €`) : ''}
+        ${prixEstime ? row('Tarif estimé', `${formaterMontant(prixEstime)}`) : ''}
       </table>
     </div>`
 
@@ -253,7 +253,7 @@ export async function envoyerConfirmationClient(params: {
       <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="font-size:13px;color:#EDE8DF;">Total aller-retour</td>
-          <td align="right" style="font-size:18px;color:#C9A84C;font-weight:600;">${(prixEstime * 2).toFixed(2)} €</td>
+          <td align="right" style="font-size:18px;color:#C9A84C;font-weight:600;">${formaterMontant((prixEstime * 2))}</td>
         </tr></table>
       </div>` : ''}`
     : `
@@ -267,7 +267,7 @@ export async function envoyerConfirmationClient(params: {
           ${row('Arrivée', adresseArrivee)}
           ${row('Véhicule', typeVehicule)}
           ${row('Passagers', String(nbPassagers))}
-          ${prixEstime ? row('Tarif estimé', `${prixEstime.toFixed(2)} €`) : ''}
+          ${prixEstime ? row('Tarif estimé', `${formaterMontant(prixEstime)}`) : ''}
         </table>
       </div>`
 
@@ -312,13 +312,13 @@ export async function envoyerLienPaiement(params: {
         ${row('Heure', fmtTime(datePrevue))}
         ${row('Départ', adresseDepart)}
         ${row('Arrivée', adresseArrivee)}
-        ${row('Montant', `${prix.toFixed(2)} €`)}
+        ${row('Montant', `${formaterMontant(prix)}`)}
       </table>
     </div>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr><td align="center">
-        <a href="${lienPaiement}" style="display:inline-block;padding:14px 32px;border-radius:8px;background:#C9A84C;color:#09091A;font-weight:600;font-size:14px;text-decoration:none;">Payer ${prix.toFixed(2)} € →</a>
+        <a href="${lienPaiement}" style="display:inline-block;padding:14px 32px;border-radius:8px;background:#C9A84C;color:#09091A;font-weight:600;font-size:14px;text-decoration:none;">Payer ${formaterMontant(prix)} →</a>
       </td></tr>
     </table>
 
@@ -540,7 +540,7 @@ export async function envoyerRecuClient(params: {
     ${afficherPrix ? `
     <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;text-align:center;">
       <div style="font-size:11px;color:#848499;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Montant</div>
-      <div style="font-size:32px;font-weight:700;color:#C9A84C;font-family:'Courier New',monospace;">${prixFinal.toFixed(2)} €</div>
+      <div style="font-size:32px;font-weight:700;color:#C9A84C;font-family:'Courier New',monospace;">${formaterMontant(prixFinal)}</div>
     </div>` : `
     <div style="background:#F8F6F1;border-radius:10px;padding:14px 24px;margin-bottom:24px;text-align:center;">
       <div style="font-size:13px;color:#848499;">Cette course est facturée à votre entreprise.</div>
@@ -576,7 +576,7 @@ export async function envoyerRecuClient(params: {
   // sans même ouvrir, ce qui annulait le masquage fait dans le corps.
   await send(
     clientEmail,
-    afficherPrix ? `Reçu course #${refCourse} – ${prixFinal.toFixed(2)} €` : `Reçu de votre course #${refCourse}`,
+    afficherPrix ? `Reçu course #${refCourse} – ${formaterMontant(prixFinal)}` : `Reçu de votre course #${refCourse}`,
     html,
   )
 }
@@ -645,7 +645,7 @@ export async function envoyerLienPaiementClient(params: {
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         ${row('Facture', numeroFacture)}
-        ${row('Montant TTC', `${montantTTC.toFixed(2)} €`)}
+        ${row('Montant TTC', `${formaterMontant(montantTTC)}`)}
         ${dateEcheance ? row('Échéance', fmtDate(dateEcheance)) : ''}
       </table>
     </div>
@@ -662,7 +662,7 @@ export async function envoyerLienPaiementClient(params: {
     </p>
   `)
 
-  await send(clientEmail, `Facture ${numeroFacture} – ${montantTTC.toFixed(2)} € à régler`, html)
+  await send(clientEmail, `Facture ${numeroFacture} – ${formaterMontant(montantTTC)} à régler`, html)
 }
 
 // ── 5b. Nouvelle facture auto-générée ────────────────────────────────────────
@@ -781,7 +781,7 @@ export async function envoyerRelanceFacture(params: {
     <div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         ${row('Facture', factureNumero)}
-        ${row('Montant TTC', `<strong style="color:#D95454">${montantTtc.toFixed(2)} €</strong>`)}
+        ${row('Montant TTC', `<strong style="color:#D95454">${formaterMontant(montantTtc)}</strong>`)}
         ${row('Échéance', fmtDate(dateEcheance))}
         ${row('Retard', `${joursRetard} jour${joursRetard > 1 ? 's' : ''}`)}
       </table>
@@ -797,7 +797,7 @@ export async function envoyerRelanceFacture(params: {
       Pour tout arrangement : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
     </p>
   `)
-  await send(clientEmail, `[Relance] Facture ${factureNumero} – ${montantTtc.toFixed(2)} € en retard de ${joursRetard}j`, html)
+  await send(clientEmail, `[Relance] Facture ${factureNumero} – ${formaterMontant(montantTtc)} en retard de ${joursRetard}j`, html)
 }
 
 // ── 5d. Rappel interne — factures sous-traitants en attente depuis longtemps ─
@@ -814,12 +814,12 @@ export async function envoyerRappelFacturesST(params: {
   const html = base(`
     <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Factures sous-traitants en attente</h2>
     <p style="margin:0 0 24px;font-size:14px;color:#848499;">
-      ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente de règlement depuis plus de 14 jours, pour un total de <strong style="color:#09091A">${totalDu.toFixed(2)} €</strong>.
+      ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente de règlement depuis plus de 14 jours, pour un total de <strong style="color:#09091A">${formaterMontant(totalDu)}</strong>.
     </p>
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${factures.map(f => row(f.stNom, `${f.montantHt.toFixed(2)} € · ${f.periode} · en attente depuis ${f.jours}j`)).join('')}
+        ${factures.map(f => row(f.stNom, `${formaterMontant(f.montantHt)} · ${f.periode} · en attente depuis ${f.jours}j`)).join('')}
       </table>
     </div>
 
@@ -831,7 +831,7 @@ export async function envoyerRappelFacturesST(params: {
     </div>
   `)
 
-  await send(ADMIN_EMAIL, `[OWISE] ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente – ${totalDu.toFixed(2)} €`, html)
+  await send(ADMIN_EMAIL, `[OWISE] ${factures.length} facture${factures.length > 1 ? 's' : ''} sous-traitant${factures.length > 1 ? 's' : ''} en attente – ${formaterMontant(totalDu)}`, html)
 }
 
 // ── 6b. Réinitialisation mot de passe ────────────────────────────────────────
@@ -1186,7 +1186,7 @@ export async function envoyerInfosCourseEmail(params: InfosCourseParams & {
         ${row('Véhicule', TYPE_VEHICULE_LABEL[typeVehicule])}
         ${numVolTrain ? row('Vol / Train', `${numVolTrain}${terminal ? ' — ' + terminal : ''}${heureArriveeVol ? ' — ' + heureArriveeVol : ''}`) : ''}
         ${passagerNom ? row('Client', `${passagerNom}${passagerTel ? ' — ' + passagerTel : ''}`) : ''}
-        ${paiementABord && prix != null ? row('Montant à percevoir', `${prix.toFixed(2)} € (paiement à bord)`) : ''}
+        ${paiementABord && prix != null ? row('Montant à percevoir', `${formaterMontant(prix)} (paiement à bord)`) : ''}
         ${notes ? row('Notes', notes) : ''}
       </table>
     </div>

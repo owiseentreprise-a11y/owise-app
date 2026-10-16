@@ -9,6 +9,7 @@ import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConve
 import { genererNumeroFacture } from '@/lib/facturation'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
+import { formaterMontant } from '@/lib/montant'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -159,7 +160,7 @@ async function alerterEchecReservation(session: any, paymentIntentId: string | n
       html: `<p><strong>Un client a paye et sa course n'a pas pu etre enregistree.</strong></p>
              <p>Il n'a recu aucune confirmation et aucun chauffeur ne lui est affecte.
                 Les informations ci-dessous sont la seule copie de sa demande.</p>
-             <p><strong>Montant :</strong> ${((session?.amount_total ?? 0) / 100).toFixed(2)} €<br>
+             <p><strong>Montant :</strong> ${formaterMontant((session?.amount_total ?? 0) / 100)}<br>
                 <strong>Paiement :</strong> <code>${paymentIntentId ?? '—'}</code><br>
                 <strong>Session :</strong> <code>${session?.id ?? '—'}</code></p>
              <p><strong>Erreur :</strong> <code>${String((err as any)?.message ?? err).slice(0, 400)}</code></p>

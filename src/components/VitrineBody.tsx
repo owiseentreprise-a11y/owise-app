@@ -150,6 +150,7 @@ const VEH_DISPLAY = [
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
 import type { AddressSuggestion as VtSugg } from '@/lib/addressSearch'
+import { formaterMontant } from '@/lib/montant'
 
 function VtAddressInput({ value, onSelect, placeholder, className, style }: {
   value: string
@@ -1580,7 +1581,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 color: '#C9A84C',
                 name: 'Paris & IDF',
                 villes: ['Tous arrondissements', 'Versailles', 'Boulogne, Saint-Denis…'],
-                prix: b ? `${Number(b.prix_km).toFixed(2)} €/km` : null,
+                prix: b ? `${formaterMontant(Number(b.prix_km))}/km` : null,
                 prixLabel: `+ ${b ? Number(b.prise_en_charge).toFixed(0) : '20'} € prise en charge`,
                 tag: 'Tarif au kilomètre',
                 tagColor: '#C9A84C',
