@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { DESTINATION_SLUGS } from './[destination]/page'
+import { DESTINATION_SLUGS, JUMEAUX_EN } from './[destination]/page'
 
 const BASE = 'https://www.owise.fr'
 
@@ -43,6 +43,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(posts.length > 0 ? [{ url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.7 }] : []),
     ...DESTINATION_SLUGS.map(slug => ({
       url: `${BASE}/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    // Pages en anglais. La liste vient de JUMEAUX_EN, l'objet qui porte déjà
+    // les hreflang : une page anglaise ajoutée là entre d'elle-même ici.
+    ...Object.values(JUMEAUX_EN).map(chemin => ({
+      url: `${BASE}${chemin}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,

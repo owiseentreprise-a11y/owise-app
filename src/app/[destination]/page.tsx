@@ -1209,6 +1209,26 @@ export const DESTINATIONS: Record<string, {
   },
 }
 
+/**
+ * Pages françaises qui ont une jumelle en anglais.
+ *
+ * Un hreflang n'est pris en compte par Google que s'il est déclaré **dans les
+ * deux sens** : la page anglaise désigne la française, et la française doit
+ * désigner l'anglaise. Déclaré d'un seul côté, il est purement ignoré — et le
+ * défaut est invisible, puisque les deux pages s'affichent normalement.
+ *
+ * Une seule entrée pour l'instant, volontairement : la page anglaise de
+ * Chantilly ↔ CDG est un test, décidé sur les 36 impressions anglaises que
+ * Search Console enregistre sur ce trajet (positions 31 et 43, zéro clic).
+ *
+ * Exporté : le sitemap en dérive la liste des pages anglaises. Une liste
+ * recopiée à la main a déjà laissé une page hors du sitemap pendant des jours
+ * (vtc-goussainville, le 2026-09-21) — on ne recommence pas.
+ */
+export const JUMEAUX_EN: Record<string, string> = {
+  'vtc-chantilly-cdg': '/en/chantilly-to-charles-de-gaulle-airport',
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }): Promise<Metadata> {
   const { destination } = await params
   const dest = DESTINATIONS[destination]
@@ -1218,7 +1238,16 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
     title: dest.metaTitle,
     description: dest.metaDesc,
     keywords: dest.keywords,
-    alternates: { canonical: `${BASE}/${dest.slug}` },
+    alternates: {
+      canonical: `${BASE}/${dest.slug}`,
+      ...(JUMEAUX_EN[dest.slug] ? {
+        languages: {
+          'fr-FR':     `${BASE}/${dest.slug}`,
+          'en':        `${BASE}${JUMEAUX_EN[dest.slug]}`,
+          'x-default': `${BASE}/${dest.slug}`,
+        },
+      } : {}),
+    },
     openGraph: {
       title: dest.metaTitle,
       description: dest.metaDesc,
