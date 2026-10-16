@@ -686,8 +686,22 @@ export async function envoyerNouvelleFacture(params: {
    * pour qui ne se connectera jamais (réservation prise par téléphone).
    */
   factureId?: string
+  /**
+   * PDF déjà constitué, à joindre À LA PLACE de celui que le système produit.
+   * Réservé aux factures établies hors du système, dont les prestations ne
+   * sont pas des courses en base : le PDF généré ne saurait alors rien en
+   * dire. Laissé vide, le comportement normal s'applique.
+   */
+  pieceJointeFournie?: PieceJointe
+  /**
+   * Client sans compte sur le site. Le message n'annonce alors ni espace
+   * client ni bouton « Voir ma facture » : le lien mènerait à un écran de
+   * connexion impossible à franchir, et une facture qu'on ne peut pas ouvrir
+   * se règle mal. Le PDF joint devient le seul justificatif, ce qui suffit.
+   */
+  sansEspaceClient?: boolean
 }) {
-  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture, dejaReglee, modePaiement, factureId } = params
+  const { clientEmail, clientNom, factureNumero, montantHt, montantTtc, tauxTva, dateEcheance, refCourse, lienFacture, dejaReglee, modePaiement, factureId, sansEspaceClient } = params
   const tva = montantTtc - montantHt
   const tauxLabel = (tauxTva % 1 === 0 ? String(tauxTva) : tauxTva.toFixed(1)).replace('.', ',')
   const MODE_LABEL: Record<string, string> = {
@@ -705,8 +719,16 @@ export async function envoyerNouvelleFacture(params: {
   // génération ne doit jamais empêcher l'envoi du message lui-même, mais il
   // doit laisser une trace — sinon le client reçoit un mail muet et personne
   // ne le sait.
-  let pieceJointe: PieceJointe | null = null
-  if (factureId) {
+  //
+  // `pieceJointeFournie` remplace ce PDF quand le document a été établi hors
+  // du système. Cas réel : la facture OW-202610-0006 (SKORP Production,
+  // 1 090 €) porte cinq transferts avec attentes et arrêts qui n'ont jamais
+  // été saisis comme courses. Le PDF produit ici ne peut donc rien en dire —
+  // 1,8 Ko, aucun nom de client, aucune ligne — alors que le document remis
+  // au client les détaille. Envoyer le PDF du système aurait été envoyer un
+  // justificatif plus pauvre que celui que le client attend.
+  let pieceJointe: PieceJointe | null = params.pieceJointeFournie ?? null
+  if (!pieceJointe && factureId) {
     try {
       const pdf = await genererFacturePdf(factureId)
       if (pdf) pieceJointe = { filename: pdf.nomFichier, content: Buffer.from(pdf.contenu) }
@@ -722,16 +744,18 @@ export async function envoyerNouvelleFacture(params: {
       Bonjour ${clientNom},<br>
       ${dejaReglee
         ? 'Voici votre facture, déjà réglée. Aucun paiement n\'est attendu de votre part — ce document vous sert de justificatif.'
-        : 'Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.'}
+        : sansEspaceClient
+          ? 'Voici votre facture, à régler par virement à l\'échéance indiquée ci-dessous. Les coordonnées bancaires figurent sur le document joint.'
+          : 'Suite à votre course, voici votre facture. Elle est disponible dans votre espace client.'}
       ${pieceJointe ? '<br><strong style="color:#09091A">Elle est jointe à ce message au format PDF</strong>, vous n\'avez rien à installer ni aucun compte à ouvrir pour la lire.' : ''}
     </p>
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:20px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         ${row('Facture', factureNumero)}
-        ${row('Course', `#${refCourse}`)}
+        ${refCourse === factureNumero ? '' : row('Course', `#${refCourse}`)}
         ${row('Montant HT', formaterMontant(montantHt))}
-        ${row(`TVA (${tauxLabel}%)`, formaterMontant(tva))}
+        ${tva === 0 ? row('TVA', 'non applicable') : row(`TVA (${tauxLabel}%)`, formaterMontant(tva))}
         ${row('Montant TTC', `<strong style="color:#09091A">${formaterMontant(montantTtc)}</strong>`)}
         ${regle
           ? row('Statut', `<strong style="color:#3DB87A">${regle}</strong>`)
@@ -739,12 +763,18 @@ export async function envoyerNouvelleFacture(params: {
       </table>
     </div>
 
-    <div style="text-align:center;margin-bottom:24px;">
+    ${tva === 0 ? `<p style="margin:0 0 20px;font-size:12.5px;color:#848499;line-height:1.7;">
+      <strong style="color:#09091A">TVA non applicable</strong>, article 293 B du Code général des impôts.
+      Owise bénéficie de la franchise en base : aucune TVA n'est due ni facturée, et le montant
+      indiqué est donc le montant total à régler — il n'y a pas de distinction entre HT et TTC.
+    </p>` : ''}
+
+    ${sansEspaceClient ? '' : `<div style="text-align:center;margin-bottom:24px;">
       <a href="${lienFacture}"
          style="display:inline-block;background:#C9A84C;color:#09091A;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.02em;">
         Voir ma facture →
       </a>
-    </div>
+    </div>`}
     <p style="margin:0;font-size:12px;color:#848499;text-align:center;">
       Questions : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a>
     </p>

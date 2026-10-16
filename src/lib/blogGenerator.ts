@@ -20,6 +20,17 @@ type Sujet = {
   depart?: string
   arrivee?: string
   theme?: string
+  /**
+   * Vrai quand `theme` désigne un SUJET et non un LIEU.
+   *
+   * Le modèle « entreprise » écrit « les entreprises basées à ${theme} » et
+   * « Transport d'entreprise à ${theme} » : juste pour « Creil et Oise Sud »,
+   * absurde pour « séminaires et événements d'entreprise ». L'article publié
+   * le 2026-10-16 annonçait « les entreprises basées à séminaires et
+   * événements d'entreprise ». Deux autres sujets du même genre attendaient
+   * leur tour.
+   */
+  themeHorsLieu?: boolean
 }
 
 export const SUJETS: Sujet[] = [
@@ -74,8 +85,8 @@ export const SUJETS: Sujet[] = [
   { id: 'entreprise-creil',           type: 'entreprise', theme: "Creil et Oise Sud"                            },
   { id: 'entreprise-compiegne',       type: 'entreprise', theme: "Compiègne et Oise Nord"                       },
   { id: 'entreprise-chantilly',       type: 'entreprise', theme: "Chantilly et secteur hippodrome"              },
-  { id: 'entreprise-seminaire',       type: 'entreprise', theme: "séminaires et événements d'entreprise"        },
-  { id: 'entreprise-facturation',     type: 'entreprise', theme: "facturation mensuelle compte entreprise"      },
+  { id: 'entreprise-seminaire',       type: 'entreprise', theme: "séminaires et événements d'entreprise",       themeHorsLieu: true },
+  { id: 'entreprise-facturation',     type: 'entreprise', theme: "facturation mensuelle compte entreprise",     themeHorsLieu: true },
   // Comparatifs
   { id: 'comparatif-vtc-taxi-cdg',    type: 'comparatif', theme: "VTC vs taxi pour CDG depuis l'Oise"          },
   { id: 'comparatif-vtc-train-paris', type: 'comparatif', theme: "VTC vs train Paris depuis Creil/Senlis"      },
@@ -155,7 +166,7 @@ export const SUJETS: Sujet[] = [
   { id: 'guide-pmr-oise',           type: 'conseils', theme: "transport PMR et personnes à mobilité réduite dans l'Oise" },
   { id: 'guide-soiree-paris-oise',  type: 'conseils', theme: "retour de soirée Paris vers l'Oise en VTC" },
   // Entreprises / B2B Oise
-  { id: 'entreprise-seminaire-oise', type: 'entreprise', theme: "séminaires et team buildings dans l'Oise : Chantilly, Compiègne, Senlis" },
+  { id: 'entreprise-seminaire-oise', type: 'entreprise', theme: "séminaires et team buildings dans l'Oise : Chantilly, Compiègne, Senlis", themeHorsLieu: true },
   // Comparatifs Oise
   { id: 'comparatif-taxi-vtc-oise',       type: 'comparatif', theme: "taxi vs VTC depuis l'Oise vers CDG : tarifs et fiabilité" },
   { id: 'comparatif-meilleur-vtc-oise',   type: 'comparatif', theme: "meilleur VTC Oise CDG : pourquoi choisir Owise" },
@@ -514,23 +525,41 @@ function genConseils(s: Sujet): BlogPost {
 
 function genEntreprise(s: Sujet): BlogPost {
   const theme = s.theme || 'votre entreprise'
+
+  /* `theme` est-il un lieu ou un sujet ? Les phrases « à ${theme} » et
+   * « basées à ${theme} » n'ont de sens que pour un lieu. Voir le drapeau
+   * `themeHorsLieu` sur le type Sujet. */
+  const lieu = !s.themeHorsLieu
+
   return {
     slug:      `vtc-entreprise-${slugify(theme)}`,
     sujet_id:  s.id,
     categorie: 'entreprise',
     mots_cles: [`vtc entreprise ${theme.toLowerCase()}`, `transport d'affaires ${theme.toLowerCase()}`, `compte entreprise vtc`],
     meta_titre: `Chauffeur Privé Entreprise ${theme} | Owise`,
-    meta_desc:  `Solution transport professionnelle pour les entreprises de ${theme}. Compte entreprise, facturation mensuelle, tarif fixe. Votre chauffeur Owise, partenaire mobilité.`,
-    titre:      `Transport d'entreprise à ${theme} : la solution chauffeur privé`,
-    intro:      `Les entreprises de ${theme} ont des besoins transport spécifiques : régularité, ponctualité, discrétion et facturation simplifiée. Votre chauffeur Owise propose une solution dédiée aux professionnels — compte entreprise, facturation mensuelle centralisée et tarifs négociés pour les déplacements récurrents.`,
+    meta_desc:  lieu
+      ? `Solution transport professionnelle pour les entreprises de ${theme}. Compte entreprise, facturation mensuelle, tarif fixe. Votre chauffeur Owise, partenaire mobilité.`
+      : `Solution transport professionnelle — ${theme}. Compte entreprise, facturation mensuelle, tarif fixe. Votre chauffeur Owise, partenaire mobilité.`,
+    titre: lieu
+      ? `Transport d'entreprise à ${theme} : la solution chauffeur privé`
+      : `${theme.charAt(0).toUpperCase()}${theme.slice(1)} : la solution chauffeur privé`,
+    intro: lieu
+      ? `Les entreprises de ${theme} ont des besoins transport spécifiques : régularité, ponctualité, discrétion et facturation simplifiée. Votre chauffeur Owise propose une solution dédiée aux professionnels — compte entreprise, facturation mensuelle centralisée et tarifs négociés pour les déplacements récurrents.`
+      : `Pour ${theme}, les besoins transport sont spécifiques : régularité, ponctualité, discrétion et facturation simplifiée. Votre chauffeur Owise propose une solution dédiée aux professionnels — compte entreprise, facturation mensuelle centralisée et tarifs négociés pour les déplacements récurrents.`,
     paragraphes: [
       {
         titre: `Pourquoi les entreprises choisissent Owise`,
-        texte: `Les entreprises basées à ${theme} ou ayant des collaborateurs dans l'Oise font confiance à votre chauffeur Owise pour leurs déplacements professionnels : transferts aéroport (CDG, Orly, Beauvais), navettes entre sites, transport de clients, séminaires. Le tarif fixe garanti simplifie la comptabilité et élimine les notes de frais imprévisibles.`,
+        texte: lieu
+          ? `Les entreprises basées à ${theme} ou ayant des collaborateurs dans l'Oise font confiance à votre chauffeur Owise pour leurs déplacements professionnels : transferts aéroport (CDG, Orly, Beauvais), navettes entre sites, transport de clients, séminaires. Le tarif fixe garanti simplifie la comptabilité et élimine les notes de frais imprévisibles.`
+          : `Les entreprises de l'Oise et d'Île-de-France font confiance à votre chauffeur Owise pour leurs déplacements professionnels : transferts aéroport (CDG, Orly, Beauvais), navettes entre sites, transport de clients, séminaires. Le tarif fixe garanti simplifie la comptabilité et élimine les notes de frais imprévisibles.`,
       },
       {
         titre: `Compte entreprise et facturation mensuelle`,
-        texte: `Owise propose un compte entreprise avec facturation mensuelle centralisée. Toutes les courses du mois sont regroupées sur une facture unique, avec référence collaborateur et validation admin. Compatible avec les obligations comptables françaises — TVA récupérable, mentions légales complètes.`,
+        /* Disait « TVA récupérable » jusqu'au 2026-10-16 — faux, et publié sur
+         * cinq articles. Owise est en franchise en base : il n'y a aucune TVA
+         * à récupérer, puisqu'il n'y en a aucune de facturée. La phrase
+         * contredisait les factures elles-mêmes, qui portent l'article 293 B. */
+        texte: `Owise propose un compte entreprise avec facturation mensuelle centralisée. Toutes les courses du mois sont regroupées sur une facture unique, avec référence collaborateur et validation admin. Owise bénéficie de la franchise en base de TVA (article 293 B du Code général des impôts) : aucune TVA n'est facturée, le montant est net de taxe, et les mentions légales sont complètes.`,
       },
       {
         titre: `Transport de clients et partenaires`,
@@ -559,7 +588,12 @@ function genEntreprise(s: Sujet): BlogPost {
       { question: `Les transferts aéroport sont-ils inclus dans le compte entreprise ?`, reponse: `Oui, CDG, Orly et Beauvais sont desservis avec tarif fixe garanti. Votre chauffeur Owise suit le vol en temps réel.` },
       { question: `Quel délai pour une réservation entreprise ?`, reponse: `Réservation possible jusqu'à quelques heures avant la course. Pour les événements ou les vols matinaux, anticipez la veille.` },
       { question: `Y a-t-il des tarifs préférentiels pour les clients réguliers ?`, reponse: `Oui, les comptes entreprise avec volume régulier bénéficient de conditions négociées. Demandez un devis personnalisé.` },
-      { question: `Owise peut-il fournir un justificatif TVA ?`, reponse: `Oui, toutes les factures Owise incluent les mentions légales obligatoires et le numéro SIRET pour la comptabilité.` },
+      /* Disait « un justificatif TVA » : la question laissait entendre qu'une
+       * TVA figure sur la facture. Il n'y en a aucune — franchise en base,
+       * article 293 B. La réponse, elle, était juste : mentions légales et
+       * SIRET. On corrige la question et on dit la franchise explicitement,
+       * puisque c'est exactement ce qu'un comptable cherche à savoir. */
+      { question: `Owise fournit-il une facture pour la comptabilité ?`, reponse: `Oui, toutes les factures Owise incluent les mentions légales obligatoires et le numéro SIRET. Owise bénéficie de la franchise en base de TVA (article 293 B du Code général des impôts) : aucune TVA n'y figure, le montant est net de taxe.` },
       { question: `Le transport d'équipements professionnels est-il possible ?`, reponse: `Oui, dans la limite des capacités du véhicule. Pour les équipements volumineux, le van 7 places est recommandé.` },
     ],
   }
