@@ -51,6 +51,23 @@ function str(v: unknown): string {
   return v == null || v === '' ? '—' : String(v)
 }
 
+/**
+ * Les écrans internes ne sont pas de l'audience.
+ *
+ * Sans ce filtre, les sept premières pages du classement étaient /admin,
+ * /admin/courses, /admin/estimations… — la navigation quotidienne de
+ * l'exploitant comptée comme des visiteurs. Au 2026-10-16 cela donnait
+ * « France 74 » en tête des pays alors qu'il s'agissait surtout de lui, et
+ * gonflait « $direct » à 111. Une statistique d'audience qui compte celui qui
+ * la regarde ne sert à rien.
+ */
+const PUBLIC_SEULEMENT = `
+        AND properties.\`$pathname\` NOT LIKE '/admin%'
+        AND properties.\`$pathname\` NOT LIKE '/sous-traitant%'
+        AND properties.\`$pathname\` NOT LIKE '/chauffeur%'
+        AND properties.\`$pathname\` NOT LIKE '/espace-client%'
+        AND properties.\`$pathname\` NOT LIKE '%login%'`
+
 export default async function AnalyticsPage() {
   // ── PostHog queries (parallèles) ───────────────────────────
   const [
@@ -60,6 +77,7 @@ export default async function AnalyticsPage() {
     countriesRows,
     referrersRows,
     devicesRows,
+    etrangersRows,
     estCount,
   ] = await Promise.all([
     // KPIs globaux 30j
@@ -71,6 +89,7 @@ export default async function AnalyticsPage() {
       FROM events
       WHERE event = '$pageview'
         AND timestamp >= now() - interval 30 day
+        ${PUBLIC_SEULEMENT}
     `),
     // Visiteurs par jour (14j)
     phQuery(`
@@ -81,6 +100,7 @@ export default async function AnalyticsPage() {
       FROM events
       WHERE event = '$pageview'
         AND timestamp >= now() - interval 14 day
+        ${PUBLIC_SEULEMENT}
       GROUP BY day
       ORDER BY day ASC
     `),
@@ -93,6 +113,7 @@ export default async function AnalyticsPage() {
       FROM events
       WHERE event = '$pageview'
         AND timestamp >= now() - interval 30 day
+        ${PUBLIC_SEULEMENT}
       GROUP BY page
       ORDER BY views DESC
       LIMIT 8
@@ -107,6 +128,7 @@ export default async function AnalyticsPage() {
       WHERE event = '$pageview'
         AND timestamp >= now() - interval 30 day
         AND country != ''
+        ${PUBLIC_SEULEMENT}
       GROUP BY country
       ORDER BY visitors DESC
       LIMIT 8
@@ -121,6 +143,7 @@ export default async function AnalyticsPage() {
         AND timestamp >= now() - interval 30 day
         AND referrer != ''
         AND referrer NOT LIKE '%owise%'
+        ${PUBLIC_SEULEMENT}
       GROUP BY referrer
       ORDER BY visitors DESC
       LIMIT 8
@@ -133,8 +156,39 @@ export default async function AnalyticsPage() {
       FROM events
       WHERE event = '$pageview'
         AND timestamp >= now() - interval 30 day
+        ${PUBLIC_SEULEMENT}
       GROUP BY device
       ORDER BY visitors DESC
+    `),
+    /**
+     * D'où viennent les visiteurs ÉTRANGERS — pays croisé avec la source.
+     *
+     * C'est la question à laquelle aucun tableau ne répondait. On voyait
+     * « United States 45 » d'un côté et « $direct 111 » de l'autre, sans
+     * jamais savoir si ces Américains arrivaient de ChatGPT, d'un lien
+     * partagé ou d'un moteur. Quatre réservations étrangères en dix jours
+     * (États-Unis, Irlande, Portugal) rendaient la réponse décisive : elle
+     * détermine où placer l'effort.
+     *
+     * `$direct` reste ambigu — lien tapé, favori, application sans référent,
+     * ou assistant qui n'en transmet pas. Mais tout ce qui n'est pas direct
+     * est nommé.
+     */
+    phQuery(`
+      SELECT
+        properties.\`$geoip_country_name\`                 AS country,
+        coalesce(nullif(properties.\`$referring_domain\`, ''), 'direct') AS source,
+        count(distinct person_id)                          AS visitors,
+        count()                                            AS pageviews
+      FROM events
+      WHERE event = '$pageview'
+        AND timestamp >= now() - interval 30 day
+        AND country != ''
+        AND country != 'France'
+        ${PUBLIC_SEULEMENT}
+      GROUP BY country, source
+      ORDER BY visitors DESC
+      LIMIT 20
     `),
     // Estimations depuis Supabase
     (async () => {
@@ -287,6 +341,41 @@ export default async function AnalyticsPage() {
             })
           }
         </div>
+      </div>
+
+      {/* D'où viennent les visiteurs étrangers — pays croisé avec la source.
+          Ajouté le 2026-10-16 : quatre réservations étrangères en dix jours
+          (États-Unis, Irlande, Portugal) sans qu'aucun tableau ne dise par où
+          ces gens étaient arrivés. Les pays d'un côté, les sources de l'autre,
+          jamais croisés. */}
+      <div style={{ ...card, marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          D&apos;où viennent les visiteurs étrangers
+        </div>
+        <div style={{ fontSize: 11, color: '#999', marginBottom: 14 }}>
+          Hors France · 30 derniers jours · « direct » = aucun référent transmis
+          (lien tapé, favori, application, ou assistant qui n&apos;en envoie pas)
+        </div>
+        {etrangersRows.length === 0
+          ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune visite étrangère sur la période</div>
+          : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', fontSize: 10, color: '#999', letterSpacing: '.06em', textTransform: 'uppercase', paddingBottom: 8, borderBottom: '1px solid rgba(0,0,0,.08)' }}>
+                <span>Pays</span><span>Source</span>
+                <span style={{ textAlign: 'right' }}>Visiteurs</span>
+                <span style={{ textAlign: 'right' }}>Pages</span>
+              </div>
+              {etrangersRows.map((row: unknown[], i: number) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)', fontSize: 11.5 }}>
+                  <span style={{ color: '#09091A', fontWeight: 500 }}>{str(row[0])}</span>
+                  <span style={{ color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{str(row[1])}</span>
+                  <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, textAlign: 'right' }}>{num(row[2])}</span>
+                  <span style={{ fontFamily: 'monospace', color: '#888', textAlign: 'right' }}>{num(row[3])}</span>
+                </div>
+              ))}
+            </>
+          )
+        }
       </div>
 
       {/* Référents + Appareils + Estimations */}
