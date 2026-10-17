@@ -44,3 +44,8 @@ next-env.d.ts
 
 # fichiers temporaires du CLI Supabase
 supabase/.temp/
+
+# Environnement du test d'intégration (jetable, régénéré par stack-test-local.mjs)
+.env.test.integration
+scripts/.proxy-test.log
+scripts/schema-local-test.sql
