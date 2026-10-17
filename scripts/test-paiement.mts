@@ -313,10 +313,21 @@ section('7. Le code respecte-t-il les règles ? (contrôles de structure)')
   verifier('la facturation mensuelle écarte toute course portant un paiement Stripe',
     /\.is\('stripe_payment_intent_id', null\)/.test(cron))
 
-  verifier('la réconciliation quotidienne est déclarée dans vercel.json',
-    /reconciliation-paiements/.test(vercel))
-
+  /* Garde-fou du 2026-10-17, demandé explicitement : la réconciliation doit
+   * rester INACTIVE jusqu'à une autorisation distincte.
+   *
+   * Elle avait été déclarée dans vercel.json au moment de l'écrire — déployer
+   * la branche l'aurait donc activée, à l'insu de la consigne. Le contrôle
+   * s'inverse : il échoue si le cron réapparaît. La route, elle, doit rester
+   * en place, prête pour le jour où l'autorisation viendra. */
   const recon = lireCode('src/app/api/cron/reconciliation-paiements/route.ts')
+  verifier('la réconciliation n\'est PAS déclarée dans vercel.json — elle reste inactive',
+    !/reconciliation/.test(vercel), 'le cron est présent : le déploiement activerait la réconciliation')
+  verifier('mais sa route existe, prête pour une activation ultérieure',
+    /export async function GET/.test(recon))
+  verifier('et elle refuse tout appel sans CRON_SECRET',
+    /CRON_SECRET/.test(recon))
+
   verifier('la réconciliation n\'appelle AUCUNE méthode Stripe qui débite ou rembourse',
     !/refunds\.create|charges\.create|paymentIntents\.create|checkout\.sessions\.create/.test(recon))
   verifier('la réconciliation ne supprime ni ne fusionne aucune course',

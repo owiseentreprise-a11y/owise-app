@@ -67,13 +67,23 @@ function signer(charge, decalageSecondes = 0) {
   return { corps, entete: `t=${ts},v1=${sig}` }
 }
 
-const envoyer = async (charge, decalage = 0) => {
+/* Une rafale de renvois rapides fait parfois tomber une connexion réutilisée
+   par le serveur de développement (UND_ERR_SOCKET). Ce n'est pas le sujet du
+   test : on réessaie, en fermant la connexion à chaque fois. */
+const envoyer = async (charge, decalage = 0, essai = 0) => {
   const { corps, entete } = signer(charge, decalage)
-  const r = await fetch(`${APP}/api/stripe/webhook`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'stripe-signature': entete },
-    body: corps,
-  })
+  let r
+  try {
+    r = await fetch(`${APP}/api/stripe/webhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'stripe-signature': entete, Connection: 'close' },
+      body: corps,
+    })
+  } catch (e) {
+    if (essai >= 3) throw e
+    await new Promise(res => setTimeout(res, 500 * (essai + 1)))
+    return envoyer(charge, decalage, essai + 1)
+  }
   let json = null
   const texte = await r.text()
   try { json = JSON.parse(texte) } catch { /* pas du json */ }
@@ -262,6 +272,114 @@ section('4. Échec de traitement, puis reprise')
     sql(`SELECT coalesce(resolu_le::text,'OUVERT') FROM incidents_paiement WHERE reference='${PI_3}';`) !== 'OUVERT')
 }
 
+// ── 4bis. Les chemins qui annonçaient un succès à tort ─────────────────────
+section('4bis. Aucun chemin n\'annonce un succès qu\'il n\'a pas constaté')
+{
+  /* Une session PAYÉE dont aucune métadonnée n'est reconnue. Elle tombait
+     jusqu'ici dans le `return { received: true }` de fin de fonction :
+     succès annoncé, rien créé, aucun incident. */
+  const PI_4 = 'pi_test_' + randomUUID().slice(0, 12)
+  const orpheline = {
+    id: 'evt_test_meta_inconnue', object: 'event', type: 'checkout.session.completed',
+    created: Math.floor(Date.now() / 1000),
+    data: { object: {
+      id: 'cs_test_orpheline', object: 'checkout.session', payment_status: 'paid',
+      amount_total: 12300, payment_intent: PI_4,
+      metadata: { provenance: 'lien cree a la main hors de l application' },
+    } },
+  }
+  const r = await envoyer(orpheline)
+  verifier('la réponse signale l\'incident au lieu d\'un succès muet',
+    r.json?.incident === 'metadonnees_inconnues', JSON.stringify(r.json))
+  verifier('un incident critique est ouvert',
+    sql(`SELECT type||'|'||gravite FROM incidents_paiement WHERE reference='${PI_4}';`) === 'metadonnees_inconnues|critique',
+    sql(`SELECT type||'|'||gravite FROM incidents_paiement WHERE reference='${PI_4}';`))
+  verifier('l\'événement est marqué « echec », pas « traite »',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_meta_inconnue';`) === 'echec')
+  verifier('aucune course n\'a été créée pour autant',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_4}';`) === '0')
+
+  /* Un type d'événement sur lequel nous n'agissons pas : il doit être marqué
+     « ignore », pas laissé « recu » — sinon la réconciliation le reprend
+     chaque jour pour rien. */
+  const autre = {
+    id: 'evt_test_type_ignore', object: 'event', type: 'customer.updated',
+    created: Math.floor(Date.now() / 1000), data: { object: { id: 'cus_test' } },
+  }
+  const r2 = await envoyer(autre)
+  verifier('un type non traité répond 200', r2.statut === 200, `HTTP ${r2.statut}`)
+  verifier('et il est marqué « ignore », jamais laissé « recu »',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_type_ignore';`) === 'ignore',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_type_ignore';`))
+
+  /* Une session non payée : traitée, sans incident. */
+  const nonPayee = {
+    id: 'evt_test_non_payee', object: 'event', type: 'checkout.session.completed',
+    created: Math.floor(Date.now() / 1000),
+    data: { object: { id: 'cs_test_np', payment_status: 'unpaid', amount_total: 0, metadata: {} } },
+  }
+  await envoyer(nonPayee)
+  verifier('une session non payée est marquée « traite » sans incident',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_non_payee';`) === 'traite')
+}
+
+// ── 4ter. Création d'un NOUVEAU client, et échec de Supabase Auth ──────────
+//
+// Le trou nommé dans le rapport précédent. Le leurre d'authentification du
+// relais n'est PAS GoTrue — pas de hachage, pas de règles réelles — mais il
+// permet d'éprouver ce qui compte ici : les conséquences exactes d'un échec
+// d'Auth sur la réservation, et la reprise.
+section('4ter. Nouveau client, et conséquences d\'un échec de Supabase Auth')
+{
+  /* a) Un client inconnu : le code prend la branche « créer le compte ». */
+  const PI_N = 'pi_test_' + randomUUID().slice(0, 12)
+  const nouveau = evenement({ id: 'evt_test_nouveau', pi: PI_N })
+  nouveau.data.object.metadata.email = 'nouveau.fictif@exemple.test'
+  const rn = await envoyer(nouveau)
+  verifier('un client inconnu : la réservation aboutit quand même', rn.statut === 200, `HTTP ${rn.statut} ${rn.texte.slice(0, 150)}`)
+  verifier('sa course est créée',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_N}';`) === '1')
+  verifier('un compte a bien été créé pour lui',
+    sql(`SELECT count(*) FROM utilisateurs_test WHERE email='nouveau.fictif@exemple.test';`) === '1')
+
+  /* b) Panne d'Auth PERMANENTE : que devient la réservation ? */
+  const PI_E = 'pi_test_' + randomUUID().slice(0, 12)
+  const panne = evenement({ id: 'evt_test_auth_echec', pi: PI_E })
+  panne.data.object.metadata.email = 'echec-auth@exemple.test'
+  const re = await envoyer(panne)
+  verifier('panne d\'Auth : le webhook répond 500, il n\'annonce PAS un succès',
+    re.statut === 500, `HTTP ${re.statut}`)
+  verifier('aucune course n\'est créée',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_E}';`) === '0')
+  verifier('l\'événement est conservé en « echec », donc rejouable',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_auth_echec';`) === 'echec')
+  verifier('la charge utile complète est conservée — seule copie du trajet',
+    sql(`SELECT (payload->'data'->'object'->'metadata'->>'adresse_depart') FROM stripe_events WHERE id='evt_test_auth_echec';`)
+      .includes('Nulle Part'))
+  verifier('un incident critique est ouvert avec les métadonnées',
+    sql(`SELECT gravite FROM incidents_paiement WHERE reference='${PI_E}';`) === 'critique')
+
+  /* c) Panne PASSAGÈRE : Stripe réessaie, et la réservation doit aboutir. */
+  const PI_T = 'pi_test_' + randomUUID().slice(0, 12)
+  const transitoire = evenement({ id: 'evt_test_auth_transitoire', pi: PI_T })
+  transitoire.data.object.metadata.email = 'transitoire@exemple.test'
+  const r1 = await envoyer(transitoire)
+  verifier('panne passagère : première livraison en 500', r1.statut === 500, `HTTP ${r1.statut}`)
+  verifier('rien n\'est créé à ce stade',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_T}';`) === '0')
+
+  const r2 = await envoyer(transitoire)   // la nouvelle tentative de Stripe
+  verifier('la nouvelle tentative aboutit', r2.statut === 200, `HTTP ${r2.statut} ${r2.texte.slice(0, 150)}`)
+  verifier('la course est créée à la seconde tentative',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_T}';`) === '1')
+  verifier('l\'événement passe de « echec » à « traite »',
+    sql(`SELECT statut FROM stripe_events WHERE id='evt_test_auth_transitoire';`) === 'traite')
+  verifier('et l\'incident se referme',
+    sql(`SELECT coalesce(resolu_le::text,'OUVERT') FROM incidents_paiement WHERE reference='${PI_T}';`) !== 'OUVERT')
+  verifier('aucun doublon de course malgré les deux livraisons',
+    sql(`SELECT count(*) FROM courses WHERE stripe_payment_intent_id='${PI_T}';`) === '1')
+}
+
 // ── 5. Aucun doublon, aucune perte, à l'échelle ────────────────────────────
 section('5. État final de la base locale')
 {
@@ -270,7 +388,7 @@ section('5. État final de la base locale')
   const nev = sql(`SELECT count(*) FROM stripe_events;`)
   console.log(`     ${n} course(s) · ${nf} facture(s) · ${nev} événement(s) journalisé(s)`)
 
-  verifier('3 courses pour 3 paiements distincts', n === '3', n)
+  verifier('une course par paiement distinct, aucune en trop', n === sql(`SELECT count(DISTINCT stripe_payment_intent_id) FROM courses WHERE stripe_payment_intent_id IS NOT NULL;`), n)
   const dbl = sql(`SELECT count(*) FROM (SELECT stripe_payment_intent_id FROM courses
                     WHERE stripe_payment_intent_id IS NOT NULL
                     GROUP BY 1 HAVING count(*) > 1) d;`)

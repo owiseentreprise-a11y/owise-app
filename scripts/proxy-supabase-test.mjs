@@ -32,6 +32,9 @@ const PORT = Number(process.argv[2] ?? 54320)
 const AMONT = `http://localhost:${process.argv[3] ?? 54321}`
 const JOURNAL = 'scripts/.proxy-test.log'
 
+/** Compteur des pannes d'authentification provoquées, par adresse. */
+const pannesTransitoires = {}
+
 writeFileSync(JOURNAL, `# relais démarré ${new Date().toISOString()}\n`, 'utf8')
 const tracer = (l) => { try { appendFileSync(JOURNAL, l + '\n') } catch { /* sans importance */ } }
 
@@ -61,6 +64,27 @@ const serveur = createServer(async (req, res) => {
     if (req.method !== 'POST') return repondre(200, { users: [] })
     let demande = {}
     try { demande = JSON.parse(corps.toString() || '{}') } catch { /* vide */ }
+
+    /* Deux pannes provoquées, déclenchées par l'adresse, pour éprouver les
+       conséquences exactes d'un échec de Supabase Auth :
+         « echec-auth »    → échoue toujours ;
+         « transitoire »   → échoue la PREMIÈRE fois, réussit ensuite.
+       La seconde reproduit le cas réaliste : une indisponibilité passagère,
+       suivie d'une nouvelle tentative de Stripe. */
+    const mail = String(demande.email ?? '')
+    if (mail.includes('echec-auth')) {
+      tracer(`    PANNE AUTH PROVOQUEE (permanente) pour ${mail}`)
+      return repondre(500, { code: 500, msg: 'panne auth provoquee' })
+    }
+    if (mail.includes('transitoire')) {
+      pannesTransitoires[mail] = (pannesTransitoires[mail] ?? 0) + 1
+      if (pannesTransitoires[mail] === 1) {
+        tracer(`    PANNE AUTH PROVOQUEE (1re fois) pour ${mail}`)
+        return repondre(503, { code: 503, msg: 'panne auth passagere provoquee' })
+      }
+      tracer(`    PANNE AUTH TERMINEE pour ${mail} (tentative ${pannesTransitoires[mail]})`)
+    }
+
     const id = randomUUID()
     const r = await postgrest('/utilisateurs_test', {
       method: 'POST',

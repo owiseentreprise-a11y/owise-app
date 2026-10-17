@@ -68,8 +68,22 @@ export async function POST(req: Request) {
 
     if (session.metadata?.facture_id) {
       const supabase = createAdminClient()
-      await supabase.from('factures').update({ statut: 'payee' }).eq('id', session.metadata.facture_id)
-      await marquerEvenementTraite(journal, event.id, { factureId: session.metadata.facture_id })
+      const factureId = session.metadata.facture_id
+      /* L'erreur de cette mise à jour n'était pas regardée : si elle échouait,
+       * l'événement était marqué « traité » et Stripe recevait 200. Le client
+       * avait payé, la facture restait « en attente », et plus rien ne le
+       * disait. On ne peut pas annoncer un succès qu'on n'a pas constaté. */
+      const { data: majFacture, error: erreurFacture } = await supabase
+        .from('factures').update({ statut: 'payee' }).eq('id', factureId).select('id')
+      if (erreurFacture || !majFacture?.length) {
+        await marquerEvenementEchec(journal, event.id, erreurFacture ?? new Error('facture introuvable'))
+        await signalerIncident(supabase, {
+          type: 'facture_non_marquee_payee', gravite: 'critique', reference: factureId,
+          detail: { facture_id: factureId, session: session.id, montant: (session.amount_total ?? 0) / 100, erreur: erreurFacture?.message ?? 'aucune ligne mise à jour' },
+        })
+        return NextResponse.json({ error: 'facture update failed' }, { status: 500 })
+      }
+      await marquerEvenementTraite(journal, event.id, { factureId })
       return NextResponse.json({ received: true })
     }
 
@@ -138,6 +152,28 @@ export async function POST(req: Request) {
       if (paymentIntentId) await resoudreIncident(journal, 'paiement_sans_course', paymentIntentId)
       return NextResponse.json({ received: true })
     }
+
+    /* Une session PAYÉE dont aucune métadonnée ne nous est connue.
+     *
+     * Ce cas tombait jusqu'ici dans le `return { received: true }` de fin de
+     * fonction : Stripe recevait un succès, rien n'était créé, aucun incident
+     * n'était ouvert, et l'événement restait « recu » sans que personne ne le
+     * sache. C'est la forme la plus discrète du défaut du 7 octobre.
+     *
+     * On répond 200 et non 500, à dessein : réessayer ne peut rien changer,
+     * les métadonnées ne se corrigeront pas d'elles-mêmes. Trois jours de
+     * tentatives inutiles n'aideraient personne. Ce qui rend le cas visible,
+     * c'est l'incident en base et l'e-mail — pas un code HTTP. */
+    const supabase = createAdminClient()
+    const pi = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
+    console.error('[webhook] session payee sans metadonnee reconnue', session.id)
+    await signalerIncident(supabase, {
+      type: 'metadonnees_inconnues', gravite: 'critique', reference: pi ?? session.id,
+      detail: { session: session.id, montant: (session.amount_total ?? 0) / 100, metadata: session.metadata ?? {} },
+    })
+    await alerterEchecReservation(session, pi, new Error('aucune metadonnee reconnue : ni facture_id, ni course_id, ni type=reservation'))
+    await marquerEvenementEchec(journal, event.id, new Error('metadonnees inconnues'))
+    return NextResponse.json({ received: true, incident: 'metadonnees_inconnues' })
   }
 
   // ── Remboursement ──────────────────────────────────────────────────────────
@@ -185,6 +221,20 @@ export async function POST(req: Request) {
     console.log(`[webhook] Session expirée — ${session.id} — type: ${session.metadata?.type ?? 'inconnu'}`)
   }
 
+  /* Fin de parcours : l'événement a été vu, et soit traité par un des blocs
+   * ci-dessus, soit d'un type sur lequel nous n'agissons pas.
+   *
+   * Il faut le marquer. Sans cela il restait « recu » indéfiniment, et la
+   * reconciliation quotidienne le reprenait chaque jour pendant 72 heures pour
+   * finalement l'ignorer — du bruit, et une lecture fausse de l'état du
+   * journal : « non traité » alors qu'il n'y avait rien à faire.
+   *
+   * `traite` pour ceux dont un bloc s'est occupé, `ignore` pour les autres. */
+  const TYPES_AGIS = ['charge.refunded', 'payment_intent.payment_failed', 'checkout.session.expired']
+  await marquerEvenementTraite(journal, event.id)
+  if (!TYPES_AGIS.includes(event.type)) {
+    await createAdminClient().from('stripe_events').update({ statut: 'ignore' }).eq('id', event.id)
+  }
   return NextResponse.json({ received: true })
 }
 
