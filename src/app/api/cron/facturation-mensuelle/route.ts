@@ -33,6 +33,20 @@ export async function GET(req: Request) {
     // saisie) ne doit pas repartir dans la facturation mensuelle : le client
     // serait débité deux fois.
     .or('paiement_statut.is.null,paiement_statut.neq.paye')
+    /* Deuxième barrière, ajoutée le 2026-10-17 : une course qui porte un
+     * identifiant de paiement Stripe est encaissée, point final.
+     *
+     * Le filtre ci-dessus ne suffisait pas. Jusqu'à aujourd'hui le webhook
+     * n'écrivait jamais `paiement_statut`, si bien qu'AUCUN paiement Stripe
+     * n'était marqué « paye » : les quatre courses encaissées d'octobre
+     * affichaient « en_attente » et passaient donc ce filtre. Seul
+     * `facture_id IS NULL` les retenait — et le chemin « lien de paiement
+     * envoyé par l'exploitant » ne crée pas de facture.
+     *
+     * Le webhook écrit désormais le statut, mais on ne remplace pas une
+     * barrière par une autre : on garde les deux. Celle-ci ne dépend d'aucune
+     * écriture applicative, seulement de la présence du paiement. */
+    .is('stripe_payment_intent_id', null)
     .or('prix_final.not.is.null,prix_estime.not.is.null')
     .gte('date_fin', debutMois.toISOString())
     .lte('date_fin', finMois.toISOString())

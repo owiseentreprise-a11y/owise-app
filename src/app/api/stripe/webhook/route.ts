@@ -10,6 +10,10 @@ import { genererNumeroFacture } from '@/lib/facturation'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
 import { formaterMontant } from '@/lib/montant'
+import {
+  enregistrerEvenement, marquerEvenementTraite, marquerEvenementEchec,
+  marquerPaiementConfirme, signalerIncident, resoudreIncident, VIOLATION_UNICITE,
+} from '@/lib/paiement'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'owise.entreprise@gmail.com'
 
@@ -31,17 +35,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  /* ── Journal des événements : l'idempotence passe par la base ─────────
+   *
+   * `stripe_events.id` est la clé primaire et vaut l'identifiant d'événement
+   * Stripe. Un événement déjà TRAITÉ est refusé ici, par la base, et non par
+   * une lecture préalable que deux traitements simultanés franchiraient tous
+   * les deux.
+   *
+   * C'est la correction du 8 octobre : les événements avaient été renvoyés à
+   * la main depuis le tableau de bord Stripe pour récupérer deux réservations
+   * perdues, et chaque renvoi avait recréé une course ET une facture. Le même
+   * renvoi est désormais sans effet.
+   *
+   * Un événement déjà connu mais NON traité (première livraison journalisée
+   * puis échouée) est retraité : refuser serait remplacer un doublon par une
+   * perte. */
+  const journal = createAdminClient()
+  const suite = await enregistrerEvenement(journal, event, event)
+  if (suite.action === 'ignorer') {
+    console.log(`[webhook] ${event.id} déjà traité — rien à faire`)
+    return NextResponse.json({ received: true, deja_traite: true })
+  }
+
   // ── Paiement confirmé ──────────────────────────────────────────────────────
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
 
     if (session.payment_status !== 'paid') {
+      await marquerEvenementTraite(journal, event.id)
       return NextResponse.json({ received: true })
     }
 
     if (session.metadata?.facture_id) {
       const supabase = createAdminClient()
       await supabase.from('factures').update({ statut: 'payee' }).eq('id', session.metadata.facture_id)
+      await marquerEvenementTraite(journal, event.id, { factureId: session.metadata.facture_id })
       return NextResponse.json({ received: true })
     }
 
@@ -50,20 +78,33 @@ export async function POST(req: Request) {
     if (session.metadata?.course_id) {
       const supabase = createAdminClient()
       const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
-      // Même convention que handleNewReservation ci-dessous pour un paiement Stripe
-      // réussi : mode_paiement + stripe_payment_intent_id, sans toucher paiement_statut
-      // (réservé au suivi des remboursements ailleurs dans le code).
-      await supabase.from('courses').update({
-        mode_paiement: 'stripe',
-        stripe_payment_intent_id: paymentIntentId,
-      }).eq('id', session.metadata.course_id)
+      const courseId = session.metadata.course_id
+      try {
+        /* `paiement_statut` est écrit ici, contrairement à ce que faisait ce
+         * fichier jusqu'au 2026-10-17. Sans lui, la course restait « en
+         * attente » alors que l'argent était encaissé — et la facturation
+         * mensuelle, qui se protège du double débit avec ce champ, aurait
+         * refacturé un client entreprise le 1er du mois suivant. */
+        await marquerPaiementConfirme(supabase, courseId, paymentIntentId)
+      } catch (err) {
+        console.error('[webhook] paiement par lien non enregistre', err)
+        await marquerEvenementEchec(journal, event.id, err)
+        await signalerIncident(supabase, {
+          type: 'paiement_lien_non_enregistre', gravite: 'critique',
+          reference: paymentIntentId ?? courseId,
+          detail: { course_id: courseId, session: session.id, erreur: String((err as Error)?.message ?? err) },
+        })
+        return NextResponse.json({ error: 'course update failed' }, { status: 500 })
+      }
+      await marquerEvenementTraite(journal, event.id, { courseId })
       return NextResponse.json({ received: true })
     }
 
     if (session.metadata?.type === 'reservation') {
       const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null
+      let courseId: string | null = null
       try {
-        await handleNewReservation(session.metadata, paymentIntentId)
+        courseId = await handleNewReservation(session.metadata, paymentIntentId)
       } catch (err) {
         /* Une erreur ici veut dire : l'argent est encaisse et la course
          * n'existe pas. C'est le pire etat possible, et il etait jusqu'ici
@@ -81,9 +122,20 @@ export async function POST(req: Request) {
          * handleNewReservation retrouve un client existant au lieu de le
          * recreer, une nouvelle tentative est donc sans danger. */
         console.error('[webhook] reservation error', err)
+        await marquerEvenementEchec(journal, event.id, err)
+        /* L'e-mail d'alerte n'a qu'une seule chance : il sort silencieusement
+         * si RESEND_API_KEY manque. L'incident, lui, est encore là demain —
+         * et la réconciliation quotidienne le retrouvera. */
+        await signalerIncident(journal, {
+          type: 'paiement_sans_course', gravite: 'critique',
+          reference: paymentIntentId ?? session.id,
+          detail: { session: session.id, montant: (session.amount_total ?? 0) / 100, metadata: session.metadata, erreur: String((err as Error)?.message ?? err) },
+        })
         await alerterEchecReservation(session, paymentIntentId, err)
         return NextResponse.json({ error: 'reservation failed' }, { status: 500 })
       }
+      await marquerEvenementTraite(journal, event.id, { courseId })
+      if (paymentIntentId) await resoudreIncident(journal, 'paiement_sans_course', paymentIntentId)
       return NextResponse.json({ received: true })
     }
   }
@@ -172,7 +224,17 @@ async function alerterEchecReservation(session: any, paymentIntentId: string | n
   }
 }
 
-async function handleNewReservation(meta: Record<string, string>, paymentIntentId: string | null) {
+/**
+ * Crée la réservation payée. Rend l'identifiant de la course.
+ *
+ * Exportée depuis le 2026-10-17 pour que la réconciliation quotidienne puisse
+ * récupérer un paiement confirmé dont la course n'a jamais été créée, en
+ * repartant des mêmes métadonnées — sans dupliquer cette logique ailleurs.
+ */
+export async function handleNewReservation(
+  meta: Record<string, string>,
+  paymentIntentId: string | null,
+): Promise<string> {
   const supabase = createAdminClient()
 
   const email     = meta.email
@@ -257,13 +319,18 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
    * danger » parce que le client est retrouve au lieu d'etre recree. C'etait
    * faux : la course, elle, etait reinseree.
    *
-   * L'identifiant de paiement est unique par reservation : il sert de verrou. */
+   * L'identifiant de paiement est unique par reservation : il sert de verrou.
+   *
+   * Depuis le 2026-10-17, cette lecture n'est plus la garantie : elle évite
+   * seulement du travail inutile. La garantie est l'index unique partiel
+   * `courses_stripe_pi_unique`, qui refuse la seconde insertion même si deux
+   * traitements simultanés ont tous les deux lu « rien » ici. */
   if (paymentIntentId) {
     const { data: deja } = await supabase
       .from('courses').select('id').eq('stripe_payment_intent_id', paymentIntentId).maybeSingle()
     if (deja) {
       console.log(`[webhook] course deja creee pour ${paymentIntentId} — rien a faire`)
-      return
+      return deja.id
     }
   }
 
@@ -288,8 +355,27 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
     notes:           meta.origine ? `Connu par : ${meta.origine}` : null,
     statut:          'en_attente',
     mode_paiement:   'stripe',
+    /* Le paiement est confirmé par Stripe au moment où cet événement arrive :
+     * la course naît donc payée. Jusqu'au 2026-10-17 cette colonne n'était
+     * jamais écrite, et les quatre courses encaissées d'octobre affichaient
+     * « en attente » — ce qui désarmait le garde-fou de la facturation
+     * mensuelle contre le double débit. */
+    paiement_statut: 'paye',
     stripe_payment_intent_id: paymentIntentId,
   }).select('id').single()
+
+  /* Une violation d'unicité ici veut dire qu'un autre traitement du même
+   * paiement a gagné la course de vitesse. Ce n'est pas une erreur : c'est
+   * exactement ce que l'index est là pour faire. On récupère la course
+   * existante et on s'arrête — sans facture en double, sans e-mail en double. */
+  if (courseErr?.code === VIOLATION_UNICITE && paymentIntentId) {
+    const { data: gagnante } = await supabase
+      .from('courses').select('id').eq('stripe_payment_intent_id', paymentIntentId).maybeSingle()
+    if (gagnante) {
+      console.log(`[webhook] course deja creee par un traitement concurrent pour ${paymentIntentId}`)
+      return gagnante.id
+    }
+  }
 
   if (courseErr || !course) {
     throw new Error(`Impossible de créer la course: ${courseErr?.message}`)
@@ -319,9 +405,26 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
 
     if (facture) {
       await supabase.from('courses').update({ facture_id: facture.id }).eq('id', course.id)
+    } else {
+      throw new Error('insertion de la facture sans resultat')
     }
   } catch (err) {
+    /* On ne relance PAS : la course existe et le client est servi, lui faire
+     * perdre sa réservation pour une facture manquante serait disproportionné.
+     *
+     * Mais ce `catch` était muet jusqu'au 2026-10-17, et c'était le pire des
+     * deux mondes : la course restait sans facture, le webhook répondait 200,
+     * Stripe ne réessayait jamais, et au réessai suivant la garde
+     * d'idempotence sortait AVANT d'arriver ici — la facture n'était donc
+     * jamais créée. L'état partiel était définitif et invisible.
+     *
+     * Désormais il laisse une trace que la réconciliation quotidienne
+     * retrouve et répare. */
     console.error('[webhook] facture creation error', err)
+    await signalerIncident(supabase, {
+      type: 'facture_manquante', gravite: 'elevee', reference: course.id,
+      detail: { course_id: course.id, client_id: userId, montant: prix, erreur: String((err as Error)?.message ?? err) },
+    })
   }
 
   // 4. Parrainage — créditer le parrain si un code a été utilisé
@@ -387,4 +490,6 @@ async function handleNewReservation(meta: Record<string, string>, paymentIntentI
       refCourse,
     }),
   ])
+
+  return course.id
 }
