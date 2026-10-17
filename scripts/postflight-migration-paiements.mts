@@ -237,7 +237,7 @@ section('5. Fonctionnement du site et du webhook déployé')
 
   if (tablesPresentes) {
     const ev = await get<unknown[]>('stripe_events?select=id&limit=5')
-    info(`stripe_events contient ${ev.length} ligne(s) — 0 attendu : le nouveau webhook n'est pas déployé`)
+    info(`stripe_events contient ${ev.length} ligne(s) — 0 est normal tant qu'aucun evenement SIGNE n'est arrive`)
     if (ev.length > 0) att('des événements y sont déjà journalisés : le nouveau webhook serait-il déployé ?')
   }
 }
