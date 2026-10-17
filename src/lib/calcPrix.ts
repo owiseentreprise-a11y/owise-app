@@ -219,6 +219,79 @@ export function calculerPrix(
 }
 
 /**
+ * Base sur laquelle un « dès … € » est annoncé au public.
+ *
+ * Deux réponses légitimes, et ce n'est pas une question technique :
+ *
+ *   `minimum-technique`      le forfait le moins cher de toute la grille.
+ *                            Exact au sens littéral de « dès », mais c'est
+ *                            Paris intramuros → Paris intramuros, atypique
+ *                            pour une entreprise basée à Saint-Maximin.
+ *   `aeroport-le-moins-cher` le forfait aéroport le moins cher. C'est le
+ *                            cœur de métier, et ce montant est DÉJÀ publié
+ *                            ailleurs sur le site (tableau des forfaits de
+ *                            /reserver, pages villes).
+ *
+ * Le choix appartient à l'exploitant. Voir `audit-owise/13-CONTRE-AUDIT-PRIORITES.md`.
+ */
+export type BaseAffichage = 'minimum-technique' | 'aeroport-le-moins-cher'
+
+/**
+ * Base retenue pour les cartes véhicules de la vitrine.
+ *
+ * **Décision commerciale en attente de validation.** `aeroport-le-moins-cher`
+ * est posé par défaut pour une raison précise : ce montant (59 € en berline)
+ * est DÉJÀ publié ailleurs sur le site — tableau « Nos forfaits les plus
+ * demandés » de /reserver, pages villes, llms.txt. Le retenir n'introduit donc
+ * aucun tarif nouveau ; il aligne la page d'accueil sur le reste.
+ *
+ * L'autre option, `minimum-technique`, afficherait 29 € : exact, mais c'est un
+ * trajet Paris → Paris, et un visiteur de Chantilly y lirait une promesse que
+ * son trajet ne tiendra pas.
+ *
+ * Changer cette seule ligne change les quatre cartes.
+ */
+export const BASE_AFFICHAGE_VITRINE: BaseAffichage = 'aeroport-le-moins-cher'
+
+/**
+ * Le prix d'appel d'un véhicule, dérivé de la grille réelle.
+ *
+ * Ne définit aucune règle de calcul : il appelle `calculerPrix()` sur les
+ * paires éligibles et garde la plus basse. Un prix affiché ne peut donc pas
+ * diverger de celui que le client paiera, puisqu'ils sortent de la même
+ * fonction.
+ *
+ * La date-heure passée est vide volontairement : `appliquerSupplements` rend
+ * alors le prix inchangé. C'est bien un tarif de base qu'on annonce, pas
+ * celui d'un créneau de nuit ou de week-end.
+ *
+ * Rend `null` plutôt qu'un montant de repli si aucune paire n'est éligible :
+ * mieux vaut une carte sans prix qu'une carte avec un prix faux.
+ */
+export function prixAPartirDe(
+  vehiculeKey: string,
+  base: BaseAffichage,
+  grille: GrilleCalc[],
+  tarifs: TarifCalc[],
+  zones: ZoneCalc[],
+  params?: ParamsCalc | null,
+): number | null {
+  const estAeroport = (id: string) => zones.find(z => z.id === id)?.type === 'aeroport'
+
+  let min: number | null = null
+  for (const ligne of grille) {
+    if (base === 'aeroport-le-moins-cher'
+      && !estAeroport(ligne.zone_depart_id) && !estAeroport(ligne.zone_arrivee_id)) continue
+
+    const prix = calculerPrix(ligne.zone_depart_id, ligne.zone_arrivee_id, vehiculeKey, '', grille, tarifs, zones, params)
+    if (prix === null || prix <= 0) continue
+    if (min === null || prix < min) min = prix
+  }
+  /* Arrondi à l'euro, convention d'affichage de tout le site. */
+  return min === null ? null : Math.round(min)
+}
+
+/**
  * Frais par étape appliqués si /admin/tarifs n'a jamais été configuré, ou si
  * la page qui calcule le prix a oublié de charger `supplement_etape`.
  * Valeur de repli volontairement égale au tarif en vigueur : une page mal

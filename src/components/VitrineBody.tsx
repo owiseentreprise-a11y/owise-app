@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState, useCallback } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
@@ -41,7 +41,7 @@ import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { gtagEvent } from '@/lib/ga'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 const VEHICLES = [
@@ -140,12 +140,17 @@ function TrustIcon({ name }: { name: string }) {
   }
 }
 
-/* ── vehicles display ──────────────────────────────────── */
+/* ── vehicles display ───────────────────────────────
+   Les prix ne figurent plus ici : ils etaient ecrits en dur (65/65/75/95 EUR)
+   et ne correspondaient a aucune ligne de la grille. Ils sont desormais
+   derives de prixAPartirDe(), plus bas. `cle` relie chaque carte au vehicule
+   que le moteur connait — 'Grand Van' est facture comme un van, regle portee
+   par NOM_VERS_CLE dans calcPrix.ts et conservee telle quelle.───── */
 const VEH_DISPLAY = [
-  { name:'Berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'],               price:'65 €', bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
-  { name:'Berline Premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], price:'65 €', bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
-  { name:'Van 7 places',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'],price:'75 €', bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
-  { name:'Grand Van 8 pl.', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], price:'95 €', bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
+  { name:'Berline', cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
+  { name:'Berline Premium', cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
+  { name:'Van 7 places', cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
+  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
@@ -290,6 +295,30 @@ type GrilleMin = GrilleCalc
 export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string }) {
   const router   = useRouter()
   const pathname = usePathname()
+
+  /* Prix d'appel des cartes vehicules.
+   *
+   * Derives de la grille via prixAPartirDe(), qui appelle calculerPrix() — la
+   * meme fonction que /reserver et l'admin. Jusqu'au 2026-10-17 ces montants
+   * etaient ecrits en dur (65/65/75/95 EUR) et ne correspondaient a aucune
+   * ligne de la grille : la berline etait annoncee +36 EUR au-dessus du reel,
+   * et la berline premium au MEME prix que la berline, ce qu'un coefficient
+   * de 1,5 rend impossible.
+   *
+   * Aucune requete n'est ajoutee cote navigateur : grille, zones, tarifs et
+   * parametres arrivent deja en props depuis le rendu serveur.
+   *
+   * Un vehicule sans prix calculable n'affiche pas de montant plutot qu'un
+   * montant faux. */
+  const prixAppel = useMemo(() => {
+    const m: Record<string, number | null> = {}
+    for (const v of VEH_DISPLAY) {
+      if (m[v.cle] === undefined) {
+        m[v.cle] = prixAPartirDe(v.cle, BASE_AFFICHAGE_VITRINE, grilleProp, tarifsProp as TarifRow2[], zonesProp, paramsProp)
+      }
+    }
+    return m
+  }, [grilleProp, tarifsProp, zonesProp, paramsProp])
 
   /* ── state ─────────────────────────────────────────────── */
   const [navScrolled,     setNavScrolled]     = useState(false)
@@ -1242,11 +1271,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div className="vc-features">
                 {v.feats.map((f,j)=><div key={j} className="vc-feat"><div className="vc-feat-dot"/>{f}</div>)}
               </div>
-              <div className="vc-price">
-                <span className="vc-from">dès</span>
-                <span className="vc-amount chrome-gold-static">{v.price}</span>
-                <span className="vc-unit">/ course</span>
-              </div>
+              {prixAppel[v.cle] != null && (
+                <div className="vc-price">
+                  <span className="vc-from">dès</span>
+                  <span className="vc-amount chrome-gold-static">{prixAppel[v.cle]} €</span>
+                  <span className="vc-unit">/ course</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
