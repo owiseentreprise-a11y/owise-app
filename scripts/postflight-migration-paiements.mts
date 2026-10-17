@@ -83,7 +83,23 @@ section('2. Contraintes et index uniques — réellement en place ?')
 {
   /* Sonde non destructive : un POST avec un tableau VIDE et `on_conflict`.
    * PostgREST valide la contrainte nommée avant de n'insérer aucune ligne.
-   * Réponse 2xx = la contrainte existe · 42P10 = elle n'existe pas. */
+   *
+   * LIMITE, mesurée le 2026-10-17 sur un PostgreSQL 16 jetable : cette sonde
+   * ne voit QUE les contraintes non partielles. `ON CONFLICT (colonne)` ne
+   * sait pas inférer un index unique PARTIEL — Postgres répond « there is no
+   * unique or exclusion constraint matching the ON CONFLICT specification »,
+   * soit 42P10, alors que l'index existe et refuse bien les doublons (vérifié :
+   * la seconde insertion échoue en 23505).
+   *
+   * Conséquence : pour un index partiel, 42P10 ne distingue pas « absent » de
+   * « partiel ». Un ✗ serait un faux positif, un ✓ une affirmation sans
+   * preuve. On rend donc un verdict « non concluant » et on renvoie à la
+   * requête SQL, seule voie décisive.
+   *
+   * Les deux index uniques de cette migration sont partiels :
+   *   courses_stripe_pi_unique          WHERE stripe_payment_intent_id IS NOT NULL
+   *   incidents_paiement_unique_ouvert  WHERE resolu_le IS NULL
+   * Seule `stripe_events.id` (clé primaire, non partielle) est sondable. */
   const sonde = async (table: string, colonnes: string) => {
     const r = await reessayer(async () => fetch(`${U}/rest/v1/${table}?on_conflict=${colonnes}`, {
       method: 'POST',
@@ -94,23 +110,30 @@ section('2. Contraintes et index uniques — réellement en place ?')
     return { existe: r.ok, code: /42P10/.test(txt) ? '42P10' : r.ok ? null : `HTTP ${r.status}`, txt }
   }
 
-  const pi = await sonde('courses', 'stripe_payment_intent_id')
-  if (pi.existe) ok('courses.stripe_payment_intent_id : contrainte UNIQUE en place')
-  else ko(`courses.stripe_payment_intent_id : AUCUNE contrainte unique (${pi.code}) — la protection du doublon n'est pas active`)
-
+  /* Sondable : clé primaire non partielle. Un ✗ ici serait un vrai problème. */
   if (tablesPresentes) {
     const ev = await sonde('stripe_events', 'id')
     if (ev.existe) ok('stripe_events.id : clé primaire en place — un événement renvoyé sera refusé')
-    else ko(`stripe_events.id : pas de clé primaire utilisable (${ev.code})`)
-
-    const inc = await sonde('incidents_paiement', 'type,reference')
-    if (inc.existe) ok('incidents_paiement (type, reference) : contrainte utilisable')
-    else att(`incidents_paiement (type, reference) : non inférable par PostgREST (${inc.code}) — attendu pour un index PARTIEL. À confirmer par la requête SQL du rapport.`)
+    else ko(`stripe_events.id : pas de clé primaire utilisable (${ev.code}) — l'idempotence n'est pas garantie`)
   }
 
-  att('la contrainte CHECK sur paiement_statut ne peut pas être sondée sans écrire —')
-  info('  la vérifier dans le SQL Editor, requête fournie dans le rapport :')
-  info("  SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='courses_paiement_statut_valide';")
+  /* Non sondables : index partiels. On enregistre la réponse pour mémoire,
+     sans en tirer de verdict. */
+  const pi = await sonde('courses', 'stripe_payment_intent_id')
+  att(`courses_stripe_pi_unique : NON CONCLUANT par cette voie (${pi.code ?? '2xx'}) — index PARTIEL, invisible à ON CONFLICT`)
+  if (tablesPresentes) {
+    const inc = await sonde('incidents_paiement', 'type,reference')
+    att(`incidents_paiement_unique_ouvert : NON CONCLUANT par cette voie (${inc.code ?? '2xx'}) — index PARTIEL`)
+  }
+  att('courses_paiement_statut_valide : NON SONDABLE — une contrainte CHECK ne se teste pas sans écrire')
+
+  info('')
+  info('Les trois ci-dessus se vérifient uniquement en SQL. Dans le SQL Editor :')
+  info("  SELECT indexname, indexdef FROM pg_indexes")
+  info("   WHERE indexname IN ('courses_stripe_pi_unique','incidents_paiement_unique_ouvert');")
+  info("  SELECT conname, contype, pg_get_constraintdef(oid) FROM pg_constraint")
+  info("   WHERE conrelid = 'public.courses'::regclass")
+  info("     AND conname = 'courses_paiement_statut_valide';")
 }
 
 // ── 3. Permissions et RLS ──────────────────────────────────────────────────
