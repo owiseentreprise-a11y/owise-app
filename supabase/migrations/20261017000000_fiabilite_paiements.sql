@@ -9,10 +9,16 @@
 -- 0 doublon d'identifiant de paiement, 0 chaîne vide, 0 valeur de
 -- paiement_statut hors liste, les deux tables neuves absentes.
 --
--- Cette migration ne SUPPRIME aucune ligne, ne modifie aucun montant et ne
--- touche pas la table factures. Le seul UPDATE porte sur
--- courses.paiement_statut, et uniquement sur les courses qui portent un
--- identifiant de paiement Stripe.
+-- CETTE MIGRATION EST PUREMENT ADDITIVE. Elle cree deux tables neuves, un
+-- index et une contrainte. Elle ne modifie, ne supprime ni ne deplace AUCUNE
+-- ligne : ni dans courses, ni dans factures, ni ailleurs.
+--
+-- L'etape 5 d'origine (passer les quatre courses encaissees a 'paye') en a ete
+-- RETIREE le 2026-10-17 sur consigne : « Ne pas modifier les statuts des
+-- quatre courses historiques. » Elle vit desormais dans
+-- 20261017000100_backfill_paiement_statut.sql, a appliquer separement et plus
+-- tard. Consequence utile : le retour arriere de cette migration-ci n'a rien a
+-- restaurer.
 --
 -- POURQUOI. Trois incidents réels :
 --   2026-10-07  deux clients ont payé 89 € chacun ; l'écriture de la course a
@@ -127,20 +133,6 @@ ALTER TABLE courses ADD  CONSTRAINT courses_paiement_statut_valide
   ));
 
 
--- ── 5. Les quatre courses déjà encaissées ───────────────────────────────────
---
--- Factuel, pas une supposition : ces courses portent un identifiant de
--- paiement Stripe, donc l'argent est encaissé. Les courses déjà marquées
--- 'remboursee' sont exclues — leur statut est plus précis.
---
--- Attendu au 2026-10-17 : 4 lignes (#D54590, #27BCE8, #821EE9, #68FFA3).
-UPDATE courses
-   SET paiement_statut = 'paye'
- WHERE stripe_payment_intent_id IS NOT NULL
-   AND paiement_statut IS DISTINCT FROM 'paye'
-   AND paiement_statut IS DISTINCT FROM 'remboursee';
-
-
 -- ── 6. Vérification immédiate, dans la même session ─────────────────────────
 --
 -- À lire dans le résultat du SQL Editor avant de refermer l'onglet.
@@ -158,8 +150,8 @@ BEGIN
      GROUP BY stripe_payment_intent_id HAVING count(*) > 1
   ) d;
 
-  RAISE NOTICE 'courses encaissées marquées payées : %', n_payees;
-  RAISE NOTICE 'identifiants de paiement en double  : %', n_doublons;
+  RAISE NOTICE 'courses encaissees marquees payees : %  (0 attendu : le backfill est un fichier separe)', n_payees;
+  RAISE NOTICE 'identifiants de paiement en double  : %  (0 attendu)', n_doublons;
 
   IF n_doublons > 0 THEN
     RAISE EXCEPTION 'doublon de paiement détecté après migration — à examiner';
