@@ -44,11 +44,20 @@ import { logFunnel } from '@/lib/funnel'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
+/* `from` a disparu de cette table : le badge « dès … € » de l'étape 2 du devis
+   affichait 65/65/75/95 €, les mêmes constantes fausses que les cartes
+   véhicules, à un deuxième endroit de la même page. Il lit désormais
+   `prixAppel`, comme les cartes.
+
+   `base` reste : ce n'est pas un affichage mais le dernier repli de
+   `estimerPrixBase()`, utilisé quand ni la grille ni Google ne donnent de
+   distance. Y toucher modifierait un prix de réservation — hors périmètre de
+   ce sprint. Voir les risques résiduels du rapport. */
 const VEHICLES = [
-  { min:1,max:3, name:'Berline',         sub:'1–3 passagers · confort premium',   from:'dès 65 €', base:65 },
-  { min:4,max:4, name:'Berline Premium', sub:'4 passagers · haut de gamme',        from:'dès 65 €', base:65 },
-  { min:5,max:7, name:'Van 7 places',    sub:'5–7 passagers · transfert groupe',   from:'dès 75 €', base:75 },
-  { min:8,max:8, name:'Grand Van',       sub:'8 passagers · sur réservation',      from:'dès 95 €', base:95 },
+  { min:1,max:3, name:'Berline',         sub:'1–3 passagers · confort premium',   base:65 },
+  { min:4,max:4, name:'Berline Premium', sub:'4 passagers · haut de gamme',       base:65 },
+  { min:5,max:7, name:'Van 7 places',    sub:'5–7 passagers · transfert groupe',  base:75 },
+  { min:8,max:8, name:'Grand Van',       sub:'8 passagers · sur réservation',     base:95 },
 ]
 function getVehicle(p:number) { return VEHICLES.find(v=>p>=v.min&&p<=v.max)||VEHICLES[3] }
 
@@ -816,6 +825,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   const currentEst = devisPrix
   const currentVeh = getVehicle(pax)
+  /* Même source que les cartes véhicules : NOM_VERS_CLE fait correspondre le
+     nom affiché à la clé tarifaire ('Grand Van' → 'van'). */
+  const currentVehPrix = prixAppel[NOM_VERS_CLE[currentVeh.name] ?? 'berline']
 
   /* ── JSX ─────────────────────────────────────────────────── */
   return (
@@ -1938,7 +1950,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     <div className="vh-name">{currentVeh.name}</div>
                     <div className="vh-sub">{currentVeh.sub}</div>
                   </div>
-                  <div className="vh-badge">{currentVeh.from}</div>
+                  {currentVehPrix != null && <div className="vh-badge">dès {currentVehPrix} €</div>}
                 </div>
                 <div className="supps">
                   {[
