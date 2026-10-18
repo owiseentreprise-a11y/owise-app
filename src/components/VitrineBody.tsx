@@ -1293,6 +1293,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </div>
           ))}
         </div>
+        {/* Les textes alternatifs de ces quatre images disent déjà
+            « Illustration de la catégorie… », mais rien ne le signalait à
+            l'écran. Owise ne possède pas encore de photos de son parc : le
+            dire visiblement vaut mieux que de laisser croire le contraire. */}
+        <p style={{
+          textAlign: 'center', marginTop: 28, fontSize: 12,
+          color: 'rgba(107,107,107,.85)', letterSpacing: '.02em',
+        }}>
+          Visuels d&apos;illustration. Le véhicule mis à disposition correspond à la catégorie réservée.
+        </p>
       </section>
 
       {/* PROCESS */}
