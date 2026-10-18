@@ -57,12 +57,12 @@ export const DESTINATIONS: Record<string, {
   'vtc-aeroport-cdg': {
     slug: 'vtc-aeroport-cdg',
     title: 'VTC Aéroport CDG',
-    metaTitle: 'VTC Aéroport CDG dès 65€ — Tarif Fixe Garanti | Owise',
-    metaDesc: 'VTC vers CDG depuis Paris et IDF. Tarif fixe dès 65€, suivi de vol en temps réel, chauffeur dans le hall. Disponible 24h/24. Réservez en 30 secondes.',
+    metaTitle: 'VTC Aéroport CDG dès 59€ — Tarif Fixe Garanti | Owise',
+    metaDesc: 'VTC vers CDG depuis Paris et IDF. Tarif fixe dès 59€, suivi de vol en temps réel, chauffeur dans le hall. Disponible 24h/24. Réservez en 30 secondes.',
     keywords: ['vtc cdg','transfert aéroport cdg','chauffeur privé charles de gaulle','vtc roissy','taxi cdg paris'],
     h1: 'VTC Aéroport Charles de Gaulle (CDG)',
     intro: 'Votre transfert vers l\'aéroport Paris-CDG avec un chauffeur professionnel. Tarif fixe garanti, suivi de vol en temps réel, prise en charge dans le hall d\'arrivée.',
-    prix: 'dès 65€',
+    prix: 'dès 59€',
     duree: '25–55 min selon votre départ',
     faq: [
       { q: 'Combien coûte un VTC de Paris vers CDG ?', a: 'Le tarif est fixe et calculé à l\'avance. Depuis Paris intramuros, comptez entre 55€ et 75€ selon le véhicule. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
@@ -329,7 +329,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-aeroport-beauvais': {
     slug: 'vtc-aeroport-beauvais',
     title: 'VTC Aéroport Beauvais-Tillé',
-    metaTitle: 'VTC Aéroport Beauvais-Tillé (BVA) dès 69€ — Tarif Fixe | Owise',
+    metaTitle: 'VTC Aéroport Beauvais-Tillé (BVA) dès 59€ — Tarif Fixe | Owise',
     metaDesc: 'Transfert VTC vers l\'aéroport de Beauvais-Tillé (BVA), hub Ryanair & Wizzair. Depuis Creil, Senlis, Chantilly et toute l\'Oise. Tarif fixe garanti, disponible 24h/24.',
     keywords: [
       'vtc beauvais aéroport','transfert beauvais tillé','chauffeur privé beauvais bva',
@@ -339,7 +339,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Aéroport de Beauvais-Tillé (BVA)',
     intro: 'Votre transfert VTC vers l\'aéroport de Beauvais-Tillé (BVA), hub des compagnies Ryanair et Wizzair. Chauffeur professionnel, tarif fixe garanti, prise en charge à domicile. Desserte depuis toute l\'Oise Sud : Creil, Senlis, Chantilly, Gouvieux, Compiègne et les communes voisines. Disponible 24h/24.',
-    prix: 'dès 69€',
+    prix: 'dès 59€',
     duree: '20–35 min depuis Creil/Senlis',
     faq: [
       { q: 'Quel est le tarif depuis Creil vers l\'aéroport de Beauvais ?', a: 'Le forfait Creil → Beauvais-Tillé est de 69€ en berline, prix fixe garanti. Depuis Chantilly, le tarif est identique : 69€. Depuis Senlis ou Compiègne, obtenez votre prix exact avec notre estimateur en ligne.' },
@@ -353,7 +353,7 @@ export const DESTINATIONS: Record<string, {
     slug: 'vtc-beauvais',
     title: 'VTC Beauvais — Chauffeur Privé',
     metaTitle: 'VTC Beauvais → CDG 125€, Orly 169€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Beauvais (60000) vers CDG, Orly, Paris, Chantilly et Creil. Tarif fixe garanti, disponible 24h/24. Réservation en ligne en 30 secondes.',
+    metaDesc: 'Chauffeur VTC depuis Beauvais (60000). Tarif fixe garanti vers CDG et Orly ; vers Paris, Chantilly et Creil, prix calculé à l’adresse exacte. Disponible 24h/24.',
     keywords: [
       'vtc beauvais','chauffeur privé beauvais','vtc beauvais cdg','vtc beauvais paris',
       'taxi beauvais','vtc beauvais orly','chauffeur beauvais 60000','vtc oise beauvais',
@@ -482,7 +482,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-coye-la-foret': {
     slug: 'vtc-coye-la-foret',
     title: 'VTC Coye-la-Forêt & Forêt de Chantilly',
-    metaTitle: 'VTC Coye-la-Forêt → CDG, Paris dès 65€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Coye-la-Forêt → CDG 59€, Paris 119€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville et la Forêt de Chantilly vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc coye-la-foret','chauffeur privé coye-la-forêt cdg','taxi coye la forêt aéroport',
@@ -491,7 +491,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Coye-la-Forêt & Forêt de Chantilly',
     intro: 'Votre chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard et toute la Forêt de Chantilly. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
-    prix: 'dès 65€ vers CDG',
+    prix: '59€ vers CDG',
     duree: '25–30 min vers CDG',
     zones: [
       { nom: 'Coye-la-Forêt', cp: '60580', km: 0 },
@@ -584,7 +584,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-boran-sur-oise': {
     slug: 'vtc-boran-sur-oise',
     title: 'VTC Boran-sur-Oise & Vallée de l\'Oise',
-    metaTitle: 'VTC Boran-sur-Oise → CDG, Paris dès 80€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Boran-sur-Oise → CDG 59€, Paris 119€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc boran-sur-oise','chauffeur privé boran sur oise cdg','taxi boran oise aéroport',
@@ -593,7 +593,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Boran-sur-Oise & Vallée de l\'Oise',
     intro: 'Votre chauffeur VTC depuis Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle, Chambly et toutes les communes de la Vallée de l\'Oise entre Creil et Pontoise. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 80€ vers CDG',
+    prix: '59€ vers CDG',
     duree: '30–40 min vers CDG',
     zones: [
       { nom: 'Boran-sur-Oise', cp: '60820', km: 0 },
@@ -621,7 +621,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-precy-sur-oise': {
     slug: 'vtc-precy-sur-oise',
     title: 'VTC Précy-sur-Oise & Oise Nord',
-    metaTitle: 'VTC Précy-sur-Oise → CDG, Paris dès 85€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Précy-sur-Oise → CDG 59€, Paris 119€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Crouy-en-Thelle vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc precy-sur-oise','chauffeur privé précy sur oise cdg','taxi précy oise aéroport',
@@ -630,7 +630,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Précy-sur-Oise & Oise Nord',
     intro: 'Votre chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie, Le Mesnil-en-Thelle et les communes de l\'Oise Nord entre Creil et la Vallée de l\'Oise. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 85€ vers CDG',
+    prix: '59€ vers CDG',
     duree: '35–50 min vers CDG',
     zones: [
       { nom: 'Précy-sur-Oise', cp: '60460', km: 0 },
@@ -657,7 +657,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-luzarches': {
     slug: 'vtc-luzarches',
     title: 'VTC Luzarches & Pays de France',
-    metaTitle: 'VTC Luzarches → CDG, Paris dès 65€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Luzarches → CDG 59€, Paris 119€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Luzarches, Asnières-sur-Oise, Chaumontel et le Pays de France vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc luzarches','chauffeur privé luzarches cdg','taxi luzarches aéroport',
@@ -666,7 +666,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Luzarches & Pays de France',
     intro: 'Votre chauffeur VTC depuis Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine et les communes du Pays de France (Val-d\'Oise 95). Idéalement situé entre Chantilly et l\'aéroport CDG. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 65€ vers CDG',
+    prix: '59€ vers CDG',
     duree: '20–30 min vers CDG',
     zones: [
       { nom: 'Luzarches', cp: '95270', km: 0 },
@@ -786,7 +786,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-liancourt': {
     slug: 'vtc-liancourt',
     title: 'VTC Liancourt, Rantigny & Cauffry',
-    metaTitle: 'VTC Liancourt → CDG, Paris dès 100€ | Chauffeur Privé | Owise',
+    metaTitle: 'VTC Liancourt → CDG 59€, Paris 125€ | Chauffeur Privé | Owise',
     metaDesc: 'Chauffeur VTC depuis Liancourt, Rantigny, Cauffry et Laigneville vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
     keywords: [
       'vtc liancourt','chauffeur privé liancourt 60','vtc rantigny cdg',
@@ -796,7 +796,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Liancourt, Rantigny & Cauffry',
     intro: 'Votre chauffeur VTC depuis Liancourt et les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Entre Creil et Clermont, transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 100€ vers CDG',
+    prix: '59€ vers CDG',
     duree: '40–50 min vers CDG',
     zones: [
       { nom: 'Liancourt', cp: '60140', km: 0 },
@@ -853,7 +853,7 @@ export const DESTINATIONS: Record<string, {
     slug: 'vtc-creil-cdg',
     title: 'VTC Creil → CDG',
     metaTitle: 'VTC Creil CDG — Tarif Fixe 59€ | Chauffeur Privé | Owise',
-    metaDesc: 'VTC de Creil à l\'aéroport CDG. Tarif fixe 65€, suivi de vol, prise en charge à domicile. Chauffeur professionnel disponible 24h/24 depuis Creil et l\'Oise Sud.',
+    metaDesc: 'VTC de Creil à l\'aéroport CDG. Tarif fixe 59€, suivi de vol, prise en charge à domicile. Chauffeur professionnel disponible 24h/24 depuis Creil et l\'Oise Sud.',
     keywords: ['vtc creil cdg','taxi creil aéroport','chauffeur creil charles de gaulle','vtc creil roissy','creil cdg prix','vtc nogent oise cdg','chauffeur privé creil cdg 65'],
     h1: 'VTC Creil → CDG — Tarif Fixe 59€',
     intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
@@ -971,7 +971,7 @@ export const DESTINATIONS: Record<string, {
     keywords: ['vtc compiègne orly','taxi compiègne aéroport orly','chauffeur compiègne orly','compiègne orly prix','vtc margny compiègne orly','chauffeur privé compiègne orly','transfert compiègne orly'],
     h1: 'VTC Compiègne → Orly — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Compiègne (et Margny-lès-Compiègne, Venette, Lacroix-Saint-Ouen) jusqu\'à l\'aéroport d\'Orly. Tarif fixe garanti, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
-    prix: 'dès 165€ vers Orly',
+    prix: '149€ vers Orly',
     duree: '80–100 min',
     faq: [
       { q: 'Quel est le tarif d\'un VTC de Compiègne à Orly ?', a: 'Depuis Compiègne, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet depuis Compiègne traverse ou contourne Paris, ce qui représente environ 80 à 100 minutes. Le prix est confirmé avant le départ, sans surprise.' },
