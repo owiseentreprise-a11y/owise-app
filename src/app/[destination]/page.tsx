@@ -74,12 +74,12 @@ export const DESTINATIONS: Record<string, {
   'vtc-aeroport-orly': {
     slug: 'vtc-aeroport-orly',
     title: 'VTC Aéroport Orly',
-    metaTitle: 'VTC Aéroport Orly dès 50€ — Chauffeur Privé 24h/24 | Owise',
-    metaDesc: 'VTC vers Orly depuis Paris et IDF. Tarif fixe dès 50€, chauffeur professionnel, prise en charge au terminal. Disponible 24h/24. Réservation en ligne immédiate.',
+    metaTitle: 'VTC Aéroport Orly dès 59€ — Chauffeur Privé 24h/24 | Owise',
+    metaDesc: 'VTC vers Orly depuis Paris et IDF. Tarif fixe dès 59€, chauffeur professionnel, prise en charge au terminal. Disponible 24h/24. Réservation en ligne immédiate.',
     keywords: ['vtc orly','transfert aéroport orly','chauffeur privé orly','taxi orly paris','vtc paris orly'],
     h1: 'VTC Aéroport d\'Orly (ORY)',
     intro: 'Transfert VTC vers Paris-Orly (ORY) dans les meilleures conditions. Chauffeur professionnel, véhicule haut de gamme, tarif fixe sans surprise.',
-    prix: 'dès 50€',
+    prix: 'dès 59€',
     duree: '20–45 min selon votre départ',
     faq: [
       { q: 'Combien coûte un VTC de Paris vers Orly ?', a: 'Depuis Paris intramuros, le tarif est entre 50€ et 70€ selon le véhicule. Le prix est fixe et garanti dès la réservation. Obtenez votre estimation exacte en quelques secondes.' },
@@ -147,8 +147,8 @@ export const DESTINATIONS: Record<string, {
   'vtc-compiegne': {
     slug: 'vtc-compiegne',
     title: 'VTC Compiègne & Oise Nord',
-    metaTitle: 'VTC Compiègne → CDG, Orly, Paris dès 100€ | Owise',
-    metaDesc: 'Chauffeur VTC depuis Compiègne et l\'Oise Nord : Margny, Venette, Thourotte. Tarif fixe dès 100€ vers CDG, Orly et Paris. Disponible 24h/24. Réservez en ligne.',
+    metaTitle: 'VTC Compiègne → CDG 115€, Orly 149€ | Owise',
+    metaDesc: 'Chauffeur VTC depuis Compiègne et l\'Oise Nord : Margny, Venette, Thourotte. Tarif fixe 115€ vers CDG, 149€ vers Orly. Vers Paris, prix calculé à l’adresse exacte. Disponible 24h/24. Réservez en ligne.',
     keywords: [
       'vtc compiègne','chauffeur privé compiègne cdg','vtc compiègne orly',
       'taxi compiègne aéroport','vtc margny-lès-compiègne','vtc thourotte',
@@ -157,7 +157,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Compiègne & Oise Nord',
     intro: 'Votre chauffeur VTC depuis Compiègne et les communes de l\'Oise Nord : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Lacroix-Saint-Ouen, Choisy-au-Bac et toutes les localités dans un rayon de 10 km. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24.',
-    prix: 'dès 100€ vers CDG',
+    prix: '115€ vers CDG',
     duree: '45–55 min vers CDG',
     zones: [
       { nom: 'Compiègne', cp: '60200', km: 0 },
@@ -352,7 +352,7 @@ export const DESTINATIONS: Record<string, {
   'vtc-beauvais': {
     slug: 'vtc-beauvais',
     title: 'VTC Beauvais — Chauffeur Privé',
-    metaTitle: 'VTC Beauvais → CDG, Orly, Paris dès 69€ | Owise',
+    metaTitle: 'VTC Beauvais → CDG 125€, Orly 169€ | Owise',
     metaDesc: 'Chauffeur VTC depuis Beauvais (60000) vers CDG, Orly, Paris, Chantilly et Creil. Tarif fixe garanti, disponible 24h/24. Réservation en ligne en 30 secondes.',
     keywords: [
       'vtc beauvais','chauffeur privé beauvais','vtc beauvais cdg','vtc beauvais paris',
@@ -361,7 +361,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Beauvais — Chauffeur Privé',
     intro: 'Votre chauffeur VTC depuis Beauvais (60000) et son agglomération, vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, chauffeur professionnel, véhicule haut de gamme. Disponible 24h/24, 7j/7 — pour vos déplacements professionnels, familiaux ou vos correspondances aéroport.',
-    prix: 'dès 69€',
+    prix: '125€ vers CDG, 169€ vers Orly',
     duree: '50–65 min vers CDG selon trafic',
     faq: [
       { q: 'Quel est le tarif depuis Beauvais vers CDG ?', a: 'Le forfait Beauvais → CDG est de 119€ en berline, prix fixe garanti — annoncé avant la course, jamais de compteur ni de mauvaise surprise à l\'arrivée. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
@@ -895,7 +895,7 @@ export const DESTINATIONS: Record<string, {
     keywords: ['vtc compiègne cdg','taxi compiègne aéroport','chauffeur compiègne charles de gaulle','vtc compiègne roissy','compiègne cdg prix','vtc margny compiègne cdg','chauffeur privé compiègne aéroport'],
     h1: 'VTC Compiègne → CDG — Tarif Fixe Garanti',
     intro: 'Votre transfert VTC depuis Compiègne et l\'Oise Nord (Margny-lès-Compiègne, Venette, Lacroix-Saint-Ouen, Thourotte) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe garanti, chauffeur professionnel, suivi de vol inclus. Disponible 24h/24.',
-    prix: 'dès 100€ vers CDG',
+    prix: '115€ vers CDG',
     duree: '45–55 min',
     faq: [
       { q: 'Quel est le tarif d\'un VTC de Compiègne à CDG ?', a: 'Depuis Compiègne, le tarif vers CDG est calculé à l\'avance et garanti. Owise est l\'une des rares plateformes à proposer un forfait fixe depuis Compiègne — le prix ne change pas selon la circulation. Estimez votre course sur owise.fr.' },

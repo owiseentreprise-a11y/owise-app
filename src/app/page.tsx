@@ -182,14 +182,14 @@ export default async function VitrinePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {[
               { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 65€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
-              { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 50€',  desc: 'Transfert Paris-Orly, tous terminaux' },
-              { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 40€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
+              { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 59€',  desc: 'Transfert Paris-Orly, tous terminaux' },
+              { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 59€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
               { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 69€',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
               { slug: 'vtc-chantilly',         title: 'VTC Chantilly',                  prix: 'dès 59€',  desc: 'Château, Hippodrome, hôtels de prestige' },
               { slug: 'vtc-senlis',            title: 'VTC Senlis & Environs',          prix: 'dès 65€',  desc: 'Cité médiévale, Forêt de Chantilly' },
               { slug: 'vtc-gouvieux',          title: 'VTC Gouvieux & Lamorlaye',       prix: 'dès 59€',  desc: 'Coye-la-Forêt, Orry-la-Ville, Précy' },
               { slug: 'vtc-lamorlaye',         title: 'VTC Lamorlaye',                  prix: 'dès 59€',  desc: 'Forêt de Chantilly, Boran-sur-Oise' },
-              { slug: 'vtc-compiegne',         title: 'VTC Compiègne',                  prix: 'dès 100€', desc: 'Margny, Venette, Oise Nord' },
+              { slug: 'vtc-compiegne',         title: 'VTC Compiègne',                  prix: 'dès 115€', desc: 'Margny, Venette, Oise Nord' },
               { slug: 'vtc-pontoise',          title: 'VTC Pontoise & Cergy',           prix: 'dès 55€',  desc: 'Val-d\'Oise, Saint-Ouen-l\'Aumône' },
               { slug: 'vtc-versailles',        title: 'VTC Versailles & Yvelines',      prix: 'dès 80€',  desc: 'Château, Vélizy, Saint-Quentin-en-Yvelines' },
               { slug: 'vtc-coye-la-foret',     title: 'VTC Coye-la-Forêt',             prix: 'dès 65€',  desc: 'Forêt de Chantilly, Lamorlaye, Orry-la-Ville' },
@@ -223,13 +223,13 @@ export default async function VitrinePage() {
               { slug: 'vtc-chantilly-cdg',     title: 'VTC Chantilly → CDG',       prix: '59€',      desc: 'Gouvieux, Lamorlaye — suivi de vol inclus' },
               { slug: 'vtc-creil-cdg',         title: 'VTC Creil → CDG',           prix: '65€',      desc: 'Nogent-sur-Oise, Montataire, 40–55 min via A1' },
               { slug: 'vtc-senlis-cdg',        title: 'VTC Senlis → CDG',          prix: 'dès 69€',  desc: 'Aumont-en-Halatte, Fleurines, 45–60 min' },
-              { slug: 'vtc-compiegne-cdg',     title: 'VTC Compiègne → CDG',       prix: 'dès 100€', desc: 'Margny, Venette, 70–90 min via A1' },
+              { slug: 'vtc-compiegne-cdg',     title: 'VTC Compiègne → CDG',       prix: '115€', desc: 'Margny, Venette, 70–90 min via A1' },
               { slug: 'vtc-chantilly-orly',    title: 'VTC Chantilly → Orly',      prix: 'dès 139€', desc: 'Gouvieux, Lamorlaye, 60–80 min' },
               { slug: 'vtc-creil-orly',        title: 'VTC Creil → Orly',          prix: 'dès 145€', desc: 'Nogent-sur-Oise, Montataire, 65–85 min' },
               { slug: 'vtc-senlis-orly',       title: 'VTC Senlis → Orly',         prix: 'dès 149€', desc: 'Aumont-en-Halatte, Fleurines, 70–90 min' },
               { slug: 'vtc-compiegne-orly',    title: 'VTC Compiègne → Orly',      prix: 'dès 165€', desc: 'Margny, Venette, 80–100 min' },
-              { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais',  prix: 'dès 65€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
-              { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais',      prix: 'dès 65€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
+              { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais',  prix: '79€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
+              { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais',      prix: '69€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
             ].map(d => (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
