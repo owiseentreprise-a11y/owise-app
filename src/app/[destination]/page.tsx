@@ -412,7 +412,7 @@ export const DESTINATIONS: Record<string, {
     slug: 'vtc-pontoise',
     title: 'VTC Pontoise, Cergy & Val-d\'Oise',
     metaTitle: 'VTC Pontoise, Cergy → CDG, Orly, Paris | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône et le Val-d\'Oise vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
+    metaDesc: 'Chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône et le Val-d\'Oise vers CDG, Orly et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc pontoise','chauffeur privé pontoise cdg','vtc cergy','vtc saint-ouen-laumône',
       'vtc val-d\'oise cdg','taxi pontoise aéroport','vtc pontoise paris',
@@ -420,8 +420,8 @@ export const DESTINATIONS: Record<string, {
       'vtc osny','vtc auvers-sur-oise','taxi cergy cdg',
     ],
     h1: 'VTC Pontoise, Cergy & Val-d\'Oise',
-    intro: 'Votre chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône, Osny, Éragny et toutes les communes du Val-d\'Oise (95). Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
-    prix: 'dès 55€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône, Osny, Éragny et toutes les communes du Val-d\'Oise (95). Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Le prix dépend de votre adresse exacte : il est calculé avant la réservation et confirmé avant le départ. Prise en charge à domicile, 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '30–50 min vers CDG',
     zones: [
       { nom: 'Pontoise', cp: '95300', km: 0 },
@@ -437,10 +437,10 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Auvers-sur-Oise', cp: '95430', km: 7.5 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Pontoise vers CDG ?', a: 'Owise propose un tarif fixe calculé à l\'avance depuis Pontoise, Cergy, Osny et toutes les communes du Val-d\'Oise — le prix est confirmé à la réservation et ne change pas, bouchons ou pas. Chauffeur professionnel, prise en charge à domicile, disponible 24h/24. Estimez votre course sur owise.fr.' },
+      { q: 'Quel est le tarif depuis Pontoise vers CDG ?', a: 'Le Val-d\'Oise n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte, puis confirmé à la réservation — il ne change plus ensuite, bouchons ou pas. Chauffeur professionnel, prise en charge à domicile, disponible 24h/24. Estimez votre course sur owise.fr.' },
       { q: 'Combien de temps pour aller de Pontoise à CDG ?', a: '40 à 48 minutes selon l\'heure, via l\'A15 puis la Francilienne. Contrairement aux communes de l\'Oise, le trajet depuis le Val-d\'Oise contourne l\'agglomération par le nord : comptez huit minutes de plus aux heures chargées.' },
       { q: 'Desservez-vous Cergy et ses quartiers ?', a: 'Oui. Nous couvrons toutes les communes de Cergy-Pontoise : Cergy, Pontoise, Osny, Éragny, Jouy-le-Moutier, Vauréal, Courdimanche, Neuville-sur-Oise et leurs alentours.' },
-      { q: 'Proposez-vous un service vers Orly depuis le Val-d\'Oise ?', a: 'Oui. Depuis Pontoise ou Cergy, le trajet vers Orly est d\'environ 50 à 70 minutes, pour un tarif de 80 à 100€. Tous les aéroports parisiens sont desservis depuis le Val-d\'Oise.' },
+      { q: 'Proposez-vous un service vers Orly depuis le Val-d\'Oise ?', a: 'Oui. Depuis Pontoise ou Cergy, le trajet vers Orly dure environ 50 à 70 minutes. Le prix dépend de votre adresse exacte et s\'obtient sur owise.fr. Tous les aéroports parisiens sont desservis depuis le Val-d\'Oise.' },
       { q: 'Pouvez-vous me prendre dans ma copropriété à Cergy ?', a: 'Absolument. Votre chauffeur se gare devant votre adresse précise. Pour les grandes copropriétés, précisez le bâtiment ou le numéro d\'interphone dans les commentaires de réservation.' },
     ],
   },
@@ -448,7 +448,7 @@ export const DESTINATIONS: Record<string, {
     slug: 'vtc-versailles',
     title: 'VTC Versailles & Yvelines',
     metaTitle: 'VTC Versailles → CDG, Orly, Paris | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Versailles, Le Chesnay et les Yvelines vers CDG, Orly et Paris. Château de Versailles, séminaires, entreprises. Tarif fixe garanti 24h/24.',
+    metaDesc: 'Chauffeur VTC depuis Versailles, Le Chesnay et les Yvelines vers CDG, Orly et Paris. Château, séminaires, entreprises. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc versailles','chauffeur privé versailles cdg','vtc versailles aéroport',
       'taxi versailles paris','vtc versailles orly','chauffeur versailles château',
@@ -457,7 +457,7 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Versailles & Yvelines',
     intro: 'Votre chauffeur VTC depuis Versailles, Le Chesnay-Rocquencourt, Viroflay, Saint-Cyr-l\'École et les communes des Yvelines (78). Transferts vers CDG, Orly et Paris. Service premium pour les visiteurs du Château de Versailles, les séminaires d\'entreprise et les déplacements professionnels.',
-    prix: 'dès 80€ vers CDG',
+    prix: 'Prix calculé selon votre adresse',
     duree: '40–70 min vers CDG',
     zones: [
       { nom: 'Versailles', cp: '78000', km: 0 },
@@ -472,11 +472,11 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Saint-Quentin-en-Yvelines', cp: '78180', km: 8.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Versailles vers CDG ?', a: 'Owise propose un tarif fixe garanti depuis Versailles, Le Chesnay et les Yvelines — calculé à l\'avance selon votre adresse, confirmé dès la réservation. Pas de compteur, pas de surplus en heure de pointe. Idéal pour les visiteurs du Château ou les déplacements professionnels. Estimez sur owise.fr.' },
+      { q: 'Quel est le tarif depuis Versailles vers CDG ?', a: 'Les Yvelines n\'ont pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte, puis confirmé dès la réservation — il ne bouge plus ensuite. Pas de compteur, pas de surplus en heure de pointe. Idéal pour les visiteurs du Château ou les déplacements professionnels. Estimez sur owise.fr.' },
       { q: 'Proposez-vous des transferts pour le Château de Versailles ?', a: 'Oui. Nous organisons des transferts pour les visiteurs du Château de Versailles, les événements privés dans les jardins et les séminaires d\'entreprise dans la région. Tarif sur devis pour les groupes.' },
       { q: 'Combien de temps pour aller de Versailles à CDG ?', a: 'Environ 40 à 70 minutes selon les conditions de circulation. La route passe par l\'A86 puis l\'A3, ou par le Francilienne. Tôt le matin (avant 6h), comptez 40 à 50 minutes.' },
       { q: 'Desservez-vous les entreprises de Vélizy et Saint-Quentin-en-Yvelines ?', a: 'Oui. Nous proposons des solutions VTC pour les entreprises des technopôles de Vélizy, Saint-Quentin-en-Yvelines et les parcs d\'activités des Yvelines. Compte entreprise disponible avec facturation mensuelle.' },
-      { q: 'Puis-je réserver un VTC depuis Versailles vers Paris ?', a: 'Absolument. Le trajet Versailles → Paris est d\'environ 30 à 45 minutes, pour un tarif de 50 à 70€ selon votre destination précise à Paris. Aller-retour possible dès la réservation.' },
+      { q: 'Puis-je réserver un VTC depuis Versailles vers Paris ?', a: 'Absolument. Le trajet Versailles → Paris dure environ 30 à 45 minutes. Son prix dépend de votre adresse de départ et de votre destination précise à Paris ; il s\'obtient sur owise.fr. Aller-retour possible dès la réservation.' },
     ],
   },
   'vtc-coye-la-foret': {
@@ -752,16 +752,16 @@ export const DESTINATIONS: Record<string, {
   'vtc-clermont': {
     slug: 'vtc-clermont',
     title: 'VTC Clermont-de-l\'Oise & Clermontois',
-    metaTitle: 'VTC Clermont → CDG, Paris dès 105€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Clermont-de-l\'Oise, Agnetz, Breuil-le-Vert et le Clermontois vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Clermont → CDG, Paris | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Clermont-de-l\'Oise, Agnetz, Breuil-le-Vert et le Clermontois vers CDG, Orly et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc clermont oise','chauffeur privé clermont 60','vtc clermont cdg',
       'taxi clermont-de-l\'oise aéroport','vtc 60600 cdg','vtc clermontois',
       'chauffeur privé agnetz breuil','vtc clermont paris','vtc oise nord cdg',
     ],
     h1: 'VTC Clermont-de-l\'Oise & Clermontois',
-    intro: 'Votre chauffeur VTC depuis Clermont-de-l\'Oise et les communes du Clermontois (Oise 60) : Agnetz, Lamécourt, Breuil-le-Vert, Breuil-le-Sec, Étouy et les villages voisins. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 105€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Clermont-de-l\'Oise et les communes du Clermontois (Oise 60) : Agnetz, Lamécourt, Breuil-le-Vert, Breuil-le-Sec, Étouy et les villages voisins. Transferts vers CDG, Orly et Paris. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '45–60 min vers CDG',
     zones: [
       { nom: 'Clermont', cp: '60600', km: 0 },
@@ -776,11 +776,11 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Creil', cp: '60100', km: 16.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Clermont vers CDG ?', a: 'Owise propose un tarif fixe depuis Clermont-de-l\'Oise — le prix est bloqué dès la réservation, que vous partiez à 4h du matin ou en plein rush. Votre chauffeur vient chez vous, sans stress de stationnement ni de navette. Estimez votre course sur owise.fr.' },
+      { q: 'Quel est le tarif depuis Clermont vers CDG ?', a: 'Le Clermontois n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte, puis bloqué dès la réservation — que vous partiez à 4h du matin ou en plein rush. Votre chauffeur vient chez vous, sans stress de stationnement ni de navette. Estimez votre course sur owise.fr.' },
       { q: 'Combien de temps pour aller de Clermont à CDG ?', a: '56 km, soit 45 à 51 minutes via l\'A16 puis l\'A1 — l\'accès à l\'autoroute se fait par Breuil-le-Vert ou Laigneville. Six minutes séparent le départ de 5h de celui de 8h.' },
       { q: 'Desservez-vous Agnetz, Breuil-le-Vert et Breuil-le-Sec ?', a: 'Oui. Nous couvrons toutes les communes du Clermontois : Agnetz, Breuil-le-Vert, Breuil-le-Sec, Étouy, Lamécourt, Rantigny et Cauffry. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Clermont ?', a: 'Oui. Nous effectuons tous les transferts locaux : Clermont → gare de Creil, Clermont → Liancourt, Creil → CDG. Le tarif local est calculé au kilomètre depuis votre adresse.' },
-      { q: 'Proposez-vous un service vers Orly depuis Clermont ?', a: 'Oui. Le forfait Clermont → Orly est d\'environ 130 à 150€ en berline. Le trajet prend environ 85 à 100 minutes. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis l\'Oise Nord.' },
+      { q: 'Proposez-vous un service vers Orly depuis Clermont ?', a: 'Oui. Le trajet Clermont → Orly prend environ 85 à 100 minutes. Son prix dépend de votre adresse exacte et s\'obtient sur owise.fr. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis l\'Oise Nord.' },
     ],
   },
   'vtc-liancourt': {
@@ -1004,8 +1004,8 @@ export const DESTINATIONS: Record<string, {
   'vtc-chambly': {
     slug: 'vtc-chambly',
     title: 'VTC Chambly & Oise Sud-Ouest',
-    metaTitle: 'VTC Chambly → CDG, Orly, Paris dès 55€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Chambly, Bornel, Balagny-sur-Thérain et Neuilly-en-Thelle vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Chambly → CDG, Orly, Paris | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Chambly, Bornel, Balagny-sur-Thérain et Neuilly-en-Thelle vers CDG, Orly et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc chambly','vtc chambly cdg','chauffeur privé chambly 60230',
       'taxi chambly aéroport','vtc bornel cdg','vtc balagny-sur-thérain',
@@ -1013,8 +1013,8 @@ export const DESTINATIONS: Record<string, {
       'vtc chambly orly','transfert chambly aéroport',
     ],
     h1: 'VTC Chambly, Bornel & Oise Sud-Ouest',
-    intro: 'Votre chauffeur VTC depuis Chambly et les communes voisines : Bornel, Balagny-sur-Thérain, Neuilly-en-Thelle, Hénonville, Monneville. Chambly se trouve à seulement 38 km de CDG — l\'un des accès les plus directs de l\'Oise vers l\'aéroport. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 55€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Chambly et les communes voisines : Bornel, Balagny-sur-Thérain, Neuilly-en-Thelle, Hénonville, Monneville. Chambly se trouve à environ 40 km de CDG — l\'un des accès les plus directs de l\'Oise vers l\'aéroport. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '30–45 min vers CDG',
     zones: [
       { nom: 'Chambly', cp: '60230', km: 0 },
@@ -1028,10 +1028,10 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Creil', cp: '60100', km: 15.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Chambly vers CDG ?', a: 'Chambly est à seulement 38 km de CDG — l\'un des trajets les plus courts depuis l\'Oise. Le forfait Owise depuis Chambly vers CDG est estimé dès 55€ en berline, prix fixe garanti. Le tarif exact depuis votre adresse s\'obtient en quelques secondes sur owise.fr.' },
+      { q: 'Quel est le tarif depuis Chambly vers CDG ?', a: 'Chambly est à environ 40 km de CDG — l\'un des trajets les plus courts depuis l\'Oise. Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte et confirmé avant le départ. Il s\'obtient en quelques secondes sur owise.fr.' },
       { q: 'Combien de temps pour aller de Chambly à CDG ?', a: 'Entre 30 et 45 minutes selon la circulation, via la D1001 ou l\'A15. Tôt le matin (avant 6h), le trajet est souvent inférieur à 30 minutes. Chambly offre un accès rapide et direct vers CDG, sans traverser Paris.' },
       { q: 'Desservez-vous Bornel, Balagny et Neuilly-en-Thelle ?', a: 'Oui. Toutes les communes autour de Chambly sont couvertes : Bornel, Balagny-sur-Thérain, Neuilly-en-Thelle, Saint-Crépin-Ibouvillers, Hénonville, Monneville et Persan. Prise en charge directement à votre domicile.' },
-      { q: 'Proposez-vous des courses vers Orly depuis Chambly ?', a: 'Oui. Le forfait Chambly → Orly est estimé entre 75 et 90€ en berline. Le trajet prend 50 à 65 minutes selon la circulation. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis.' },
+      { q: 'Proposez-vous des courses vers Orly depuis Chambly ?', a: 'Oui. Le trajet Chambly → Orly prend 50 à 65 minutes selon la circulation. Son prix dépend de votre adresse exacte et s\'obtient sur owise.fr. Tous les aéroports parisiens (CDG, Orly, Beauvais) sont desservis.' },
       { q: 'Le service est-il disponible très tôt le matin ?', a: 'Absolument. Owise est disponible 24h/24, 7j/7. Les départs avant 6h sont au même tarif qu\'en journée : aucune majoration de nuit, aucune surprise à la réservation.' },
     ],
   },
@@ -1039,8 +1039,8 @@ export const DESTINATIONS: Record<string, {
   'vtc-meru': {
     slug: 'vtc-meru',
     title: 'VTC Méru & Oise Ouest',
-    metaTitle: 'VTC Méru → CDG, Beauvais, Paris dès 80€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Méru, Noailles, Saint-Crépin-Ibouvillers et l\'Oise Ouest vers CDG, Beauvais et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Méru → CDG, Beauvais, Paris | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Méru, Noailles, Saint-Crépin-Ibouvillers et l\'Oise Ouest vers CDG, Beauvais et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc méru','vtc méru cdg','chauffeur privé méru 60110',
       'taxi méru aéroport','vtc noailles beauvais','vtc méru paris',
@@ -1048,8 +1048,8 @@ export const DESTINATIONS: Record<string, {
       'vtc 60110 aéroport',
     ],
     h1: 'VTC Méru, Noailles & Oise Ouest',
-    intro: 'Votre chauffeur VTC depuis Méru et les communes de l\'Oise Ouest : Noailles, Saint-Crépin-Ibouvillers, Bornel, Hénonville, Puiseux-en-Bray. Méru est idéalement situé entre Cergy-Pontoise et Beauvais — 35 km seulement de l\'aéroport Beauvais-Tillé (Ryanair). Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 80€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Méru et les communes de l\'Oise Ouest : Noailles, Saint-Crépin-Ibouvillers, Bornel, Hénonville, Puiseux-en-Bray. Méru est idéalement situé entre Cergy-Pontoise et Beauvais — une quarantaine de kilomètres de l\'aéroport Beauvais-Tillé (Ryanair). Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '35–45 min vers CDG',
     zones: [
       { nom: 'Méru', cp: '60110', km: 0 },
@@ -1062,10 +1062,10 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Chambly', cp: '60230', km: 14.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Méru vers l\'aéroport de Beauvais ?', a: 'Méru est à seulement 35 km de Beauvais-Tillé, hub Ryanair. Le forfait Owise depuis Méru vers Beauvais est estimé dès 55€ en berline. C\'est l\'un des trajets les plus directs depuis l\'Oise Ouest — aucune correspondance, prise en charge à domicile, disponible 24h/24.' },
+      { q: 'Quel est le tarif depuis Méru vers l\'aéroport de Beauvais ?', a: 'Méru est à une quarantaine de kilomètres de Beauvais-Tillé, hub Ryanair. Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte. C\'est l\'un des trajets les plus directs depuis l\'Oise Ouest — aucune correspondance, prise en charge à domicile, disponible 24h/24.' },
       { q: 'Combien de temps pour aller de Méru à CDG ?', a: '51 km, soit 36 à 40 minutes via la D1001 ou la N184 puis l\'A15. Depuis Méru, CDG est accessible sans traverser Paris — quatre minutes seulement séparent le départ de 5h de celui de 8h.' },
       { q: 'Desservez-vous Noailles et Saint-Crépin-Ibouvillers ?', a: 'Oui. Toutes les communes de l\'Oise Ouest autour de Méru sont couvertes : Noailles, Saint-Crépin-Ibouvillers, Bornel, Hénonville, Puiseux-en-Bray, Labosse. Prise en charge directement à votre adresse.' },
-      { q: 'Proposez-vous des courses vers Orly depuis Méru ?', a: 'Oui. Le forfait Méru → Orly est estimé entre 85 et 100€ en berline. Le trajet prend 55 à 70 minutes. Les trois aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis Méru.' },
+      { q: 'Proposez-vous des courses vers Orly depuis Méru ?', a: 'Oui. Le trajet Méru → Orly prend 55 à 70 minutes. Son prix dépend de votre adresse exacte et s\'obtient sur owise.fr. Les trois aéroports parisiens (CDG, Orly, Beauvais) sont desservis depuis Méru.' },
       { q: 'Le VTC est-il la meilleure option depuis Méru pour aller à Beauvais ?', a: 'Pour l\'aéroport de Beauvais-Tillé (Ryanair, Wizzair), le VTC Owise est la solution la plus directe depuis Méru. Aucun bus aéroport ne dessert l\'Oise Ouest — le VTC part de chez vous, sans correspondance, en 30 à 40 minutes.' },
     ],
   },
@@ -1073,8 +1073,8 @@ export const DESTINATIONS: Record<string, {
   'vtc-verberie': {
     slug: 'vtc-verberie',
     title: 'VTC Verberie & Vallée de l\'Oise',
-    metaTitle: 'VTC Verberie → CDG, Orly, Paris dès 95€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Verberie, Longueil-Sainte-Marie, Saint-Vaast-de-Longmont et la vallée de l\'Oise vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
+    metaTitle: 'VTC Verberie → CDG, Orly, Paris | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Verberie, Longueil-Sainte-Marie et la vallée de l\'Oise vers CDG, Orly et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc verberie','vtc verberie cdg','chauffeur privé verberie 60410',
       'taxi verberie aéroport','vtc longueil-sainte-marie cdg','vtc vallée de l\'oise',
@@ -1082,8 +1082,8 @@ export const DESTINATIONS: Record<string, {
       'vtc 60410 aéroport',
     ],
     h1: 'VTC Verberie, Longueil-Sainte-Marie & Vallée de l\'Oise',
-    intro: 'Votre chauffeur VTC depuis Verberie et les communes de la vallée de l\'Oise entre Senlis et Compiègne : Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis et Pont-Sainte-Maxence. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24.',
-    prix: 'dès 95€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Verberie et les communes de la vallée de l\'Oise entre Senlis et Compiègne : Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis et Pont-Sainte-Maxence. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. Disponible 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '35–45 min vers CDG',
     zones: [
       { nom: 'Verberie', cp: '60410', km: 0 },
@@ -1097,10 +1097,10 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Compiègne', cp: '60200', km: 20.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Verberie vers CDG ?', a: 'Le forfait Owise depuis Verberie vers CDG est estimé dès 95€ en berline, prix fixe garanti. Verberie est à 72 km de CDG via l\'A1 ou la Francilienne. Le tarif exact depuis votre adresse s\'obtient sur owise.fr en quelques secondes.' },
+      { q: 'Quel est le tarif depuis Verberie vers CDG ?', a: 'Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte et confirmé avant le départ. Verberie est à environ 44 km de CDG via l\'A1 ou la Francilienne — la distance varie selon l\'adresse. Le tarif exact depuis votre adresse s\'obtient sur owise.fr en quelques secondes.' },
       { q: 'Combien de temps pour aller de Verberie à CDG ?', a: '42 km, soit 34 à 37 minutes via la D130 puis l\'A1. Trois minutes d\'écart entre le départ de 5h et celui de 8h : la portion autoroutière évite entièrement les bouchons parisiens.' },
       { q: 'Desservez-vous Longueil-Sainte-Marie et Pont-Sainte-Maxence ?', a: 'Oui. Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis, Bétisy-Saint-Pierre et Pont-Sainte-Maxence sont dans notre zone de desserte. Prise en charge directement à votre adresse, 24h/24.' },
-      { q: 'Proposez-vous des courses vers Paris depuis Verberie ?', a: 'Oui. Le forfait Verberie → Paris est estimé entre 85 et 100€ en berline. Nous déposons à votre adresse exacte à Paris, que ce soit gare, hôtel ou domicile.' },
+      { q: 'Proposez-vous des courses vers Paris depuis Verberie ?', a: 'Oui. Le prix du trajet Verberie → Paris dépend de votre adresse exacte et s\'obtient sur owise.fr. Nous déposons à votre adresse exacte à Paris, que ce soit gare, hôtel ou domicile.' },
       { q: 'Desservez-vous la zone entre Senlis et Compiègne ?', a: 'Oui. Nous couvrons toute la vallée de l\'Oise entre Senlis et Compiègne : Verberie, Longueil-Sainte-Marie, Lacroix-Saint-Ouen, Saint-Vaast-de-Longmont, Roberval et les communes riveraines. Un seul chauffeur pour tout le secteur.' },
     ],
   },
@@ -1108,8 +1108,8 @@ export const DESTINATIONS: Record<string, {
   'vtc-noyon': {
     slug: 'vtc-noyon',
     title: 'VTC Noyon & Oise Nord',
-    metaTitle: 'VTC Noyon → CDG, Orly, Paris dès 165€ | Chauffeur Privé | Owise',
-    metaDesc: 'Chauffeur VTC depuis Noyon, Ribécourt-Dreslincourt, Sempigny et l\'Oise Nord vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24. Réservation en ligne.',
+    metaTitle: 'VTC Noyon → CDG, Orly, Paris | Chauffeur Privé | Owise',
+    metaDesc: 'Chauffeur VTC depuis Noyon, Ribécourt-Dreslincourt, Sempigny et l\'Oise Nord vers CDG, Orly et Paris. Prix calculé à votre adresse. 24h/24.',
     keywords: [
       'vtc noyon','vtc noyon cdg','chauffeur privé noyon 60400',
       'taxi noyon aéroport','vtc noyon paris','vtc oise nord cdg',
@@ -1117,8 +1117,8 @@ export const DESTINATIONS: Record<string, {
       'vtc 60400 aéroport cdg',
     ],
     h1: 'VTC Noyon & Oise Nord — Transferts Aéroport',
-    intro: 'Votre chauffeur VTC depuis Noyon et les communes du nord de l\'Oise : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Guiscard, Salency. Noyon, ancienne cité épiscopale, est à 120 km de CDG — un trajet long en transports en commun, mais confortable et direct en VTC. Tarif fixe garanti, disponible 24h/24.',
-    prix: 'dès 165€ vers CDG',
+    intro: 'Votre chauffeur VTC depuis Noyon et les communes du nord de l\'Oise : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Guiscard, Salency. Noyon, ancienne cité épiscopale, est à environ 87 km de CDG — un trajet long en transports en commun, mais confortable et direct en VTC. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    prix: 'Prix calculé selon votre adresse',
     duree: '55–70 min vers CDG',
     zones: [
       { nom: 'Noyon', cp: '60400', km: 0 },
@@ -1131,10 +1131,10 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Lassigny', cp: '60310', km: 17.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Noyon vers CDG ?', a: 'Le forfait Owise depuis Noyon vers CDG est estimé dès 165€ en berline, prix fixe garanti. Noyon est à 120 km de CDG — un trajet qui nécessiterait plusieurs correspondances en transport en commun. En VTC, vous partez directement de chez vous, sans escale.' },
+      { q: 'Quel est le tarif depuis Noyon vers CDG ?', a: 'Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte et confirmé avant le départ. Noyon est à environ 87 km de CDG — un trajet qui nécessiterait plusieurs correspondances en transport en commun. En VTC, vous partez directement de chez vous, sans escale.' },
       { q: 'Combien de temps pour aller de Noyon à CDG ?', a: '83 km, soit 57 à 61 minutes via la N32 puis l\'A1. C\'est le trajet le plus long que nous desservions depuis l\'Oise, mais aussi l\'un des plus réguliers : quatre minutes d\'écart entre 5h et 8h, la quasi-totalité du parcours étant sur voie rapide.' },
       { q: 'Desservez-vous Ribécourt-Dreslincourt, Sempigny et Guiscard ?', a: 'Oui. Toutes les communes du secteur de Noyon sont couvertes : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Cuts, Salency, Guiscard, Lassigny. Prise en charge à domicile, disponible 24h/24.' },
-      { q: 'Proposez-vous des courses vers Orly depuis Noyon ?', a: 'Oui. Le forfait Noyon → Orly est estimé entre 190 et 220€ en berline. Le trajet vers Orly, au sud de Paris, est un peu plus long que vers CDG. Nous desservons les trois aéroports parisiens depuis Noyon.' },
+      { q: 'Proposez-vous des courses vers Orly depuis Noyon ?', a: 'Oui. Le prix du trajet Noyon → Orly dépend de votre adresse exacte et s\'obtient sur owise.fr. Le trajet vers Orly, au sud de Paris, est un peu plus long que vers CDG. Nous desservons les trois aéroports parisiens depuis Noyon.' },
       { q: 'Quel est l\'avantage du VTC depuis Noyon par rapport aux transports en commun ?', a: 'Depuis Noyon, rejoindre CDG en transports en commun nécessite Noyon → Compiègne en TER, puis RER B ou navette — avec des horaires limités tôt le matin. En VTC Owise, vous partez de chez vous à l\'heure exacte, sans correspondance, et arrivez directement au terminal.' },
     ],
   },
