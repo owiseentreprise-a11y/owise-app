@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { prixEntreZones, lienDevis, telephoneLisible } from '@/lib/devis-et-tarifs'
 import VitrineBody from '@/components/VitrineBody'
 import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import '../vitrine.css'
@@ -53,7 +54,83 @@ export const DESTINATIONS: Record<string, {
   duree: string
   zones?: { nom: string; cp: string; km: number }[]
   faq: { q: string; a: string }[]
+
+  /* ── Champs facultatifs, ajoutés le 2026-10-18 pour la page Paris ───────
+   *
+   * Tous optionnels, et tous les blocs qui s'en servent sont conditionnels :
+   * les 38 pages existantes n'en déclarent aucun, donc elles s'affichent
+   * exactement comme avant. C'est la condition posée — « préserve les pages
+   * existantes » — et un contrôle la vérifie.
+   *
+   * Le point important est `tarifsDepuis` : il ne contient AUCUN prix, mais
+   * des codes de zone. Les montants sont lus dans la grille au moment du
+   * rendu. C'est ce qui distingue cette page des 35 autres, qui portent un
+   * « dès X € » écrit à la main — et dont trois se sont révélées fausses. */
+
+  /** Code de la zone tarifaire de cette page (ex. 'Z1'). Sans lui, pas de tableau. */
+  zoneCode?: string
+  /** Lignes du tableau de tarifs : on nomme la zone d'en face, jamais le prix. */
+  tarifsDepuis?: { zone: string; libelle: string }[]
+  /** Aéroports mis en avant. `zone` absente = pas de forfait, prix au km. */
+  aeroports?: { zone?: string; nom: string; note: string }[]
+  /** Prestations sans tarif public, dirigées vers un e-mail prérempli. */
+  surDevis?: { titre: string; texte: string }[]
 }> = {
+  'vtc-paris': {
+    slug: 'vtc-paris',
+    title: 'VTC Paris',
+    metaTitle: 'VTC Paris — Chauffeur Privé, Tarif Fixe dès 29 € | Owise',
+    metaDesc: 'Chauffeur privé à Paris : aéroports CDG, Orly et Beauvais-Tillé, gares, longue distance. Prix fixe confirmé avant le départ, pour la voiture entière.',
+    keywords: [
+      'vtc paris', 'chauffeur privé paris', 'chauffeur prive paris',
+      'vtc paris cdg', 'vtc paris orly', 'chauffeur paris aéroport',
+      'mise à disposition chauffeur paris', 'circuit privé chauffeur paris',
+      'chauffeur dirigeant paris', 'vtc paris le bourget',
+    ],
+    h1: 'Chauffeur privé à Paris — tarif fixe, confirmé avant le départ',
+    intro: 'Owise assure vos déplacements dans Paris et au départ de Paris : transferts vers les aéroports et les gares, liaisons avec l\'Oise, trajets longue distance, mises à disposition et circuits sur devis. Le prix est annoncé et confirmé avant le départ : il ne change pas avec la circulation, ni avec le temps d\'attente à l\'aéroport. Le tarif s\'entend pour la voiture entière, pas par passager — une berline accueille jusqu\'à 3 passagers, un van 7, et un grand van 8 sur demande. Pour toute adresse absente du tableau ci-dessous, le prix s\'affiche immédiatement sur le site, avant toute réservation et sans engagement.',
+    prix: 'dès 29€ dans Paris',
+    duree: '24h/24, 7j/7',
+    zoneCode: 'Z1',
+    /* Aucun montant ici : uniquement les zones d'en face. Les prix sont lus
+       dans la grille au rendu, ce qui rend impossible la divergence entre ce
+       qui est affiché et ce qui est facturé. */
+    tarifsDepuis: [
+      { zone: 'Z1',   libelle: 'Dans Paris intramuros' },
+      { zone: 'GARE', libelle: 'Gares parisiennes (Nord, Lyon, Montparnasse…)' },
+      { zone: 'ORY',  libelle: 'Aéroport d\'Orly' },
+      { zone: 'CDG',  libelle: 'Aéroport Roissy-Charles de Gaulle' },
+      { zone: 'CHA',  libelle: 'Chantilly et environs' },
+      { zone: 'RPF',  libelle: 'Roissy Pays de France' },
+      { zone: 'CRL',  libelle: 'Creil et environs' },
+      { zone: 'BVA',  libelle: 'Aéroport de Beauvais-Tillé' },
+      { zone: 'LIL',  libelle: 'Lille et le Nord' },
+      { zone: 'BEL',  libelle: 'Belgique (Bruxelles, Charleroi)' },
+    ],
+    aeroports: [
+      { zone: 'CDG', nom: 'Roissy-Charles de Gaulle (CDG)', note: 'Le chauffeur suit le numéro de vol et vous attend à l\'arrivée.' },
+      { zone: 'ORY', nom: 'Orly (ORY)', note: 'Tous terminaux.' },
+      { zone: 'BVA', nom: 'Beauvais-Tillé (BVA)', note: 'Utile pour les vols à bas coût, mal desservis depuis Paris aux départs matinaux.' },
+      /* Pas de `zone` : Le Bourget n'a aucun forfait en grille. Le bloc
+         affichera « prix calculé selon le trajet » au lieu d'un montant —
+         c'est la seule chose vraie qu'on puisse en dire. */
+      { nom: 'Paris-Le Bourget', note: 'L\'aviation d\'affaires du Bourget est desservie. Cet aéroport n\'a pas de tarif forfaitaire : le prix est calculé à l\'adresse exacte et confirmé avant le départ.' },
+    ],
+    surDevis: [
+      { titre: 'Mise à disposition', texte: 'Un chauffeur et un véhicule réservés pour vous, sur plusieurs heures ou une journée entière. Le chauffeur vous attend entre les étapes.' },
+      { titre: 'Circuits privés et visites', texte: 'Découverte de Paris et de ses environs avec un chauffeur, selon le programme de votre choix.' },
+      { titre: 'Déplacements professionnels et accompagnement de dirigeants', texte: 'Rendez-vous successifs, accueil d\'un client ou d\'un partenaire, trajets répétés.' },
+    ],
+    faq: [
+      { q: 'Combien coûte un VTC de Paris à l\'aéroport CDG ?', a: 'Le tarif est fixe et s\'applique à la voiture entière. Il est affiché dans le tableau ci-dessus et confirmé avant le départ.' },
+      { q: 'Le prix change-t-il en cas d\'embouteillage ou de retard d\'avion ?', a: 'Non. Le prix est fixé avant le départ et ne varie ni avec la circulation, ni avec le temps d\'attente à l\'aéroport.' },
+      { q: 'Le tarif est-il par personne ?', a: 'Non, il s\'entend pour le véhicule entier. Une berline accueille jusqu\'à 3 passagers, un van 7, et un grand van 8 sur demande.' },
+      { q: 'Peut-on réserver à l\'avance ?', a: 'Oui. La réservation en ligne est ouverte 24h/24 et le prix est confirmé dès la réservation.' },
+      { q: 'Desservez-vous l\'aéroport du Bourget ?', a: 'Oui. Le Bourget n\'a pas de tarif forfaitaire : le prix est calculé à l\'adresse exacte et confirmé avant le départ, comme pour les autres trajets.' },
+      { q: 'Proposez-vous une mise à disposition à l\'heure ou à la journée ?', a: 'Oui, sur devis. Le prix dépend de la durée et du programme : écrivez-nous en précisant la date, l\'heure de début, la durée approximative et le point de départ.' },
+      { q: 'Comment se passe le paiement ?', a: 'En ligne au moment de la réservation, ou à bord selon les moyens de paiement activés.' },
+    ],
+  },
   'vtc-aeroport-cdg': {
     slug: 'vtc-aeroport-cdg',
     title: 'VTC Aéroport CDG',
@@ -1225,9 +1302,15 @@ export const DESTINATIONS: Record<string, {
  * recopiée à la main a déjà laissé une page hors du sitemap pendant des jours
  * (vtc-goussainville, le 2026-09-21) — on ne recommence pas.
  */
+/* Re-exportes pour ne rien casser chez les consommateurs existants : la
+   logique vit desormais dans un module pur, testable sans Next. */
+export { lienDevis, EMAIL_DEVIS, prixEntreZones } from '@/lib/devis-et-tarifs'
+
 export const JUMEAUX_EN: Record<string, string> = {
   'vtc-chantilly-cdg': '/en/chantilly-to-charles-de-gaulle-airport',
+  'vtc-paris': '/en/private-chauffeur-paris',
 }
+
 
 export async function generateMetadata({ params }: { params: Promise<{ destination: string }> }): Promise<Metadata> {
   const { destination } = await params
@@ -1415,6 +1498,117 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
                   ? <Link key={i} href={`/${lienSlug}`} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', border: '1px solid rgba(201,168,76,.18)' }}>{inner}</Link>
                   : <div key={i} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>{inner}</div>
               })}
+            </div>
+          </>
+        )}
+
+        {/* ── Tarifs lus dans la grille ────────────────────────────────────
+            Aucun montant n'est écrit dans le code de cette page : chaque
+            ligne interroge la grille au rendu. Une liaison sans forfait
+            affiche « calculé selon le trajet » plutôt qu'un chiffre inventé.
+            Bloc conditionnel : les 38 pages existantes ne le déclarent pas. */}
+        {dest.zoneCode && dest.tarifsDepuis && dest.tarifsDepuis.length > 0 && (() => {
+          const lignes = dest.tarifsDepuis
+            .map(t => ({ libelle: t.libelle, prix: prixEntreZones(grille ?? [], zones ?? [], dest.zoneCode!, t.zone) }))
+            .filter(l => l.prix !== null)
+          if (lignes.length === 0) return null
+          return (
+            <>
+              <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+                Tarifs fixes au départ de Paris
+              </h3>
+              <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16, lineHeight: 1.7 }}>
+                Prix pour la voiture entière, dans les deux sens. Berline ; les catégories
+                Premium et Van sont affichées au moment de la réservation.
+              </p>
+              <div style={{ marginBottom: 20, border: '1px solid rgba(0,0,0,.06)', borderRadius: 10, overflow: 'hidden' }}>
+                {lignes.map((l, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: 12, padding: '12px 16px',
+                    background: i % 2 === 0 ? '#F7F7F7' : '#FFFFFF',
+                  }}>
+                    <span style={{ fontSize: 13, color: '#0A0A0A' }}>{l.libelle}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#C9A84C', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                      {l.prix} €
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 48, lineHeight: 1.7 }}>
+                Une adresse qui ne figure pas dans ce tableau ? Le prix est calculé à
+                l&apos;adresse exacte sur la page de réservation, avant toute validation.
+              </p>
+            </>
+          )
+        })()}
+
+        {/* ── Transferts aéroports ───────────────────────────────────────── */}
+        {dest.aeroports && dest.aeroports.length > 0 && dest.zoneCode && (
+          <>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 20 }}>
+              Transferts aéroports au départ de Paris
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 48 }}>
+              {dest.aeroports.map((a, i) => {
+                const prix = a.zone ? prixEntreZones(grille ?? [], zones ?? [], dest.zoneCode!, a.zone) : null
+                return (
+                  <div key={i} style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 18px', border: '1px solid rgba(201,168,76,.18)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginBottom: 4 }}>{a.nom}</div>
+                    <div style={prix !== null
+                      ? { fontSize: 14, fontWeight: 700, color: '#C9A84C', fontFamily: 'monospace', marginBottom: 8 }
+                      /* Sans forfait, ce n'est pas un montant : la police des
+                         chiffres ferait passer une phrase pour un prix. */
+                      : { fontSize: 13, fontStyle: 'italic', color: '#8A6D1F', marginBottom: 8 }}>
+                      {prix !== null ? `${prix} €` : 'prix calculé selon le trajet'}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#6B6B6B', lineHeight: 1.65 }}>{a.note}</div>
+                  </div>
+                )
+              })}
+            </div>
+            {/* Le prix de l'accueil en pancarte est lu dans les réglages : il a
+                changé une fois sans que les textes suivent. */}
+            {tarifParams?.supplement_panneau_actif && tarifParams?.supplement_panneau_prix != null && (
+              <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: -32, marginBottom: 48, lineHeight: 1.7 }}>
+                Accueil avec pancarte au nom du passager : option à {tarifParams.supplement_panneau_prix} €.
+              </p>
+            )}
+          </>
+        )}
+
+        {/* ── Prestations sur devis ──────────────────────────────────────── */}
+        {dest.surDevis && dest.surDevis.length > 0 && (
+          <>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+              Sur devis : mise à disposition, circuits, déplacements professionnels
+            </h3>
+            <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 20, lineHeight: 1.7 }}>
+              Ces prestations ne se réservent pas en ligne : elles dépendent de votre
+              programme, et le prix est établi au cas par cas.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 20 }}>
+              {dest.surDevis.map((p, i) => (
+                <div key={i} style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 18px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginBottom: 6 }}>{p.titre}</div>
+                  <div style={{ fontSize: 12.5, color: '#6B6B6B', lineHeight: 1.65 }}>{p.texte}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14, marginBottom: 48 }}>
+              <a href={lienDevis('fr')} style={{
+                display: 'inline-block', background: '#C9A84C', color: '#09091A',
+                textDecoration: 'none', padding: '12px 24px', borderRadius: 8,
+                fontSize: 14, fontWeight: 600,
+              }}>
+                Demander un devis personnalisé
+              </a>
+              <span style={{ fontSize: 13, color: '#6B6B6B' }}>
+                ou par téléphone au{' '}
+                <a href={`tel:${IDENTITE_OWISE.telephone}`} style={{ color: '#C9A84C', textDecoration: 'none', fontWeight: 600 }}>
+                  {telephoneLisible(IDENTITE_OWISE.telephone)}
+                </a>
+              </span>
             </div>
           </>
         )}

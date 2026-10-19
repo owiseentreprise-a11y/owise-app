@@ -181,6 +181,12 @@ export default async function VitrinePage() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {[
+              /* Paris en tête : c'est le marché visé, et la page qui donne enfin
+                 un point d'arrivée aux articles du blog qui parlent de Paris.
+                 « dès 29 € » est le tarif Paris ↔ Paris de la grille, vérifié
+                 le 2026-10-19 par calculerPrix() — comme tous les montants de
+                 cette liste depuis les étapes 37 à 47. */
+              { slug: 'vtc-paris',             title: 'VTC Paris',                     prix: 'dès 29€',  desc: 'Chauffeur privé Paris : aéroports, gares, mise à disposition' },
               { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 59€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
               { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 59€',  desc: 'Transfert Paris-Orly, tous terminaux' },
               { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 59€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
