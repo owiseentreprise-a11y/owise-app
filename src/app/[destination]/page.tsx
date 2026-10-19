@@ -914,7 +914,7 @@ export const DESTINATIONS: Record<string, {
     metaDesc: 'VTC de Chantilly à l\'aéroport CDG. Tarif fixe 59€, suivi de vol inclus, prise en charge à domicile. Chauffeur professionnel disponible 24h/24. Réservez en ligne.',
     keywords: ['vtc chantilly cdg','taxi chantilly aéroport cdg','chauffeur chantilly charles de gaulle','vtc chantilly roissy','chantilly cdg prix','vtc gouvieux cdg','chauffeur privé chantilly cdg 59'],
     h1: 'VTC Chantilly → CDG — Tarif Fixe 59€',
-    intro: 'Votre transfert VTC depuis Chantilly (et Gouvieux, Lamorlaye, Coye-la-Forêt) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur professionnel, suivi de vol en temps réel. Prise en charge à votre domicile, disponible 24h/24.',
+    intro: 'Votre transfert VTC depuis Chantilly (et Gouvieux, Lamorlaye, Coye-la-Forêt) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ vers CDG, garanti en berline, chauffeur professionnel, suivi de vol en temps réel. Prise en charge à votre domicile, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '25–40 min',
     faq: [
@@ -933,7 +933,7 @@ export const DESTINATIONS: Record<string, {
     metaDesc: 'VTC de Creil à l\'aéroport CDG. Tarif fixe 59€, suivi de vol, prise en charge à domicile. Chauffeur professionnel disponible 24h/24 depuis Creil et l\'Oise Sud.',
     keywords: ['vtc creil cdg','taxi creil aéroport','chauffeur creil charles de gaulle','vtc creil roissy','creil cdg prix','vtc nogent oise cdg','chauffeur privé creil cdg 65'],
     h1: 'VTC Creil → CDG — Tarif Fixe 59€',
-    intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
+    intro: 'Votre transfert VTC depuis Creil et l\'Oise Sud (Nogent-sur-Oise, Montataire, Saint-Maximin, Laigneville) jusqu\'à l\'aéroport Charles de Gaulle. Tarif fixe 59€ vers CDG, garanti en berline, chauffeur habilité, suivi de vol inclus. Disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '30–35 min',
     faq: [
