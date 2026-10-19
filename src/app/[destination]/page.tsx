@@ -65,7 +65,7 @@ export const DESTINATIONS: Record<string, {
     prix: 'dès 59€',
     duree: '25–55 min selon votre départ',
     faq: [
-      { q: 'Combien coûte un VTC de Paris vers CDG ?', a: 'Le tarif est fixe et calculé à l\'avance. Depuis Paris intramuros, comptez entre 55€ et 75€ selon le véhicule. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
+      { q: 'Combien coûte un VTC de Paris vers CDG ?', a: 'Le tarif est fixe et calculé à l\'avance. Depuis Paris intramuros, le forfait est de 69€ en berline, 103,50€ en berline premium et 117,30€ en van. Utilisez notre estimateur pour un prix exact depuis votre adresse.' },
       { q: 'Mon chauffeur attend-il si mon vol est retardé ?', a: 'Oui. Nous suivons votre vol en temps réel. En cas de retard, votre chauffeur ajuste son heure d\'arrivée sans frais supplémentaires.' },
       { q: 'Où est-ce que mon chauffeur m\'attend à CDG ?', a: 'Votre chauffeur vous attend dans le hall des arrivées avec une pancarte à votre nom. Nous précisons le terminal exact dans votre confirmation de réservation.' },
       { q: 'Peut-on réserver un VTC CDG à la dernière minute ?', a: 'Oui, pour les courses immédiates disponibles 24h/24. Nous recommandons de réserver à l\'avance pour garantir la disponibilité, surtout aux heures de pointe.' },
@@ -82,7 +82,7 @@ export const DESTINATIONS: Record<string, {
     prix: 'dès 59€',
     duree: '20–45 min selon votre départ',
     faq: [
-      { q: 'Combien coûte un VTC de Paris vers Orly ?', a: 'Depuis Paris intramuros, le tarif est entre 50€ et 70€ selon le véhicule. Le prix est fixe et garanti dès la réservation. Obtenez votre estimation exacte en quelques secondes.' },
+      { q: 'Combien coûte un VTC de Paris vers Orly ?', a: 'Depuis Paris intramuros, le forfait est de 59€ en berline, 88,50€ en berline premium et 100,30€ en van. Le prix est fixe et garanti dès la réservation. Obtenez votre estimation exacte en quelques secondes.' },
       { q: 'Mon chauffeur m\'attend-il à l\'arrivée à Orly ?', a: 'Oui, votre chauffeur vous attend dans le hall des arrivées avec une pancarte nominative. Le terminal (Orly 1, 2, 3 ou 4) est précisé dans votre confirmation.' },
       { q: 'Quelle est la durée du trajet Paris–Orly ?', a: 'Entre 20 et 45 minutes depuis Paris intramuros, selon la zone de départ et la circulation. Le matin tôt ou tard le soir, comptez 20–25 minutes.' },
       { q: 'Desservez-vous Orly depuis l\'Oise ou la banlieue ?', a: 'Oui. Nous desservons Orly depuis toute l\'Île-de-France et l\'Oise. Le tarif varie selon la distance — utilisez notre calculateur pour votre adresse.' },
@@ -342,7 +342,7 @@ export const DESTINATIONS: Record<string, {
     prix: 'dès 59€',
     duree: '20–35 min depuis Creil/Senlis',
     faq: [
-      { q: 'Quel est le tarif depuis Creil vers l\'aéroport de Beauvais ?', a: 'Le forfait Creil → Beauvais-Tillé est de 69€ en berline, prix fixe garanti. Depuis Chantilly, le tarif est identique : 69€. Depuis Senlis ou Compiègne, obtenez votre prix exact avec notre estimateur en ligne.' },
+      { q: 'Quel est le tarif depuis Creil vers l\'aéroport de Beauvais ?', a: 'Le forfait Creil → Beauvais-Tillé est de 69€ en berline, prix fixe garanti. Depuis Chantilly, le forfait est de 79€. Depuis Senlis ou Compiègne, obtenez votre prix exact avec notre estimateur en ligne.' },
       { q: 'Combien de temps pour aller à Beauvais depuis Creil ?', a: 'Environ 20 à 30 minutes depuis Creil. Depuis Senlis, comptez 25 à 35 minutes. Depuis Compiègne, environ 40 à 50 minutes selon votre point de départ et les conditions de circulation.' },
       { q: 'Desservez-vous l\'aéroport de Beauvais depuis Paris ?', a: 'Oui. Depuis Paris intramuros, le forfait vers Beauvais-Tillé est de 139€ en berline, prix fixe garanti. L\'aéroport est desservi depuis tout l\'IDF et l\'Oise.' },
       { q: 'Mon chauffeur attend-il si mon vol Ryanair est retardé ?', a: 'Oui. Nous suivons tous les vols en temps réel grâce à votre numéro de vol. En cas de retard, votre chauffeur ajuste son heure d\'arrivée automatiquement, sans frais supplémentaires.' },
@@ -823,7 +823,7 @@ export const DESTINATIONS: Record<string, {
       { q: 'Combien de temps pour aller de Liancourt à CDG ?', a: '50 km, soit 38 à 43 minutes via l\'A1 — l\'accès se fait par Creil ou Laigneville. Le trajet reste sous les trois quarts d\'heure même aux heures chargées.' },
       { q: 'Desservez-vous Rantigny, Cauffry et Laigneville ?', a: 'Oui. Nous couvrons Liancourt et toutes les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Prise en charge directement à votre adresse, disponible 24h/24.' },
       { q: 'Proposez-vous des courses vers Creil depuis Liancourt ?', a: 'Oui. Nous effectuons tous les transferts locaux : Liancourt → gare de Creil, Liancourt → Clermont, et toutes destinations depuis Liancourt. Le tarif local est calculé au kilomètre depuis votre adresse.' },
-      { q: 'Proposez-vous un service vers Paris depuis Liancourt ?', a: 'Oui. Depuis Liancourt, Paris (gare du Nord, Châtelet, La Défense) est à environ 70 à 90 minutes pour un tarif de 110 à 130€. Prise en charge directement à votre adresse, disponible 24h/24, 7j/7.' },
+      { q: 'Proposez-vous un service vers Paris depuis Liancourt ?', a: 'Oui. Le forfait Liancourt → Paris intramuros est de 125€ en berline, prix fixe garanti. Comptez environ 70 à 90 minutes de trajet (gare du Nord, Châtelet, La Défense), prise en charge directement à votre adresse, 24h/24, 7j/7.' },
     ],
   },
 
@@ -938,7 +938,7 @@ export const DESTINATIONS: Record<string, {
     faq: [
       { q: 'Quel est le prix d\'un VTC de Creil à Orly ?', a: 'Le tarif fixe est de 145€ en berline depuis Creil, Nogent-sur-Oise ou Montataire. Le trajet traverse ou contourne Paris (Orly est au sud) — c\'est la raison de ce tarif. Le prix est garanti à la réservation et ne varie pas.' },
       { q: 'Combien de temps prend le trajet Creil → Orly ?', a: 'Environ 65 à 85 minutes selon la circulation. Tôt le matin (avant 6h), comptez 60 minutes via la Francilienne ou l\'A86. Votre chauffeur choisit l\'itinéraire le plus rapide selon les conditions du moment.' },
-      { q: 'Quel aéroport est plus économique depuis Creil : CDG ou Orly ?', a: 'CDG est plus proche et moins cher (65€ contre 145€ pour Orly). Si votre vol vous laisse le choix de l\'aéroport, CDG est nettement plus avantageux depuis Creil — 40 minutes de trajet contre plus d\'une heure pour Orly.' },
+      { q: 'Quel aéroport est plus économique depuis Creil : CDG ou Orly ?', a: 'CDG est plus proche et moins cher (59€ contre 145€ pour Orly). Si votre vol vous laisse le choix de l\'aéroport, CDG est nettement plus avantageux depuis Creil — 40 minutes de trajet contre plus d\'une heure pour Orly.' },
       { q: 'Le service couvre-t-il Nogent-sur-Oise et Montataire pour aller à Orly ?', a: 'Oui. La prise en charge est possible depuis Creil, Nogent-sur-Oise, Montataire, Saint-Maximin et toutes les communes voisines. Le tarif varie légèrement selon votre adresse exacte.' },
       { q: 'Proposez-vous le retour Orly → Creil ?', a: 'Oui. Le tarif est identique dans les deux sens. Votre chauffeur vous attend dans le hall des arrivées d\'Orly avec une pancarte nominative, en suivant votre vol en temps réel pour s\'adapter aux retards éventuels.' },
     ],
