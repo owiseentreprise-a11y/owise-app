@@ -228,8 +228,8 @@ export default async function VitrinePage() {
               { slug: 'vtc-creil-orly',        title: 'VTC Creil → Orly',          prix: 'dès 145€', desc: 'Nogent-sur-Oise, Montataire, 65–85 min' },
               { slug: 'vtc-senlis-orly',       title: 'VTC Senlis → Orly',         prix: '139€', desc: 'Aumont-en-Halatte, Fleurines, 70–90 min' },
               { slug: 'vtc-compiegne-orly',    title: 'VTC Compiègne → Orly',      prix: '149€', desc: 'Margny, Venette, 80–100 min' },
-              { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais',  prix: '79€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
-              { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais',      prix: '69€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
+              { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais-Tillé',  prix: '79€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
+              { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais-Tillé',      prix: '69€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
             ].map(d => (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
