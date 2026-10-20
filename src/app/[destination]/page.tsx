@@ -406,7 +406,15 @@ export const DESTINATIONS: Record<string, {
   'vtc-aeroport-beauvais': {
     slug: 'vtc-aeroport-beauvais',
     title: 'VTC Aéroport Beauvais-Tillé',
-    metaTitle: 'VTC Aéroport Beauvais-Tillé (BVA) dès 59€ — Tarif Fixe | Owise',
+    /* « dès 59€ » annonçait le seul tarif Beauvais-ville → Beauvais-Tillé, un
+       trajet de 5 km, sur une page qui déclare desservir Creil (69 €), Senlis
+       (79 €), Chantilly (79 €) et Compiègne (139 €) : aucune de ces communes
+       n'était à 59 €, et la FAQ de cette même page annonçait déjà 69 € depuis
+       Creil. Le titre contredisait son propre contenu.
+       Le départ est désormais nommé, et 69 € est le minimum réel de la zone
+       desservie — vérifié le 2026-10-20 par la ligne de grille CRL → BVA, par
+       calculerPrix() et par prixAffiche(). */
+    metaTitle: 'VTC Creil → Aéroport Beauvais-Tillé 69€ berline, tarif fixe | Owise',
     metaDesc: 'Transfert VTC vers l\'aéroport de Beauvais-Tillé (BVA), hub Ryanair & Wizzair. Depuis Creil, Senlis, Chantilly et toute l\'Oise. Tarif fixe garanti, disponible 24h/24.',
     keywords: [
       'vtc beauvais aéroport','transfert beauvais tillé','chauffeur privé beauvais bva',
@@ -416,7 +424,20 @@ export const DESTINATIONS: Record<string, {
     ],
     h1: 'VTC Aéroport de Beauvais-Tillé (BVA)',
     intro: 'Votre transfert VTC vers l\'aéroport de Beauvais-Tillé (BVA), hub des compagnies Ryanair et Wizzair. Chauffeur professionnel, tarif fixe garanti, prise en charge à domicile. Desserte depuis toute l\'Oise Sud : Creil, Senlis, Chantilly, Gouvieux, Compiègne et les communes voisines. Disponible 24h/24.',
-    prix: 'dès 59€',
+    /* Ce champ sert à la fois de pastille visuelle et de `description` de
+       l'offre dans les données structurées, où `price` est extrait par le
+       PREMIER nombre de la chaîne. Le premier nombre doit donc être le tarif
+       du trajet nommé — ici 69 — et aucun autre chiffre ne doit le précéder.
+       Forme concise, mais les cinq éléments y sont : départ, destination,
+       prix, catégorie, nature du tarif.
+
+       ATTENTION, caractère invisible : l'espace entre « 69 » et « € » est une
+       ESPACE INSÉCABLE (U+00A0), pas une espace ordinaire. Sans elle, la
+       pastille — 18 px gras dans une carte d'un tiers de largeur — coupe la
+       ligne entre le nombre et le symbole sur mobile : « … 69 » puis « € … ».
+       Constaté à 390 px le 2026-10-20. Une recherche « 69 € » avec une espace
+       ordinaire ne trouvera donc PAS cette ligne. */
+    prix: 'Creil → Beauvais-Tillé : 69 € berline, tarif fixe',
     duree: '20–35 min depuis Creil/Senlis',
     faq: [
       { q: 'Quel est le tarif depuis Creil vers l\'aéroport de Beauvais-Tillé ?', a: 'Le forfait Creil → Beauvais-Tillé est de 69€ en berline, prix fixe garanti. Depuis Chantilly, le forfait est de 79€. Depuis Senlis ou Compiègne, obtenez votre prix exact avec notre estimateur en ligne.' },
