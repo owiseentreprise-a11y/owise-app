@@ -1614,6 +1614,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             const prixCdg = pxBerline('CDG')
             const prixOrly = pxBerline('ORY')
             const prixBva = pxBerline('BVA')
+            /* La carte « Gares parisiennes » annonce un MINIMUM : le forfait le
+               plus bas vers une gare, qui part de Paris intramuros. */
+            const prixGare = prixAffiche('Z1', 'GARE', 'berline', grilleProp, tarifsProp as TarifRow2[], zonesProp, paramsProp)
             /* `b` reste nécessaire pour les cartes « Paris & IDF » et « Gares
                parisiennes », qui annoncent un tarif au kilomètre : elles lisent
                `prix_km` et `prise_en_charge`, qui sont des entrées réelles du
@@ -1677,9 +1680,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 color: '#E8A030',
                 name: 'Gares parisiennes',
                 villes: ['Gare du Nord', 'Gare de Lyon', 'Montparnasse, Saint-Lazare…'],
-                prix: b ? `dès ${Math.round(Number(b.prise_en_charge) + 8 * Number(b.prix_km))} €` : null,
-                prixLabel: 'selon la distance',
-                tag: 'Tarif calculé',
+                /* Le prix vient de la grille, par prixAffiche(), comme les
+                   cartes aéroport juste au-dessus.
+                   Avant : `Math.round(prise_en_charge + 8 × prix_km)`, soit une
+                   TROISIÈME écriture du calcul au kilomètre dans ce composant.
+                   Elle rendait 49 €, alors que la grille porte Paris ↔ Gares
+                   parisiennes à 40 € — 9 € annoncés en trop, qui font renoncer
+                   un client sans le tromper. Et comme un forfait existe, parler
+                   de « selon la distance » était faux deux fois. */
+                prix: prixGare !== null ? `dès ${prixGare} €` : null,
+                prixLabel: 'depuis Paris, prix fixe',
+                tag: 'Tarif fixe garanti',
                 tagColor: '#E8A030',
                 dest: 'Toutes gares de Paris',
                 cta: 'Estimer mon prix',
