@@ -157,6 +157,14 @@ const jsonLdOrganization = {
 
 export const revalidate = 3600
 
+/**
+ * Au-delà de cette longueur, l'annonce de prix d'une carte « Nos zones
+ * desservies » passe sous le titre au lieu de se poser à côté. Mesuré le
+ * 2026-10-20 : les 33 autres cartes annoncent au plus 18 caractères, le seuil
+ * ne les touche donc pas.
+ */
+const LONGUEUR_PRIX_SUR_SA_LIGNE = 20
+
 export default async function VitrinePage() {
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: zones }, { data: grille }, { data: params }] = await Promise.all([
@@ -237,15 +245,31 @@ export default async function VitrinePage() {
               { slug: 'vtc-meru',              title: 'VTC Méru · Oise Ouest',         prix: 'Prix selon adresse',  desc: 'Noailles, Saint-Crépin, Bornel — accès Beauvais 35 km' },
               { slug: 'vtc-verberie',          title: 'VTC Verberie',                  prix: 'Prix selon adresse',  desc: 'Longueil-Ste-Marie, Pont-Ste-Maxence, vallée de l\'Oise' },
               { slug: 'vtc-noyon',             title: 'VTC Noyon · Oise Nord',         prix: 'Prix selon adresse', desc: 'Ribécourt, Sempigny, Guiscard — CDG en 80–100 min' },
-            ].map(d => (
+            ].map(d => {
+              /* Une annonce longue passe sur SA PROPRE LIGNE, sous le titre.
+                 Le prix est en `nowrap` : posé à côté du titre, un texte long
+                 écrase d'abord le titre, puis atteint le bord de la carte.
+                 Mesuré le 2026-10-20 : « Creil → Beauvais-Tillé : 69 € en
+                 berline » demande 223 px quand la ligne n'en offre que 270 à
+                 360 px, titre compris — seule carte sur 34 à déborder.
+                 Le seuil porte sur la LONGUEUR, pas sur un slug : c'est elle
+                 qui pose le problème. Les 33 autres cartes annoncent au plus
+                 18 caractères (« Prix selon adresse »), aucune ne change donc
+                 de rendu. La grille « Trajets Oise → Aéroports », plus bas,
+                 garde son rendu d'origine : ses prix tiennent en 9 caractères. */
+              const surSaLigne = d.prix.length > LONGUEUR_PRIX_SUR_SA_LIGNE
+              return (
               <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, ...(surSaLigne ? { flexWrap: 'wrap' as const } : {}) }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#09091A' }}>{d.title}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap', marginLeft: 8 }}>{d.prix}</span>
+                  <span style={surSaLigne
+                    ? { fontSize: 12, fontWeight: 700, color: '#C9A84C', flexBasis: '100%', marginTop: 4 }
+                    : { fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap' as const, marginLeft: 8 }}>{d.prix}</span>
                 </div>
                 <span style={{ fontSize: 12, color: '#848499', lineHeight: 1.5 }}>{d.desc}</span>
               </a>
-            ))}
+              )
+            })}
           </div>
           {/* Trajets Oise → Aéroports */}
           <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 20, fontWeight: 600, color: '#09091A', margin: '40px 0 16px', paddingTop: 32, borderTop: '1px solid rgba(9,9,26,.06)' }}>
