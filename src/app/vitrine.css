@@ -539,10 +539,17 @@ nav.scrolled{background:rgba(255,255,255,.97);border-bottom-color:rgba(0,0,0,.1)
 /* DEVIS SECTION — redesign premium */
 .devis-section{padding:100px 52px 120px;background:#FFFFFF;position:relative;overflow:visible}
 
-/* Gradient halo derrière le formulaire */
+/* Gradient halo derrière le formulaire.
+   `width:100%` plafonné à 900px, et non `width:900px` : centré par
+   `left:50%` dans une section en `overflow:visible`, un halo de largeur fixe
+   débordait des deux côtés dès que l'écran faisait moins de 900px. Son bord
+   droit tombait à « centre de la section + 450 », soit 645px sur un écran de
+   390 — mesuré le 2026-10-20, c'était la cause principale du débordement
+   horizontal du gabarit vitrine. Au-dessus de 900px d'écran, le plafond rend
+   exactement la même largeur qu'avant : le rendu y est inchangé. */
 .devis-section::before{
   content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:900px;height:600px;border-radius:50%;
+  width:100%;max-width:900px;height:600px;border-radius:50%;
   background:radial-gradient(ellipse,rgba(201,168,76,.07) 0%,rgba(91,143,212,.04) 50%,transparent 80%);
   pointer-events:none;z-index:0;
 }
