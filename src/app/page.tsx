@@ -98,10 +98,26 @@ const jsonLd = {
     '@type': 'OfferCatalog',
     name: 'Services VTC Owise',
     itemListElement: [
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG dès 65€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris → Orly dès 50€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Beauvais', description: 'Oise → BVA dès 40€' } },
-      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil / Oise → CDG', description: 'Creil → CDG dès 69€' } },
+      // Ces quatre descriptions partent à Google. Elles annoncaient encore les
+      // montants d'avant les corrections des etapes 37 a 49 : les cartes
+      // visibles avaient ete corrigees, ce bloc-ci non. Trois d'entre elles
+      // annoncaient MOINS que le prix reel — un client arrivait avec un prix en
+      // tete plus bas que celui qu'il paierait.
+      //
+      // Chaque montant est un forfait de la grille, confirme par calculerPrix()
+      // en berline : contrôle `verifier-offres-jsonld.mjs`.
+      //
+      // Deux regles tirees de l'erreur d'origine :
+      //   — pas de « des » : ces offres nomment UN trajet precis, donc un prix
+      //     exact, pas un minimum. « Oise → BVA des 40 € » promettait a tout un
+      //     departement un prix qui n'existait nulle part (le vrai minimum, 59 €,
+      //     part de Beauvais-VILLE, a 5 km de son propre aeroport ; depuis
+      //     Compiegne le meme trajet vaut 139 €, soit 80 € d'ecart).
+      //   — le vehicule est nomme : premium et van coutent 1,5x et 1,7x.
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport CDG', description: 'Paris → CDG 69 € en berline, tarif fixe' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Orly', description: 'Paris → Orly 59 € en berline, tarif fixe' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Transfert aéroport Beauvais-Tillé (BVA)', description: 'Creil → Beauvais-Tillé 69 € en berline, tarif fixe' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'VTC Creil → CDG', description: 'Creil → CDG 59 € en berline, tarif fixe' } },
       { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Compte entreprise VTC', description: 'Facturation mensuelle, multi-collaborateurs' } },
     ],
   },
