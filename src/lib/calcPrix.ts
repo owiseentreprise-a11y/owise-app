@@ -292,6 +292,60 @@ export function prixAPartirDe(
 }
 
 /**
+ * Le prix à AFFICHER pour une liaison entre deux zones, pour un véhicule.
+ *
+ * Ne définit aucune règle de calcul : comme `prixAPartirDe` juste au-dessus,
+ * elle appelle `calculerPrix()`. C'est tout son objet — l'affichage et la
+ * facturation sortent de la même fonction, donc ils ne peuvent plus diverger.
+ *
+ * Deux conventions, reprises telles quelles de `prixAPartirDe` :
+ *
+ *   — **date-heure vide** : `appliquerSupplements` rend alors le prix inchangé.
+ *     C'est un tarif de base qu'on annonce, pas celui d'un créneau de nuit ou
+ *     de week-end.
+ *   — **arrondi à l'euro par `Math.round`**, qui est exactement l'arrondi du
+ *     paiement : `reserver/actions.ts` fait `Math.round(prixServeur)` avant de
+ *     remplir `unit_amount` pour Stripe. Le montant affiché est donc au centime
+ *     celui qui sera débité — par exemple 103,50 € de forfait premium s'affiche
+ *     et se facture 104 €.
+ *
+ * Rend `null` quand la paire n'a aucun forfait. L'appelant doit alors écrire
+ * « prix calculé selon le trajet », jamais inventer un montant.
+ *
+ * ── Pourquoi cette fonction existe ─────────────────────────────────────────
+ *
+ * Le tableau comparatif et les cartes aéroport de la vitrine lisaient
+ * `tarifs.cdg_fixe / orly_fixe / beauvais_fixe`. Ces trois colonnes étaient
+ * l'ancien repli du moteur, retiré le 2026-09-19 parce qu'il facturait
+ * Orly → Charleroi 59 € pour 300 km. Plus rien ne les mettait à jour, et
+ * **sept des neuf cellules affichaient MOINS que le prix facturé** — jusqu'à
+ * 42 € d'écart sur un van Paris → Beauvais-Tillé, sous un titre « Prix fixe
+ * garanti, zéro surprise à l'arrivée ».
+ *
+ * Les six valeurs premium et van valaient le forfait berline multiplié par les
+ * ANCIENS coefficients (1,25 et 1,5) au lieu de ceux réglés en base. Changer un
+ * coefficient dans /admin/tarifs élargissait donc l'écart sans aucune alerte,
+ * puisque ces colonnes n'y sont même pas modifiables.
+ */
+export function prixAffiche(
+  codeDepart: string,
+  codeArrivee: string,
+  vehiculeKey: string,
+  grille: GrilleCalc[],
+  tarifs: TarifCalc[],
+  zones: ZoneCalc[],
+  params?: ParamsCalc | null,
+): number | null {
+  const depart  = zones.find(z => z.code === codeDepart)
+  const arrivee = zones.find(z => z.code === codeArrivee)
+  if (!depart || !arrivee) return null
+
+  const prix = calculerPrix(depart.id, arrivee.id, vehiculeKey, '', grille, tarifs, zones, params)
+  if (prix === null || prix <= 0) return null
+  return Math.round(prix)
+}
+
+/**
  * Frais par étape appliqués si /admin/tarifs n'a jamais été configuré, ou si
  * la page qui calcule le prix a oublié de charger `supplement_etape`.
  * Valeur de repli volontairement égale au tarif en vigueur : une page mal

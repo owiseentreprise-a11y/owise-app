@@ -41,7 +41,7 @@ import { soumettreDevis } from '@/app/vitrine/actions'
 import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
 import { gtagEvent } from '@/lib/ga'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 /* `from` a disparu de cette table : le badge « dès … € » de l'étape 2 du devis
@@ -1349,29 +1349,46 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </p>
           </div>
 
-          {/* Table */}
-          {bcTarifs.length > 0 && (() => {
-            const berline = bcTarifs.find(t => t.vehicule === 'Berline')
-            const premium = bcTarifs.find(t => t.vehicule === 'Berline Premium')
-            const van     = bcTarifs.find(t => t.vehicule === 'Van 7 places')
+          {/* Table — prix lus dans la grille par prixAffiche(), jamais dans
+              tarifs.cdg_fixe / orly_fixe / beauvais_fixe.
+
+              Ces trois colonnes étaient l'ancien repli du moteur, retiré le
+              2026-09-19. Plus rien ne les mettait à jour : sept des neuf
+              cellules annonçaient MOINS que le prix facturé, jusqu'à 42 €
+              d'écart sur un van Paris → Beauvais-Tillé, sous le titre « Prix
+              fixe garanti, zéro surprise à l'arrivée » qui surplombe ce
+              tableau.
+
+              `prixAffiche` appelle `calculerPrix()` — la même fonction que le
+              serveur rappelle avant de créer la session Stripe. Un prix
+              affiché ici ne peut donc plus diverger de celui qui sera débité,
+              et un changement de coefficient dans /admin/tarifs se répercute
+              immédiatement. Une liaison sans forfait rend `null`, et la
+              cellule affiche « — » au lieu d'un montant inventé.
+
+              La condition porte sur la grille, et non plus sur `bcTarifs` :
+              c'est la grille qui fournit désormais les prix. */}
+          {grilleProp.length > 0 && (() => {
+            const px = (code: string, cle: string) =>
+              prixAffiche(code, 'Z1', cle, grilleProp, tarifsProp as TarifRow2[], zonesProp, paramsProp)
 
             const rows = [
               {
                 icon: '✈', label: 'CDG / Roissy',
                 sub: 'Paris → Aéroport Charles de Gaulle',
-                berline: berline?.cdg_fixe, premium: premium?.cdg_fixe, van: van?.cdg_fixe,
+                berline: px('CDG', 'berline'), premium: px('CDG', 'berline_premium'), van: px('CDG', 'van'),
                 isFixed: true,
               },
               {
                 icon: '✈', label: 'Orly',
                 sub: 'Paris → Aéroport d\'Orly',
-                berline: berline?.orly_fixe, premium: premium?.orly_fixe, van: van?.orly_fixe,
+                berline: px('ORY', 'berline'), premium: px('ORY', 'berline_premium'), van: px('ORY', 'van'),
                 isFixed: true,
               },
               {
                 icon: '✈', label: 'Beauvais-Tillé',
                 sub: 'Paris → Aéroport de Beauvais',
-                berline: berline?.beauvais_fixe, premium: premium?.beauvais_fixe, van: van?.beauvais_fixe,
+                berline: px('BVA', 'berline'), premium: px('BVA', 'berline_premium'), van: px('BVA', 'van'),
                 isFixed: true,
               },
             ]
@@ -1586,8 +1603,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </p>
           </div>
 
-          {/* Grid de cartes */}
+          {/* Grid de cartes — mêmes prix, même source que le tableau plus haut.
+              `prixAffiche` appelle `calculerPrix()` ; les colonnes
+              tarifs.*_fixe ne sont plus lues. Le `.toFixed(0)` qui était ici
+              disparaît avec elles : c'était une seconde écriture du format d'un
+              montant, à côté de `formaterMontant()`. */}
           {(() => {
+            const pxBerline = (code: string) =>
+              prixAffiche(code, 'Z1', 'berline', grilleProp, tarifsProp as TarifRow2[], zonesProp, paramsProp)
+            const prixCdg = pxBerline('CDG')
+            const prixOrly = pxBerline('ORY')
+            const prixBva = pxBerline('BVA')
+            /* `b` reste nécessaire pour les cartes « Paris & IDF » et « Gares
+               parisiennes », qui annoncent un tarif au kilomètre : elles lisent
+               `prix_km` et `prise_en_charge`, qui sont des entrées réelles du
+               moteur — pas les colonnes aéroport abandonnées. */
             const b = bcTarifs.find(t => t.vehicule === 'Berline')
             const destinations = [
               {
@@ -1595,7 +1625,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 color: '#4D8ED4',
                 name: 'CDG / Roissy',
                 villes: ['Terminal 1', 'Terminal 2', 'Terminal 3'],
-                prix: b ? `${Number(b.cdg_fixe).toFixed(0)} €` : null,
+                prix: prixCdg !== null ? `${prixCdg} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
                 tagColor: '#4D8ED4',
@@ -1608,7 +1638,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 color: '#3DB87A',
                 name: 'Orly',
                 villes: ['Terminal 1', 'Terminal 2', 'Terminal 3 & 4'],
-                prix: b ? `${Number(b.orly_fixe).toFixed(0)} €` : null,
+                prix: prixOrly !== null ? `${prixOrly} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
                 tagColor: '#3DB87A',
@@ -1621,7 +1651,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 color: '#848499',
                 name: 'Beauvais (BVA)',
                 villes: ['Ryanair', 'Wizz Air', 'easyJet'],
-                prix: b ? `${Number(b.beauvais_fixe).toFixed(0)} €` : null,
+                prix: prixBva !== null ? `${prixBva} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
                 tagColor: '#848499',
