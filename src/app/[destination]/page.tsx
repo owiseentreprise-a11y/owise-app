@@ -1483,7 +1483,29 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         <p style={{ fontSize: 16, color: '#6B6B6B', lineHeight: 1.8, marginBottom: 32, maxWidth: 680 }}>
           {dest.intro}
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 48 }}>
+        {/* `minmax(0, 1fr)` et non `1fr`.
+            `1fr` vaut `minmax(auto, 1fr)` : une colonne ne peut pas devenir
+            plus étroite que son contenu minimal. Mesuré le 2026-10-21 à
+            320 px — le conteneur fait 272 px, mais les trois colonnes en
+            réclamaient 122,3 + 134,6 + 118,0, plus deux espacements. La
+            grille s'élargissait donc au lieu de se replier, et la troisième
+            fiche s'arrêtait à 431 px pour une vue de 320.
+
+            `repeat(3, minmax(0, 1fr))` a d'abord été essayé, puis écarté :
+            il supprime bien le débordement, mais il IMPOSE trois colonnes.
+            À 320 px elles ne font que 80 px, et le rendu — regardé, pas
+            seulement mesuré — casse les mots en plein milieu
+            (« Beau/vais », « berli/ne », « dep/uis ») et rogne deux
+            étiquettes sur trois. Aucun texte n'est perdu, mais plus rien
+            n'est lisible : on aurait échangé un débordement invisible
+            contre un tarif illisible.
+
+            `auto-fit` laisse la grille choisir SON nombre de colonnes.
+            Mesuré le 2026-10-21 : 1 colonne à 320 et 360, 2 à 390 et 430,
+            et surtout des fiches de 229 px à 768 et 260 px à 1280 —
+            exactement les largeurs d'avant. Le rendu desktop est donc
+            inchangé, et aucun mot n'est brisé à aucune largeur. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 48 }}>
           {[
             { label: 'Prix', value: dest.prix },
             { label: 'Durée estimée', value: dest.duree },
@@ -1491,7 +1513,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           ].map((stat, i) => (
             <div key={i} style={{ background: '#F7F7F7', borderRadius: 12, padding: '20px 18px' }}>
               <div style={{ fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase', color: '#999', marginBottom: 6 }}>{stat.label}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A' }}>{stat.value}</div>
+              {/* `break-word` et non `anywhere` : il ne coupe un mot que si
+                  celui-ci ne tient pas, là où `anywhere` coupe dès que c'est
+                  possible. Le retour à la ligne ordinaire passe en premier. */}
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', overflowWrap: 'break-word' }}>{stat.value}</div>
             </div>
           ))}
         </div>
