@@ -205,7 +205,18 @@ export default async function VitrinePage() {
               { slug: 'vtc-paris',             title: 'VTC Paris',                     prix: 'dès 29€',  desc: 'Chauffeur privé Paris : aéroports, gares, mise à disposition' },
               { slug: 'vtc-aeroport-cdg',      title: 'VTC Aéroport CDG',              prix: 'dès 59€',  desc: 'Transfert Charles de Gaulle, suivi de vol' },
               { slug: 'vtc-aeroport-orly',     title: 'VTC Aéroport Orly',             prix: 'dès 59€',  desc: 'Transfert Paris-Orly, tous terminaux' },
-              { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'dès 59€',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
+              /* « dès 59€ » promettait ici le tarif Beauvais-ville → Beauvais-Tillé,
+                 un trajet de 5 km, alors que la page d'arrivée facture 69 € depuis
+                 Creil. L'accueil et la page se contredisaient : le visiteur cliquait
+                 sur 59€ et trouvait 69 €.
+                 L'espace entre 69 et € est INSÉCABLE (U+00A0), comme sur la page
+                 destination — caractère invisible, signalé pour qu'une recherche
+                 « 69 € » avec une espace ordinaire ne passe pas à côté.
+                 « tarif fixe » n'y tient pas : mesuré le 2026-10-20, la mention porte
+                 le prix à 276 px pour 314 px de ligne disponible, titre compris, et la
+                 carte déborde. Ce span est en `nowrap` : un texte trop long ne se
+                 replie pas, il pousse. */
+              { slug: 'vtc-aeroport-beauvais', title: 'VTC Aéroport Beauvais-Tillé',   prix: 'Creil → Beauvais-Tillé : 69 € en berline',  desc: 'Hub Ryanair & Wizzair depuis l\'Oise' },
               { slug: 'vtc-creil',             title: 'VTC Creil & Oise Sud',           prix: 'dès 59€ vers CDG',  desc: 'Senlis, Chantilly, Lamorlaye, Saint-Maximin' },
               { slug: 'vtc-chantilly',         title: 'VTC Chantilly',                  prix: 'dès 59€',  desc: 'Château, Hippodrome, hôtels de prestige' },
               { slug: 'vtc-senlis',            title: 'VTC Senlis & Environs',          prix: 'dès 59€',  desc: 'Cité médiévale, Forêt de Chantilly' },
