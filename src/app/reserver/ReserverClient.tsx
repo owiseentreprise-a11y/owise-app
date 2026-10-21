@@ -628,6 +628,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
         .res-input { background: #FFFFFF !important; border: 1px solid rgba(0,0,0,.12) !important; color: #09091A !important; }
         .res-input:focus { border-color: rgba(201,168,76,.6) !important; background: #FFFFFF !important; outline: none !important; box-shadow: 0 0 0 3px rgba(201,168,76,.1) !important; }
         .res-input::placeholder { color: rgba(9,9,26,.35) !important; }
+        /* Sous 360 px, la date et l'heure ne tiennent plus côte à côte sans
+           que l'un des deux devienne illisible : mesuré, il leur faudrait
+           260 px à elles deux quand la carte n'en offre que 228. On les
+           empile. Au-delà de 360 px, la ligne reste telle qu'elle est
+           aujourd'hui — rendu identique au pixel à 360, 390, 430, 1024,
+           1280 et 1440 px. */
+        @media (max-width: 359px) { .res-dt { grid-template-columns: 1fr !important; } }
         .veh-card { cursor: pointer; transition: border-color .15s, background .15s; }
         .veh-card:hover { background: rgba(201,168,76,.05) !important; border-color: rgba(201,168,76,.4) !important; }
         .veh-card.active { border-color: #C9A84C !important; background: rgba(201,168,76,.08) !important; }
@@ -857,7 +864,22 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
               {/* Date + Heure */}
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10 }}>
+                {/* `res-dt` : la ligne passe sur une seule colonne sous
+                    360 px (règle plus bas dans la feuille de ce composant).
+                    Une piste `fr` vaut `minmax(auto, 3fr)` et ne descend
+                    jamais sous le contenu minimum de sa colonne : à 320 px la
+                    ligne refusait de rétrécir, sortait de la carte, et la page
+                    défilait réellement de 28 px — ni `html` ni `body` ne
+                    portent `overflow-x: hidden` ici, contrairement à la
+                    vitrine. 28 px du champ Heure étaient hors de l'écran.
+                    `minmax(0, …)` a d'abord été essayé : il supprime bien le
+                    débordement, mais rétrécit la colonne à 91 px et Chrome
+                    cesse alors d'afficher les chiffres du champ `type="time"`
+                    — « 09:00 » disparaissait à 320 px, et devenait « 09:1 » à
+                    390 px. Le navigateur ne signale aucun débordement dans ce
+                    cas : seule la capture d'écran le montre. Empiler rend les
+                    deux champs pleine largeur et parfaitement lisibles. */}
+                <div className="res-dt" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10 }}>
                   {/* Date */}
                   <div>
                     <FieldLabel>Date de prise en charge</FieldLabel>
@@ -960,7 +982,11 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
                 {allerRetour && (
                   <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10, marginBottom: 10 }}>
+                    {/* Même ligne, même règle : le bloc du retour vit dans un
+                        conteneur encore plus étroit (14 px de remplissage de
+                        chaque côté), il déborderait donc avant la ligne
+                        principale. */}
+                    <div className="res-dt" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10, marginBottom: 10 }}>
                       <div>
                         <FieldLabel>Date du retour</FieldLabel>
                         <input className="res-input" type="date"
@@ -1108,7 +1134,18 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                         />
                       </div>
                       {/* Infos */}
-                      <div style={{ flex: 1, padding: '10px 14px' }}>
+                      {/* `minWidth: 0` : un élément flex a `min-width: auto`
+                          par défaut et ne descend pas sous son contenu. Avec
+                          une image voisine figée à 150 px, ce bloc réclamait
+                          plus de place qu'il n'en restait à 320 px et sortait
+                          de la carte, que `overflow: hidden` rogne net.
+                          Mesuré sur la carte « Berline Premium » : trois
+                          textes tranchés à 56 px, dont « Berline haut de
+                          gamme, finitions cuir » coupé en plein milieu.
+                          Avec `minWidth: 0`, le texte passe à la ligne au
+                          lieu d'être coupé ; la carte gagne en hauteur sur
+                          téléphone et ne bouge pas sur ordinateur. */}
+                      <div style={{ flex: 1, minWidth: 0, padding: '10px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#09091A' }}>{v.label}</div>
                           {v.badge && (
