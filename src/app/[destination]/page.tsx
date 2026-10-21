@@ -1483,7 +1483,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         <p style={{ fontSize: 16, color: '#6B6B6B', lineHeight: 1.8, marginBottom: 32, maxWidth: 680 }}>
           {dest.intro}
         </p>
-        {/* `minmax(0, 1fr)` et non `1fr`.
+        {/* `auto-fit` avec un minimum de 160px, et non `repeat(3, 1fr)`.
             `1fr` vaut `minmax(auto, 1fr)` : une colonne ne peut pas devenir
             plus étroite que son contenu minimal. Mesuré le 2026-10-21 à
             320 px — le conteneur fait 272 px, mais les trois colonnes en
