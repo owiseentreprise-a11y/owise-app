@@ -1215,6 +1215,31 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               )}
               <span>→</span>
             </button>
+
+            {/* Un moyen de joindre quelqu'un, à l'endroit où l'on hésite.
+                L'étape 2 portait déjà cette ligne sous le bouton « Payer » ;
+                l'étape 1 — celle où le client arrive, remplit tout et décide —
+                n'en avait aucune : ni téléphone, ni WhatsApp, ni e-mail. Les
+                deux boutons flottants « Appeler » et « WhatsApp » qui suivent
+                le visiteur partout ailleurs sur le site ne sont pas rendus ici.
+                Placée SOUS le bouton, elle ne repousse ni les champs, ni le
+                prix, ni le bouton de continuation.
+                Le numéro est celui d'`identite-owise.ts`, seul numéro du
+                projet : aucune coordonnée nouvelle n'est introduite.
+                Aucune promesse d'horaire n'est faite — la disponibilité
+                téléphonique n'est pas établie. */}
+            <div style={{ marginTop: 16, textAlign: 'center', lineHeight: 1.6 }}>
+              <span style={{ fontSize: 12, color: '#9B9B9B' }}>Une question avant de réserver ?{' '}</span>
+              <a href="tel:+33619106356"
+                 style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
+                06 19 10 63 56
+              </a>
+              <span style={{ fontSize: 12, color: '#9B9B9B' }}>{' '}ou sur{' '}</span>
+              <a href="https://wa.me/33619106356" target="_blank" rel="noopener"
+                 style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
+                WhatsApp
+              </a>
+            </div>
           </div>
         )}
 
