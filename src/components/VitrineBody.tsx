@@ -1715,7 +1715,20 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             return (
               <div style={{
                 display:'grid',
-                gridTemplateColumns:'repeat(3,1fr)',
+                /* `repeat(3,1fr)` imposait trois colonnes quelle que soit la
+                   place : à 320 px cela donnait trois colonnes de 80 px, et les
+                   six boutons des cartes — larges de 76 à 110 px — étaient
+                   rognés par `overflow:hidden`, invisibles mais toujours
+                   atteignables au clavier. Ce style est écrit EN LIGNE : aucune
+                   règle de `vitrine.css` ne peut l'atteindre, contrairement aux
+                   onze grilles voisines qui ont toutes leur règle mobile.
+                   `min(300px, 100%)` est le point important : le plancher cède
+                   quand le conteneur est plus étroit que 300 px. Un
+                   `minmax(300px, 1fr)` nu garderait une colonne de 300 px dans
+                   un conteneur de 272 px et ferait déborder la page — c'est le
+                   défaut des grilles de `page.tsx`. 300 px est le seuil qui
+                   restitue exactement trois colonnes sur ordinateur. */
+                gridTemplateColumns:'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
                 gap:16,
               }}>
                 {destinations.map((d, i) => (
