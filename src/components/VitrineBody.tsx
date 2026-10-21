@@ -301,7 +301,31 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
 type TarifRow  = TarifRow2
 type GrilleMin = GrilleCalc
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string }) {
+/**
+ * Transforme le libellé d'une fiche de `lieux.ts` en adresse prête à servir.
+ *
+ * Les quatre informations sont RECOPIÉES de la fiche, jamais inventées — ce
+ * sont exactement celles que `pick()` enregistre quand le client choisit la
+ * suggestion dans la liste (voir plus haut : `onSelect({ label, lat, lng, cp })`
+ * dans la branche `s.isLieu`). L'état obtenu est donc le même, au caractère
+ * près, que celui d'un choix manuel : même libellé, mêmes coordonnées, même
+ * code postal, donc même zone reconnue et même prix.
+ *
+ * Fournir les quatre ensemble a une conséquence précise : `resoudreAdresse()`
+ * rend l'adresse telle quelle dès qu'elle porte `lat` et `cp`, sans appeler le
+ * géocodage. Le pré-remplissage n'ajoute donc aucun aller-retour réseau, et ne
+ * peut pas retomber sur le prix de secours codé en dur d'`estimerPrixBase()`.
+ *
+ * Un libellé inconnu rend une adresse vide : le champ reste comme aujourd'hui.
+ */
+function adresseDepuisFiche(label?: string): BcAddr {
+  if (!label) return { label: '' }
+  const lieu = LIEUX_CONNUS.find(l => l.label === label)
+  if (!lieu) return { label: '' }
+  return { label: lieu.label, lat: lieu.lat, lng: lieu.lng, cp: lieu.codePostal }
+}
+
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string }) {
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -352,7 +376,13 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [bcIsKm,     setBcIsKm]     = useState(false)
   const [bcLoading,  setBcLoading]  = useState(false)
   const [bcDepart,   setBcDepart]   = useState<BcAddr>({ label: '' })
-  const [bcArrivee,  setBcArrivee]  = useState<BcAddr>({ label: '' })
+  /* La destination est posée à la CRÉATION de l'état, pas par un `useEffect`.
+     C'est la garantie qu'aucune saisie ne peut être écrasée : au moment où
+     cette valeur existe, le champ n'a pas encore été affiché, le client n'a
+     donc rien pu taper. Un effet différé, lui, aurait pu arriver après ses
+     premières frappes. Ensuite, l'état vit sa vie normale : le client efface,
+     corrige, remplace, et rien ne le remet. */
+  const [bcArrivee,  setBcArrivee]  = useState<BcAddr>(() => adresseDepuisFiche(lieuDestination))
   // Trajet renseigné (les deux adresses) — anime la ligne dorée du radar hero
   const hasTrajet = bcDepart.label.length > 2 && bcArrivee.label.length > 2
   const [bcDate,     setBcDate]     = useState('')

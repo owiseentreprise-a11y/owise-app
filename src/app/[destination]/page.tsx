@@ -75,6 +75,23 @@ export const DESTINATIONS: Record<string, {
   aeroports?: { zone?: string; nom: string; note: string }[]
   /** Prestations sans tarif public, dirigées vers un e-mail prérempli. */
   surDevis?: { titre: string; texte: string }[]
+
+  /* ── Pré-remplissage de la destination, ajouté le 2026-10-21 ───────────
+   *
+   * On nomme ici UNE FICHE de `src/lib/lieux.ts`, par son libellé exact — on
+   * n'écrit ni coordonnées, ni code postal, ni identifiant. Le formulaire va
+   * chercher la fiche lui-même et recopie ses quatre informations, celles-là
+   * mêmes qu'il enregistre quand le client choisit la suggestion dans la
+   * liste. L'état obtenu est donc identique au choix manuel.
+   *
+   * Un libellé qui ne correspondrait à aucune fiche ne produit rien : le
+   * champ reste vide, comme aujourd'hui.
+   *
+   * Réservé aux trois aéroports dont la chaîne complète a été mesurée
+   * (rapport 80) : CDG, Orly, Beauvais-Tillé. Charleroi et Bruxelles n'ont
+   * pas de fiche — les pré-remplir obligerait à en inventer une. */
+  /** Libellé exact d'une fiche de `lieux.ts` à pré-remplir en destination. */
+  lieuDestination?: string
 }> = {
   'vtc-paris': {
     slug: 'vtc-paris',
@@ -133,6 +150,7 @@ export const DESTINATIONS: Record<string, {
   },
   'vtc-aeroport-cdg': {
     slug: 'vtc-aeroport-cdg',
+    lieuDestination: 'Aéroport Paris-Charles de Gaulle (CDG)',
     title: 'VTC Aéroport CDG',
     metaTitle: 'VTC Aéroport CDG dès 59€ — Tarif Fixe Garanti | Owise',
     metaDesc: 'VTC vers CDG depuis Paris et IDF. Tarif fixe dès 59€, suivi de vol en temps réel, chauffeur dans le hall. Disponible 24h/24. Réservez en 30 secondes.',
@@ -150,6 +168,7 @@ export const DESTINATIONS: Record<string, {
   },
   'vtc-aeroport-orly': {
     slug: 'vtc-aeroport-orly',
+    lieuDestination: 'Aéroport de Paris-Orly (ORY)',
     title: 'VTC Aéroport Orly',
     metaTitle: 'VTC Aéroport Orly dès 59€ — Chauffeur Privé 24h/24 | Owise',
     metaDesc: 'VTC vers Orly depuis Paris et IDF. Tarif fixe dès 59€, chauffeur professionnel, prise en charge au terminal. Disponible 24h/24. Réservation en ligne immédiate.',
@@ -405,6 +424,10 @@ export const DESTINATIONS: Record<string, {
   },
   'vtc-aeroport-beauvais': {
     slug: 'vtc-aeroport-beauvais',
+    /* Le libellé COMPLET de la fiche, « Tillé » compris : la ville de Beauvais
+       et l'aéroport partagent le code postal 60000, seul le libellé les
+       distingue. Un « Beauvais » raccourci désignerait la ville. */
+    lieuDestination: 'Aéroport Paris-Beauvais Tillé (BVA)',
     title: 'VTC Aéroport Beauvais-Tillé',
     /* « dès 59€ » annonçait le seul tarif Beauvais-ville → Beauvais-Tillé, un
        trajet de 5 km, sur une page qui déclare desservir Creil (69 €), Senlis
@@ -1473,7 +1496,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
 
       {/* Section intro SEO */}
       <section style={{ background: '#fff', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>
