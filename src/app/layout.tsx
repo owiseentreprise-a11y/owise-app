@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import MesureVercel from '@/components/MesureVercel'
 import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
@@ -53,8 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleAnalytics />
         <GAPageView />
         <CookieBanner />
-        <Analytics />
-        <SpeedInsights />
+        {/* Étape 90 : les deux mesures Vercel passent par un composant qui
+            attend le consentement. Voir MesureVercel.tsx pour le détail des
+            constats — l'hébergement et le déploiement ne sont pas touchés. */}
+        <MesureVercel />
       </body>
     </html>
   )

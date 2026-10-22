@@ -63,6 +63,22 @@ export async function uploadGoogleAdsConversion(params: {
     // Pas de gclid = la commande ne vient pas d'un clic Google Ads, rien à remonter
     return
   }
+  /* ── Étape 90 · aucune remontée publicitaire sans accord explicite ──────
+     Jusqu'ici la conversion partait dès qu'un gclid existait, quel que soit
+     le consentement : un refus produisait un envoi étiqueté CONSENT_DENIED,
+     et une absence de réponse un envoi étiqueté CONSENT_STATUS_UNSPECIFIED.
+     L'identifiant de clic, le montant et la référence de commande
+     quittaient donc le site alors que le reste du site, depuis l'étape 88,
+     traite l'absence de réponse comme un refus.
+     Le garde-fou est posé ici, au point d'entrée unique, et non dans le
+     webhook : il couvre tout appelant présent et futur, et ne touche ni la
+     création de la session Stripe, ni les montants, ni le traitement de la
+     réservation — à ce stade le paiement est déjà confirmé et la course
+     déjà créée. */
+  if (params.consent !== 'accepted') {
+    console.warn(`[GoogleAdsConversion] consentement « ${params.consent ?? 'absent'} » — conversion non remontée`)
+    return
+  }
 
   try {
     const accessToken = await getAccessToken()
