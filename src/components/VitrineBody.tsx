@@ -1,6 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
@@ -357,6 +358,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [navScrolled,     setNavScrolled]     = useState(false)
   const [menuOpen,        setMenuOpen]         = useState(false)
   const [showFloating,    setShowFloating]     = useState(false)
+  const [devisVisible,    setDevisVisible]     = useState(false)
   const [faqOpen,         setFaqOpen]          = useState<number|null>(null)
   const [cookieVisible,   setCookieVisible]    = useState(false)
   const [cookieModalOpen, setCookieModalOpen]  = useState(false)
@@ -452,7 +454,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const y = window.scrollY
       setNavScrolled(y > 60)
       setShowFloating(y > window.innerHeight - 100)
+      /* Le formulaire de devis est-il à l'écran ?
+         Mesuré à l'étape 86 sur un vrai gabarit de téléphone : à 390 px, le
+         bouton noir « Réserver maintenant » se posait sur le champ « heure de
+         prise en charge » et le clic n'atteignait plus le champ du tout.
+         Aucun élément en position fixe ne peut promettre de ne rien recouvrir ;
+         la seule garantie est de s'effacer tant que le formulaire est visible.
+         Le CSS ne retient cette règle que sous 640 px : sur ordinateur les
+         boutons sont dans les coins et aucun clic n'est bloqué. */
+      const d = document.getElementById('devis')
+      setDevisVisible(!!d && (() => {
+        const r = d.getBoundingClientRect()
+        return r.top < window.innerHeight && r.bottom > 0
+      })())
     }
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -979,27 +995,27 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Call float */}
-      <div className={`call-float${showFloating?' show':''}`} style={cookieOffset?{bottom:88+cookieOffset}:undefined}>
+      <div className={`call-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="tel:+33619106356" className="call-btn" aria-label="Appeler Owise">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          Appeler
+          <span className="fb-txt">Appeler</span>
         </a>
       </div>
 
       {/* WhatsApp float */}
-      <div className={`wa-float${showFloating?' show':''}`} style={cookieOffset?{bottom:28+cookieOffset}:undefined}>
+      <div className={`wa-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="https://wa.me/33619106356" className="wa-btn" target="_blank" rel="noopener" aria-label="WhatsApp" style={{position:'relative'}}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
-          WhatsApp
+          <span className="fb-txt">WhatsApp</span>
           <span className="wa-pulse" />
         </a>
       </div>
 
       {/* Floating CTA */}
-      <div className={`float-cta${showFloating?' show':''}`} style={cookieOffset?{bottom:28+cookieOffset}:undefined}>
+      <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="#devis" className="float-cta-btn" onClick={e=>{e.preventDefault();scrollTo('#devis')}}>
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
-          Réserver maintenant
+          <span className="fb-txt">Réserver maintenant</span>
         </a>
       </div>
 
@@ -1426,7 +1442,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             return (
               <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(0,0,0,.1)', background:'#FFFFFF' }}>
                 {/* En-têtes colonnes */}
-                <div style={{
+                <div className="tar-tete" style={{
                   display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
                   background:'rgba(0,0,0,.04)',
                   borderBottom:'1px solid rgba(0,0,0,.09)',
@@ -1446,7 +1462,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
                 {/* Lignes */}
                 {rows.map((r, i) => (
-                  <div key={i} style={{
+                  <div key={i} className="tar-ligne" style={{
                     display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
                     padding:'18px 24px', alignItems:'center',
                     borderBottom: i < rows.length-1 ? '1px solid rgba(0,0,0,.06)' : 'none',
@@ -1461,6 +1477,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     </div>
                     {[r.berline, r.premium, r.van].map((prix, j) => (
                       <div key={j} style={{ textAlign:'center' }}>
+                        {/* Sous 768 px l'en-tête du tableau disparaît : chaque
+                            montant porte alors son propre libellé de véhicule,
+                            sans quoi on ne saurait plus lequel on lit. */}
+                        <div className="tar-lab">{['🚘 Berline','⭐ Premium','🚐 Van 7 pl.'][j]}</div>
                         {prix != null ? (
                           <div>
                             <span style={{

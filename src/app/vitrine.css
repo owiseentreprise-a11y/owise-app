@@ -656,7 +656,7 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 .footer-social-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(0,0,0,.3);margin-top:14px;display:block}
 
 /* WHATSAPP FLOATING */
-.wa-float{position:fixed;bottom:28px;left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.wa-float{position:fixed;bottom:calc(28px + var(--ow-cb,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .wa-float.show{opacity:1;transform:translateY(0);pointer-events:all}
 .wa-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;border-radius:50px;background:#25D366;color:#FFFFFF;font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 28px rgba(37,211,102,.38);transition:transform .15s,box-shadow .2s,background .15s}
 .wa-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(37,211,102,.48);background:#1fba57}
@@ -664,17 +664,65 @@ footer{background:var(--surface);border-top:1px solid rgba(0,0,0,.08);padding:60
 @keyframes waPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
 
 /* CALL FLOATING */
-.call-float{position:fixed;bottom:88px;left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.call-float{position:fixed;bottom:calc(88px + var(--ow-cb,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .call-float.show{opacity:1;transform:translateY(0);pointer-events:all}
 .call-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;border-radius:50px;background:#C9A84C;color:#09091A;font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 28px rgba(201,168,76,.38);transition:transform .15s,box-shadow .2s}
 .call-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(201,168,76,.48)}
-@media(max-width:640px){.call-float{bottom:88px;left:16px}.wa-float{left:16px}}
+/* L'ancienne règle mobile posait ici bottom:88px en dur, ce qui annulait le
+   décalage du bandeau cookies. Le décalage passe désormais par --ow-cb et la
+   disposition mobile est regroupée plus bas, après le bouton flottant noir. */
 
 /* FLOATING CTA */
-.float-cta{position:fixed;bottom:28px;right:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.float-cta{position:fixed;bottom:calc(28px + var(--ow-cb,0px));right:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .float-cta.show{opacity:1;transform:translateY(0);pointer-events:all}
 .float-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:50px;background:#0A0A0A;color:#FFFFFF;font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .15s,box-shadow .2s}
 .float-cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.35)}
+
+/* ── Étape 86 · le libellé du bouton noir était invisible ──────────────────
+   .float-cta-btn demande color:#FFFFFF, mais .vt a{color:inherit} (ligne 21)
+   est plus spécifique (0,1,1 contre 0,1,0) et gagne : le texte héritait du
+   #0A0A0A de html:has(.vt) body, soit du noir sur fond noir #0A0A0A.
+   « Réserver maintenant » s'affichait donc comme un rectangle noir muet, à
+   TOUTES les largeurs, ordinateur compris. Vérifié par Chrome lui-même
+   (CSS.getMatchedStylesForNode) avant correction, pas déduit à la lecture.
+   On remonte la spécificité au même niveau que .vt a, sans !important. */
+.vt a.float-cta-btn{color:#FFFFFF}
+
+/* ── Étape 86 · les trois boutons flottants sur téléphone ─────────────────
+   Avant : trois pastilles empilées à gauche occupant 104 px de hauteur, plus
+   le bouton noir à droite. Mesuré à 390 px, le bouton noir se posait sur le
+   champ « heure de prise en charge » et le clic n'atteignait plus le champ.
+   Après : une seule rangée de 48 px collée en bas, deux pastilles rondes et
+   le bouton d'action. */
+@media(max-width:640px){
+  .call-float,.wa-float,.float-cta{bottom:calc(10px + var(--ow-cb,0px))}
+  .call-float{left:10px;right:auto}
+  .wa-float{left:66px;right:auto}
+  .float-cta{left:122px;right:10px}
+  .call-btn,.wa-btn{width:48px;height:48px;padding:0;gap:0;justify-content:center;border-radius:50%}
+  .call-btn .fb-txt,.wa-btn .fb-txt{display:none}
+  .float-cta-btn{width:100%;justify-content:center;padding:14px 10px;font-size:12px}
+  .wa-pulse{top:2px;right:2px}
+
+  /* Rien ne doit se terminer sous la rangée : on réserve sa hauteur en bas
+     de page, sinon le dernier lien du pied de page reste inatteignable. */
+  .vt{padding-bottom:72px}
+}
+
+/* Tant que le formulaire de devis est à l'écran, les boutons s'effacent.
+   C'est la seule garantie possible : un élément en position fixe finit
+   toujours par passer sur quelque chose, et aucune disposition ne peut le
+   promettre. Même spécificité que .show (0,2,0), placée après, donc elle
+   l'emporte.
+   Seuil à 1023 px et non 640 : mesuré à 768 px, la rangée gardait sa
+   disposition de bureau et le bouton WhatsApp bloquait encore un bouton du
+   formulaire. À 1024 et 1280 px aucun élément n'est bloqué — l'ordinateur
+   garde donc ses boutons visibles, inchangés. */
+@media(max-width:1023px){
+  .call-float.sur-formulaire,.wa-float.sur-formulaire,.float-cta.sur-formulaire{
+    opacity:0;pointer-events:none;transform:translateY(16px)
+  }
+}
 
 /* REVEAL */
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .75s ease,transform .75s ease}
@@ -1077,4 +1125,23 @@ nav:not(.scrolled) .nav-hamburger span{background:#EDE8DF}
   .hero-headline{font-size:36px;margin-bottom:22px}
   .htb-item{font-size:10px;padding:0 10px}
   .hero-live-badge{font-size:10px}
+}
+
+/* ── Étape 86 · le tableau des tarifs aéroport sur téléphone ──────────────
+   La grille est écrite en 1fr repeat(3,140px) : 420 px de colonnes fixes,
+   plus 48 px de marges intérieures, soit ~510 px incompressibles. Le cadre
+   qui la contient porte overflow:hidden — donc rien ne défile, ce qui
+   dépasse est simplement perdu. Mesuré : colonnes aux mêmes pixels à 320,
+   360, 390 et 430 px (49→91, 91→231, 231→371, 371→511), la colonne Van
+   entièrement hors écran et six montants invisibles. Sur ordinateur la
+   même grille tient largement (Trajet 490 px) : la correction ne vaut donc
+   que sous 768 px, et le tableau de bureau n'est pas touché.
+   Sous 768 px : le trajet prend toute la largeur, les trois montants se
+   rangent dessous en trois colonnes égales, chacun avec son libellé. */
+.tar-lab{display:none}
+@media(max-width:767px){
+  .tar-tete{display:none!important}
+  .tar-ligne{grid-template-columns:repeat(3,1fr)!important;padding:16px 14px!important;align-items:start!important}
+  .tar-ligne>:first-child{grid-column:1/-1;margin-bottom:14px}
+  .tar-lab{display:block;font-size:9.5px;font-weight:600;letter-spacing:.02em;color:#6B6B6B;margin-bottom:3px;white-space:nowrap}
 }
