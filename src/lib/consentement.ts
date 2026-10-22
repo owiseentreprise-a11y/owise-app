@@ -102,8 +102,9 @@ export function demanderPanneauConsentement(): void {
    exécuté dans la page. Deux gestes sont donc nécessaires, et le premier est
    celui que Google documente. */
 
-/** Préfixes des cookies déposés par gtag.js et par le pixel Meta. */
-const PREFIXES_COOKIES_MESURE = ['_ga', '_gid', '_gat', '_gac', '_fbp', '_fbc']
+/** Préfixes des cookies déposés par gtag.js, par le pixel Meta et par
+ *  PostHog (`ph_<clé de projet>_posthog`). */
+const PREFIXES_COOKIES_MESURE = ['_ga', '_gid', '_gat', '_gac', '_fbp', '_fbc', 'ph_']
 
 export function effacerCookiesMesure(): void {
   if (typeof document === 'undefined') return
@@ -129,6 +130,34 @@ function domainesCandidats(): string[] {
   return out
 }
 
+/**
+ * PostHog ne se contente pas d'un cookie : il garde aussi l'identifiant du
+ * visiteur dans `localStorage`, sous une clé `ph_<clé de projet>_posthog`.
+ * `posthog.reset()` oublie l'identifiant côté bibliothèque ; on efface ici
+ * ce qui reste sur le disque, y compris si la bibliothèque n'a pas été
+ * initialisée pendant cette visite (cookie laissé par une visite passée).
+ */
+export function effacerTracesPostHog(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const aJeter: string[] = []
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i)
+      if (k && /^ph_.*_posthog$/.test(k)) aJeter.push(k)
+    }
+    for (const k of aJeter) window.localStorage.removeItem(k)
+  } catch { /* stockage indisponible */ }
+  try {
+    const aJeter: string[] = []
+    for (let i = 0; i < window.sessionStorage.length; i++) {
+      const k = window.sessionStorage.key(i)
+      if (k && /^ph_.*_posthog$/.test(k)) aJeter.push(k)
+    }
+    for (const k of aJeter) window.sessionStorage.removeItem(k)
+  } catch {}
+  effacerCookiesMesure()
+}
+
 function appliquerRefus(): void {
   try {
     /* Drapeau officiel de gtag.js : consulté avant chaque envoi, y compris
@@ -139,7 +168,10 @@ function appliquerRefus(): void {
     w[`ga-disable-${id}`] = true
     if (aw) w[`ga-disable-${aw}`] = true
   } catch {}
-  effacerCookiesMesure()
+  /* Efface les cookies de mesure ET les traces PostHog laissées sur le
+     disque — un cookie `ph_…_posthog` peut rester d'une visite précédente,
+     avant que la bibliothèque ait eu l'occasion de se réinitialiser. */
+  effacerTracesPostHog()
 }
 
 function libererMesure(): void {

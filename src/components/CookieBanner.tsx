@@ -113,8 +113,14 @@ export default function CookieBanner() {
       boxShadow: '0 -4px 32px rgba(0,0,0,.3)',
     }}>
       <p style={{ fontSize: 13, color: 'rgba(237,232,223,.7)', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-        Nous utilisons des cookies pour mesurer l&apos;audience et améliorer nos services (Meta Pixel, Google Analytics).
-        En continuant, vous acceptez leur utilisation.{' '}
+        {/* Étape 89 : l'ancienne phrase « En continuant, vous acceptez leur
+            utilisation » annonçait un consentement tacite que le code ne
+            pratique plus — et ne pratiquait d'ailleurs plus correctement
+            l'inverse non plus. Le texte décrit désormais ce qui se passe
+            vraiment, outil par outil. */}
+        Les cookies nécessaires au fonctionnement du site sont toujours actifs. Les cookies de mesure
+        d&apos;audience (Google Analytics, PostHog, Meta Pixel) ne sont déposés qu&apos;après votre
+        acceptation : tant que vous n&apos;avez pas répondu, aucune mesure n&apos;est effectuée.{' '}
         <a href="/mentions-legales" style={{ color: '#C9A84C', textDecoration: 'none' }}>
           En savoir plus
         </a>

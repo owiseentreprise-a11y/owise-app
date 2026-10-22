@@ -2289,7 +2289,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div className="cookie-text">
             <div className="cookie-title">Gestion des cookies</div>
             <div className="cookie-desc">
-              Nous utilisons des cookies pour améliorer votre expérience. Consultez notre{' '}
+              {/* Étape 89 : le texte doit dire ce que le code fait. Les
+                  mesures ne démarrent qu'après « Accepter ». */}
+              Les cookies de mesure d&apos;audience (Google Analytics, PostHog, Meta Pixel) ne sont
+              activés qu&apos;après votre acceptation. Sans réponse de votre part, aucune statistique
+              n&apos;est collectée. Consultez notre{' '}
               <Link href="/mentions-legales">politique de confidentialité</Link>.
             </div>
           </div>
@@ -2311,7 +2315,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <label className="cm-toggle"><input type="checkbox" checked readOnly/><div className="cm-track"/><div className="cm-thumb"/></label>
           </div>
           <div className="cm-cat">
-            <div><div className="cm-cat-name">Analytiques</div><div className="cm-cat-desc">Nous aident à comprendre comment vous utilisez le site (données anonymisées).</div></div>
+            {/* « données anonymisées » était inexact : Google Analytics et
+                PostHog attribuent chacun un identifiant de visiteur et
+                déposent un cookie. Le panneau doit le dire. */}
+            <div><div className="cm-cat-name">Analytiques</div><div className="cm-cat-desc">Mesure d&apos;audience (Google Analytics, PostHog, Meta Pixel). Déposent un cookie et un identifiant de visiteur. Désactivés tant que vous n&apos;avez pas accepté.</div></div>
             <label className="cm-toggle"><input type="checkbox" checked={analyticsOn} onChange={e=>setAnalyticsOn(e.target.checked)}/><div className="cm-track"/><div className="cm-thumb"/></label>
           </div>
           <div className="cm-footer">
