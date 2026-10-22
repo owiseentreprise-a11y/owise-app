@@ -39,8 +39,12 @@ async function resoudreAdresse(addr: BcAddr): Promise<BcAddr> {
   return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
-import { fbLead, fbContact, COOKIE_KEY, initFbPixel } from '@/lib/pixel'
-import { gtagEvent } from '@/lib/ga'
+import { fbLead, fbContact, initFbPixel } from '@/lib/pixel'
+import { gtagEvent, initGA } from '@/lib/ga'
+import {
+  lireConsentement, ecrireConsentement, EVENEMENT_OUVRIR_PANNEAU,
+} from '@/lib/consentement'
+import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { logFunnel } from '@/lib/funnel'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
@@ -362,7 +366,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [faqOpen,         setFaqOpen]          = useState<number|null>(null)
   const [cookieVisible,   setCookieVisible]    = useState(false)
   const [cookieModalOpen, setCookieModalOpen]  = useState(false)
-  const [analyticsOn,     setAnalyticsOn]      = useState(true)
+  /* L'absence de choix n'est pas une acceptation : l'interrupteur part donc
+     à l'arrêt, et non à « activé » comme avant l'étape 88. Il est remis à la
+     valeur enregistrée dès qu'on sait ce que le visiteur a déjà répondu. */
+  const [analyticsOn,     setAnalyticsOn]      = useState(false)
   const [cookieDone,      setCookieDone]       = useState(false)
   const [cookieBannerH,   setCookieBannerH]    = useState(0)
   const cookieBannerRef   = useRef<HTMLDivElement>(null)
@@ -490,23 +497,37 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   /* ── cookie banner ──────────────────────────────────────── */
   useEffect(() => {
-    const consent = localStorage.getItem(COOKIE_KEY) || localStorage.getItem('ow_cookie')
-    if (!consent) {
+    const consent = lireConsentement()
+    if (consent === null) {
       // Re-vérifier au déclenchement du timer (pas seulement au montage) : la
       // bannière globale (CookieBanner.tsx, montée dans layout.tsx) peut avoir
       // déjà obtenu une réponse entre-temps — sans ça, une deuxième bannière
       // s'affichait même après que l'utilisateur ait déjà répondu à la première.
       const t = setTimeout(() => {
-        const stillNoConsent = !(localStorage.getItem(COOKIE_KEY) || localStorage.getItem('ow_cookie'))
-        if (stillNoConsent) setCookieVisible(true)
+        if (lireConsentement() === null) setCookieVisible(true)
         else setCookieDone(true)
       }, 2500)
       return () => clearTimeout(t)
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCookieDone(true)
-      if (consent === 'accepted' || consent === '1') initFbPixel()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnalyticsOn(consent === 'accepted')
+      if (consent === 'accepted') { initFbPixel(); initGA() }
     }
+  }, [])
+
+  /* Revenir sur son choix. Le lien « Gérer mes cookies » du pied de page, et
+     le même lien sur la page Mentions légales, émettent cet événement.
+     Avant l'étape 88, une fois la bannière refermée, plus rien ne permettait
+     de rouvrir le panneau de préférences. */
+  useEffect(() => {
+    const ouvrir = () => {
+      setAnalyticsOn(lireConsentement() === 'accepted')
+      setCookieModalOpen(true)
+    }
+    window.addEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
+    return () => window.removeEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
   }, [])
 
   /* ── scroll reveal + countup ────────────────────────────── */
@@ -608,12 +629,20 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       if (prixFinal > 0 && depResolved && arrResolved && key !== lastEstimRef.current) {
         lastEstimRef.current = key
         logFunnel('hero_widget_price_shown', { prix: prixFinal })
+        /* Ce qui part en statistique n'est pas l'adresse tapée : seulement la
+           zone tarifaire reconnue et la commune. Le numéro et la rue ne
+           servent à aucune mesure et c'est eux qui rendent la ligne
+           identifiante. `key` ci-dessus garde les libellés complets, mais il
+           ne quitte jamais le navigateur : il ne sert qu'à ne pas enregistrer
+           deux fois la même estimation. */
+        const zDep = detectZone(bcDepart.cp ?? '', zonesProp, bcDepart.label)
+        const zArr = detectZone(bcArrivee.cp ?? '', zonesProp, bcArrivee.label)
         fetch('/api/estimations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            adresse_depart:  dep,
-            adresse_arrivee: arr,
+            adresse_depart:  lieuPourStatistique(dep, bcDepart.cp, zDep?.code),
+            adresse_arrivee: lieuPourStatistique(arr, bcArrivee.cp, zArr?.code),
             vehicule:        vh,
             prix:            prixFinal,
             source:          'vitrine',
@@ -857,16 +886,29 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setPaxN(1); setSuppls({}); setEtapeOpen(false); setAllerRetour(false)
   }
 
+  /* « Accepter » du bandeau = tout accepter. */
   function acceptCookie() {
-    localStorage.setItem(COOKIE_KEY, 'accepted')
-    localStorage.setItem('ow_cookie', '1')
+    ecrireConsentement('accepted')
+    setAnalyticsOn(true)
     setCookieVisible(false); setCookieDone(true)
-    initFbPixel()
+    initFbPixel(); initGA()
   }
+  /* « Refuser » du bandeau = tout refuser. `ecrireConsentement` lève le
+     drapeau ga-disable-<ID> et efface les cookies de mesure déjà déposés :
+     refuser après avoir accepté arrête réellement le suivi, sans
+     rechargement. */
   function refuseCookie() {
-    localStorage.setItem(COOKIE_KEY, 'refused')
-    localStorage.setItem('ow_cookie', '0')
+    ecrireConsentement('refused')
+    setAnalyticsOn(false)
     setCookieVisible(false); setCookieDone(true)
+  }
+  /* « Enregistrer » du panneau de préférences. Avant l'étape 88, ce bouton
+     appelait acceptCookie() quelle que soit la position de l'interrupteur :
+     il était impossible de refuser depuis le panneau. */
+  function enregistrerPreferences() {
+    if (analyticsOn) acceptCookie()
+    else refuseCookie()
+    setCookieModalOpen(false)
   }
 
   const currentEst = devisPrix
@@ -2228,6 +2270,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
         <div className="footer-bottom">
           <span>© 2026 Owise — Tous droits réservés</span>
+          {/* Revenir sur son choix. Avant l'étape 88, la réponse donnée à la
+              bannière était définitive : rien ne rouvrait le panneau. */}
+          <button
+            type="button"
+            className="lien-cookies"
+            onClick={() => { setAnalyticsOn(lireConsentement() === 'accepted'); setCookieModalOpen(true) }}
+          >
+            Gérer mes cookies
+          </button>
           <span>SIRET : 477 534 135 00041</span>
         </div>
       </footer>
@@ -2265,7 +2316,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           </div>
           <div className="cm-footer">
             <button className="cm-cancel" onClick={()=>setCookieModalOpen(false)}>Annuler</button>
-            <button className="cm-save" onClick={()=>{acceptCookie();setCookieModalOpen(false)}}>Enregistrer</button>
+            <button className="cm-save" onClick={enregistrerPreferences}>Enregistrer</button>
           </div>
         </div>
       </div>

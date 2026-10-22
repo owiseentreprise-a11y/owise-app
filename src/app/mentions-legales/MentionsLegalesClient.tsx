@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { demanderPanneauConsentement } from '@/lib/consentement'
 
 const TABS = [
   { id: 'mentions',       label: 'Mentions légales' },
@@ -401,7 +402,22 @@ export default function MentionsLegalesClient() {
             </Section>
 
             <Section title="8 — Cookies">
-              <P>Owise utilise des cookies essentiels (fonctionnement du service), analytiques (analyse d&apos;audience) et marketing. Vous pouvez gérer vos préférences via notre bandeau de consentement.</P>
+              <P>Owise utilise des cookies essentiels (fonctionnement du service), analytiques (analyse d&apos;audience) et marketing. Les cookies analytiques et marketing ne sont déposés qu&apos;après votre accord explicite : sans réponse de votre part, aucun suivi d&apos;audience n&apos;est lancé.</P>
+              <P>Vous pouvez revenir sur votre choix à tout moment. Un refus arrête le suivi immédiatement et supprime les cookies de mesure déjà déposés.</P>
+              {/* Depuis l'étape 88 : un point d'entrée accessible depuis
+                  n'importe quelle page, puisque toutes renvoient ici. */}
+              <button
+                type="button"
+                onClick={demanderPanneauConsentement}
+                style={{
+                  marginTop: 14, padding: '10px 20px', borderRadius: 8,
+                  border: '1px solid rgba(201,168,76,.45)', background: 'transparent',
+                  color: '#C9A84C', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                Gérer mes cookies
+              </button>
             </Section>
           </div>
         )}

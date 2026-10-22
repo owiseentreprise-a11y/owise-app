@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { COOKIE_KEY, initFbPixel } from '@/lib/pixel'
+import { initFbPixel } from '@/lib/pixel'
 import { initGA } from '@/lib/ga'
+import {
+  lireConsentement, ecrireConsentement, EVENEMENT_OUVRIR_PANNEAU,
+} from '@/lib/consentement'
 
 // Routes qui NE rendent PAS VitrineBody (lequel a sa propre bannière cookies,
 // avec en plus un panneau de préférences détaillé). Sur toutes les autres
@@ -30,29 +33,42 @@ export default function CookieBanner() {
 
   useEffect(() => {
     if (hasOwnCookieBanner(pathname)) return
-    try {
-      const stored = localStorage.getItem(COOKIE_KEY)
-      if (stored === 'accepted') {
-        initFbPixel()
-        initGA()
-      } else if (!stored) {
-        setVisible(true)
-      }
-    } catch {
-      // localStorage inaccessible (WebView restrictif, mode incognito) — afficher la bannière
+    const choix = lireConsentement()
+    if (choix === 'accepted') {
+      initFbPixel()
+      initGA()
+    } else if (choix === null) {
+      // Pas de choix enregistré — y compris quand localStorage est
+      // inaccessible (navigation privée, WebView restrictive). On demande,
+      // on ne présume pas.
       setVisible(true)
     }
   }, [pathname])
 
+  /* Le visiteur doit pouvoir revenir sur son choix. Un lien « Gérer mes
+     cookies » (pied de page de la vitrine, page Mentions légales) émet cet
+     événement : la bannière réapparaît, quelle que soit la réponse donnée
+     auparavant. Sans cela, une fois la question répondue, le choix était
+     définitif — c'est ce que l'étape 85 avait relevé. */
+  useEffect(() => {
+    if (hasOwnCookieBanner(pathname)) return
+    const ouvrir = () => setVisible(true)
+    window.addEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
+    return () => window.removeEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
+  }, [pathname])
+
   function accept() {
-    try { localStorage.setItem(COOKIE_KEY, 'accepted') } catch { /* ignore */ }
+    ecrireConsentement('accepted')
     setVisible(false)
     initFbPixel()
     initGA()
   }
 
   function refuse() {
-    try { localStorage.setItem(COOKIE_KEY, 'refused') } catch { /* ignore */ }
+    // ecrireConsentement pose le drapeau ga-disable-<ID> et efface les
+    // cookies de mesure déjà déposés : refuser après avoir accepté arrête
+    // réellement le suivi, sans rechargement.
+    ecrireConsentement('refused')
     setVisible(false)
   }
 

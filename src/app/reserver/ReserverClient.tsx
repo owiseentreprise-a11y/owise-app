@@ -10,6 +10,7 @@ import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import { logFunnel } from '@/lib/funnel'
+import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import ReservationSummary from './ReservationSummary'
 import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
 import {
@@ -433,12 +434,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     if (prix !== null && !prixCalculéRef.current) {
       prixCalculéRef.current = true
       fbViewContent({ value: prix, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
+      /* Statistique, pas réservation : on n'enregistre ici que la zone
+         tarifaire reconnue et la commune. Les adresses complètes dont la
+         course a réellement besoin sont transmises au moment de la
+         réservation, par un autre chemin, et ne passent pas par cette
+         table. */
       fetch('/api/estimations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          adresse_depart:  depart.label,
-          adresse_arrivee: arrivee.label,
+          adresse_depart:  lieuPourStatistique(depart.label,  depart.codePostal,  zoneDepart?.code),
+          adresse_arrivee: lieuPourStatistique(arrivee.label, arrivee.codePostal, zoneArrivee?.code),
           vehicule,
           prix:            Math.round(prix),
           source:          'reservation',
@@ -446,7 +452,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
       }).catch(() => {})
     }
     if (prix === null) prixCalculéRef.current = false
-  }, [prix, depart.label, arrivee.label, vehicule])
+  }, [prix, depart.label, depart.codePostal, arrivee.label, arrivee.codePostal, vehicule, zoneDepart, zoneArrivee])
 
   /**
    * Ce que coûtent les arrêts : les kilomètres que le détour ajoute vraiment,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { generaliserLieu } from '@/lib/estimation-anonyme'
 
 const hits = new Map<string, { count: number; reset: number }>()
 const LIMIT  = 10
@@ -50,10 +51,19 @@ export async function POST(req: NextRequest) {
   const vehiculeVal = typeof vehicule === 'string' && VEHICULES_VALIDES.includes(vehicule) ? vehicule : null
   const sourceVal = source === 'reservation' ? 'reservation' : 'vitrine'
 
+  /* Filet. Les deux appelants généralisent déjà le lieu avant l'envoi
+     (zone tarifaire + commune, jamais le numéro ni la rue), mais cette route
+     est publique : un ancien onglet resté ouvert, un script tiers ou une
+     régression future peuvent encore poster une adresse complète. On ne fait
+     donc pas confiance à l'entrée. `generaliserLieu` est idempotente : elle
+     laisse intacte une valeur déjà généralisée. */
+  const depPropre = generaliserLieu(dep)
+  const arrPropre = generaliserLieu(arr)
+
   const supabase = createAdminClient()
   await supabase.from('estimations').insert({
-    adresse_depart:  dep,
-    adresse_arrivee: arr,
+    adresse_depart:  depPropre,
+    adresse_arrivee: arrPropre,
     vehicule:        vehiculeVal,
     prix:            prixNum,
     source:          sourceVal,

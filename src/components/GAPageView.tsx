@@ -3,13 +3,17 @@
 import { Suspense, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { GA_ID } from '@/lib/ga'
+import { analytiquesAutorisees } from '@/lib/consentement'
 
 function PageViewTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    /* Sans consentement explicite, aucune vue de page n'est envoyée — même
+       si gtag se trouve chargé (consentement retiré en cours de visite). */
     if (!GA_ID || typeof window === 'undefined' || !window.gtag) return
+    if (!analytiquesAutorisees()) return
     const qs = searchParams.toString()
     const page_path = qs ? `${pathname}?${qs}` : pathname
     window.gtag('event', 'page_view', {

@@ -1145,3 +1145,15 @@ nav:not(.scrolled) .nav-hamburger span{background:#EDE8DF}
   .tar-ligne>:first-child{grid-column:1/-1;margin-bottom:14px}
   .tar-lab{display:block;font-size:9.5px;font-weight:600;letter-spacing:.02em;color:#6B6B6B;margin-bottom:3px;white-space:nowrap}
 }
+
+/* ── Étape 88 · « Gérer mes cookies » ─────────────────────────────────────
+   Le visiteur doit pouvoir revenir sur son choix. C'est un bouton et non un
+   lien : il n'emmène nulle part, il rouvre le panneau de préférences. On lui
+   donne l'apparence du texte voisin du pied de page, avec un soulignement au
+   survol pour qu'on voie qu'il est cliquable, et un état de focus visible. */
+.lien-cookies{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(0,0,0,.25);transition:color .15s,text-decoration-color .15s}
+.lien-cookies:hover{color:#C9A84C;text-decoration-color:#C9A84C}
+.lien-cookies:focus-visible{outline:2px solid #C9A84C;outline-offset:3px;border-radius:3px}
+@media(max-width:640px){
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+}
