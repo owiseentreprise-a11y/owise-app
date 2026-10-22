@@ -434,25 +434,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     if (prix !== null && !prixCalculéRef.current) {
       prixCalculéRef.current = true
       fbViewContent({ value: prix, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
-      /* Statistique, pas réservation : on n'enregistre ici que la zone
-         tarifaire reconnue et la commune. Les adresses complètes dont la
-         course a réellement besoin sont transmises au moment de la
-         réservation, par un autre chemin, et ne passent pas par cette
-         table. */
-      fetch('/api/estimations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adresse_depart:  lieuPourStatistique(depart.label,  depart.codePostal,  zoneDepart?.code),
-          adresse_arrivee: lieuPourStatistique(arrivee.label, arrivee.codePostal, zoneArrivee?.code),
-          vehicule,
-          prix:            Math.round(prix),
-          source:          'reservation',
-        }),
-      }).catch(() => {})
+      /* L'enregistrement statistique vivait ici jusqu'à l'étape 93. Il est
+         descendu plus bas : il partait au PREMIER prix non nul, avant que
+         le géocodage ait rendu le code postal, donc sur une zone
+         provisoire. Voir « estimation statistique » après prixTotal. */
     }
     if (prix === null) prixCalculéRef.current = false
-  }, [prix, depart.label, depart.codePostal, arrivee.label, arrivee.codePostal, vehicule, zoneDepart, zoneArrivee])
+  }, [prix, depart.label, arrivee.label, vehicule])
 
   /**
    * Ce que coûtent les arrêts : les kilomètres que le détour ajoute vraiment,
@@ -495,6 +483,74 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
+
+  /* ── Estimation statistique ───────────────────────────────────────────
+     Mesuré à l'étape 93, sur le code publié : un lien pré-rempli vers
+     `/reserver?depart=12 rue de Paris, 60500 Chantilly&arrivee=CDG`
+     affichait **59 €** au client et enregistrait **69 €**, avec la zone
+     « Z1 » accolée à la commune « 60500 Chantilly » — deux informations qui
+     se contredisent dans la même ligne.
+
+     Pourquoi : le pré-remplissage pose d'abord `{ label, codePostal: '' }`.
+     `detectZone` voit alors le mot « Paris » de « rue de Paris » et, le code
+     postal étant encore vide, rend Z1 (Paris intra-muros) — le garde-fou
+     `!codePostal || /^75/` de calcPrix.ts. Z1 → CDG vaut 69 €. L'ancien
+     effet partait sur ce premier prix et se verrouillait. Le géocodage
+     rendait ensuite « 60500 », la zone devenait CHA et le prix 59 €, mais
+     l'estimation n'était jamais corrigée.
+
+     Trois règles, reprises du widget de la page d'accueil — qui, lui, est
+     correct, ce que la mesure a confirmé. Une seule écriture de la règle
+     valait mieux que deux comportements divergents :
+
+       1. On n'enregistre que si les DEUX adresses sont résolues : un code
+          postal ou des coordonnées. Tant qu'il manque l'un des deux, la
+          zone n'est pas fiable.
+       2. On attend 1,2 s de calme. Le géocodage se termine en plusieurs
+          temps ; sans cette attente, chaque étape produirait une ligne.
+       3. On n'écrit pas deux fois la même chose : la clé retient les lieux
+          généralisés, le véhicule et le montant. Un vrai changement de
+          trajet produit une nouvelle ligne, une résolution par paliers non.
+
+     Le montant enregistré est `prixTotal`, c'est-à-dire **le gros montant
+     que le client voit**, aller-retour et étapes compris. L'ancien code
+     enregistrait `prix`, le trajet simple de base : sur un aller-retour,
+     la statistique valait la moitié de ce qui était affiché.
+
+     Rien ici ne touche le calcul : ni le moteur, ni les forfaits, ni le
+     prix affiché, ni le montant envoyé au paiement (`prixFinal`), ni le
+     parcours de réservation. On ne change que ce qu'on écrit, et quand. */
+  const derniereEstimRef = useRef<string>('')
+  useEffect(() => {
+    if (prixTotal === null || prixTotal <= 0) return
+    const depResolu = depart.lat  != null || !!depart.codePostal
+    const arrResolu = arrivee.lat != null || !!arrivee.codePostal
+    if (!depResolu || !arrResolu) return
+
+    const minuteur = setTimeout(() => {
+      const lieuDep = lieuPourStatistique(depart.label,  depart.codePostal,  zoneDepart?.code)
+      const lieuArr = lieuPourStatistique(arrivee.label, arrivee.codePostal, zoneArrivee?.code)
+      const montant = Math.round(prixTotal)
+      const cle = `${lieuDep}|${lieuArr}|${vehicule}|${montant}`
+      if (cle === derniereEstimRef.current) return
+      derniereEstimRef.current = cle
+      /* Statistique, pas réservation : seulement la zone tarifaire reconnue
+         et la commune. Les adresses complètes dont la course a réellement
+         besoin partent au moment de la réservation, par un autre chemin. */
+      fetch('/api/estimations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adresse_depart:  lieuDep,
+          adresse_arrivee: lieuArr,
+          vehicule,
+          prix:            montant,
+          source:          'reservation',
+        }),
+      }).catch(() => {})
+    }, 1200)
+    return () => clearTimeout(minuteur)
+  }, [prixTotal, depart.label, depart.codePostal, depart.lat, arrivee.label, arrivee.codePostal, arrivee.lat, vehicule, zoneDepart, zoneArrivee])
 
   function handleDateChange(d: string)        { setDateOnly(d) }
   function handleTimeChange(t: string)        { setTimeOnly(t || '09:00') }
