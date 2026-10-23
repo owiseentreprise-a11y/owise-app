@@ -2084,7 +2084,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </select>
                 </div>
                 <div className="form-nav">
-                  <button className="btn-next" onClick={()=>{logFunnel('devis_step2_enter', {origin:form.origin, dest:form.dest}); setStep(2)}}>Suivant — Passagers <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                  {/* Étape 97 : cet événement transmettait `form.origin` et
+                      `form.dest`, c'est-à-dire l'adresse COMPLÈTE choisie
+                      dans la liste de suggestions — « 12 Rue de Paris,
+                      60500 Chantilly, France ». L'étape 88 avait généralisé
+                      les adresses dans la table `estimations` ; celle-ci
+                      était restée. On garde l'information utile — de quelle
+                      zone part-on, vers quelle zone va-t-on — sans la rue
+                      ni le numéro, avec le même généralisateur qu'ailleurs. */}
+                  <button className="btn-next" onClick={()=>{logFunnel('devis_step2_enter', {
+                    zone_depart:  lieuPourStatistique(devisOrig.label, devisOrig.cp, detectZone(devisOrig.cp ?? '', zonesProp, devisOrig.label)?.code),
+                    zone_arrivee: lieuPourStatistique(desisDest.label, desisDest.cp, detectZone(desisDest.cp ?? '', zonesProp, desisDest.label)?.code),
+                  }); setStep(2)}}>Suivant — Passagers <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                 </div>
               </div>
             )}

@@ -10,6 +10,7 @@ import { searchLieux, LIEUX_CONNUS } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon, type AddressSuggestion } from '@/lib/addressSearch'
 import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import { logFunnel } from '@/lib/funnel'
+import { codeErreur } from '@/lib/funnel-confidentialite'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import ReservationSummary from './ReservationSummary'
 import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
@@ -568,7 +569,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   }
 
   function handleStep1() {
-    const fail = (msg: string) => { logFunnel('reserver_step1_error', { reason: msg }); setStep1Error(msg) }
+    /* Étape 97 : la statistique reçoit un CODE, pas le message. Les
+       libellés de validation sont aujourd'hui des chaînes fixes, donc sans
+       danger — mais rien n'empêcherait d'y glisser demain une valeur saisie
+       par le client. Le code est un contrat ; le message reste affiché au
+       visiteur, inchangé. */
+    const fail = (msg: string) => { logFunnel('reserver_step1_error', { code: codeErreur(msg) }); setStep1Error(msg) }
     if (!depart.label.trim())  return fail('Adresse de départ requise.')
     if (!arrivee.label.trim()) return fail('Adresse d\'arrivée requise.')
     if (!date)                                                                     return fail('Date et heure requises.')
@@ -601,7 +607,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
   function handlePayer() {
     logFunnel('reserver_payer_click', { prix: prixFinal })
-    const fail = (msg: string) => { logFunnel('reserver_step2_error', { reason: msg }); setStep2Error(msg) }
+    const fail = (msg: string) => { logFunnel('reserver_step2_error', { code: codeErreur(msg) }); setStep2Error(msg) }
     /* La meme verification que le serveur, pour prevenir ici plutot qu'au
      * moment de payer. Le serveur reste la vraie barriere. */
     const verdict = verifierReservation({
@@ -647,7 +653,11 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
         ads_consent:     adsConsent,
       })
       if (result?.error) {
-        logFunnel('reserver_checkout_error', { error: result.error })
+        /* `result.error` peut venir de Stripe ou d'une exception réseau :
+           « HTTP 402 … », « Connexion: … ». Un tel message n'est pas
+           maîtrisé et peut citer une valeur soumise. On n'enregistre que la
+           catégorie ; le message complet reste affiché au visiteur. */
+        logFunnel('reserver_checkout_error', { code: codeErreur(result.error) })
         setStep2Error(`Erreur de paiement : ${result.error}`)
       } else if (result?.checkoutUrl) {
         logFunnel('reserver_checkout_created', { prix: prixFinal })

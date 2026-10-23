@@ -158,6 +158,20 @@ export function effacerTracesPostHog(): void {
   effacerCookiesMesure()
 }
 
+/**
+ * L'identifiant de parcours et la liste des étapes déjà vues, posés par
+ * `src/lib/funnel.ts` dans `sessionStorage`. Un retrait doit les effacer :
+ * sans cela, le même identifiant resservirait si le visiteur acceptait de
+ * nouveau, et relierait l'avant et l'après d'un refus.
+ */
+const CLES_SESSION_PARCOURS = ['ow_fsid', 'ow_fsteps']
+
+export function effacerSessionParcours(): void {
+  if (typeof window === 'undefined') return
+  try { for (const k of CLES_SESSION_PARCOURS) window.sessionStorage.removeItem(k) } catch {}
+  try { for (const k of CLES_SESSION_PARCOURS) window.localStorage.removeItem(k) } catch {}
+}
+
 function appliquerRefus(): void {
   try {
     /* Drapeau officiel de gtag.js : consulté avant chaque envoi, y compris
@@ -172,6 +186,8 @@ function appliquerRefus(): void {
      disque — un cookie `ph_…_posthog` peut rester d'une visite précédente,
      avant que la bibliothèque ait eu l'occasion de se réinitialiser. */
   effacerTracesPostHog()
+  /* Et l'identifiant de parcours, depuis l'étape 97. */
+  effacerSessionParcours()
 }
 
 function libererMesure(): void {
