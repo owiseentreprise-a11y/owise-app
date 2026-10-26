@@ -1366,9 +1366,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {/* CARTE ANIMÉE — « Paris en mouvement »
           Posée juste après le premier écran, et non dedans : le formulaire
           reste le premier objet de la page, sur mobile comme sur ordinateur.
-          Le composant ne rend quelque chose QUE si le proxy de
-          prévisualisation a posé son drapeau ; sur le site, il rend null et
-          n'ajoute aucun nœud. */}
+          Allumée le 2026-10-27. Elle a vécu derrière un drapeau de
+          prévisualisation et rendait `null` sur le site ; le drapeau est
+          retiré, le bloc est rendu comme les autres. Il reste décoratif :
+          `aria-hidden`, aucun élément focalisable, et les mêmes villes
+          sont listées en texte dans « Nos zones desservies ». */}
       <CarteParisEnMouvement />
 
       {/* MARQUEE */}

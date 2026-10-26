@@ -29,31 +29,31 @@ import { useEffect, useRef, useState } from 'react'
  * qui se tait pendant que le clavier continue de s'y arrêter.
  *
  * ── Quand elle existe ───────────────────────────────────────────────────
- * Uniquement si `window.__OW_CARTE` est vrai. Le site ne pose jamais ce
- * drapeau ; seul le proxy de prévisualisation le fait, et seulement sur
- * l'accueil. Sur le site normal, le composant rend `null` : aucun nœud
- * n'est ajouté au DOM, et rien ne change.
+ * Toujours, depuis le 2026-10-27. Elle a vécu éteinte derrière un drapeau
+ * `window.__OW_CARTE` que seul le proxy de prévisualisation posait : le
+ * composant rendait `null` sur le site, et le dessin n'a jamais été vu
+ * d'un visiteur. Le drapeau est retiré, le bloc est rendu comme les autres.
+ *
+ * Il est rendu DÈS LE SERVEUR, et c'est voulu : avec l'ancien montage, le
+ * premier rendu donnait `null` et le bloc n'apparaissait qu'après le
+ * montage côté navigateur — un décalage visible, et un risque de
+ * désaccord d'hydratation. Ici le serveur et le navigateur rendent la même
+ * chose. Rien dans ce composant ne dépend du navigateur à l'affichage :
+ * le dessin est un SVG figé, et tout ce qui bouge passe par un effet.
  */
 
 export default function CarteParisEnMouvement() {
-  const [actif, setActif] = useState(false)
   const [vu, setVu] = useState(false)
   const ref = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    setActif(Boolean((window as unknown as { __OW_CARTE?: boolean }).__OW_CARTE))
-  }, [])
 
   /* La chorégraphie ne part qu'une fois le bloc à l'écran : lancée au
      chargement, elle se jouerait sous le pli et personne ne la verrait.
      On n'emprunte pas l'observateur de `VitrineBody` — il recense les
      éléments une seule fois, dans un effet qui s'exécute AVANT que ce
      composant n'existe, et ne verrait donc jamais ce bloc.
-     La dépendance à `actif` est indispensable : au premier rendu le
-     composant rend `null`, la référence est vide, et un effet à
-     dépendances vides ne se rejouerait jamais une fois le bloc apparu. */
+     L'effet n'a plus de dépendance : le bloc existe dès le premier rendu,
+     donc `ref.current` est déjà renseigné quand l'effet s'exécute. */
   useEffect(() => {
-    if (!actif) return
     const el = ref.current
     if (!el) return
     if (typeof IntersectionObserver !== 'function') { setVu(true); return }
@@ -65,9 +65,7 @@ export default function CarteParisEnMouvement() {
        un bloc transparent : il ne doit jamais rester caché en attente. */
     const secours = setTimeout(() => setVu(true), 2500)
     return () => { obs.disconnect(); clearTimeout(secours) }
-  }, [actif])
-
-  if (!actif) return null
+  }, [])
 
   return (
     <section
