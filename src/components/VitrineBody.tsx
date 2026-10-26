@@ -129,12 +129,19 @@ function ServiceIcon({ name }: { name: string }) {
 }
 
 /* Avis Google réels d'Owise — vérifiés sur la fiche Google Business, capture du 2026-09-12 */
+/* `fg` : l'encre de l'initiale, appariée à son fond et non choisie une fois pour
+   toutes. `--sur-fonce` est de l'ivoire (palette A) ou du blanc (palette ville) :
+   il convient aux quatre fonds sombres ou moyens, mesurés de 4,84 à 13,61. Il ne
+   convient PAS à l'or ni au terracotta — l'avatar de Nathalie M. mesurait 2,75
+   (palette A) et 2,29 (ville) pour un seuil de 4,5. Avec `--sur-or`, l'encre
+   prévue pour ce qui s'écrit sur une surface dorée : 6,07 et 8,62.
+   Mesures : étape 144. Ne pas remettre une couleur unique sur les cinq. */
 const TESTIMONIALS = [
-  { name:'Nathalie M.', initial:'N', color:'var(--gold)', when:'sept. 2026', text:'Super expérience. Société à recommander vivement.' },
-  { name:'Joelle P.',   initial:'J', color:'var(--nuit-haute)', when:'août 2026',  text:'Très bonne prestation, chauffeur ponctuel et serviable.' },
-  { name:'Nabila B.',   initial:'N', color:'var(--avatar-bronze)', when:'août 2026',  text:'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !' },
-  { name:'Michèle M.',  initial:'M', color:'var(--avatar-ardoise)', when:'août 2026',  text:'Excellentes prestations. Ponctualité. À recommander.' },
-  { name:'Khacim D.',   initial:'K', color:'var(--nuit-haute)', when:'juil. 2026', text:'Impeccable, un service au top.' },
+  { name:'Nathalie M.', initial:'N', color:'var(--gold)', fg:'var(--sur-or)', when:'sept. 2026', text:'Super expérience. Société à recommander vivement.' },
+  { name:'Joelle P.',   initial:'J', color:'var(--nuit-haute)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Très bonne prestation, chauffeur ponctuel et serviable.' },
+  { name:'Nabila B.',   initial:'N', color:'var(--avatar-bronze)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !' },
+  { name:'Michèle M.',  initial:'M', color:'var(--avatar-ardoise)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Excellentes prestations. Ponctualité. À recommander.' },
+  { name:'Khacim D.',   initial:'K', color:'var(--nuit-haute)', fg:'var(--sur-fonce)', when:'juil. 2026', text:'Impeccable, un service au top.' },
 ]
 
 const TRUST_POINTS = [
@@ -331,7 +338,14 @@ function adresseDepuisFiche(label?: string): BcAddr {
   return { label: lieu.label, lat: lieu.lat, lng: lieu.lng, cp: lieu.codePostal }
 }
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string }) {
+/* `palette` — opt-in, et rien d'autre.
+ *
+ * La palette A est posée page par page, en commençant par l'accueil
+ * (étape 143). Les 38 pages villes appellent ce composant sans la prop :
+ * `palette` y vaut `undefined`, la classe n'est pas ajoutée, et pas une
+ * couleur ne change chez elles. C'est le seul interrupteur : il n'y a
+ * aucune détection de chemin, rien qui puisse se déclencher tout seul. */
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination, palette }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string; palette?: 'a' }) {
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -978,7 +992,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   /* ── JSX ─────────────────────────────────────────────────── */
   return (
-    <div className="vt">
+    <div className={palette === 'a' ? 'vt vt-palette-a' : 'vt'}>
       {/* custom cursor */}
       <div className="cursor" ref={cursorRef} />
       <div className="cursor-ring" ref={ringRef} />
@@ -1034,7 +1048,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               onClick={()=>setExitVisible(false)}
               style={{
                 display:'flex',alignItems:'center',justifyContent:'center',gap:10,
-                background:'var(--marque-whatsapp)',color:'var(--sur-fonce)',borderRadius:12,
+                background:'var(--marque-whatsapp)',color:'var(--sur-marque)',borderRadius:12,
                 padding:'14px 24px',fontSize:14,fontWeight:700,
                 textDecoration:'none',marginBottom:12,
                 transition:'transform .15s,box-shadow .15s',
@@ -1650,7 +1664,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div className="t-stars">{Array.from({length:5}).map((_,s)=>(<span key={s} className="t-star">★</span>))}</div>
               <p className="t-text">{t.text}</p>
               <div className="t-author">
-                <div className="t-avatar" style={{background:t.color,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--sur-fonce)',fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:22}}>{t.initial}</div>
+                <div className="t-avatar" style={{background:t.color,display:'flex',alignItems:'center',justifyContent:'center',color:t.fg,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:22}}>{t.initial}</div>
                 <div>
                   <div className="t-name">{t.name}</div>
                   <div className="t-role">Avis Google vérifié · {t.when}</div>
@@ -1837,7 +1851,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 prix: b ? `${formaterMontant(Number(b.prix_km))}/km` : null,
                 prixLabel: `+ ${b ? Number(b.prise_en_charge).toFixed(0) : '20'} € prise en charge`,
                 tag: 'Tarif au kilomètre',
-                tagColor: '--gold', tagRvb: '--or-rvb',
+                tagColor: '--sur-voile-or', tagRvb: '--or-rvb',
                 dest: 'Paris et Île-de-France',
                 cta: 'Estimer mon prix',
                 href: '#devis',
@@ -1871,7 +1885,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 prix: null,
                 prixLabel: 'Devis personnalisé',
                 tag: 'Sur devis',
-                tagColor: '--gold', tagRvb: '--or-rvb',
+                tagColor: '--sur-voile-or', tagRvb: '--or-rvb',
                 dest: 'Oise (60)',
                 cta: 'Demander un devis',
                 href: 'https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20l\'Oise',
@@ -1961,7 +1975,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         {d.external ? (
                           <a href={d.href} target="_blank" rel="noopener" style={{
                             padding:'9px 16px', borderRadius:8, fontSize:12, fontWeight:600,
-                            background:'var(--marque-whatsapp)', color:'var(--sur-fonce)', textDecoration:'none',
+                            background:'var(--marque-whatsapp)', color:'var(--sur-marque)', textDecoration:'none',
                             display:'flex', alignItems:'center', gap:6,
                           }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -1993,9 +2007,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--vert-vif)', boxShadow:'0 0 0 3px rgba(var(--vert-vif-rvb),0.2)' }}/>
               <span style={{ fontSize:14, color:'var(--ivoire)', fontWeight:500 }}>Disponible 24h/24, 7j/7 — Réponse en moins de 2 minutes</span>
             </div>
+            {/* `--sur-marque`, et non `--sur-fonce` : le vert de WhatsApp n'est pas une
+                surface sombre, et `--sur-fonce` vaut de l'ivoire. Troisième bouton
+                WhatsApp de la page : les deux autres (.wa-btn, .faq-btn-wa) ont reçu
+                cette encre à l'étape 117, celui-ci portait sa couleur en style inline
+                et y avait échappé. Mesuré étape 144 : 1,78 — corrigé à 9,98 (seuil 4,5),
+                sur les deux palettes. L'adresse et la cible du lien sont inchangées. */}
             <a href="https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20réserver%20un%20VTC"
                target="_blank" rel="noopener"
-               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, background:'var(--marque-whatsapp)', color:'var(--sur-fonce)', fontSize:13, fontWeight:600, textDecoration:'none' }}>
+               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, background:'var(--marque-whatsapp)', color:'var(--sur-marque)', fontSize:13, fontWeight:600, textDecoration:'none' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Réserver par WhatsApp
             </a>
@@ -2022,19 +2042,51 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div
                 key={i}
                 className={`faq-item${faqOpen===i?' open':''}`}
-                onClick={()=>setFaqOpen(faqOpen===i?null:i)}
+                /* La question est un <button> : c'est LUI qui ouvre et ferme, au
+                   clic comme au clavier. Ce gestionnaire-ci ne sert plus qu'au
+                   reste de la boîte — cliquer la réponse la referme, comme avant
+                   l'étape 149. Sans la garde, un clic sur le bouton remonterait
+                   jusqu'ici et basculerait deux fois : ouvert puis refermé. */
+                onClick={e=>{
+                  if ((e.target as HTMLElement).closest('.faq-q')) return
+                  setFaqOpen(faqOpen===i?null:i)
+                }}
               >
-                <div className="faq-q">
+                {/* `<button>` natif, et non un <div tabindex> : il apporte le
+                    focus, Entrée et Espace sans une ligne de JavaScript. Avant
+                    l'étape 149, les 12 questions étaient des <div> sans tabindex
+                    ni rôle : aucune n'était atteignable au clavier, donc les 12
+                    réponses étaient hors de portée de qui n'a pas de souris. */}
+                <button
+                  type="button"
+                  className="faq-q"
+                  id={`faq-q-${i}`}
+                  aria-expanded={faqOpen===i}
+                  aria-controls={`faq-a-${i}`}
+                  onClick={()=>setFaqOpen(faqOpen===i?null:i)}
+                >
                   <span className="faq-num">{String(i+1).padStart(2,'0')}</span>
                   <span className="faq-q-text">{f.q}</span>
                   <span className="faq-icon">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false">
                       <line x1="6" y1="1" x2="6" y2="11" className="faq-icon-v"/>
                       <line x1="1" y1="6" x2="11" y2="6"/>
                     </svg>
                   </span>
-                </div>
-                <div className="faq-a">
+                </button>
+                {/* La réponse repliée garde sa place dans le document : elle est
+                    masquée par `max-height:0`, ce qui anime l'ouverture mais ne
+                    la retire NI de l'arbre d'accessibilité NI de l'ordre de
+                    tabulation. Un lecteur d'écran lirait donc les 12 réponses
+                    alors que `aria-expanded` annonce « fermé ». `inert` règle
+                    les deux sans toucher à l'animation. */}
+                <div
+                  className="faq-a"
+                  id={`faq-a-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-q-${i}`}
+                  inert={faqOpen!==i}
+                >
                   <div className="faq-a-inner">{f.a}</div>
                 </div>
               </div>
@@ -2127,7 +2179,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 <div style={{marginBottom:16}}>
                   <button type="button" onClick={()=>setAllerRetour(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',borderRadius:8,border:'1px solid rgba(var(--contraste-rvb),0.12)',background:'transparent',fontFamily:'inherit',fontSize:12,color:'var(--t2)',cursor:'pointer',transition:'all .15s'}}>
                     <span>↩</span> Aller-Retour
-                    <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:allerRetour?'rgba(var(--or-rvb),0.15)':'rgba(var(--contraste-rvb),0.06)',color:allerRetour?'var(--gold)':'var(--t3)',fontWeight:700,letterSpacing:'.04em',border:allerRetour?'1px solid rgba(var(--or-rvb),0.3)':'none'}}>
+                    <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:allerRetour?'rgba(var(--or-rvb),0.15)':'rgba(var(--contraste-rvb),0.06)',color:allerRetour?'var(--gold)':'var(--t2)',fontWeight:700,letterSpacing:'.04em',border:allerRetour?'1px solid rgba(var(--or-rvb),0.3)':'none'}}>
                       {allerRetour?'ON':'OFF'}
                     </span>
                   </button>
@@ -2300,7 +2352,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               </svg>
               <div>
                 <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:22,fontWeight:800,letterSpacing:'.2em',color:'var(--encre)'}}>OWISE</div>
-                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(var(--contraste-rvb),0.4)',marginTop:2}}>Chauffeur privé VTC</div>
+                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(var(--contraste-rvb),0.59)',marginTop:2}}>Chauffeur privé VTC</div>
               </div>
             </div>
             <div className="brand-sub">Paris, Île-de-France & Oise.</div>

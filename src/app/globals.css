@@ -167,3 +167,62 @@ button:active { transform: scale(.98); }
     size: A4;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   VITRINE — fondations corrigées avant la palette A (étape 142)
+
+   Trois défauts mesurés le 2026-10-26 sur localhost:3400, tous présents
+   en production et tous antérieurs au chantier de design :
+
+     1. `html` était peint en `var(--base)`, le bleu nuit de
+        l'application — rgb(7,7,26) — alors que le body est crème.
+        Invisible tant que le body couvre tout ; la marge de 24 px de la
+        « feuille posée » le découvrirait.
+     2. L'anneau de focus valait `2px solid #C9A84C` partout : contraste
+        2,12 sur le crème, et **1,00** sur le bouton principal, qui est
+        lui-même or. L'anneau y était donc invisible.
+     3. Les champs perdaient leur anneau (`outline:none`) au profit d'une
+        lueur à 8 % d'opacité, mesurée imperceptible. `vitrine.css` fait
+        de même sur `.binput` et `.field input`.
+
+   Tout est porté sous `html:has(.vt)` : l'administration et l'espace
+   client n'ont pas de `.vt` et ne sont donc pas concernés.
+
+   POURQUOI DEUX ANNEAUX ET NON DEUX TEINTES COMMUTÉES
+   Mesure sur les 105 éléments focalisables de l'accueil : 14 reposent
+   sur un fond sombre, et **aucune classe commune ne les réunit** — leur
+   fond vient de règles qui leur sont propres (`.mm-cta`, `.btn-book`,
+   `.float-cta-btn`, `.fs-link`). Un basculement par classe, comme à
+   l'étape 120, n'avait rien à quoi s'accrocher. On dessine donc les deux
+   anneaux ensemble : le trait sombre se voit sur les fonds clairs et sur
+   l'or, le halo clair se voit sur les fonds sombres. Aucune surface n'y
+   échappe, et il n'y a pas de liste à tenir à jour.
+
+   Les deux teintes sont des jetons : la palette A les redéfinira sans
+   toucher à ces règles.
+   ════════════════════════════════════════════════════════════════════ */
+
+html:has(.vt) {
+  /* Le jeton vient de `vitrine.css`. La palette A le redéfinira, et le
+     fond de la racine suivra sans retouche ici. */
+  background: var(--ed-fond-clair, #F8F6F1);
+
+  --focus-trait: #09091A;   /* lisible sur crème, blanc et or */
+  --focus-halo:  #FFFFFF;   /* lisible sur les fonds sombres */
+}
+
+html:has(.vt) :focus-visible {
+  outline: 2px solid var(--focus-trait);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-halo);
+}
+
+/* Les champs retrouvent un anneau. La spécificité (0,2,2) passe devant
+   `.binput:focus` et `.field input:focus` (0,2,0) sans `!important`. */
+html:has(.vt) input:focus-visible,
+html:has(.vt) select:focus-visible,
+html:has(.vt) textarea:focus-visible {
+  outline: 2px solid var(--focus-trait);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-halo);
+}

@@ -192,7 +192,9 @@ export default async function VitrinePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
       />
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} />
+      {/* `palette="a"` : la palette A, sur l'accueil et nulle part ailleurs.
+          Les 38 pages villes ne passent pas cette prop — voir VitrineBody. */}
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} palette="a" />
 
       {/* Section maillage interne — server-rendered, visible par Google */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-clair)', padding: '64px 24px 48px' }}>

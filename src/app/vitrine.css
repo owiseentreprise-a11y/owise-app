@@ -117,6 +117,20 @@ html:has(.vt) .cookie-overlay {
   --base:#F8F6F1;--surface:#F0EDE8;--elevated:#E8E4DE;--floating:#DDD9D3;
   --gold:#C9A84C;--gold-bright:#DDB95A;--gold2:#C9A84C;
   --gm:rgba(var(--or-rvb),.08);--gb:rgba(var(--contraste-rvb),.09);
+  /* ── Étape 147 · l'encre d'un texte posé sur un voile de sa propre teinte
+     Une pastille `--gm` est un voile de 8 % d'or ; y écrire en `--gold`,
+     c'est poser une couleur sur un fond qui en porte déjà la trace, et le
+     contraste s'effondre. Ce jeton nomme l'encre à employer dans ce cas.
+
+     Sur CETTE palette, il garde `--gold` — volontairement, et mesuré :
+     le fond y est crème, et toute encre PLUS CLAIRE aggraverait la lecture
+     (`--or-clair` #EDD070 y donne 1,43 contre 2,15 pour `--gold`). Le
+     défaut reste donc entier ici — 2,04 à 2,15 selon l'élément — et il est
+     STRUCTUREL : l'or #C9A84C opaque sur du blanc plafonne à 2,29, aucune
+     encre dorée n'y atteindra 4,5. Le corriger demande une autre décision
+     que celle de l'étape 147, et le faire par étourderie en recopiant la
+     valeur de la palette A dégraderait 38 pages en production. */
+  --sur-voile-or:var(--gold);
   --t1:#09091A;--t2:#6B6B6B;--t3:#D0D0D0;
   --green:#16A34A;--amber:#D97706;--red:#DC2626;--blue:#2563EB;
 
@@ -157,6 +171,8 @@ html:has(.vt) .cookie-overlay {
   --nuit-modale:#111128;
   --sur-or:#09091A;           /* texte posé sur un bouton doré — même valeur que
                                  --t1 aujourd'hui, rôle différent demain */
+  --sur-or-rvb:9,9,26;        /* le même, en composantes : pour les filets et les
+                                 voiles posés sur l'or, qui sont translucides */
 
   /* ── Or ──────────────────────────────────────────────────────────────── */
   --or-rvb:201,168,76;
@@ -247,7 +263,7 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .nav-divider{width:1px;height:28px;background:rgba(var(--contraste-rvb),.15);flex-shrink:0}
 .nav-name-wrap{display:flex;flex-direction:column;gap:1px}
 .nav-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;letter-spacing:.12em;line-height:1;color:var(--encre)}
-.nav-sub{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.4);font-weight:400}
+.nav-sub{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.58);font-weight:400}
 .nav-links{display:flex;align-items:center;gap:36px;margin:0 auto}
 .nav-link{font-size:14px;color:rgba(var(--contraste-rvb),.5);letter-spacing:.01em;transition:color .15s;font-weight:400}
 .nav-link:hover{color:var(--gold)}
@@ -347,15 +363,15 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .binput-dot{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;z-index:2}
 .binput-dot.s{background:var(--green);box-shadow:0 0 6px rgba(var(--vert-rvb),.4)}
 .binput-dot.e{border:2px solid var(--red);background:transparent}
-.binput{width:100%;padding:12px 14px 12px 30px;background:var(--papier);border:1px solid rgba(var(--contraste-rvb),.18);border-radius:10px;color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s;position:relative;z-index:1}
+.binput{width:100%;padding:12px 14px 12px 30px;background:var(--papier);border:1px solid rgba(var(--contraste-rvb),.46);border-radius:10px;color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s;position:relative;z-index:1}
 .binput:focus{border-color:var(--encre);box-shadow:0 0 0 3px rgba(var(--ombre-rvb),.08)}
-.binput::placeholder{color:rgba(var(--contraste-rvb),.3)}
+.binput::placeholder{color:rgba(var(--contraste-rvb),.58)}
 .bg2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .bc-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--t2);font-weight:500;display:block;margin-bottom:6px}
 .bc-pax-row{display:flex;gap:5px;flex-wrap:wrap}
 .bc-pax-btn{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;cursor:pointer;background:var(--elevated);border:1px solid var(--t3);color:var(--t2);transition:all .15s;font-family:'JetBrains Mono',monospace}
 .bc-pax-btn:hover{border-color:rgba(var(--contraste-rvb),.35);color:var(--t1)}
-.bc-pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--gold)}
+.bc-pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--sur-voile-or)}
 .btn-estimate{width:100%;padding:13px;border-radius:10px;background:var(--elevated);border:1px solid rgba(var(--contraste-rvb),.15);color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.025em;transition:background .2s,border-color .2s,transform .15s}
 .btn-estimate:hover{background:var(--floating);border-color:rgba(var(--contraste-rvb),.25);transform:translateY(-1px)}
 .bc-price{display:none;background:var(--surface);border:1px solid rgba(var(--contraste-rvb),.1);border-radius:12px;padding:16px 18px}
@@ -425,20 +441,65 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 /* Palette resserrée à nuit + or (au lieu des 6 teintes teal/bleu/indigo/marine
    d'origine) — cohérent avec le reste de la charte. */
 .sc-dark{background:linear-gradient(160deg,var(--nuit-haute),var(--nuit-basse));backdrop-filter:blur(12px)}
-.sc-gold{background:linear-gradient(160deg,var(--gold),var(--or-profond));backdrop-filter:blur(12px)}
+/* ── Étape 147 · le dégradé s'arrête à --or-sombre ────────────────────────
+   Il allait jusqu'à `--or-profond`. Mesuré sur les pixels peints (étape 146,
+   `degrade-146.mjs`), ce dégradé TRAVERSAIT le seuil de lisibilité en
+   palette A : l'encre sombre passe sur les 56 premiers pour cent et plus
+   après. Le bouton et sa flèche, en bas de carte, tombaient à 4,04-4,44
+   selon la largeur, pour un seuil de 4,5.
+
+   Aucune encre ne réglait cela : l'ivoire ne tient que sur les 25 derniers
+   pour cent, l'encre sombre sur les 56 premiers. C'est la fin du dégradé
+   qu'il fallait reprendre, pas la couleur du texte.
+
+     fin du dégradé      palette A              palette ville
+     --or-profond        #A8441A  3,31 ✗        #B08A32  6,13 ✓
+     --or-sombre         #C45A28  4,56 ✓        #B8922A  6,74 ✓
+
+   Les 16 mesures de la carte passent le seuil, pire valeur 5,03, contre
+   6 en échec et 4,04 au pire auparavant. La palette ville y gagne aussi.
+   Ce qu'on perd : un peu de profondeur dans le bas de la carte. */
+.sc-gold{background:linear-gradient(160deg,var(--gold),var(--or-sombre));backdrop-filter:blur(12px)}
 .sc-left{flex:1;display:flex;flex-direction:column;min-height:100px}
 .sc-title{font-size:17px;font-weight:700;color:var(--encre);margin-bottom:6px;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2}
 .sc-desc{font-size:12.5px;color:var(--t2);line-height:1.55;flex:1}
-.sc-btn{display:inline-flex;align-items:center;margin-top:12px;padding:7px 14px;border:1px solid rgba(var(--contraste-rvb),.22);border-radius:7px;font-size:12.5px;font-weight:500;color:var(--encre);background:transparent;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,border-color .15s;width:fit-content;letter-spacing:.01em}
+.sc-btn{display:inline-flex;align-items:center;margin-top:12px;padding:7px 14px;border:1px solid rgba(var(--contraste-rvb),.46);border-radius:7px;font-size:12.5px;font-weight:500;color:var(--encre);background:transparent;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s,border-color .15s;width:fit-content;letter-spacing:.01em}
 .sc-btn:hover{background:rgba(var(--contraste-rvb),.05);border-color:rgba(var(--contraste-rvb),.35)}
 .sc-dark .sc-title{color:var(--sur-fonce)}
 .sc-dark .sc-desc{color:rgba(var(--sur-fonce-rvb),.72)}
 .sc-dark .sc-btn{border-color:rgba(var(--sur-fonce-rvb),.45);color:var(--sur-fonce)}
 .sc-dark .sc-btn:hover{background:rgba(var(--sur-fonce-rvb),.14);border-color:rgba(var(--sur-fonce-rvb),.65)}
-.sc-gold .sc-title{color:var(--sur-fonce)}
-.sc-gold .sc-desc{color:rgba(var(--sur-fonce-rvb),.78)}
-.sc-gold .sc-btn{border-color:rgba(var(--sur-fonce-rvb),.45);color:var(--sur-fonce)}
+/* ── Étape 145 · l'encre de la carte dorée ────────────────────────────────
+   Cette carte portait `--sur-fonce`, dont le commentaire dit pourtant :
+   « objet clair posé sur une surface DÉJÀ sombre ». Or son fond est un
+   dégradé d'or (palette ville) ou de terracotta (palette A) — clair à moyen.
+   Les quatre textes de la carte étaient donc illisibles sur les DEUX
+   palettes, mesurés à l'étape 144 (seuil 4,5) :
+
+     .sc-title  « Événements & soirées »   A 3,71   ville 2,64
+     .sc-desc   « Mariages, galas… »       A 2,85   ville 2,18
+     .sc-btn    « Demander un devis »      A 3,49   ville 2,61
+     .sc-btn-arrow  « → »                  A 2,58   ville 2,03
+
+   Avec `--sur-or` — le jeton de ce qui s'écrit SUR de l'or : 4,79 et 7,50.
+
+   Deux conséquences assumées, parce qu'aucun voile ne suffit ici :
+   · `.sc-desc` passe opaque. À .78, l'encre sombre ne dépasse pas 4,50 sur
+     le terracotta, quel que soit l'alpha — le voile était calibré pour de
+     l'ivoire, qui n'a plus cours sur cette carte.
+   · la flèche perd son `opacity:.7` sur cette carte seulement (voir plus
+     bas). À .70 elle plafonne à 3,41 ; il faut l'opacité pleine. */
+.sc-gold .sc-title{color:var(--sur-or)}
+.sc-gold .sc-desc{color:var(--sur-or)}
+.sc-gold .sc-btn{border-color:rgba(var(--sur-or-rvb),.70);color:var(--sur-or)}
+/* Le survol garde son voile CLAIR. Première intention de l'étape 145 : le
+   passer en sombre, pour l'accorder à la nouvelle encre. Mesuré, c'était
+   un recul — un voile sombre sur un terracotta déjà sombre fait tomber le
+   texte à 3,92, et à 2,79 au bas du dégradé. Le voile clair éclaircit le
+   fond sous une encre sombre : 5,87 (palette A) et 8,78 (palette ville). */
 .sc-gold .sc-btn:hover{background:rgba(var(--sur-fonce-rvb),.15)}
+/* La flèche hérite de l'encre du bouton ; seule son opacité la trahissait. */
+.sc-gold .sc-btn-arrow{opacity:1}
 .sc-img{width:64px;height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(var(--sur-fonce-rvb),.08);transition:transform .38s cubic-bezier(.22,1,.36,1),box-shadow .38s ease}
 .sc-dark .sc-img{color:var(--gold);background:radial-gradient(circle at 32% 28%,rgba(var(--or-rvb),.22),rgba(var(--sur-fonce-rvb),.05) 72%);box-shadow:inset 0 0 0 1px rgba(var(--or-rvb),.18),0 6px 18px -6px rgba(var(--or-rvb),.45)}
 .sc-gold .sc-img{color:var(--sur-fonce);background:radial-gradient(circle at 32% 28%,rgba(var(--sur-fonce-rvb),.32),rgba(var(--sur-fonce-rvb),.14) 72%);box-shadow:inset 0 0 0 1px rgba(var(--sur-fonce-rvb),.28),0 6px 18px -6px rgba(var(--ombre-rvb),.35)}
@@ -510,7 +571,7 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;margin:60px auto 0}
 .testimonial-card{background:var(--papier);border:1px solid rgba(var(--or-rvb),.14);border-top:2px solid rgba(var(--or-rvb),.35);border-radius:16px;padding:28px 26px;transition:border-color .2s,transform .2s}
 .testimonial-card:hover{border-color:rgba(var(--or-rvb),.32);transform:translateY(-4px)}
-.t-quote-mark{font-family:'Cormorant Garamond',serif;font-size:88px;line-height:.4;color:rgba(var(--or-rvb),.28);font-weight:500;font-style:italic;display:block;margin-bottom:10px}
+.t-quote-mark{font-family:'Cormorant Garamond',serif;font-size:88px;line-height:.4;color:rgba(var(--or-rvb),.72);font-weight:500;font-style:italic;display:block;margin-bottom:10px}
 .t-stars{display:flex;gap:3px;margin-bottom:14px}
 .t-star{color:var(--gold);font-size:13px;filter:drop-shadow(0 1px 2px rgba(var(--or-rvb),.35))}
 .t-text{font-size:14.5px;color:var(--t2);line-height:1.85;font-style:italic;margin-bottom:22px}
@@ -534,8 +595,22 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .faq-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);opacity:0;transition:opacity .25s}
 .faq-item.open::before{opacity:1}
 .faq-item:first-child{border-top:1px solid rgba(var(--contraste-rvb),.1)}
-.faq-q{display:flex;align-items:center;gap:20px;padding:26px 0 26px 16px}
-.faq-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:rgba(var(--contraste-rvb),.2);flex-shrink:0;width:24px;transition:color .2s}
+/* ── Étape 149 · la question est devenue un <button> ─────────────────────
+   Elle était un <div>, donc inatteignable au clavier : les 12 réponses de
+   la FAQ étaient hors de portée de qui n'utilise pas de souris.
+
+   Un <button> apporte le focus, Entrée et Espace gratuitement, mais il
+   arrive avec les styles par défaut du navigateur — fond gris, bordure,
+   police système, largeur ajustée au contenu, texte centré. Les six
+   déclarations ajoutées ici les annulent une à une, pour que l'apparence
+   soit EXACTEMENT celle d'avant. Elles ne changent rien d'autre :
+   `display:flex`, `gap` et `padding` sont ceux de l'ancienne règle.
+
+   `font:inherit` ne touche pas au texte de la question : `.faq-q-text` et
+   `.faq-num` portent leurs propres tailles et familles, et gagnent. */
+.faq-q{display:flex;align-items:center;gap:20px;padding:26px 0 26px 16px;
+  width:100%;margin:0;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.faq-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:rgba(var(--contraste-rvb),.62);flex-shrink:0;width:24px;transition:color .2s}
 .faq-item.open .faq-num{color:var(--gold)}
 .faq-q-text{font-size:15.5px;font-weight:500;color:var(--t1);flex:1;line-height:1.4;transition:color .2s}
 .faq-item:hover .faq-q-text{color:var(--encre-pure)}
@@ -782,7 +857,7 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .dtab{flex:1;padding:20px 16px;text-align:center;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .18s;border-bottom:2px solid transparent;letter-spacing:.03em}
 .dtab:hover{color:var(--t1)}
 .dtab.on{color:var(--encre);border-bottom-color:var(--encre);background:rgba(var(--contraste-rvb),.02)}
-.dtab-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;background:var(--t3);color:var(--t2);margin-right:7px;font-family:'JetBrains Mono',monospace;transition:all .15s}
+.dtab-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;background:var(--t3);color:var(--t1);margin-right:7px;font-family:'JetBrains Mono',monospace;transition:all .15s}
 .dtab.on .dtab-num{background:var(--encre);color:var(--sur-encre)}
 .dtab.done .dtab-num{background:var(--green);color:var(--sur-fonce)}
 .devis-body{padding:40px 44px}
@@ -790,9 +865,9 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--etiquette-champ);font-weight:500}
-.field input,.field select{background:var(--papier);border:1px solid rgba(var(--contraste-rvb),.18);border-radius:9px;padding:13px 16px;color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
+.field input,.field select{background:var(--papier);border:1px solid rgba(var(--contraste-rvb),.46);border-radius:9px;padding:13px 16px;color:var(--t1);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
 .field input:focus,.field select:focus{border-color:var(--encre);box-shadow:0 0 0 3px rgba(var(--ombre-rvb),.08)}
-.field input::placeholder{color:rgba(var(--contraste-rvb),.28)}
+.field input::placeholder{color:rgba(var(--contraste-rvb),.58)}
 .field select option{background:var(--papier)}
 .route-fields{display:flex;flex-direction:column;gap:0;position:relative;margin-bottom:16px}
 .route-fields::before{content:'';position:absolute;left:22px;top:52px;bottom:52px;width:1px;background:linear-gradient(to bottom,var(--green),var(--red));opacity:.3;z-index:0}
@@ -805,7 +880,7 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .pax-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .pax-btn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;cursor:pointer;background:var(--elevated);border:1px solid var(--t3);color:var(--t2);transition:all .15s;font-family:'JetBrains Mono',monospace}
 .pax-btn:hover{border-color:rgba(var(--contraste-rvb),.35);color:var(--t1)}
-.pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--gold)}
+.pax-btn.on{background:var(--gm);border-color:var(--gold);color:var(--sur-voile-or)}
 .pax-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t2);font-weight:500;display:block;margin-bottom:8px}
 .vehicle-hint{background:var(--surface);border:1px solid rgba(var(--contraste-rvb),.09);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;transition:all .3s}
 .vh-name{font-size:13px;font-weight:500;color:var(--t1)}
@@ -856,7 +931,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .fs-link.soon:hover::after{opacity:1}
 .fs-wa{background:rgba(var(--marque-whatsapp-rvb),.12);border-color:rgba(var(--marque-whatsapp-rvb),.3);color:var(--green)}
 .fs-wa:hover{background:rgba(var(--marque-whatsapp-rvb),.2);border-color:rgba(var(--marque-whatsapp-rvb),.5);color:var(--green)}
-.footer-social-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.3);margin-top:14px;display:block}
+.footer-social-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.59);margin-top:14px;display:block}
 
 /* WHATSAPP FLOATING */
 .wa-float{position:fixed;bottom:calc(28px + var(--ow-cb,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
@@ -906,7 +981,27 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
    et la règle tient même si l'un de ces boutons devenait un <button>.
 
    Le vert de WhatsApp ne suit pas la charte Owise, et de l'ivoire dessus ne
-   donnerait que 2,2:1 : ces deux boutons gardent une encre sombre. */
+   donnerait que 2,2:1 : ces deux boutons gardent une encre sombre.
+
+   ── Étape 145 · il y en avait QUATRE, pas deux ────────────────────────
+   Les deux règles ci-dessous ne couvrent que les boutons qui portent une
+   classe. Deux autres boutons posés sur le même vert déclarent leur
+   couleur en style inline, dans VitrineBody.tsx, et avaient donc échappé
+   à la correction de l'étape 117 — ils demandaient `--sur-fonce`, qui
+   vaut de l'ivoire (palette A) ou du blanc (palette ville) :
+
+     « Réserver par WhatsApp »   (bas de page)        mesuré 1,78
+     « Demander un devis »       (ligne destination)  mesuré 1,78
+     CTA du popup de sortie                           non mesuré, popup fermé
+
+   Soit trois emplacements inline, dont deux relevés à l'étape 144 avec
+   une fiabilité de 100 %. Tous trois sont passés à `--sur-marque` :
+   9,98 sur les deux palettes. Le troisième n'a pas été mesuré en place,
+   mais son couple de couleurs est identique aux deux autres.
+
+   À retenir : une couleur écrite en style inline ne sera jamais rattrapée
+   par une règle de ce bloc. Avant d'ajouter un bouton sur un fond vif,
+   chercher `marque-whatsapp` dans VitrineBody.tsx autant qu'ici. */
 .vt .mm-cta,
 .vt .float-cta-btn { color: var(--sur-encre) }
 .vt .call-btn      { color: var(--sur-or) }
@@ -958,7 +1053,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .scroll-progress{position:fixed;top:0;left:0;z-index:1001;height:2px;background:var(--encre);width:0%;pointer-events:none;transition:width .08s linear}
 
 /* HAMBURGER */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5.5px;width:40px;height:40px;padding:8px;background:none;border:1px solid rgba(var(--contraste-rvb),.18);border-radius:9px;cursor:pointer;z-index:1002;flex-shrink:0}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5.5px;width:40px;height:40px;padding:8px;background:none;border:1px solid rgba(var(--contraste-rvb),.46);border-radius:9px;cursor:pointer;z-index:1002;flex-shrink:0}
 .nav-hamburger span{display:block;height:1.5px;background:var(--encre);border-radius:1px;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s,width .25s}
 .nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .nav-hamburger.open span:nth-child(2){opacity:0;width:0}
@@ -972,7 +1067,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .mm-link:hover{opacity:.55}
 .mm-cta{margin-top:32px;padding:15px 48px;background:var(--encre);border-radius:10px;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;transition:background .15s}
 .mm-cta:hover{background:var(--encre-douce)}
-.mm-sub{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.3);margin-top:24px}
+.mm-sub{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.58);margin-top:24px}
 
 /* NAV ACTIVE */
 .nav-link.active{color:var(--encre);font-weight:600}
@@ -993,7 +1088,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .c-btn-accept:hover{background:var(--gold-bright);transform:translateY(-1px)}
 .c-btn-refuse{padding:9px 16px;background:transparent;color:rgba(var(--ivoire-rvb),.65);border:1px solid rgba(var(--ivoire-rvb),.14);border-radius:8px;font-size:12.5px;cursor:pointer;transition:border-color .18s,color .18s}
 .c-btn-refuse:hover{border-color:rgba(var(--ivoire-rvb),.32);color:rgba(var(--ivoire-rvb),.9)}
-.c-btn-manage{font-size:11px;color:rgba(var(--ivoire-rvb),.38);cursor:pointer;background:none;border:none;letter-spacing:.02em;padding:0;transition:color .15s}
+.c-btn-manage{font-size:11px;color:rgba(var(--ivoire-rvb),.54);cursor:pointer;background:none;border:none;letter-spacing:.02em;padding:0;transition:color .15s}
 .c-btn-manage:hover{color:rgba(var(--ivoire-rvb),.72)}
 
 /* Cookie Modal */
@@ -1565,3 +1660,305 @@ html:has(.vt .devis-card :focus) .carte-pm .pm-halo{animation-play-state:paused}
      seul son reflet s'arrête. */
   .scroll-progress{animation:none}
 }
+
+
+/* ════════════════════════════════════════════════════════════════════
+   PALETTE A — « Paris en mouvement », sur l'ACCUEIL SEULEMENT
+   Étape 143. Porté depuis `apercu-120/palette.css` par
+   `porter-palette-143.mjs` : les valeurs sont extraites, pas recopiées.
+
+   Portée : `.vt.vt-palette-a` et `html:has(.vt-palette-a)`.
+   La classe n'est posée que par `src/app/page.tsx`, via la prop
+   `palette="a"`. Les 38 pages villes ne la passent pas : pas une de
+   leurs couleurs ne change. L'administration et l'espace client n'ont
+   pas de `.vt` du tout.
+
+   NE SONT PAS PORTÉS, volontairement :
+     · le bandeau « APERÇU — PALETTE A » — repère d'aperçu ;
+     · la « feuille posée » (marges, ombres, ::before des sections) —
+       c'est l'étape D du plan 125 ;
+     · les anneaux de focus — l'étape 142 les a traités autrement, et
+       mesurés : 190 éléments, 0 défaut. Les réécrire ici les casserait.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── fond de la racine ──
+   L'étape 142 fait suivre `html` à `--ed-fond-clair`. Sous la palette A
+   ce jeton vaut l'ivoire, alors que la page est charbon : la racine et le
+   body divergeraient de nouveau, à l'envers. On déclare donc le fond de
+   page sur la racine elle-même, et body le reprend. `vitrine.css` étant
+   chargée après `globals.css`, cette règle l'emporte. */
+html:has(.vt-palette-a) {
+  --pa-fond-page: #17120E;
+  background: var(--pa-fond-page);
+}
+html:has(.vt-palette-a) body { background: var(--pa-fond-page); }
+
+/* ── jetons .vt (80 couleurs) ── */
+.vt.vt-palette-a,
+html:has(.vt-palette-a) .cookie-banner,
+html:has(.vt-palette-a) .cookie-overlay {
+
+  /* ── Surfaces : la page s'assombrit par paliers, en chaud ───────────── */
+  --base:#17120E;             /* le fond de la page */
+  --surface:#1F1813;          /* sections en retrait */
+  --elevated:#2E241B;         /* surfaces posées dessus */
+  --floating:#3A2D22;         /* le palier le plus haut */
+  --papier:#2E241B;           /* cartes — ÉTAIT le blanc, s'inverse */
+  --papier-rvb:46,36,27;      /* surfaces claires translucides : barre au
+                                 défilement, menu plein écran, carte du devis */
+  --voile-carte-rvb:23,18,14; /* vignette de la carte des zones */
+
+  /* ── Encres : ce qui était sombre sur clair devient clair sur sombre ── */
+  --encre:#F7F2EA;            /* texte courant ET fond des boutons pleins */
+  --t1:#F7F2EA;
+  --t2:#AFA496;
+  --t2-rvb:175,164,150;
+  --t3:#4A3E33;               /* bordures de pastilles, fond de numéro d'onglet */
+  --encre-pure:#FFFFFF;       /* l'emphase au survol */
+  --encre-douce:#E4DCCE;      /* survol d'un bouton plein */
+  --encre-tiede:#DCD3C7;
+  --gris-moyen:#AFA496;
+  /* Mesuré : #8E8378, la valeur d'abord retenue, donnait 4,09 sur
+     `--elevated` — sous le seuil de 4,5, sur les onze libellés de la liste
+     des zones (« Terminal 1 », « Versailles », « Creil »…). #C9BDAE y donne
+     7,8. Vérifié en remettant l'ancienne valeur : les onze échecs
+     reviennent, et eux seuls. */
+  --gris-sombre:#C9BDAE;
+  --etiquette-champ:#AFA496;
+  --encre-sourde:#3A2D22;
+  --encre-profonde:#2A2019;
+  --gris-ardoise:#AFA496;
+  --gris-ardoise-rvb:175,164,150;
+
+  /* ── Ce qui se pose SUR une surface déjà sombre : reste clair ───────── */
+  --sur-fonce:#F7F2EA;
+  --sur-fonce-rvb:247,242,234;
+  --ivoire:#F7F2EA;
+  --ivoire-rvb:247,242,234;
+
+  /* ── Ce qui se pose sur le bouton `--encre` : s'inverse AVEC lui ────── */
+  --sur-encre:#2E241B;
+
+  /* ── Ce qui se pose sur une couleur de MARQUE : ne change pas ───────── */
+  --sur-marque:#0A0A0A;       /* volontairement identique : le vert de
+                                 WhatsApp ne suit pas notre charte */
+
+  /* ── Les surfaces déjà sombres descendent d'un cran, en chaud ───────── */
+  --nuit:#0E0B08;             /* premier écran, bandeau de consentement */
+  --nuit-rvb:14,11,8;
+  --nuit-haute:#2E241B;
+  --nuit-basse:#1F1813;
+  --nuit-degrade-1:#241C15;
+  --nuit-degrade-2:#17120E;
+  --nuit-carte:#1F1813;
+  --nuit-modale:#1F1813;
+
+  /* ── L'or devient terracotta ────────────────────────────────────────── */
+  --gold:#E8713C;
+  --gold-bright:#F08A5C;      /* le survol ÉCLAIRCIT au lieu d'assombrir */
+  --gold2:#E8713C;
+  --or-rvb:232,113,60;
+  --or-sombre:#C45A28;
+  --or-profond:#A8441A;
+  --or-clair:#F0A273;
+  /* Étape 147 · ici le fond est anthracite : une encre plus CLAIRE que
+     `--gold` gagne en lisibilité. Mesuré sur les pixels peints, sur les
+     trois éléments concernés : 4,25 → 6,27 · 4,45 → 6,56 · 4,27 → 6,31.
+     L'inverse exact de la palette ville, où ce même jeton reste `--gold`. */
+  --sur-voile-or:var(--or-clair);
+  /* ÉTAPE 145 — valeur corrigée. Elle valait #17120E, un écho du fond de page.
+     Mesuré à l'étape 144 sur le terracotta de la carte « Événements & soirées »
+     (fond relevé 202,92,44) : #17120E donne 4,4999 — zéro marge, et sous le
+     seuil de 4,5. #0A0A0A donne 4,79. Ce jeton ne sert qu'à ÉCRIRE sur de l'or
+     ou du terracotta, dans neuf endroits (grep `var(--sur-or`), jamais comme
+     fond : l'assombrir ne peut qu'augmenter le contraste partout où il est lu. */
+  --sur-or:#0A0A0A;           /* ce qui s'écrit sur un bouton terracotta */
+  --sur-or-rvb:10,10,10;      /* le même, en composantes : pour les filets et les
+                                 voiles posés sur le terracotta */
+
+  /* ── Le pivot préparé à l'étape 114 ─────────────────────────────────── */
+  --contraste-rvb:247,242,234;/* bordures, voiles, textes atténués : s'inverse */
+  --ombre-rvb:0,0,0;          /* ombres portées : une ombre claire n'est pas
+                                 une ombre, elle reste noire */
+
+  /* ── Sémantiques : mêmes significations, éclaircies pour le fond ────── */
+  --green:#4FBF7D;
+  --vert-rvb:79,191,125;
+  --vert-vif:#5FD093;
+  --vert-vif-rvb:95,208,147;
+  --vert-pastille-rvb:95,208,147;
+  --amber:#E9A23B;
+  --ambre-vif:#F0B45C;
+  --ambre-vif-rvb:240,180,92;
+  --red:#F06A5E;
+  --rouge-rvb:240,106,94;
+  --rouge-doux:#F08279;
+  --rouge-doux-rvb:240,130,121;
+  --blue:#6CA0F0;
+  --bleu-info:#7FB0E8;
+  --bleu-info-rvb:127,176,232;
+  --alerte:#FF6B5E;
+
+  /* ── Décor atmosphérique : les halos passent au cuivre ──────────────── */
+  --decor-turquoise-rvb:232,184,119;
+  --decor-bleu-rvb:201,139,78;
+  --decor-bleu-nuit-rvb:201,139,78;
+  --decor-violet-rvb:201,139,78;
+
+  /* ── Pastilles d'initiale des témoignages ───────────────────────────── */
+  /* Ces pastilles portent l'initiale du client, en `--ivoire`. Mesuré :
+     #C98B4E donnait 2,59 et #8E8378 3,46 — tous deux sous 4,5, et ce n'est
+     pas du décor mais du texte. Assombris jusqu'à 5,3 et 6,5. */
+  --avatar-bronze:#8C5A28;
+  --avatar-ardoise:#5E554C;
+
+  /* ── Vignettes des cartes véhicule ──────────────────────────────────── */
+  --vignette-ciel:#2B2A33;
+  --vignette-sable:#3A2F24;
+  --vignette-nuit:#14100C;
+  --vignette-charbon:#1A1511;
+
+  /* ── Détails dessinés des véhicules ─────────────────────────────────── */
+  --illu-bleu:#7E95B8;
+  --illu-phare:#FFE080;       /* un phare éclaire : il reste lumineux */
+  --illu-feu:#FC8181;         /* un feu arrière aussi */
+
+  /* ── Marques tierces — INCHANGÉES ───────────────────────────────────── */
+  --marque-whatsapp:#25D366;
+  --marque-whatsapp-sombre:#1FBA57;
+  --marque-whatsapp-rvb:37,211,102;
+}
+
+/* ── fond de page et texte ── */
+html:has(.vt-palette-a) body {
+  background:#17120E;
+  color:#F7F2EA;
+}
+
+/* ── grain ── */
+html:has(.vt-palette-a) body::before {
+  content:'';
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── jetons --ed-* (éditorial) ── */
+html:has(.vt-palette-a) {
+  /* ── Surfaces claires — deux tons, et deux seulement ─────────────────
+     `--ed-ivoire` est le fond de la feuille ; `#FFF9F2` est la surface
+     posée dessus (cartes, pastilles, lignes de tableau). Tout le clair du
+     site tient dans ces deux valeurs.
+
+     Le tableau de prix alterne ses lignes entre les deux : la rangée
+     paire prend la surface claire, l'impaire le fond de la feuille. Cela
+     conserve la zébrure sans introduire de troisième ton — elle existait
+     aujourd'hui en `#F7F7F7` / `#FFFFFF`.
+
+     `--ed-texte-3` reprend la valeur de `--ed-texte-2` : les petits
+     libellés valaient `#999` sur `#F7F7F7`, soit 2,66 — sous le seuil
+     depuis toujours. Leur donner une couleur de plus pour les laisser
+     illisibles n'aurait servi à rien. */
+  --ed-ivoire:#F6EFE4;
+  --ed-fond-clair:var(--ed-ivoire);
+  --ed-fond-editorial:var(--ed-ivoire);
+  --ed-carte:#FFF9F2;
+  --ed-carte-2:#FFF9F2;
+  --ed-rang-alt:var(--ed-ivoire);
+
+  /* Surfaces sombres */
+  --ed-fond-sombre:#1F1813;
+  --ed-carte-sombre:#2E241B;
+  --ed-bandeau:rgba(14,11,8,0.97);
+
+  /* Textes posés sur l'ivoire */
+  --ed-titre:#17120E;
+  --ed-titre-2:#17120E;
+  --ed-texte:#5C4F42;
+  --ed-texte-2:#6E6155;
+  --ed-texte-3:#6E6155;
+
+  /* Textes posés sur le charbon */
+  --ed-sur-sombre:#F7F2EA;
+  --ed-sur-sombre-rvb:247,242,234;
+  --ed-texte-sur-sombre:#AFA496;
+
+  /* Accent — deux niveaux, parce que le terracotta de marque ne tient pas
+     sur l'ivoire */
+  --ed-accent:#A8441A;
+  --ed-accent-rvb:168,68,26;
+  --ed-accent-sur-sombre:#E8713C;
+  --ed-accent-sur-sombre-rvb:232,113,60;
+  /* A 70 pour cent sur le fond nuit du bandeau, #E8713C tombe a 3,63.
+     Mesure : avec 240,162,115 le lien remonte a 5,1 et le nom de ville a 6,2. */
+  --ed-accent-bandeau-rvb:240,162,115;
+  --ed-accent-fond:#E8713C;
+  --ed-accent-sourd:#8A3A14;
+  --ed-sur-accent:#17120E;
+
+  /* Filets : sombres sur l'ivoire, comme aujourd'hui */
+  --ed-filet-rvb:23,18,14;
+  --ed-filet-2-rvb:23,18,14;
+}
+
+/* ═══ Étape 145 · corrections de contraste ════════════════════════════════
+   Mesures : `temporary screenshots/144-contraste.json` (étape 144), relevé
+   aux deux largeurs, sur l'accueil en palette A ET sur /vtc-chantilly en
+   palette ville. Calculs reproductibles : `node inventaire-145.mjs` et
+   `node calcul-145.mjs` à la racine du dépôt.
+
+   Fait capital : AUCUN de ces défauts ne vient de la palette A. Les onze
+   familles corrigées ici échouaient déjà sur la palette ville, en
+   production, et la plupart plus gravement. Les valeurs ci-dessous sont
+   donc calculées pour tenir sur le PIRE fond relevé des DEUX palettes —
+   jamais sur un fond moyen, jamais sur une seule palette.
+
+     déclaration                     avant   après   A          ville
+     ──────────────────────────────────────────────────────────────────────
+     .faq-num                        α.20    α.62    1,82→6,70  1,59→5,89
+     .footer-social-label            α.30    α.59    2,54→6,30  2,08→5,28
+     .nav-sub                        α.40    α.58    3,46→5,69  2,84→5,28
+     .c-btn-manage                   α.38    α.54    3,28→5,55  3,07→5,14
+     .binput::placeholder            α.30    α.58    2,53→5,56  2,11→5,32
+     .field input::placeholder       α.28    α.58    2,38→5,56  1,99→5,32
+     .binput  bordure                α.18    α.46    1,73→4,05  1,53→3,47
+     .field input  bordure           α.18    α.46    1,73→4,05  1,53→3,47
+     .sc-btn  bordure                α.22    α.46    1,96→4,05  1,69→3,47
+     .dtab-num                       --t2    --t1    4,23→9,29  3,46→12,78
+     .t-quote-mark                   α.28    α.72    1,55→3,25  1,24→1,78 ✗
+
+   Trois éléments de plus, mesurés séparément parce qu'ils dépendent d'un
+   état et n'apparaissent donc pas dans le balayage (`etats-caches-145.mjs`
+   ouvre le menu et relève le bouton hamburger) :
+
+     .nav-hamburger  bordure         α.18    α.46    1,66→4,32  1,52→3,42
+     .mm-sub  (sous-titre du menu)   α.30    α.58    2,53→5,56  2,11→5,32
+     sous-titre du pied de page      α.40    α.59    3,55→6,18  2,79→5,28
+
+   Le dernier est écrit en style INLINE dans VitrineBody.tsx : le même
+   sous-titre existe en deux exemplaires, l'un réglé par `.nav-sub` ici,
+   l'autre recopié dans le composant. Corriger la règle ne suffisait pas.
+
+   Seuils : 4,5 pour le texte courant, 3 pour les bordures de composant
+   (WCAG 1.4.11) et pour le guillemet, qui est un grand caractère.
+
+   Le guillemet décoratif reste SOUS son seuil sur la palette ville, et
+   c'est une impossibilité, pas un oubli : l'or #C9A84C opaque sur le blanc
+   ne donne que 2,00. Aucun alpha n'y suffit. Le corriger demanderait de
+   changer l'or de la charte ou la couleur du guillemet — hors du périmètre
+   de cette étape. Sur la palette A, le terracotta sur l'anthracite passe.
+
+   Deux bordures mesurées en échec n'ont PAS été relevées, et c'est
+   délibéré :
+   · `.vehicle-card` (α.09, 1,30) — une carte est identifiée par sa surface
+     `--papier`, qui tranche sur le fond de page, non par son filet d'1 px.
+     WCAG 1.4.11 porte sur ce qui est NÉCESSAIRE pour identifier un
+     composant. La porter à α.46 cernerait les cartes de la flotte d'un
+     trait franc : un changement de hiérarchie visuelle, pour une exigence
+     qui ne s'applique pas ici.
+   · `.nav-hamburger` (α.18) — même écriture que le champ, mais posé sur le
+     fond de la barre et non sur `--papier` : son contraste n'a pas été
+     mesuré. Ne pas le corriger « par analogie » sans l'avoir relevé.
+   ════════════════════════════════════════════════════════════════════════ */
