@@ -1478,20 +1478,20 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       {/* Bandeau SEO discret au-dessus du hero */}
-      <div style={{
+      <div className="ed-bandeau-fil" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000,
-        background: 'rgba(9,9,26,0.97)', borderBottom: '1px solid rgba(201,168,76,.15)',
+        background: 'var(--ed-bandeau)', borderBottom: '1px solid rgba(var(--ed-accent-bandeau-rvb),.15)',
         padding: '8px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         backdropFilter: 'blur(12px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: 'rgba(201,168,76,.8)', letterSpacing: '.12em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 11, color: 'rgba(var(--ed-accent-bandeau-rvb),.8)', letterSpacing: '.12em', textTransform: 'uppercase' }}>
             {dest.title}
           </span>
-          <span style={{ fontSize: 11, color: 'rgba(237,232,223,.35)' }}>·</span>
-          <span style={{ fontSize: 11, color: 'rgba(237,232,223,.5)' }}>{dest.prix} · {dest.duree}</span>
+          <span style={{ fontSize: 11, color: 'rgba(var(--ed-sur-sombre-rvb),.35)' }}>·</span>
+          <span style={{ fontSize: 11, color: 'rgba(var(--ed-sur-sombre-rvb),.5)' }}>{dest.prix} · {dest.duree}</span>
         </div>
-        <Link href="/" style={{ fontSize: 11, color: 'rgba(201,168,76,.7)', textDecoration: 'none', letterSpacing: '.08em' }}>
+        <Link href="/" style={{ fontSize: 11, color: 'rgba(var(--ed-accent-bandeau-rvb),.7)', textDecoration: 'none', letterSpacing: '.08em' }}>
           ← Accueil
         </Link>
       </div>
@@ -1499,11 +1499,11 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
       <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
 
       {/* Section intro SEO */}
-      <section style={{ background: '#fff', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 38, fontWeight: 500, color: '#0A0A0A', marginBottom: 16, lineHeight: 1.1 }}>
+      <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-editorial)', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 38, fontWeight: 500, color: 'var(--ed-titre-2)', marginBottom: 16, lineHeight: 1.1 }}>
           {dest.h1}
         </h2>
-        <p style={{ fontSize: 16, color: '#6B6B6B', lineHeight: 1.8, marginBottom: 32, maxWidth: 680 }}>
+        <p style={{ fontSize: 16, color: 'var(--ed-texte)', lineHeight: 1.8, marginBottom: 32, maxWidth: 680 }}>
           {dest.intro}
         </p>
         {/* `auto-fit` avec un minimum de 160px, et non `repeat(3, 1fr)`.
@@ -1534,12 +1534,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
             { label: 'Durée estimée', value: dest.duree },
             { label: 'Disponibilité', value: '24h/24 · 7j/7' },
           ].map((stat, i) => (
-            <div key={i} style={{ background: '#F7F7F7', borderRadius: 12, padding: '20px 18px' }}>
-              <div style={{ fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase', color: '#999', marginBottom: 6 }}>{stat.label}</div>
+            <div key={i} style={{ background: 'var(--ed-carte-2)', borderRadius: 12, padding: '20px 18px' }}>
+              <div style={{ fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--ed-texte-3)', marginBottom: 6 }}>{stat.label}</div>
               {/* `break-word` et non `anywhere` : il ne coupe un mot que si
                   celui-ci ne tient pas, là où `anywhere` coupe dès que c'est
                   possible. Le retour à la ligne ordinaire passe en premier. */}
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', overflowWrap: 'break-word' }}>{stat.value}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ed-titre-2)', overflowWrap: 'break-word' }}>{stat.value}</div>
             </div>
           ))}
         </div>
@@ -1547,7 +1547,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         {/* Grille zones desservies */}
         {dest.zones && dest.zones.length > 0 && (
           <>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 16 }}>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 16 }}>
               Communes desservies
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8, marginBottom: 48 }}>
@@ -1557,15 +1557,15 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
                 const inner = (
                   <>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: hasLink ? '#C9A84C' : '#0A0A0A' }}>{z.nom}</div>
-                      <div style={{ fontSize: 10, color: '#999', marginTop: 1 }}>{z.cp}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: hasLink ? 'var(--ed-accent)' : 'var(--ed-titre-2)' }}>{z.nom}</div>
+                      <div style={{ fontSize: 10, color: 'var(--ed-texte-3)', marginTop: 1 }}>{z.cp}</div>
                     </div>
-                    <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, fontFamily: 'monospace' }}>{z.km === 0 ? 'centre' : `${z.km} km`}</div>
+                    <div style={{ fontSize: 10, color: 'var(--ed-accent)', fontWeight: 600, fontFamily: 'monospace' }}>{z.km === 0 ? 'centre' : `${z.km} km`}</div>
                   </>
                 )
                 return hasLink
-                  ? <Link key={i} href={`/${lienSlug}`} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', border: '1px solid rgba(201,168,76,.18)' }}>{inner}</Link>
-                  : <div key={i} style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>{inner}</div>
+                  ? <Link key={i} href={`/${lienSlug}`} style={{ background: 'var(--ed-carte-2)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textDecoration: 'none', border: '1px solid rgba(var(--ed-accent-rvb),.18)' }}>{inner}</Link>
+                  : <div key={i} style={{ background: 'var(--ed-carte-2)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>{inner}</div>
               })}
             </div>
           </>
@@ -1583,28 +1583,28 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           if (lignes.length === 0) return null
           return (
             <>
-              <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+              <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 8 }}>
                 Tarifs fixes au départ de Paris
               </h3>
-              <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 16, lineHeight: 1.7 }}>
+              <p style={{ fontSize: 13, color: 'var(--ed-texte)', marginBottom: 16, lineHeight: 1.7 }}>
                 Prix pour la voiture entière, dans les deux sens. Berline ; les catégories
                 Premium et Van sont affichées au moment de la réservation.
               </p>
-              <div style={{ marginBottom: 20, border: '1px solid rgba(0,0,0,.06)', borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ marginBottom: 20, border: '1px solid rgba(var(--ed-filet-2-rvb),.06)', borderRadius: 10, overflow: 'hidden' }}>
                 {lignes.map((l, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     gap: 12, padding: '12px 16px',
-                    background: i % 2 === 0 ? '#F7F7F7' : '#FFFFFF',
+                    background: i % 2 === 0 ? 'var(--ed-carte-2)' : 'var(--ed-rang-alt)',
                   }}>
-                    <span style={{ fontSize: 13, color: '#0A0A0A' }}>{l.libelle}</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#C9A84C', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 13, color: 'var(--ed-titre-2)' }}>{l.libelle}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ed-accent)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                       {l.prix} €
                     </span>
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 48, lineHeight: 1.7 }}>
+              <p style={{ fontSize: 13, color: 'var(--ed-texte)', marginBottom: 48, lineHeight: 1.7 }}>
                 Une adresse qui ne figure pas dans ce tableau ? Le prix est calculé à
                 l&apos;adresse exacte sur la page de réservation, avant toute validation.
               </p>
@@ -1615,23 +1615,23 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         {/* ── Transferts aéroports ───────────────────────────────────────── */}
         {dest.aeroports && dest.aeroports.length > 0 && dest.zoneCode && (
           <>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 20 }}>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 20 }}>
               Transferts aéroports au départ de Paris
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 48 }}>
               {dest.aeroports.map((a, i) => {
                 const prix = a.zone ? prixEntreZones(grille ?? [], zones ?? [], dest.zoneCode!, a.zone) : null
                 return (
-                  <div key={i} style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 18px', border: '1px solid rgba(201,168,76,.18)' }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginBottom: 4 }}>{a.nom}</div>
+                  <div key={i} style={{ background: 'var(--ed-carte-2)', borderRadius: 10, padding: '16px 18px', border: '1px solid rgba(var(--ed-accent-rvb),.18)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 4 }}>{a.nom}</div>
                     <div style={prix !== null
-                      ? { fontSize: 14, fontWeight: 700, color: '#C9A84C', fontFamily: 'monospace', marginBottom: 8 }
+                      ? { fontSize: 14, fontWeight: 700, color: 'var(--ed-accent)', fontFamily: 'monospace', marginBottom: 8 }
                       /* Sans forfait, ce n'est pas un montant : la police des
                          chiffres ferait passer une phrase pour un prix. */
-                      : { fontSize: 13, fontStyle: 'italic', color: '#8A6D1F', marginBottom: 8 }}>
+                      : { fontSize: 13, fontStyle: 'italic', color: 'var(--ed-accent-sourd)', marginBottom: 8 }}>
                       {prix !== null ? `${prix} €` : 'prix calculé selon le trajet'}
                     </div>
-                    <div style={{ fontSize: 12.5, color: '#6B6B6B', lineHeight: 1.65 }}>{a.note}</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--ed-texte)', lineHeight: 1.65 }}>{a.note}</div>
                   </div>
                 )
               })}
@@ -1639,7 +1639,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
             {/* Le prix de l'accueil en pancarte est lu dans les réglages : il a
                 changé une fois sans que les textes suivent. */}
             {tarifParams?.supplement_panneau_actif && tarifParams?.supplement_panneau_prix != null && (
-              <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: -32, marginBottom: 48, lineHeight: 1.7 }}>
+              <p style={{ fontSize: 13, color: 'var(--ed-texte)', marginTop: -32, marginBottom: 48, lineHeight: 1.7 }}>
                 Accueil avec pancarte au nom du passager : option à {tarifParams.supplement_panneau_prix} €.
               </p>
             )}
@@ -1649,32 +1649,32 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         {/* ── Prestations sur devis ──────────────────────────────────────── */}
         {dest.surDevis && dest.surDevis.length > 0 && (
           <>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 8 }}>
               Sur devis : mise à disposition, circuits, déplacements professionnels
             </h3>
-            <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 20, lineHeight: 1.7 }}>
+            <p style={{ fontSize: 13, color: 'var(--ed-texte)', marginBottom: 20, lineHeight: 1.7 }}>
               Ces prestations ne se réservent pas en ligne : elles dépendent de votre
               programme, et le prix est établi au cas par cas.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 20 }}>
               {dest.surDevis.map((p, i) => (
-                <div key={i} style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 18px' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginBottom: 6 }}>{p.titre}</div>
-                  <div style={{ fontSize: 12.5, color: '#6B6B6B', lineHeight: 1.65 }}>{p.texte}</div>
+                <div key={i} style={{ background: 'var(--ed-carte-2)', borderRadius: 10, padding: '16px 18px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 6 }}>{p.titre}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--ed-texte)', lineHeight: 1.65 }}>{p.texte}</div>
                 </div>
               ))}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14, marginBottom: 48 }}>
               <a href={lienDevis('fr')} style={{
-                display: 'inline-block', background: '#C9A84C', color: '#09091A',
+                display: 'inline-block', background: 'var(--ed-accent-fond)', color: 'var(--ed-sur-accent)',
                 textDecoration: 'none', padding: '12px 24px', borderRadius: 8,
                 fontSize: 14, fontWeight: 600,
               }}>
                 Demander un devis personnalisé
               </a>
-              <span style={{ fontSize: 13, color: '#6B6B6B' }}>
+              <span style={{ fontSize: 13, color: 'var(--ed-texte)' }}>
                 ou par téléphone au{' '}
-                <a href={`tel:${IDENTITE_OWISE.telephone}`} style={{ color: '#C9A84C', textDecoration: 'none', fontWeight: 600 }}>
+                <a href={`tel:${IDENTITE_OWISE.telephone}`} style={{ color: 'var(--ed-accent)', textDecoration: 'none', fontWeight: 600 }}>
                   {telephoneLisible(IDENTITE_OWISE.telephone)}
                 </a>
               </span>
@@ -1683,25 +1683,25 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         )}
 
         {/* FAQ */}
-        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 24 }}>
+        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 24 }}>
           Questions fréquentes
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {dest.faq.map((item, i) => (
-            <div key={i} style={{ background: '#F7F7F7', borderRadius: 10, padding: '18px 20px' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', marginBottom: 6 }}>{item.q}</div>
-              <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.7 }}>{item.a}</div>
+            <div key={i} style={{ background: 'var(--ed-carte-2)', borderRadius: 10, padding: '18px 20px' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ed-titre-2)', marginBottom: 6 }}>{item.q}</div>
+              <div style={{ fontSize: 13, color: 'var(--ed-texte)', lineHeight: 1.7 }}>{item.a}</div>
             </div>
           ))}
         </div>
 
         {/* Maillage interne — autres destinations */}
-        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginTop: 48, marginBottom: 20 }}>
+        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginTop: 48, marginBottom: 20 }}>
           Autres destinations desservies
         </h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
           {Object.values(DESTINATIONS).filter(d => d.slug !== dest.slug).map(d => (
-            <Link key={d.slug} href={`/${d.slug}`} style={{ fontSize: 13, color: '#0A0A0A', background: '#F7F7F7', borderRadius: 8, padding: '10px 16px', textDecoration: 'none', border: '1px solid rgba(0,0,0,.06)' }}>
+            <Link key={d.slug} href={`/${d.slug}`} style={{ fontSize: 13, color: 'var(--ed-titre-2)', background: 'var(--ed-carte-2)', borderRadius: 8, padding: '10px 16px', textDecoration: 'none', border: '1px solid rgba(var(--ed-filet-2-rvb),.06)' }}>
               {d.title} →
             </Link>
           ))}
@@ -1709,21 +1709,21 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
       </section>
 
       {/* Avis clients */}
-      <section style={{ background: '#09091A', padding: '56px 24px' }}>
+      <section className="ed-section ed-sombre" style={{ background: 'var(--ed-fond-sombre)', padding: '56px 24px' }}>
         <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 12 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ed-accent-sur-sombre)', marginBottom: 12 }}>
             Avis clients
           </div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 500, color: '#EDE8DF', margin: '0 0 8px' }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 500, color: 'var(--ed-sur-sombre)', margin: '0 0 8px' }}>
             Ils nous font confiance
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
-            <span style={{ fontSize: 22, letterSpacing: 2, color: '#C9A84C' }}>★★★★★</span>
-            <span style={{ fontSize: 14, color: '#848499' }}>
+            <span style={{ fontSize: 22, letterSpacing: 2, color: 'var(--ed-accent-sur-sombre)' }}>★★★★★</span>
+            <span style={{ fontSize: 14, color: 'var(--ed-texte-sur-sombre)' }}>
               {/* Note et nombre d'avis viennent du meme compteur que le
                   balisage structure : trois chiffres differents cohabitaient
                   sur le site (4 ici, 5 sur /reserver, 7 en donnees). */}
-              <span style={{ color: '#EDE8DF', fontWeight: 600 }}>{avis.note} / 5</span>
+              <span style={{ color: 'var(--ed-sur-sombre)', fontWeight: 600 }}>{avis.note} / 5</span>
               {` · ${avis.nombre} avis Google vérifiés`}
             </span>
           </div>
@@ -1735,13 +1735,13 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
               { text: 'Impeccable, un service au top.', auteur: 'Khacim D.' },
             ].map((avis, i) => (
               <div key={i} style={{
-                background: '#111128', borderRadius: 12, padding: '22px 24px',
-                border: '1px solid rgba(201,168,76,.1)',
+                background: 'var(--ed-carte-sombre)', borderRadius: 12, padding: '22px 24px',
+                border: '1px solid rgba(var(--ed-accent-sur-sombre-rvb),.1)',
                 maxWidth: 260, textAlign: 'left', flex: '1 1 220px',
               }}>
-                <div style={{ fontSize: 14, color: '#C9A84C', marginBottom: 10, letterSpacing: 1 }}>★★★★★</div>
-                <p style={{ fontSize: 13, color: '#EDE8DF', lineHeight: 1.7, margin: '0 0 14px' }}>&ldquo;{avis.text}&rdquo;</p>
-                <div style={{ fontSize: 11, color: '#848499' }}>{avis.auteur} · Google</div>
+                <div style={{ fontSize: 14, color: 'var(--ed-accent-sur-sombre)', marginBottom: 10, letterSpacing: 1 }}>★★★★★</div>
+                <p style={{ fontSize: 13, color: 'var(--ed-sur-sombre)', lineHeight: 1.7, margin: '0 0 14px' }}>&ldquo;{avis.text}&rdquo;</p>
+                <div style={{ fontSize: 11, color: 'var(--ed-texte-sur-sombre)' }}>{avis.auteur} · Google</div>
               </div>
             ))}
           </div>
@@ -1750,7 +1750,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
               href="https://g.page/r/CY0-ORyXWwpXEAE/review"
               target="_blank" rel="noopener noreferrer"
               style={{
-                display: 'inline-block', background: '#C9A84C', color: '#09091A',
+                display: 'inline-block', background: 'var(--ed-accent-fond)', color: 'var(--ed-sur-accent)',
                 textDecoration: 'none', padding: '12px 28px', borderRadius: 8,
                 fontSize: 13, fontWeight: 700,
               }}
@@ -1761,10 +1761,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
               href="https://www.google.com/maps/search/?api=1&query=Owise+VTC"
               target="_blank" rel="noopener noreferrer"
               style={{
-                display: 'inline-block', background: 'transparent', color: '#EDE8DF',
+                display: 'inline-block', background: 'transparent', color: 'var(--ed-sur-sombre)',
                 textDecoration: 'none', padding: '12px 28px', borderRadius: 8,
                 fontSize: 13, fontWeight: 500,
-                border: '1px solid rgba(237,232,223,.15)',
+                border: '1px solid rgba(var(--ed-sur-sombre-rvb),.15)',
               }}
             >
               Voir tous les avis

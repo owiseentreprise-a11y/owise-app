@@ -192,15 +192,17 @@ export default async function VitrinePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
       />
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} />
+      {/* `palette="a"` : la palette A, sur l'accueil et nulle part ailleurs.
+          Les 38 pages villes ne passent pas cette prop — voir VitrineBody. */}
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} palette="a" />
 
       {/* Section maillage interne — server-rendered, visible par Google */}
-      <section style={{ background: '#F8F6F1', padding: '64px 24px 48px' }}>
+      <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-clair)', padding: '64px 24px 48px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 36, fontWeight: 500, color: '#09091A', marginBottom: 8, textAlign: 'center' }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 36, fontWeight: 500, color: 'var(--ed-titre)', marginBottom: 8, textAlign: 'center' }}>
             Nos zones desservies
           </h2>
-          <p style={{ textAlign: 'center', color: '#848499', fontSize: 15, marginBottom: 40, maxWidth: 560, margin: '0 auto 40px' }}>
+          <p style={{ textAlign: 'center', color: 'var(--ed-texte-2)', fontSize: 15, marginBottom: 40, maxWidth: 560, margin: '0 auto 40px' }}>
             Chauffeur privé disponible 24h/24 à Paris, en Île-de-France et dans l&apos;Oise. Tarif fixe garanti depuis votre adresse.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
@@ -259,20 +261,20 @@ export default async function VitrinePage() {
                  garde son rendu d'origine : ses prix tiennent en 9 caractères. */
               const surSaLigne = d.prix.length > LONGUEUR_PRIX_SUR_SA_LIGNE
               return (
-              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
+              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: 'var(--ed-carte)', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(var(--ed-filet-rvb),.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, ...(surSaLigne ? { flexWrap: 'wrap' as const } : {}) }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#09091A' }}>{d.title}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ed-titre)' }}>{d.title}</span>
                   <span style={surSaLigne
-                    ? { fontSize: 12, fontWeight: 700, color: '#C9A84C', flexBasis: '100%', marginTop: 4 }
-                    : { fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap' as const, marginLeft: 8 }}>{d.prix}</span>
+                    ? { fontSize: 12, fontWeight: 700, color: 'var(--ed-accent)', flexBasis: '100%', marginTop: 4 }
+                    : { fontSize: 12, fontWeight: 700, color: 'var(--ed-accent)', whiteSpace: 'nowrap' as const, marginLeft: 8 }}>{d.prix}</span>
                 </div>
-                <span style={{ fontSize: 12, color: '#848499', lineHeight: 1.5 }}>{d.desc}</span>
+                <span style={{ fontSize: 12, color: 'var(--ed-texte-2)', lineHeight: 1.5 }}>{d.desc}</span>
               </a>
               )
             })}
           </div>
           {/* Trajets Oise → Aéroports */}
-          <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 20, fontWeight: 600, color: '#09091A', margin: '40px 0 16px', paddingTop: 32, borderTop: '1px solid rgba(9,9,26,.06)' }}>
+          <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 20, fontWeight: 600, color: 'var(--ed-titre)', margin: '40px 0 16px', paddingTop: 32, borderTop: '1px solid rgba(var(--ed-filet-rvb),.06)' }}>
             Trajets Oise → Aéroports
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
@@ -288,18 +290,18 @@ export default async function VitrinePage() {
               { slug: 'vtc-chantilly-beauvais',title: 'VTC Chantilly → Beauvais-Tillé',  prix: '79€',  desc: 'Hub Ryanair, 40–55 min sans traverser Paris' },
               { slug: 'vtc-creil-beauvais',    title: 'VTC Creil → Beauvais-Tillé',      prix: '69€',  desc: 'Nogent, Montataire — hub Ryanair & Wizzair' },
             ].map(d => (
-              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: '#fff', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(9,9,26,.06)', transition: 'box-shadow .15s' }}>
+              <a key={d.slug} href={`/${d.slug}`} style={{ display: 'block', background: 'var(--ed-carte)', borderRadius: 12, padding: '20px 20px', textDecoration: 'none', border: '1px solid rgba(var(--ed-filet-rvb),.06)', transition: 'box-shadow .15s' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#09091A' }}>{d.title}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', whiteSpace: 'nowrap', marginLeft: 8 }}>{d.prix}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ed-titre)' }}>{d.title}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ed-accent)', whiteSpace: 'nowrap', marginLeft: 8 }}>{d.prix}</span>
                 </div>
-                <span style={{ fontSize: 12, color: '#848499', lineHeight: 1.5 }}>{d.desc}</span>
+                <span style={{ fontSize: 12, color: 'var(--ed-texte-2)', lineHeight: 1.5 }}>{d.desc}</span>
               </a>
             ))}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 32 }}>
-            <Link href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/blog" style={{ fontSize: 13, color: 'var(--ed-accent)', textDecoration: 'none', fontWeight: 500 }}>
               Voir nos guides et conseils VTC →
             </Link>
           </div>

@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { searchAddresses, getSuggestionIcon, fetchPlaceDetails } from '@/lib/addressSearch'
 import { LIEUX_CONNUS } from '@/lib/lieux'
+import CarteParisEnMouvement from '@/components/CarteParisEnMouvement'
 
 type BcAddr  = { label: string; lat?: number; lng?: number; cp?: string }
 type ZoneMin = { id: string; code: string; type: string; prefixes_postaux: string[] }
@@ -128,12 +129,19 @@ function ServiceIcon({ name }: { name: string }) {
 }
 
 /* Avis Google réels d'Owise — vérifiés sur la fiche Google Business, capture du 2026-09-12 */
+/* `fg` : l'encre de l'initiale, appariée à son fond et non choisie une fois pour
+   toutes. `--sur-fonce` est de l'ivoire (palette A) ou du blanc (palette ville) :
+   il convient aux quatre fonds sombres ou moyens, mesurés de 4,84 à 13,61. Il ne
+   convient PAS à l'or ni au terracotta — l'avatar de Nathalie M. mesurait 2,75
+   (palette A) et 2,29 (ville) pour un seuil de 4,5. Avec `--sur-or`, l'encre
+   prévue pour ce qui s'écrit sur une surface dorée : 6,07 et 8,62.
+   Mesures : étape 144. Ne pas remettre une couleur unique sur les cinq. */
 const TESTIMONIALS = [
-  { name:'Nathalie M.', initial:'N', color:'#C9A84C', when:'sept. 2026', text:'Super expérience. Société à recommander vivement.' },
-  { name:'Joelle P.',   initial:'J', color:'#181832', when:'août 2026',  text:'Très bonne prestation, chauffeur ponctuel et serviable.' },
-  { name:'Nabila B.',   initial:'N', color:'#8A6D3F', when:'août 2026',  text:'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !' },
-  { name:'Michèle M.',  initial:'M', color:'#4A5568', when:'août 2026',  text:'Excellentes prestations. Ponctualité. À recommander.' },
-  { name:'Khacim D.',   initial:'K', color:'#181832', when:'juil. 2026', text:'Impeccable, un service au top.' },
+  { name:'Nathalie M.', initial:'N', color:'var(--gold)', fg:'var(--sur-or)', when:'sept. 2026', text:'Super expérience. Société à recommander vivement.' },
+  { name:'Joelle P.',   initial:'J', color:'var(--nuit-haute)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Très bonne prestation, chauffeur ponctuel et serviable.' },
+  { name:'Nabila B.',   initial:'N', color:'var(--avatar-bronze)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Service de transport très professionnel, ponctuel et sérieux. Tout s\'est très bien passé du début à la fin. Je recommande sans hésiter !' },
+  { name:'Michèle M.',  initial:'M', color:'var(--avatar-ardoise)', fg:'var(--sur-fonce)', when:'août 2026',  text:'Excellentes prestations. Ponctualité. À recommander.' },
+  { name:'Khacim D.',   initial:'K', color:'var(--nuit-haute)', fg:'var(--sur-fonce)', when:'juil. 2026', text:'Impeccable, un service au top.' },
 ]
 
 const TRUST_POINTS = [
@@ -144,7 +152,7 @@ const TRUST_POINTS = [
 ]
 
 function TrustIcon({ name }: { name: string }) {
-  const common = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none' as const, stroke: '#C9A84C', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  const common = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none' as const, style: { stroke: 'var(--gold)' }, strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   switch (name) {
     case 'shield':  return <svg {...common}><path d="M12 3l7 3v6c0 4.5-3 8.2-7 9-4-.8-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
     case 'car':     return <svg {...common}><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16a1.5 1.5 0 003 0M17 16a1.5 1.5 0 003 0M4 16h16M6 11h12"/></svg>
@@ -161,10 +169,10 @@ function TrustIcon({ name }: { name: string }) {
    que le moteur connait — 'Grand Van' est facture comme un van, regle portee
    par NOM_VERS_CLE dans calcPrix.ts et conservee telle quelle.───── */
 const VEH_DISPLAY = [
-  { name:'Berline', cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'#C8D8EE', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
-  { name:'Berline Premium', cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], bg:'#08081A', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
-  { name:'Van 7 places', cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'#D8D4CA', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
-  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], bg:'#0D0D0D', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
+  { name:'Berline', cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'var(--vignette-ciel)', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
+  { name:'Berline Premium', cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], bg:'var(--vignette-nuit)', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
+  { name:'Van 7 places', cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'var(--vignette-sable)', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
+  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], bg:'var(--vignette-charbon)', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
@@ -269,9 +277,9 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
       {open && sugg.length > 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 500,
-          background: '#fff', border: '1px solid rgba(0,0,0,.12)',
+          background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),0.12)',
           borderTop: 'none', borderRadius: '0 0 10px 10px',
-          boxShadow: '0 8px 24px rgba(0,0,0,.1)', overflow: 'hidden',
+          boxShadow: '0 8px 24px rgba(var(--ombre-rvb),0.1)', overflow: 'hidden',
         }}>
           {sugg.map((s, i) => (
             <button
@@ -282,9 +290,9 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
               style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
                 width: '100%', padding: '9px 14px',
-                background: i === focused ? 'rgba(0,0,0,.04)' : '#fff',
+                background: i === focused ? 'rgba(var(--contraste-rvb),0.04)' : 'var(--papier)',
                 border: 'none', cursor: 'pointer', textAlign: 'left',
-                borderBottom: i < sugg.length - 1 ? '1px solid rgba(0,0,0,.05)' : 'none',
+                borderBottom: i < sugg.length - 1 ? '1px solid rgba(var(--contraste-rvb),0.05)' : 'none',
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
             >
@@ -292,8 +300,8 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
                 {getSuggestionIcon(s)}
               </span>
               <div>
-                <div style={{ fontSize: 13, fontWeight: s.isLieu ? 500 : 400, color: '#0A0A0A' }}>{s.label}</div>
-                {s.sublabel && <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 1 }}>{s.sublabel}</div>}
+                <div style={{ fontSize: 13, fontWeight: s.isLieu ? 500 : 400, color: 'var(--encre)' }}>{s.label}</div>
+                {s.sublabel && <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>{s.sublabel}</div>}
               </div>
             </button>
           ))}
@@ -330,7 +338,14 @@ function adresseDepuisFiche(label?: string): BcAddr {
   return { label: lieu.label, lat: lieu.lat, lng: lieu.lng, cp: lieu.codePostal }
 }
 
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string }) {
+/* `palette` — opt-in, et rien d'autre.
+ *
+ * La palette A est posée page par page, en commençant par l'accueil
+ * (étape 143). Les 38 pages villes appellent ce composant sans la prop :
+ * `palette` y vaut `undefined`, la classe n'est pas ajoutée, et pas une
+ * couleur ne change chez elles. C'est le seul interrupteur : il n'y a
+ * aucune détection de chemin, rien qui puisse se déclencher tout seul. */
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination, palette }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string; palette?: 'a' }) {
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -363,6 +378,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [menuOpen,        setMenuOpen]         = useState(false)
   const [showFloating,    setShowFloating]     = useState(false)
   const [devisVisible,    setDevisVisible]     = useState(false)
+  /* Les trois boutons flottants s'effacent devant le formulaire, mais
+     SEULEMENT sous 1 024 px — au-dessus, ils sont dans les coins et ne
+     gênent personne. La règle vit dans `vitrine.css` (@media max-width
+     1023px, « .call-float.sur-formulaire »). Il faut la connaître ici pour
+     savoir quand les sortir de l'ordre de tabulation : un bouton invisible
+     qu'on peut encore atteindre au clavier est un arrêt dans le vide, et un
+     bouton visible qu'on ne peut plus atteindre est pire. */
+  const [etroit,          setEtroit]           = useState(false)
   const [faqOpen,         setFaqOpen]          = useState<number|null>(null)
   const [cookieVisible,   setCookieVisible]    = useState(false)
   const [cookieModalOpen, setCookieModalOpen]  = useState(false)
@@ -493,6 +516,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   // mesure précédente est restée en mémoire.
   const cookieOffset = cookieVisible ? cookieBannerH : 0
 
+  /* ── les boutons flottants et le clavier ────────────────────
+     Ils valent `opacity:0` dans deux cas : avant d'être apparus, et —
+     sous 1 024 px seulement — quand le formulaire de devis est à l'écran.
+     Dans ces deux cas ils doivent quitter l'ordre de tabulation.
+     Au premier rendu, `showFloating` et `etroit` valent tous deux `false`
+     des deux côtés : le serveur et le navigateur rendent donc le même
+     `inert`, et l'hydratation ne signale rien. */
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const maj = () => setEtroit(mq.matches)
+    maj()
+    mq.addEventListener('change', maj)
+    return () => mq.removeEventListener('change', maj)
+  }, [])
+  const flottantsInertes = !showFloating || (devisVisible && etroit)
+
   const bcTarifs = tarifsProp
 
   /* ── cookie banner ──────────────────────────────────────── */
@@ -541,6 +580,34 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => el.classList.add('visible'))
     }, 2000)
 
+    /* ── Le compteur et « réduire les animations » ──────────────────────
+       Les chiffres montent de 0 à leur valeur en deux secondes. C'est du
+       mouvement, et il ignorait la préférence : elle est désormais lue aux
+       TROIS endroits où une décision se prend — à l'entrée à l'écran, au
+       démarrage différé de chaque chiffre, et à chaque image de
+       l'animation.
+
+       Lue EN DIRECT, et non capturée au montage. Deux raisons :
+         · si la préférence change pendant que la page est ouverte, le
+           chiffre en cours s'achève à l'image suivante, soit en moins de
+           20 ms, au lieu de continuer à monter ;
+         · aucun écouteur n'est ajouté, donc aucun ne peut fuir. C'est la
+           réponse la plus simple à la question posée, et la seule qui ne
+           crée pas le problème qu'elle devrait éviter.
+
+       Une seule écriture de la valeur finale, `valeurFinale()`, employée
+       par les quatre chemins qui la posent. Le piège de cette correction
+       est connu : supprimer l'animation SANS écrire la valeur laisserait
+       les chiffres à zéro, ce qui serait pire que le mouvement. */
+    const mouvementReduit = () =>
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const valeurFinale = (el: HTMLElement) => {
+      const cible = parseFloat(el.dataset.target || '0')
+      return (el.dataset.float === '1' ? cible.toFixed(1) : String(cible)) + (el.dataset.suffix || '')
+    }
+
     const countObs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return
@@ -551,18 +618,24 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           const target  = parseFloat(el.dataset.target || '0')
           const suffix  = el.dataset.suffix || ''
           const isFloat = el.dataset.float === '1'
+          /* 1. La préférence est posée : la valeur finale, tout de suite. */
+          if (mouvementReduit()) { el.textContent = valeurFinale(el); return }
           const delay   = idx * 120
           const dur     = 2000
           setTimeout(() => {
+            /* 2. Elle a pu être posée pendant le délai d'attente. */
+            if (mouvementReduit()) { el.textContent = valeurFinale(el); return }
             const start = performance.now()
             const tick = (now: number) => {
+              /* 3. Ou pendant l'animation elle-même. */
+              if (mouvementReduit()) { el.textContent = valeurFinale(el); return }
               const p    = Math.min((now - start) / dur, 1)
               // ease out quart — démarre vite, ralentit à la fin
               const ease = 1 - Math.pow(1 - p, 4)
               const v    = target * ease
               el.textContent = (isFloat ? v.toFixed(1) : Math.round(v)) + suffix
               if (p < 1) requestAnimationFrame(tick)
-              else el.textContent = (isFloat ? target.toFixed(1) : String(target)) + suffix
+              else el.textContent = valeurFinale(el)
             }
             requestAnimationFrame(tick)
           }, delay)
@@ -919,7 +992,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   /* ── JSX ─────────────────────────────────────────────────── */
   return (
-    <div className="vt">
+    <div className={palette === 'a' ? 'vt vt-palette-a' : 'vt'}>
       {/* custom cursor */}
       <div className="cursor" ref={cursorRef} />
       <div className="cursor-ring" ref={ringRef} />
@@ -928,44 +1001,44 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {exitVisible && (
         <div style={{
           position:'fixed',inset:0,zIndex:9000,
-          background:'rgba(9,9,26,.75)',backdropFilter:'blur(8px)',
+          background:'rgba(var(--nuit-rvb),0.75)',backdropFilter:'blur(8px)',
           display:'flex',alignItems:'center',justifyContent:'center',
           padding:'20px',
           animation:'fadeIn .3s ease',
         }} onClick={()=>setExitVisible(false)}>
           <div onClick={e=>e.stopPropagation()} style={{
-            background:'#111128',border:'1px solid rgba(201,168,76,.2)',
+            background:'var(--nuit-modale)',border:'1px solid rgba(var(--or-rvb),0.2)',
             borderRadius:20,padding:'40px 36px',maxWidth:440,width:'100%',
-            boxShadow:'0 40px 100px rgba(0,0,0,.6)',
+            boxShadow:'0 40px 100px rgba(var(--ombre-rvb),0.6)',
             position:'relative',textAlign:'center',
           }}>
             <button onClick={()=>setExitVisible(false)} style={{
               position:'absolute',top:14,right:14,width:28,height:28,
-              borderRadius:8,background:'rgba(255,255,255,.06)',border:'none',
-              color:'rgba(237,232,223,.5)',cursor:'pointer',fontSize:16,
+              borderRadius:8,background:'rgba(var(--sur-fonce-rvb),0.06)',border:'none',
+              color:'rgba(var(--ivoire-rvb),0.5)',cursor:'pointer',fontSize:16,
               display:'flex',alignItems:'center',justifyContent:'center',
             }}>✕</button>
 
             {/* Badge */}
             <div style={{
               display:'inline-flex',alignItems:'center',gap:6,
-              background:'rgba(201,168,76,.1)',border:'1px solid rgba(201,168,76,.25)',
-              borderRadius:20,padding:'5px 14px',fontSize:10,color:'#C9A84C',
+              background:'rgba(var(--or-rvb),0.1)',border:'1px solid rgba(var(--or-rvb),0.25)',
+              borderRadius:20,padding:'5px 14px',fontSize:10,color:'var(--gold)',
               letterSpacing:'.1em',textTransform:'uppercase',marginBottom:20,
             }}>
-              <span style={{width:5,height:5,borderRadius:'50%',background:'#C9A84C',flexShrink:0}}/>
+              <span style={{width:5,height:5,borderRadius:'50%',background:'var(--gold)',flexShrink:0}}/>
               Offre exclusive
             </div>
 
             <h3 style={{
               fontFamily:"'Cormorant Garamond',serif",fontSize:32,fontWeight:500,
-              color:'#EDE8DF',lineHeight:1.1,marginBottom:12,
+              color:'var(--ivoire)',lineHeight:1.1,marginBottom:12,
             }}>
               Avant de partir…
             </h3>
-            <p style={{fontSize:13,color:'rgba(237,232,223,.6)',lineHeight:1.7,marginBottom:28}}>
+            <p style={{fontSize:13,color:'rgba(var(--ivoire-rvb),0.6)',lineHeight:1.7,marginBottom:28}}>
               Obtenez votre tarif en 30 secondes.<br/>
-              Notre équipe vous répond <strong style={{color:'#EDE8DF'}}>immédiatement sur WhatsApp</strong> pour tout trajet Paris · IDF · Oise.
+              Notre équipe vous répond <strong style={{color:'var(--ivoire)'}}>immédiatement sur WhatsApp</strong> pour tout trajet Paris · IDF · Oise.
             </p>
 
             {/* CTA WhatsApp */}
@@ -975,12 +1048,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               onClick={()=>setExitVisible(false)}
               style={{
                 display:'flex',alignItems:'center',justifyContent:'center',gap:10,
-                background:'#25D366',color:'#fff',borderRadius:12,
+                background:'var(--marque-whatsapp)',color:'var(--sur-marque)',borderRadius:12,
                 padding:'14px 24px',fontSize:14,fontWeight:700,
                 textDecoration:'none',marginBottom:12,
                 transition:'transform .15s,box-shadow .15s',
               }}
-              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(37,211,102,.35)'}}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(var(--marque-whatsapp-rvb),0.35)'}}
               onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow=''}}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
@@ -991,18 +1064,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <button
               onClick={()=>{ setExitVisible(false); document.querySelector('.hero-booking-wrap')?.scrollIntoView({behavior:'smooth'}) }}
               style={{
-                background:'none',border:'1px solid rgba(201,168,76,.2)',
-                borderRadius:10,padding:'11px 20px',color:'rgba(237,232,223,.6)',
+                background:'none',border:'1px solid rgba(var(--or-rvb),0.2)',
+                borderRadius:10,padding:'11px 20px',color:'rgba(var(--ivoire-rvb),0.6)',
                 fontSize:12,cursor:'pointer',width:'100%',
                 transition:'border-color .15s,color .15s',
               }}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(201,168,76,.5)';e.currentTarget.style.color='#C9A84C'}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(201,168,76,.2)';e.currentTarget.style.color='rgba(237,232,223,.6)'}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(var(--or-rvb),0.5)';e.currentTarget.style.color='var(--gold)'}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(var(--or-rvb),0.2)';e.currentTarget.style.color='rgba(var(--ivoire-rvb),0.6)'}}
             >
               Voir les tarifs →
             </button>
 
-            <p style={{fontSize:10,color:'rgba(237,232,223,.25)',marginTop:16,letterSpacing:'.04em'}}>
+            <p style={{fontSize:10,color:'rgba(var(--ivoire-rvb),0.25)',marginTop:16,letterSpacing:'.04em'}}>
               Disponible 24h/24 · Tarif fixe garanti · Sans engagement
             </p>
           </div>
@@ -1012,8 +1085,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       {/* scroll progress */}
       <div className="scroll-progress" id="scrollProgress" />
 
-      {/* mobile menu */}
-      <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+      {/* mobile menu
+          `inert` tant qu'il est fermé : sans lui, ses six liens, son bouton
+          « Espace client » et ses trois liens sociaux restent dans l'ordre
+          de tabulation alors que le menu est à `opacity:0`. Mesuré à
+          l'étape 120 : 40 arrêts du clavier dans le vide, sur les quatre
+          gabarits, y compris sur ordinateur où le menu n'existe pas.
+          `inert` et non `aria-hidden` : `aria-hidden` sur un conteneur qui
+          garde des éléments focalisables est une faute — le lecteur
+          d'écran les tait, mais le clavier continue de s'y arrêter. */}
+      <div className={`mobile-menu${menuOpen ? ' open' : ''}`} inert={!menuOpen}>
         <div className="mm-links">
           {['#vehicules','#tarifs','#comment','#zones','#faq','#contact'].map((h,i) => (
             <a key={i} href={h} className="mm-link" onClick={()=>setMenuOpen(false)}>
@@ -1037,7 +1118,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Call float */}
-      <div className={`call-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`call-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="tel:+33619106356" className="call-btn" aria-label="Appeler Owise">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           <span className="fb-txt">Appeler</span>
@@ -1045,7 +1126,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* WhatsApp float */}
-      <div className={`wa-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`wa-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="https://wa.me/33619106356" className="wa-btn" target="_blank" rel="noopener" aria-label="WhatsApp" style={{position:'relative'}}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
           <span className="fb-txt">WhatsApp</span>
@@ -1054,7 +1135,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Floating CTA */}
-      <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
         <a href="#devis" className="float-cta-btn" onClick={e=>{e.preventDefault();scrollTo('#devis')}}>
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
           <span className="fb-txt">Réserver maintenant</span>
@@ -1074,10 +1155,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           }}
         >
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="8" fill="#09091A"/>
-            <circle cx="18" cy="18" r="10" stroke="rgba(255,255,255,0.88)" strokeWidth="1.8" fill="none"/>
-            <path d="M18 8 A10 10 0 0 1 28 18" stroke="#C9A84C" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
-            <circle cx="18" cy="18" r="2.2" fill="#C9A84C"/>
+            <rect width="36" height="36" rx="8" style={{fill:'var(--nuit)'}}/>
+            <circle cx="18" cy="18" r="10" style={{stroke:'rgba(var(--sur-fonce-rvb),0.88)'}} strokeWidth="1.8" fill="none"/>
+            <path d="M18 8 A10 10 0 0 1 28 18" style={{stroke:'var(--gold)'}} strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+            <circle cx="18" cy="18" r="2.2" style={{fill:'var(--gold)'}}/>
           </svg>
           <div className="nav-divider" />
           <div className="nav-name-wrap">
@@ -1110,29 +1191,29 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <span className="orb orb-3"/>
           <div className="hero-rings">
             <svg width="700" height="700" viewBox="0 0 700 700" fill="none">
-              <circle cx="350" cy="350" r="340" stroke="rgba(91,143,212,.1)" strokeWidth="1"/>
-              <circle cx="350" cy="350" r="300" stroke="rgba(116,192,200,.12)" strokeWidth="1" strokeDasharray="5 9"/>
-              <circle cx="350" cy="350" r="255" stroke="rgba(91,143,212,.14)" strokeWidth="1.5"/>
-              <circle cx="350" cy="350" r="208" stroke="rgba(123,130,214,.1)" strokeWidth="1" strokeDasharray="3 7"/>
-              <circle cx="350" cy="350" r="160" stroke="rgba(116,192,200,.16)" strokeWidth="1.5"/>
-              <circle cx="350" cy="350" r="110" stroke="rgba(201,168,76,.13)" strokeWidth="1" strokeDasharray="2 5"/>
-              <circle cx="350" cy="350" r="62" stroke="rgba(201,168,76,.2)" strokeWidth="2"/>
-              <circle cx="350" cy="350" r="24" stroke="rgba(201,168,76,.26)" strokeWidth="1.5"/>
-              <line x1="350" y1="6" x2="350" y2="36" stroke="rgba(116,192,200,.22)" strokeWidth="1.5"/>
-              <line x1="350" y1="664" x2="350" y2="694" stroke="rgba(116,192,200,.22)" strokeWidth="1.5"/>
-              <line x1="6" y1="350" x2="36" y2="350" stroke="rgba(116,192,200,.22)" strokeWidth="1.5"/>
-              <line x1="664" y1="350" x2="694" y2="350" stroke="rgba(116,192,200,.22)" strokeWidth="1.5"/>
-              <line x1="100" y1="100" x2="118" y2="118" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
-              <line x1="600" y1="100" x2="582" y2="118" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
-              <line x1="100" y1="600" x2="118" y2="582" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
-              <line x1="600" y1="600" x2="582" y2="582" stroke="rgba(201,168,76,.18)" strokeWidth="1.2"/>
+              <circle cx="350" cy="350" r="340" style={{stroke:'rgba(var(--decor-bleu-rvb),0.1)'}} strokeWidth="1"/>
+              <circle cx="350" cy="350" r="300" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.12)'}} strokeWidth="1" strokeDasharray="5 9"/>
+              <circle cx="350" cy="350" r="255" style={{stroke:'rgba(var(--decor-bleu-rvb),0.14)'}} strokeWidth="1.5"/>
+              <circle cx="350" cy="350" r="208" style={{stroke:'rgba(var(--decor-violet-rvb),0.1)'}} strokeWidth="1" strokeDasharray="3 7"/>
+              <circle cx="350" cy="350" r="160" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.16)'}} strokeWidth="1.5"/>
+              <circle cx="350" cy="350" r="110" style={{stroke:'rgba(var(--or-rvb),0.13)'}} strokeWidth="1" strokeDasharray="2 5"/>
+              <circle cx="350" cy="350" r="62" style={{stroke:'rgba(var(--or-rvb),0.2)'}} strokeWidth="2"/>
+              <circle cx="350" cy="350" r="24" style={{stroke:'rgba(var(--or-rvb),0.26)'}} strokeWidth="1.5"/>
+              <line x1="350" y1="6" x2="350" y2="36" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.22)'}} strokeWidth="1.5"/>
+              <line x1="350" y1="664" x2="350" y2="694" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.22)'}} strokeWidth="1.5"/>
+              <line x1="6" y1="350" x2="36" y2="350" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.22)'}} strokeWidth="1.5"/>
+              <line x1="664" y1="350" x2="694" y2="350" style={{stroke:'rgba(var(--decor-turquoise-rvb),0.22)'}} strokeWidth="1.5"/>
+              <line x1="100" y1="100" x2="118" y2="118" style={{stroke:'rgba(var(--or-rvb),0.18)'}} strokeWidth="1.2"/>
+              <line x1="600" y1="100" x2="582" y2="118" style={{stroke:'rgba(var(--or-rvb),0.18)'}} strokeWidth="1.2"/>
+              <line x1="100" y1="600" x2="118" y2="582" style={{stroke:'rgba(var(--or-rvb),0.18)'}} strokeWidth="1.2"/>
+              <line x1="600" y1="600" x2="582" y2="582" style={{stroke:'rgba(var(--or-rvb),0.18)'}} strokeWidth="1.2"/>
               {/* Trajet en direct : ligne dorée qui se dessine dès que départ + arrivée
                   sont renseignés, avant même l'affichage du prix — décor stylisé sur le
                   radar existant, pas une carte géographique réelle. */}
               <g className={`hero-route${hasTrajet ? ' active' : ''}`}>
-                <circle cx="350" cy="350" r="5" fill="#C9A84C"/>
-                <path className="hero-route-path" d="M350 350 C 430 300, 490 230, 540 165" fill="none" stroke="#C9A84C" strokeWidth="1.6" strokeLinecap="round"/>
-                <circle className="hero-route-end" cx="540" cy="165" r="5" fill="#C9A84C"/>
+                <circle cx="350" cy="350" r="5" style={{fill:'var(--gold)'}}/>
+                <path className="hero-route-path" d="M350 350 C 430 300, 490 230, 540 165" fill="none" style={{stroke:'var(--gold)'}} strokeWidth="1.6" strokeLinecap="round"/>
+                <circle className="hero-route-end" cx="540" cy="165" r="5" style={{fill:'var(--gold)'}}/>
               </g>
             </svg>
           </div>
@@ -1164,7 +1245,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                   {bcEtape && (
                     <div className="binput-row" style={{marginBottom:8}}>
-                      <span className="binput-dot" style={{width:7,height:7,background:'#E8A030',border:'none',boxShadow:'0 0 5px rgba(232,160,48,.4)'}}/>
+                      <span className="binput-dot" style={{width:7,height:7,background:'var(--ambre-vif)',border:'none',boxShadow:'0 0 5px rgba(var(--ambre-vif-rvb),0.4)'}}/>
                       <VtAddressInput className="binput" placeholder="Étape intermédiaire…" value={bcEtapeAddr.label} onSelect={setBcEtapeAddr}/>
                     </div>
                   )}
@@ -1196,9 +1277,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                 </div>
                 {bcLoading && (
-                  <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',background:'rgba(201,168,76,.06)',borderRadius:10,border:'1px solid rgba(201,168,76,.15)'}}>
-                    <svg style={{animation:'spin 1s linear infinite',flexShrink:0}} width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    <span style={{fontSize:12,color:'#C9A84C',fontWeight:500}}>Calcul du tarif en cours…</span>
+                  <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',background:'rgba(var(--or-rvb),0.06)',borderRadius:10,border:'1px solid rgba(var(--or-rvb),0.15)'}}>
+                    <svg style={{animation:'spin 1s linear infinite',flexShrink:0,stroke:'var(--gold)'}} width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span style={{fontSize:12,color:'var(--gold)',fontWeight:500}}>Calcul du tarif en cours…</span>
                   </div>
                 )}
                 {!bcLoading && bcPrice === null && bcDepart.label.length < 3 && (
@@ -1282,6 +1363,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
       </section>
 
+      {/* CARTE ANIMÉE — « Paris en mouvement »
+          Posée juste après le premier écran, et non dedans : le formulaire
+          reste le premier objet de la page, sur mobile comme sur ordinateur.
+          Le composant ne rend quelque chose QUE si le proxy de
+          prévisualisation a posé son drapeau ; sur le site, il rend null et
+          n'ajoute aucun nœud. */}
+      <CarteParisEnMouvement />
+
       {/* MARQUEE */}
       <div className="marquee-section">
         <div className="marquee-track">
@@ -1358,9 +1447,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
         <div className="vehicles-grid">
           {VEH_DISPLAY.map((v,i)=>(
-            <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}${v.dark?' vc-dark':''}`} style={v.badge?{borderColor:'rgba(255,255,255,.22)'}:{}}>
+            <div key={i} className={`vehicle-card tilt-card reveal rd${i+1}${v.dark?' vc-dark':''}`} style={v.badge?{borderColor:'rgba(var(--sur-fonce-rvb),0.22)'}:{}}>
               <div className="vc-visual" style={{background:v.bg}}>
-                {v.badge && <span className="vc-badge" style={{position:'absolute',top:12,right:12,zIndex:5,color:'rgba(255,255,255,.82)',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.14)',backdropFilter:'blur(4px)'}}>{v.badge}</span>}
+                {v.badge && <span className="vc-badge" style={{position:'absolute',top:12,right:12,zIndex:5,color:'rgba(var(--sur-fonce-rvb),0.82)',background:'rgba(var(--sur-fonce-rvb),0.08)',border:'1px solid rgba(var(--sur-fonce-rvb),0.14)',backdropFilter:'blur(4px)'}}>{v.badge}</span>}
                 <Image src={v.img} alt={v.alt} fill sizes="(max-width:900px) 50vw, 25vw" style={{objectFit:'contain',objectPosition:'center'}}/>
               </div>
               <div className="vc-name">{v.name}</div>
@@ -1387,7 +1476,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             dire visiblement vaut mieux que de laisser croire le contraire. */}
         <p style={{
           textAlign: 'center', marginTop: 28, fontSize: 12,
-          color: 'rgba(107,107,107,.85)', letterSpacing: '.02em',
+          color: 'rgba(var(--t2-rvb),0.85)', letterSpacing: '.02em',
         }}>
           Visuels d&apos;illustration. Le véhicule mis à disposition correspond à la catégorie réservée.
         </p>
@@ -1416,7 +1505,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </section>
 
       {/* ── TARIFS ───────────────────────────────────────────── */}
-      <section id="tarifs" style={{ background:'#F0EDE8', padding:'80px 24px' }}>
+      <section id="tarifs" style={{ background:'var(--surface)', padding:'80px 24px' }}>
         <div style={{ maxWidth:960, margin:'0 auto' }}>
           {/* Header */}
           <div className="reveal" style={{ textAlign:'center', marginBottom:48 }}>
@@ -1425,14 +1514,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               fontFamily:"'Cormorant Garamond',serif",
               fontSize:'clamp(36px,4vw,58px)',
               fontWeight:500,
-              color:'#09091A',
+              color:'var(--t1)',
               lineHeight:1.1,
               letterSpacing:'-.01em',
               marginBottom:12,
             }}>
-              Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'#C9A84C' }}>zéro surprise à l&apos;arrivée</em>
+              Prix fixe garanti<br/><em style={{ fontStyle:'italic', color:'var(--gold)' }}>zéro surprise à l&apos;arrivée</em>
             </h2>
-            <p style={{ fontSize:15, color:'#6B6B6B', maxWidth:520, margin:'0 auto' }}>
+            <p style={{ fontSize:15, color:'var(--t2)', maxWidth:520, margin:'0 auto' }}>
               Le prix affiché est celui que vous payez. Pas de majoration, pas de frais cachés — quelles que soient les conditions de trafic.
             </p>
           </div>
@@ -1482,22 +1571,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             ]
 
             return (
-              <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(0,0,0,.1)', background:'#FFFFFF' }}>
+              <div className="reveal" style={{ borderRadius:16, overflow:'hidden', border:'1px solid rgba(var(--contraste-rvb),0.1)', background:'var(--papier)' }}>
                 {/* En-têtes colonnes */}
                 <div className="tar-tete" style={{
                   display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
-                  background:'rgba(0,0,0,.04)',
-                  borderBottom:'1px solid rgba(0,0,0,.09)',
+                  background:'rgba(var(--contraste-rvb),0.04)',
+                  borderBottom:'1px solid rgba(var(--contraste-rvb),0.09)',
                   padding:'14px 24px',
                 }}>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'#6B6B6B' }}>Trajet</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--t2)' }}>Trajet</div>
                   {[
                     { label:'Berline', emoji:'🚘' },
                     { label:'Premium', emoji:'⭐' },
                     { label:'Van 7 pl.', emoji:'🚐' },
                   ].map(v => (
                     <div key={v.label} style={{ textAlign:'center' }}>
-                      <div style={{ fontSize:11, fontWeight:600, color:'#09091A' }}>{v.emoji} {v.label}</div>
+                      <div style={{ fontSize:11, fontWeight:600, color:'var(--t1)' }}>{v.emoji} {v.label}</div>
                     </div>
                   ))}
                 </div>
@@ -1507,15 +1596,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <div key={i} className="tar-ligne" style={{
                     display:'grid', gridTemplateColumns:'1fr repeat(3,140px)',
                     padding:'18px 24px', alignItems:'center',
-                    borderBottom: i < rows.length-1 ? '1px solid rgba(0,0,0,.06)' : 'none',
-                    background: i % 2 === 0 ? 'transparent' : 'rgba(0,0,0,.015)',
+                    borderBottom: i < rows.length-1 ? '1px solid rgba(var(--contraste-rvb),0.06)' : 'none',
+                    background: i % 2 === 0 ? 'transparent' : 'rgba(var(--contraste-rvb),0.015)',
                   }}>
                     <div>
                       <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                         <span style={{ fontSize:18 }}>{r.icon}</span>
-                        <span style={{ fontSize:14, fontWeight:600, color:'#09091A' }}>{r.label}</span>
+                        <span style={{ fontSize:14, fontWeight:600, color:'var(--t1)' }}>{r.label}</span>
                       </div>
-                      <div style={{ fontSize:11, color:'#6B6B6B', marginTop:2, paddingLeft:26 }}>{r.sub}</div>
+                      <div style={{ fontSize:11, color:'var(--t2)', marginTop:2, paddingLeft:26 }}>{r.sub}</div>
                     </div>
                     {[r.berline, r.premium, r.van].map((prix, j) => (
                       <div key={j} style={{ textAlign:'center' }}>
@@ -1527,12 +1616,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                           <div>
                             <span style={{
                               fontFamily:"'Courier New',monospace",
-                              fontSize:20, fontWeight:700, color:'#C9A84C',
+                              fontSize:20, fontWeight:700, color:'var(--gold)',
                             }}>{Math.round(Number(prix))}</span>
-                            <span style={{ fontSize:12, color:'#6B6B6B', marginLeft:2 }}>€</span>
-                            {!r.isFixed && <div style={{ fontSize:9, color:'#6B6B6B', letterSpacing:'.06em', textTransform:'uppercase' }}>dès</div>}
+                            <span style={{ fontSize:12, color:'var(--t2)', marginLeft:2 }}>€</span>
+                            {!r.isFixed && <div style={{ fontSize:9, color:'var(--t2)', letterSpacing:'.06em', textTransform:'uppercase' }}>dès</div>}
                           </div>
-                        ) : <span style={{ color:'rgba(0,0,0,.2)' }}>—</span>}
+                        ) : <span style={{ color:'rgba(var(--contraste-rvb),0.2)' }}>—</span>}
                       </div>
                     ))}
                   </div>
@@ -1544,14 +1633,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
           {/* Notes + CTA */}
           <div className="reveal" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:24, flexWrap:'wrap', gap:16 }}>
-            <div style={{ fontSize:12, color:'#6B6B6B', display:'flex', flexDirection:'column', gap:4 }}>
+            <div style={{ fontSize:12, color:'var(--t2)', display:'flex', flexDirection:'column', gap:4 }}>
               <span>🧳 Bagages inclus · ✈ Suivi vol en temps réel</span>
               <span>💳 Paiement sécurisé par carte en ligne · 📞 Réservation aussi par WhatsApp</span>
             </div>
             <button
               onClick={() => scrollTo('#devis')}
               style={{
-                background:'#C9A84C', color:'#09091A', border:'none', borderRadius:10,
+                background:'var(--gold)', color:'var(--sur-or)', border:'none', borderRadius:10,
                 padding:'13px 28px', fontSize:14, fontWeight:700, cursor:'pointer',
                 fontFamily:'DM Sans, sans-serif', whiteSpace:'nowrap',
               }}
@@ -1575,7 +1664,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div className="t-stars">{Array.from({length:5}).map((_,s)=>(<span key={s} className="t-star">★</span>))}</div>
               <p className="t-text">{t.text}</p>
               <div className="t-author">
-                <div className="t-avatar" style={{background:t.color,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:22}}>{t.initial}</div>
+                <div className="t-avatar" style={{background:t.color,display:'flex',alignItems:'center',justifyContent:'center',color:t.fg,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:22}}>{t.initial}</div>
                 <div>
                   <div className="t-name">{t.name}</div>
                   <div className="t-role">Avis Google vérifié · {t.when}</div>
@@ -1590,8 +1679,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:12,textDecoration:'none',cursor:'pointer'}}
           >
             <div className="t-stars">{Array.from({length:5}).map((_,s)=>(<span key={s} className="t-star">★</span>))}</div>
-            <div style={{fontSize:15,fontWeight:600,color:'#09091A'}}>Voir tous nos avis</div>
-            <div style={{fontSize:12.5,color:'#6B6B6B'}}>sur Google →</div>
+            <div style={{fontSize:15,fontWeight:600,color:'var(--t1)'}}>Voir tous nos avis</div>
+            <div style={{fontSize:12.5,color:'var(--t2)'}}>sur Google →</div>
           </a>
         </div>
       </section>
@@ -1604,10 +1693,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <rect width="100%" height="100%" filter="url(#ent-grain)"/>
         </svg>
         {/* Gold top line */}
-        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,#C9A84C 30%,#C9A84C 70%,transparent)'}}/>
+        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent)'}}/>
         {/* Decorative circle */}
-        <div style={{position:'absolute',right:-120,top:'50%',transform:'translateY(-50%)',width:500,height:500,borderRadius:'50%',border:'1px solid rgba(201,168,76,.06)',pointerEvents:'none'}}/>
-        <div style={{position:'absolute',right:-80,top:'50%',transform:'translateY(-50%)',width:340,height:340,borderRadius:'50%',border:'1px solid rgba(201,168,76,.04)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',right:-120,top:'50%',transform:'translateY(-50%)',width:500,height:500,borderRadius:'50%',border:'1px solid rgba(var(--or-rvb),0.06)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',right:-80,top:'50%',transform:'translateY(-50%)',width:340,height:340,borderRadius:'50%',border:'1px solid rgba(var(--or-rvb),0.04)',pointerEvents:'none'}}/>
 
         <div className="enterprise-inner reveal">
           {/* Left */}
@@ -1648,22 +1737,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div className="ent-features">
             {[
               {
-                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"/></svg>,
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{stroke:'var(--gold)'}} strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"/></svg>,
                 title:'Tarifs négociés',
                 desc:'Accès aux grilles entreprise dès 10 courses/mois',
               },
               {
-                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>,
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{stroke:'var(--gold)'}} strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>,
                 title:'Facturation mensuelle',
                 desc:'Une facture consolidée + export comptable CSV/PDF',
               },
               {
-                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>,
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{stroke:'var(--gold)'}} strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>,
                 title:'Portail collaborateurs',
                 desc:'Chaque collaborateur réserve sans avancer de frais',
               },
               {
-                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
+                icon:<svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{stroke:'var(--gold)'}} strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
                 title:'Gestionnaire dédié',
                 desc:'Un interlocuteur unique, joignable 7j/7',
               },
@@ -1681,7 +1770,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </section>
 
       {/* ZONES — Destinations avec prix réels */}
-      <section id="zones" style={{ background:'#F8F6F1', padding:'80px 24px' }}>
+      <section id="zones" style={{ background:'var(--base)', padding:'80px 24px' }}>
         <div style={{ maxWidth:1080, margin:'0 auto' }}>
 
           {/* Header */}
@@ -1690,7 +1779,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <h2 className="section-title">
               Partout où vous en<br/><em className="chrome-gold-slow">avez besoin</em>
             </h2>
-            <p style={{ fontSize:15, color:'#6B6B6B', maxWidth:500, margin:'12px auto 0' }}>
+            <p style={{ fontSize:15, color:'var(--t2)', maxWidth:500, margin:'12px auto 0' }}>
               Disponible 24h/24 — Réservez en ligne ou par WhatsApp
             </p>
           </div>
@@ -1717,59 +1806,59 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             const destinations = [
               {
                 emoji: '✈',
-                color: '#4D8ED4',
+                color: 'var(--bleu-info)',
                 name: 'CDG / Roissy',
                 villes: ['Terminal 1', 'Terminal 2', 'Terminal 3'],
                 prix: prixCdg !== null ? `${prixCdg} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
-                tagColor: '#4D8ED4',
+                tagColor: '--bleu-info', tagRvb: '--bleu-info-rvb',
                 dest: 'Aéroport Charles de Gaulle',
                 cta: 'Réserver',
                 href: '#devis',
               },
               {
                 emoji: '✈',
-                color: '#3DB87A',
+                color: 'var(--vert-vif)',
                 name: 'Orly',
                 villes: ['Terminal 1', 'Terminal 2', 'Terminal 3 & 4'],
                 prix: prixOrly !== null ? `${prixOrly} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
-                tagColor: '#3DB87A',
+                tagColor: '--vert-vif', tagRvb: '--vert-vif-rvb',
                 dest: 'Aéroport d\'Orly',
                 cta: 'Réserver',
                 href: '#devis',
               },
               {
                 emoji: '✈',
-                color: '#848499',
+                color: 'var(--gris-ardoise)',
                 name: 'Beauvais (BVA)',
                 villes: ['Ryanair', 'Wizz Air', 'easyJet'],
                 prix: prixBva !== null ? `${prixBva} €` : null,
                 prixLabel: 'Prix fixe berline',
                 tag: 'Tarif fixe garanti',
-                tagColor: '#848499',
+                tagColor: '--gris-ardoise', tagRvb: '--gris-ardoise-rvb',
                 dest: 'Aéroport Paris-Beauvais',
                 cta: 'Réserver',
                 href: '#devis',
               },
               {
                 emoji: '🏙',
-                color: '#C9A84C',
+                color: 'var(--gold)',
                 name: 'Paris & IDF',
                 villes: ['Tous arrondissements', 'Versailles', 'Boulogne, Saint-Denis…'],
                 prix: b ? `${formaterMontant(Number(b.prix_km))}/km` : null,
                 prixLabel: `+ ${b ? Number(b.prise_en_charge).toFixed(0) : '20'} € prise en charge`,
                 tag: 'Tarif au kilomètre',
-                tagColor: '#C9A84C',
+                tagColor: '--sur-voile-or', tagRvb: '--or-rvb',
                 dest: 'Paris et Île-de-France',
                 cta: 'Estimer mon prix',
                 href: '#devis',
               },
               {
                 emoji: '🚉',
-                color: '#E8A030',
+                color: 'var(--ambre-vif)',
                 name: 'Gares parisiennes',
                 villes: ['Gare du Nord', 'Gare de Lyon', 'Montparnasse, Saint-Lazare…'],
                 /* Le prix vient de la grille, par prixAffiche(), comme les
@@ -1783,20 +1872,20 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 prix: prixGare !== null ? `dès ${prixGare} €` : null,
                 prixLabel: 'depuis Paris, prix fixe',
                 tag: 'Tarif fixe garanti',
-                tagColor: '#E8A030',
+                tagColor: '--ambre-vif', tagRvb: '--ambre-vif-rvb',
                 dest: 'Toutes gares de Paris',
                 cta: 'Estimer mon prix',
                 href: '#devis',
               },
               {
                 emoji: '🌿',
-                color: '#C9A84C',
+                color: 'var(--gold)',
                 name: 'Oise',
                 villes: ['Chantilly', 'Creil', 'Compiègne, Senlis…'],
                 prix: null,
                 prixLabel: 'Devis personnalisé',
                 tag: 'Sur devis',
-                tagColor: '#C9A84C',
+                tagColor: '--sur-voile-or', tagRvb: '--or-rvb',
                 dest: 'Oise (60)',
                 cta: 'Demander un devis',
                 href: 'https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20l\'Oise',
@@ -1825,11 +1914,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               }}>
                 {destinations.map((d, i) => (
                   <div key={i} className="reveal" style={{
-                    background:'#fff',
+                    background:'var(--papier)',
                     borderRadius:16,
-                    border:'1px solid rgba(0,0,0,.07)',
+                    border:'1px solid rgba(var(--contraste-rvb),0.07)',
                     overflow:'hidden',
-                    boxShadow:'0 2px 20px rgba(0,0,0,.06)',
+                    boxShadow:'0 2px 20px rgba(var(--ombre-rvb),0.06)',
                     display:'flex',
                     flexDirection:'column',
                   }}>
@@ -1842,14 +1931,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                           <span style={{ fontSize:22 }}>{d.emoji}</span>
                           <div>
-                            <div style={{ fontSize:15, fontWeight:700, color:'#0A0A0A', lineHeight:1.2 }}>{d.name}</div>
-                            <div style={{ fontSize:10, color:'#848499', marginTop:1 }}>{d.dest}</div>
+                            <div style={{ fontSize:15, fontWeight:700, color:'var(--encre)', lineHeight:1.2 }}>{d.name}</div>
+                            <div style={{ fontSize:10, color:'var(--gris-ardoise)', marginTop:1 }}>{d.dest}</div>
                           </div>
                         </div>
                         <span style={{
                           fontSize:9, padding:'3px 8px', borderRadius:20, fontWeight:600,
-                          background:`${d.tagColor}15`, color:d.tagColor,
-                          border:`1px solid ${d.tagColor}30`,
+                          background:`rgba(var(${d.tagRvb}),.082)`, color:`var(${d.tagColor})`,
+                          border:`1px solid rgba(var(${d.tagRvb}),.188)`,
                           whiteSpace:'nowrap',
                         }}>{d.tag}</span>
                       </div>
@@ -1859,7 +1948,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         {d.villes.map((v, j) => (
                           <div key={j} style={{ display:'flex', alignItems:'center', gap:6 }}>
                             <div style={{ width:4, height:4, borderRadius:'50%', background:d.color, flexShrink:0 }}/>
-                            <span style={{ fontSize:12, color:'#555', lineHeight:1.3 }}>{v}</span>
+                            <span style={{ fontSize:12, color:'var(--gris-sombre)', lineHeight:1.3 }}>{v}</span>
                           </div>
                         ))}
                       </div>
@@ -1868,25 +1957,25 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                       <div style={{
                         marginTop:'auto',
                         paddingTop:12,
-                        borderTop:'1px solid rgba(0,0,0,.06)',
+                        borderTop:'1px solid rgba(var(--contraste-rvb),0.06)',
                         display:'flex',
                         alignItems:'flex-end',
                         justifyContent:'space-between',
                       }}>
                         <div>
                           {d.prix ? (
-                            <div style={{ fontFamily:"'Courier New',monospace", fontSize:22, fontWeight:700, color:'#C9A84C', lineHeight:1 }}>
+                            <div style={{ fontFamily:"'Courier New',monospace", fontSize:22, fontWeight:700, color:'var(--gold)', lineHeight:1 }}>
                               {d.prix}
                             </div>
                           ) : (
-                            <div style={{ fontSize:14, fontWeight:600, color:'#C9A84C' }}>Sur devis</div>
+                            <div style={{ fontSize:14, fontWeight:600, color:'var(--gold)' }}>Sur devis</div>
                           )}
-                          <div style={{ fontSize:10, color:'#848499', marginTop:2 }}>{d.prixLabel}</div>
+                          <div style={{ fontSize:10, color:'var(--gris-ardoise)', marginTop:2 }}>{d.prixLabel}</div>
                         </div>
                         {d.external ? (
                           <a href={d.href} target="_blank" rel="noopener" style={{
                             padding:'9px 16px', borderRadius:8, fontSize:12, fontWeight:600,
-                            background:'#25D366', color:'#fff', textDecoration:'none',
+                            background:'var(--marque-whatsapp)', color:'var(--sur-marque)', textDecoration:'none',
                             display:'flex', alignItems:'center', gap:6,
                           }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -1895,7 +1984,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         ) : (
                           <button onClick={() => scrollTo(d.href)} style={{
                             padding:'9px 16px', borderRadius:8, fontSize:12, fontWeight:600,
-                            background:'#09091A', color:'#C9A84C', border:'none', cursor:'pointer',
+                            background:'var(--nuit)', color:'var(--gold)', border:'none', cursor:'pointer',
                             fontFamily:'DM Sans, sans-serif',
                           }}>
                             {d.cta} →
@@ -1912,15 +2001,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           {/* Disponibilité 24h/24 */}
           <div className="reveal" style={{
             marginTop:32, padding:'18px 28px', borderRadius:12,
-            background:'#09091A', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12,
+            background:'var(--nuit)', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12,
           }}>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ width:8, height:8, borderRadius:'50%', background:'#3DB87A', boxShadow:'0 0 0 3px rgba(61,184,122,.2)' }}/>
-              <span style={{ fontSize:14, color:'#EDE8DF', fontWeight:500 }}>Disponible 24h/24, 7j/7 — Réponse en moins de 2 minutes</span>
+              <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--vert-vif)', boxShadow:'0 0 0 3px rgba(var(--vert-vif-rvb),0.2)' }}/>
+              <span style={{ fontSize:14, color:'var(--ivoire)', fontWeight:500 }}>Disponible 24h/24, 7j/7 — Réponse en moins de 2 minutes</span>
             </div>
+            {/* `--sur-marque`, et non `--sur-fonce` : le vert de WhatsApp n'est pas une
+                surface sombre, et `--sur-fonce` vaut de l'ivoire. Troisième bouton
+                WhatsApp de la page : les deux autres (.wa-btn, .faq-btn-wa) ont reçu
+                cette encre à l'étape 117, celui-ci portait sa couleur en style inline
+                et y avait échappé. Mesuré étape 144 : 1,78 — corrigé à 9,98 (seuil 4,5),
+                sur les deux palettes. L'adresse et la cible du lien sont inchangées. */}
             <a href="https://wa.me/33619106356?text=Bonjour%2C%20je%20souhaite%20réserver%20un%20VTC"
                target="_blank" rel="noopener"
-               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, textDecoration:'none' }}>
+               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, background:'var(--marque-whatsapp)', color:'var(--sur-marque)', fontSize:13, fontWeight:600, textDecoration:'none' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Réserver par WhatsApp
             </a>
@@ -1947,19 +2042,51 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div
                 key={i}
                 className={`faq-item${faqOpen===i?' open':''}`}
-                onClick={()=>setFaqOpen(faqOpen===i?null:i)}
+                /* La question est un <button> : c'est LUI qui ouvre et ferme, au
+                   clic comme au clavier. Ce gestionnaire-ci ne sert plus qu'au
+                   reste de la boîte — cliquer la réponse la referme, comme avant
+                   l'étape 149. Sans la garde, un clic sur le bouton remonterait
+                   jusqu'ici et basculerait deux fois : ouvert puis refermé. */
+                onClick={e=>{
+                  if ((e.target as HTMLElement).closest('.faq-q')) return
+                  setFaqOpen(faqOpen===i?null:i)
+                }}
               >
-                <div className="faq-q">
+                {/* `<button>` natif, et non un <div tabindex> : il apporte le
+                    focus, Entrée et Espace sans une ligne de JavaScript. Avant
+                    l'étape 149, les 12 questions étaient des <div> sans tabindex
+                    ni rôle : aucune n'était atteignable au clavier, donc les 12
+                    réponses étaient hors de portée de qui n'a pas de souris. */}
+                <button
+                  type="button"
+                  className="faq-q"
+                  id={`faq-q-${i}`}
+                  aria-expanded={faqOpen===i}
+                  aria-controls={`faq-a-${i}`}
+                  onClick={()=>setFaqOpen(faqOpen===i?null:i)}
+                >
                   <span className="faq-num">{String(i+1).padStart(2,'0')}</span>
                   <span className="faq-q-text">{f.q}</span>
                   <span className="faq-icon">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false">
                       <line x1="6" y1="1" x2="6" y2="11" className="faq-icon-v"/>
                       <line x1="1" y1="6" x2="11" y2="6"/>
                     </svg>
                   </span>
-                </div>
-                <div className="faq-a">
+                </button>
+                {/* La réponse repliée garde sa place dans le document : elle est
+                    masquée par `max-height:0`, ce qui anime l'ouverture mais ne
+                    la retire NI de l'arbre d'accessibilité NI de l'ordre de
+                    tabulation. Un lecteur d'écran lirait donc les 12 réponses
+                    alors que `aria-expanded` annonce « fermé ». `inert` règle
+                    les deux sans toucher à l'animation. */}
+                <div
+                  className="faq-a"
+                  id={`faq-a-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-q-${i}`}
+                  inert={faqOpen!==i}
+                >
                   <div className="faq-a-inner">{f.a}</div>
                 </div>
               </div>
@@ -1990,9 +2117,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             fontFamily:"'Plus Jakarta Sans',sans-serif",
             fontSize:'clamp(52px,6vw,92px)',
             fontWeight:800,letterSpacing:'-.03em',lineHeight:1.02,
-            color:'#0A0A0A',marginTop:12,marginBottom:0,
-          }}>Réservez<br/><span style={{color:'#C9A84C'}}>maintenant</span></h2>
-          <p className="reveal rd2" style={{fontSize:16,color:'#6B6B6B',marginTop:18,fontWeight:300,lineHeight:1.7}}>
+            color:'var(--encre)',marginTop:12,marginBottom:0,
+          }}>Réservez<br/><span style={{color:'var(--gold)'}}>maintenant</span></h2>
+          <p className="reveal rd2" style={{fontSize:16,color:'var(--t2)',marginTop:18,fontWeight:300,lineHeight:1.7}}>
             Tarif fixe garanti · Confirmation immédiate · 0 surprise en fin de course
           </p>
         </div>
@@ -2050,14 +2177,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
                 {/* aller-retour */}
                 <div style={{marginBottom:16}}>
-                  <button type="button" onClick={()=>setAllerRetour(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',borderRadius:8,border:'1px solid rgba(0,0,0,.12)',background:'transparent',fontFamily:'inherit',fontSize:12,color:'var(--t2)',cursor:'pointer',transition:'all .15s'}}>
+                  <button type="button" onClick={()=>setAllerRetour(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',borderRadius:8,border:'1px solid rgba(var(--contraste-rvb),0.12)',background:'transparent',fontFamily:'inherit',fontSize:12,color:'var(--t2)',cursor:'pointer',transition:'all .15s'}}>
                     <span>↩</span> Aller-Retour
-                    <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:allerRetour?'rgba(201,168,76,.15)':'rgba(0,0,0,.06)',color:allerRetour?'#C9A84C':'var(--t3)',fontWeight:700,letterSpacing:'.04em',border:allerRetour?'1px solid rgba(201,168,76,.3)':'none'}}>
+                    <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:allerRetour?'rgba(var(--or-rvb),0.15)':'rgba(var(--contraste-rvb),0.06)',color:allerRetour?'var(--gold)':'var(--t2)',fontWeight:700,letterSpacing:'.04em',border:allerRetour?'1px solid rgba(var(--or-rvb),0.3)':'none'}}>
                       {allerRetour?'ON':'OFF'}
                     </span>
                   </button>
                   {allerRetour && (
-                    <div style={{marginTop:10,padding:14,borderRadius:10,background:'rgba(201,168,76,.05)',border:'1px solid rgba(201,168,76,.2)'}}>
+                    <div style={{marginTop:10,padding:14,borderRadius:10,background:'rgba(var(--or-rvb),0.05)',border:'1px solid rgba(var(--or-rvb),0.2)'}}>
                       <div className="form-grid" style={{marginBottom:10}}>
                         <div className="field"><label>Date de retour</label><input type="date" value={form.dateRetour} onChange={e=>setForm(f=>({...f,dateRetour:e.target.value}))}/></div>
                         <div className="field"><label>Heure de retour</label><input type="time" value={form.heureRetour} onChange={e=>setForm(f=>({...f,heureRetour:e.target.value}))}/></div>
@@ -2111,7 +2238,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 </div>
                 <div className="vehicle-hint">
                   <div className="vh-icon">
-                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none"><path d="M2 8 L4 3 Q5 1 7.5 1 L12.5 1 Q15 1 16 3 L18 8 Z" fill="#0A0A0A"/><path d="M5 8 Q6 3.5 8 3 L12 3 L12 8 Z" fill="#4A6FA5" opacity=".7"/><rect x="18" y="6.5" width="1.5" height="2.5" rx=".7" fill="#FFE080"/><rect x=".5" y="6.5" width="1.5" height="2.5" rx=".7" fill="#FC8181" opacity=".8"/><path d="M2 8 L18 8 L18.5 9.5 L1.5 9.5 Z" fill="#111"/><circle cx="5.5" cy="11" r="2.5" fill="#222"/><circle cx="5.5" cy="11" r="1.3" fill="#444"/><circle cx="14.5" cy="11" r="2.5" fill="#222"/><circle cx="14.5" cy="11" r="1.3" fill="#444"/></svg>
+                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none"><path d="M2 8 L4 3 Q5 1 7.5 1 L12.5 1 Q15 1 16 3 L18 8 Z" style={{fill:'var(--encre)'}}/><path d="M5 8 Q6 3.5 8 3 L12 3 L12 8 Z" style={{fill:'var(--illu-bleu)'}} opacity=".7"/><rect x="18" y="6.5" width="1.5" height="2.5" rx=".7" style={{fill:'var(--illu-phare)'}}/><rect x=".5" y="6.5" width="1.5" height="2.5" rx=".7" style={{fill:'var(--illu-feu)'}} opacity=".8"/><path d="M2 8 L18 8 L18.5 9.5 L1.5 9.5 Z" style={{fill:'var(--encre-profonde)'}}/><circle cx="5.5" cy="11" r="2.5" style={{fill:'var(--encre-sourde)'}}/><circle cx="5.5" cy="11" r="1.3" style={{fill:'var(--encre-tiede)'}}/><circle cx="14.5" cy="11" r="2.5" style={{fill:'var(--encre-sourde)'}}/><circle cx="14.5" cy="11" r="1.3" style={{fill:'var(--encre-tiede)'}}/></svg>
                   </div>
                   <div>
                     <div className="vh-name">{currentVeh.name}</div>
@@ -2162,7 +2289,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <div className="field"><label>Société (optionnel)</label><input type="text" placeholder="Nom de l'entreprise" value={form.societe} onChange={e=>setForm(f=>({...f,societe:e.target.value}))}/></div>
                 </div>
                 {submitErr && (
-                  <div style={{display:'block',background:'rgba(217,80,80,.08)',border:'1px solid rgba(217,80,80,.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#D95454',marginBottom:12,textAlign:'center'}}>{submitErr}</div>
+                  <div style={{display:'block',background:'rgba(var(--rouge-doux-rvb),0.08)',border:'1px solid rgba(var(--rouge-doux-rvb),0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--rouge-doux)',marginBottom:12,textAlign:'center'}}>{submitErr}</div>
                 )}
                 <button className="btn-next" onClick={goToReserver} style={{width:'100%',padding:'15px 36px',fontSize:14.5,marginBottom:14}}>
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -2180,22 +2307,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             {/* step 4 — success */}
             {step===4 && submitted && (
               <div className="step-panel on" style={{textAlign:'center',padding:'20px 0 10px'}}>
-                <div style={{width:60,height:60,borderRadius:'50%',background:'rgba(61,184,122,.1)',border:'1px solid rgba(61,184,122,.25)',display:'inline-flex',alignItems:'center',justifyContent:'center',marginBottom:20}}>
-                  <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#3DB87A" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <div style={{width:60,height:60,borderRadius:'50%',background:'rgba(var(--vert-vif-rvb),0.1)',border:'1px solid rgba(var(--vert-vif-rvb),0.25)',display:'inline-flex',alignItems:'center',justifyContent:'center',marginBottom:20}}>
+                  <svg width="26" height="26" fill="none" viewBox="0 0 24 24" style={{stroke:'var(--vert-vif)'}} strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:500,color:'#0A0A0A',marginBottom:10}}>Demande reçue !</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:500,color:'var(--encre)',marginBottom:10}}>Demande reçue !</div>
                 <p style={{fontSize:13,color:'var(--t2)',lineHeight:1.7,maxWidth:340,margin:'0 auto 8px'}}>
                   Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong>.
                 </p>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'var(--t2)',background:'rgba(0,0,0,.04)',borderRadius:6,padding:'8px 14px',display:'inline-block',marginBottom:20}}>{confirmRef}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'var(--t2)',background:'rgba(var(--contraste-rvb),0.04)',borderRadius:6,padding:'8px 14px',display:'inline-block',marginBottom:20}}>{confirmRef}</div>
 
                 {/* Option : payer directement sans attendre le rappel */}
-                <div style={{background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',borderRadius:10,padding:'14px 20px',marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>
+                <div style={{background:'rgba(var(--or-rvb),0.06)',border:'1px solid rgba(var(--or-rvb),0.2)',borderRadius:10,padding:'14px 20px',marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>
                   <div style={{fontSize:11,color:'var(--t2)',marginBottom:10}}>Vous souhaitez confirmer et payer maintenant sans attendre ?</div>
                   <button onClick={()=>router.push(reserverUrl)} style={{
                     display:'inline-flex',alignItems:'center',gap:8,
-                    background:'linear-gradient(135deg,#C9A84C,#DDB95A)',
-                    color:'#fff',border:'none',borderRadius:8,
+                    background:'linear-gradient(135deg,var(--gold),var(--gold-bright))',
+                    color:'var(--sur-fonce)',border:'none',borderRadius:8,
                     padding:'10px 22px',fontSize:13,fontWeight:600,
                     cursor:'pointer',fontFamily:'inherit',
                   }}>
@@ -2204,7 +2331,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </button>
                 </div>
 
-                <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(0,0,0,.15)',borderRadius:8,padding:'8px 18px',fontSize:12,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit'}}>
+                <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(var(--contraste-rvb),0.15)',borderRadius:8,padding:'8px 18px',fontSize:12,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit'}}>
                   Nouvelle demande
                 </button>
               </div>
@@ -2220,12 +2347,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <div className="footer-brand">
             <div className="brand-name" style={{alignItems:'center',gap:12,marginBottom:12}}>
               <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{flexShrink:0}}>
-                <rect width="36" height="36" rx="8" fill="#0A0A0A"/>
-                <text x="18" y="26" textAnchor="middle" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="18" fontWeight="800" fill="#FFFFFF">O</text>
+                <rect width="36" height="36" rx="8" style={{fill:'var(--encre)'}}/>
+                <text x="18" y="26" textAnchor="middle" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="18" fontWeight="800" fill="var(--sur-encre)">O</text>
               </svg>
               <div>
-                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:22,fontWeight:800,letterSpacing:'.2em',color:'#0A0A0A'}}>OWISE</div>
-                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(0,0,0,.4)',marginTop:2}}>Chauffeur privé VTC</div>
+                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:22,fontWeight:800,letterSpacing:'.2em',color:'var(--encre)'}}>OWISE</div>
+                <div style={{fontSize:8,letterSpacing:'.32em',textTransform:'uppercase',color:'rgba(var(--contraste-rvb),0.59)',marginTop:2}}>Chauffeur privé VTC</div>
               </div>
             </div>
             <div className="brand-sub">Paris, Île-de-France & Oise.</div>
