@@ -101,7 +101,7 @@ const LIAISONS: { zone: string; libelle: string }[] = [
 
 const VEHICULES: { cle: string; nom: string; places: string }[] = [
   { cle: 'berline',         nom: 'Sedan',         places: 'up to 3 passengers · 3 bags' },
-  { cle: 'berline_premium', nom: 'Premium sedan', places: 'up to 3 passengers · 3 bags' },
+  { cle: 'berline_premium', nom: 'Premium sedan', places: 'up to 4 passengers · 3 bags' },
   { cle: 'van',             nom: 'Van',           places: 'up to 7 passengers · 7 bags' },
 ]
 
@@ -152,7 +152,7 @@ const FAQ = (cdg: number | null) => [
   },
   {
     q: 'Is the price per person?',
-    a: 'No. The fare is for the car. A sedan seats up to 3 passengers, a van up to 7, and a larger van up to 8 on request.',
+    a: 'No. The fare is for the car. A sedan seats up to 4 passengers depending on the model, a van up to 7, and a larger van up to 8 on request.',
   },
   {
     q: 'What happens if my flight is delayed?',

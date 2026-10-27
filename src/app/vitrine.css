@@ -551,6 +551,19 @@ nav.scrolled{background:rgba(var(--papier-rvb),.97);border-bottom-color:rgba(var
 .vc-from{font-size:12.5px;color:var(--t2)}
 .vc-amount{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500}
 .vc-unit{font-size:12.5px;color:var(--t2)}
+/* Bouton « Demander un devis » de la carte 8 places. Il prend la place d'un
+   prix : il doit donc peser autant qu'un prix, pas comme un lien discret.
+   Les trois etats sont obligatoires sur tout element cliquable du projet. */
+.vc-devis-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;
+  border:1px solid rgba(var(--or-rvb),.45);border-radius:8px;
+  background:rgba(var(--or-rvb),.08);color:var(--gold);
+  font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease}
+.vc-devis-btn:hover{background:rgba(var(--or-rvb),.16);border-color:rgba(var(--or-rvb),.7)}
+.vc-devis-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.vc-devis-btn:active{transform:translateY(1px)}
+/* La carte 8 places est sombre : l'or profond y manque de contraste. */
+.vehicle-card.vc-dark .vc-devis-btn{color:var(--or-clair);border-color:rgba(var(--or-rvb),.6)}
 .vc-visual{margin:-28px -22px 20px;height:152px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .vc-visual svg{position:relative;z-index:1}
 

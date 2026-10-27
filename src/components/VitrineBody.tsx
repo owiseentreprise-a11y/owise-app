@@ -169,10 +169,10 @@ function TrustIcon({ name }: { name: string }) {
    que le moteur connait — 'Grand Van' est facture comme un van, regle portee
    par NOM_VERS_CLE dans calcPrix.ts et conservee telle quelle.───── */
 const VEH_DISPLAY = [
-  { name:'Berline', cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'var(--vignette-ciel)', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
-  { name:'Berline Premium', cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme, finitions cuir','Cuir, eau minérale offerte','Chargeurs universels, WiFi'], bg:'var(--vignette-nuit)', badge:'Populaire',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
-  { name:'Van 7 places', cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'var(--vignette-sable)', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
-  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · Sur demande', feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], bg:'var(--vignette-charbon)', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
+  { name:'Berline', devis:false, cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'var(--vignette-ciel)', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
+  { name:'Berline Premium', devis:false, cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme','Eau minérale offerte','Chargeurs universels, WiFi'], bg:'var(--vignette-nuit)', badge:'4 passagers',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
+  { name:'Van 7 places', devis:false, cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'var(--vignette-sable)', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
+  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · sur devis, selon disponibilité', devis:true, feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Disponible sur réservation'], bg:'var(--vignette-charbon)', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
 ]
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
@@ -1462,7 +1462,30 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               <div className="vc-features">
                 {v.feats.map((f,j)=><div key={j} className="vc-feat"><div className="vc-feat-dot"/>{f}</div>)}
               </div>
-              {prixAppel[v.cle] != null && (
+              {/* Le 8 places n'affiche AUCUN prix, et c'est voulu.
+                  Deux raisons, toutes deux verifiees : le moteur tarifaire
+                  ne connait pas le Grand Van — `NOM_VERS_CLE` fait
+                  'Grand Van' → 'van', donc il afficherait le tarif du van
+                  7 places — et la disponibilite depend d'un chauffeur
+                  partenaire, qu'Owise ne peut pas garantir. Un prix affiche
+                  est un engagement ; ecrire « sur demande » a cote d'un
+                  chiffre ferme ne l'annule pas, le client retient le
+                  chiffre. */}
+              {v.devis ? (
+                <div className="vc-price" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+                  <span className="vc-amount" style={{ fontSize: 19, fontWeight: 600 }}>Sur devis</span>
+                  <button
+                    type="button"
+                    className="vc-devis-btn"
+                    onClick={() => {
+                      setPaxN(8)
+                      document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                  >
+                    Demander un devis
+                  </button>
+                </div>
+              ) : prixAppel[v.cle] != null && (
                 <div className="vc-price">
                   <span className="vc-from">dès</span>
                   <span className="vc-amount chrome-gold-static">{prixAppel[v.cle]} €</span>
@@ -1481,6 +1504,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           color: 'rgba(var(--t2-rvb),0.85)', letterSpacing: '.02em',
         }}>
           Visuels d&apos;illustration. Le véhicule mis à disposition correspond à la catégorie réservée.
+          <br />
+          À partir de 4 passagers, une berline plus grande est nécessaire : c&apos;est
+          ce que couvre la Berline Premium. Au-delà de 7 passagers, le véhicule
+          dépend de la disponibilité de nos chauffeurs partenaires — nous
+          établissons un devis avant toute réservation.
         </p>
       </section>
 
@@ -2314,11 +2342,25 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 </div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:500,color:'var(--encre)',marginBottom:10}}>Demande reçue !</div>
                 <p style={{fontSize:13,color:'var(--t2)',lineHeight:1.7,maxWidth:340,margin:'0 auto 8px'}}>
-                  Nous avons bien reçu votre demande. Un conseiller vous contactera dans les <strong>30 minutes</strong>.
+                  {pax >= 8 ? (
+                      <>Votre demande est enregistrée. Nous vérifions la disponibilité
+                      d&apos;un véhicule {pax} places auprès de nos chauffeurs partenaires
+                      et vous envoyons un devis. <strong>Rien n&apos;est réservé tant que
+                      vous ne l&apos;avez pas accepté.</strong></>
+                    ) : (
+                      <>Nous avons bien reçu votre demande. Un conseiller vous
+                      contactera dans les <strong>30 minutes</strong>.</>
+                    )}
                 </p>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:'var(--t2)',background:'rgba(var(--contraste-rvb),0.04)',borderRadius:6,padding:'8px 14px',display:'inline-block',marginBottom:20}}>{confirmRef}</div>
 
-                {/* Option : payer directement sans attendre le rappel */}
+                {/* Option : payer directement sans attendre le rappel.
+                      MASQUEE au-dela de 7 passagers : ce bouton mene au
+                      paiement, et la disponibilite d'un 8 places n'est pas
+                      acquise — elle depend d'un chauffeur partenaire. Faire
+                      payer avant de l'avoir verifiee serait vendre ce qu'on
+                      n'a pas. */}
+                  {pax < 8 && (<>
                 <div style={{background:'rgba(var(--or-rvb),0.06)',border:'1px solid rgba(var(--or-rvb),0.2)',borderRadius:10,padding:'14px 20px',marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>
                   <div style={{fontSize:11,color:'var(--t2)',marginBottom:10}}>Vous souhaitez confirmer et payer maintenant sans attendre ?</div>
                   <button onClick={()=>router.push(reserverUrl)} style={{
@@ -2332,8 +2374,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     Réserver et payer maintenant
                   </button>
                 </div>
+                  </>)}
 
-                <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(var(--contraste-rvb),0.15)',borderRadius:8,padding:'8px 18px',fontSize:12,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit'}}>
+                  <button onClick={resetDevis} style={{background:'none',border:'1px solid rgba(var(--contraste-rvb),0.15)',borderRadius:8,padding:'8px 18px',fontSize:12,color:'var(--t2)',cursor:'pointer',fontFamily:'inherit'}}>
                   Nouvelle demande
                 </button>
               </div>

@@ -109,7 +109,7 @@ async function lirePrix() {
 
   const VEHICULES: { cle: string; nom: string; places: string }[] = [
     { cle: 'berline',         nom: 'Sedan',         places: 'up to 3 passengers · 3 bags' },
-    { cle: 'berline_premium', nom: 'Premium sedan', places: 'up to 3 passengers · 3 bags' },
+    { cle: 'berline_premium', nom: 'Premium sedan', places: 'up to 4 passengers · 3 bags' },
     { cle: 'van',             nom: 'Van',           places: 'up to 7 passengers · 7 bags' },
   ]
 

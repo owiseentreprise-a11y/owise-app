@@ -224,7 +224,7 @@ const VEHICULES = [
   {
     value: 'berline',
     label: 'Berline',
-    places: '1–4 passagers',
+    places: '1–3 passagers',
     models: 'Berline récente, intérieur soigné',
     image: '/brand_assets/vehicle-berline.png',
     badge: null,
@@ -233,7 +233,7 @@ const VEHICULES = [
     value: 'berline_premium',
     label: 'Berline Premium',
     places: '1–4 passagers',
-    models: 'Berline haut de gamme, finitions cuir',
+    models: 'Berline haut de gamme',
     image: '/brand_assets/vehicle-berline-premium.png',
     badge: 'Populaire',
   },
@@ -1213,7 +1213,9 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                           de la carte, que `overflow: hidden` rogne net.
                           Mesuré sur la carte « Berline Premium » : trois
                           textes tranchés à 56 px, dont « Berline haut de
-                          gamme, finitions cuir » coupé en plein milieu.
+                          gamme, finitions cuir » (libellé de l'époque,
+                          le cuir n'étant confirmé par aucune source)
+                          coupé en plein milieu.
                           Avec `minWidth: 0`, le texte passe à la ligne au
                           lieu d'être coupé ; la carte gagne en hauteur sur
                           téléphone et ne bouge pas sur ordinateur. */}
@@ -1245,6 +1247,25 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   )
                 })}
               </div>
+
+              {/* Au-dela de 7 passagers, cette page n'offrait RIEN : les trois
+                  cartes s'arretent au van, et le client repartait sans rien
+                  demander. Ce lien ne promet aucun vehicule — il mene a la
+                  demande de devis de la vitrine, le canal que l'equipe
+                  surveille deja (vitrine/actions.ts -> envoyerNouveauDevis). */}
+              <Link
+                href="/#devis"
+                style={{
+                  display: 'block', marginTop: 10, padding: '11px 14px',
+                  border: '1px dashed rgba(0,0,0,.18)', borderRadius: 10,
+                  fontSize: 12, color: '#6B6B6B', textAlign: 'center',
+                  textDecoration: 'none', background: 'rgba(0,0,0,.015)',
+                }}
+              >
+                Plus de 7 passagers ?{' '}
+                <strong style={{ color: '#C9A84C' }}>Demandez un devis</strong>
+                {' '}— nous verifions la disponibilite avant toute reservation.
+              </Link>
 
               <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16 }}>
                 <FieldLabel>Nombre de passagers</FieldLabel>
