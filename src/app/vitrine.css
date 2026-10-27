@@ -1563,11 +1563,21 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
    seul tiret à la fois, et l'image à la fin du cycle est identique à celle
    du début — la boucle ne se voit pas.
 
-   Le tiret n'est allumé que sur la première moitié du cycle ; le reste du
-   temps la liaison se repose. Ce silence, de durée différente pour chacune
-   des douze, est ce qui fait un trafic plutôt qu'un métronome. */
+   Le tiret est allumé sur 80 % du cycle ; le reste du temps la liaison se
+   repose. Ce silence, de durée différente pour chacune des douze, est ce
+   qui fait un trafic plutôt qu'un métronome.
+
+   Chaque liaison porte DEUX lumières. La seconde (`.pm-flux-bis`) part à
+   mi-cycle de la première : `var(--fd)/2`. Une seule série laissait les
+   liaisons vides trop souvent — mesuré 5 à 8 lumières en l'air, jugé trop
+   discret. Avec la seconde série : 17 à 20 en régime établi. */
 .vt .carte-pm .pm-flux{stroke-dasharray:.13 .87;stroke-dashoffset:1;opacity:0}
 .vt .carte-pm.vue .pm-flux{animation:pmFlux var(--fd,8s) linear calc(3.2s + var(--ft,0s)) infinite}
+/* Cette règle doit rester APRÈS la précédente : elles ont la même
+   spécificité (quatre classes), donc c'est l'ordre d'écriture qui décide
+   laquelle impose le retard. Déplacée au-dessus, les deux lumières se
+   superposeraient exactement et la seconde ne se verrait pas. */
+.vt .carte-pm.vue .pm-flux-bis{animation-delay:calc(3.2s + var(--ft,0s) + var(--fd,8s)/2)}
 .vt .carte-pm .pm-flux-fort{stroke:var(--or-clair);stroke-width:5}
 .vt .carte-pm .pm-flux-moyen{stroke:var(--or-clair);stroke-width:3.6}
 .vt .carte-pm .pm-flux-fin{stroke:var(--or-clair);stroke-width:3}
@@ -1583,13 +1593,13 @@ html:has(.vt .devis-card :focus) .carte-pm .pm-halo{animation-play-state:paused}
 @keyframes pmNait{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
 @keyframes pmDeploie{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
 @keyframes pmSouffle{0%,100%{opacity:.16;transform:scale(1)}50%{opacity:.42;transform:scale(1.5)}}
-/* 0 → 52 % : la lumière parcourt la liaison. 52 → 100 % : elle est éteinte,
+/* 0 → 80 % : la lumière parcourt la liaison. 80 → 100 % : elle est éteinte,
    et l'offset reste à 0 pour que le retour à 1 ne se voie pas. */
 @keyframes pmFlux{
   0%{stroke-dashoffset:1;opacity:0}
-  5%{opacity:1}
-  45%{opacity:1}
-  52%{stroke-dashoffset:0;opacity:0}
+  6.4%{opacity:1}
+  70.4%{opacity:1}
+  80%{stroke-dashoffset:0;opacity:0}
   100%{stroke-dashoffset:0;opacity:0}}
 
 /* ── Mouvement réduit ────────────────────────────────────────────────────

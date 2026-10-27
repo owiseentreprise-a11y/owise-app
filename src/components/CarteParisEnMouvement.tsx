@@ -175,13 +175,25 @@ export default function CarteParisEnMouvement() {
               ))}
             </g>
 
-            {/* Le trafic : une lumière par liaison, chacune à son rythme. */}
+            {/* Le trafic : DEUX lumières par liaison, chacune à son rythme.
+                La seconde part à mi-cycle de la première (voir `.pm-flux-bis`
+                dans la feuille de style), si bien qu'une liaison n'est jamais
+                vide bien longtemps. Mesuré : de 17 à 20 lumières en l'air une
+                fois le régime établi, contre 5 à 8 avec une seule série. */}
             <g className="pm-trafic" fill="none" strokeLinecap="round">
               {LIAISONS.map(l => (
                 <use
                   key={l.id}
                   href={`#${l.id}`}
                   className={`pm-flux pm-flux-${l.ton}`}
+                  style={{ '--fd': `${l.duree}s`, '--ft': `${l.retard}s` } as Style}
+                />
+              ))}
+              {LIAISONS.map(l => (
+                <use
+                  key={`${l.id}-bis`}
+                  href={`#${l.id}`}
+                  className={`pm-flux pm-flux-${l.ton} pm-flux-bis`}
                   style={{ '--fd': `${l.duree}s`, '--ft': `${l.retard}s` } as Style}
                 />
               ))}
