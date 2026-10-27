@@ -1508,7 +1508,13 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
     radial-gradient(125% 95% at 76% 10%, rgba(var(--or-rvb),.10) 0%, transparent 58%),
     radial-gradient(90% 70% at 16% 94%, rgba(var(--or-rvb),.07) 0%, transparent 60%),
     var(--nuit);
-  box-shadow:0 26px 56px -30px rgba(var(--ombre-rvb),.55),0 2px 4px rgba(var(--ombre-rvb),.22)}
+  box-shadow:
+    0 26px 56px -30px rgba(var(--ombre-rvb),.55),
+    0 2px 4px rgba(var(--ombre-rvb),.22),
+    /* Le halo or du cadre du formulaire de devis, repris tel quel :
+       `.devis-card-wrap` pose `0 0 60px rgba(var(--or-rvb),.08)`. Même
+       recette, pour que les deux encadrés soient de la même matière. */
+    0 0 60px rgba(var(--or-rvb),.08)}
 .vt .carte-pm-plan{width:100%;height:auto;display:block;position:relative;z-index:1}
 .vt .carte-pm-note{font-size:12.5px;line-height:1.5;margin:12px 0 0;position:relative;z-index:1;
   color:rgba(var(--sur-fonce-rvb),.6)}
