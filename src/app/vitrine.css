@@ -1479,13 +1479,11 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
 }
 
 /* ══ « PARIS EN MOUVEMENT » — la carte animée ═══════════════════════════
-   Le composant ne s'affiche que dans la prévisualisation ; ces règles ne
-   s'appliquent donc à rien sur le site. Elles vivent ici plutôt que dans la
-   feuille d'aperçu pour qu'une intégration future n'ait rien à déplacer.
+   Servie sur toutes les pages de la vitrine depuis le 2026-10-27.
 
    Ce qui bouge : le tracé des liaisons (stroke-dashoffset), l'apparition
-   des points (opacité et échelle) et un point lumineux qui parcourt une
-   seule liaison. Rien d'autre ne bouge une fois la séquence jouée.
+   des points (opacité et échelle) et, en continu, une lumière par liaison
+   qui la parcourt puis se repose.
    Aucune animation sur une propriété qui déclenche une mise en page :
    uniquement `opacity`, `transform` et `stroke-dashoffset`. */
 
@@ -1522,26 +1520,26 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
 .vt .pm-pt,.vt .pm-arc{transform-box:fill-box;transform-origin:center}
 
 /* ── La chorégraphie ─────────────────────────────────────────────────────
-   Reprise du prototype 111, aux mêmes temps. Elle ne démarre qu'une fois
-   le bloc à l'écran — d'où `.vue`, posée par le composant.
+   Elle ne démarre qu'une fois le bloc à l'écran — d'où `.vue`, posée par
+   le composant.
      0,15 s  Paris s'allume, les cercles se déploient
-     0,55 s  la liaison mise en avant se dessine — la plus lente
-     puis    les cinq autres, de plus en plus vite
+     0,55 s  les douze liaisons se dessinent, l'une après l'autre
      chaque point NAÎT quand sa liaison l'atteint
-     3,2 s   le point lumineux part : seule chose qui bouge ensuite */
+     3,2 s   le trafic s'installe, et ne s'arrête plus */
 .vt .carte-pm .pm-arc{opacity:0}
 .vt .carte-pm.vue .pm-arc{animation:pmDeploie 1.1s cubic-bezier(.22,1,.36,1) .15s forwards}
 .vt .carte-pm.vue .pm-arc2{animation-delay:.28s}
 .vt .carte-pm.vue .pm-arc3{animation-delay:.41s}
 .vt .carte-pm.vue .pm-arc4{animation-delay:.54s}
 
-.vt .carte-pm .pm-route{stroke-dasharray:var(--l);stroke-dashoffset:var(--l)}
-.vt .carte-pm.vue .pm-route{animation:pmTrace 1.6s cubic-bezier(.33,0,.15,1) .55s forwards}
-.vt .carte-pm.vue .pm-r2{animation-delay:1.15s;animation-duration:1.25s}
-.vt .carte-pm.vue .pm-r3{animation-delay:1.35s;animation-duration:1.25s}
-.vt .carte-pm.vue .pm-r4{animation-delay:1.65s;animation-duration:1s}
-.vt .carte-pm.vue .pm-r5{animation-delay:1.8s;animation-duration:1s}
-.vt .carte-pm.vue .pm-r6{animation-delay:1.95s;animation-duration:1s}
+/* `pathLength="1"` est posé sur chaque courbe : un tiret de longueur 1 la
+   couvre entièrement, qu'elle soit longue ou courte. Plus aucune longueur
+   à mesurer ni à tenir à jour quand une courbe change. */
+.vt .carte-pm .pm-route{stroke-dasharray:1;stroke-dashoffset:1}
+.vt .carte-pm.vue .pm-route{animation:pmTrace 1.3s cubic-bezier(.33,0,.15,1) var(--rd,.55s) forwards}
+.vt .carte-pm .pm-route-fort{stroke:url(#pmFeu);stroke-width:3.4}
+.vt .carte-pm .pm-route-moyen{stroke:var(--sur-fonce);stroke-opacity:.34;stroke-width:1.9}
+.vt .carte-pm .pm-route-fin{stroke:var(--sur-fonce);stroke-opacity:.24;stroke-width:1.5}
 
 .vt .carte-pm .pm-pt{opacity:0}
 .vt .carte-pm.vue .pm-pt{animation:pmNait .5s cubic-bezier(.22,1,.36,1) forwards}
@@ -1553,26 +1551,45 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
 .vt .carte-pm.vue .pm-pt-cdg{animation-delay:2s}
 .vt .carte-pm.vue .pm-pt-orly{animation-delay:2.35s}
 
-.vt .carte-pm .pm-luciole{opacity:0}
-.vt .carte-pm.vue .pm-luciole{offset-path:path("M 262 206 C 310 230, 364 266, 404 318");
-  animation:pmParcourt 7.5s cubic-bezier(.42,0,.58,1) 3.2s infinite}
+/* ── Le trafic ───────────────────────────────────────────────────────────
+   Chaque lumière est un tiret court qui glisse le long de SA liaison. Le
+   motif vaut exactement la longueur de la courbe (.055 + .945 = 1) : un
+   seul tiret à la fois, et l'image à la fin du cycle est identique à celle
+   du début — la boucle ne se voit pas.
+
+   Le tiret n'est allumé que sur la première moitié du cycle ; le reste du
+   temps la liaison se repose. Ce silence, de durée différente pour chacune
+   des douze, est ce qui fait un trafic plutôt qu'un métronome. */
+.vt .carte-pm .pm-flux{stroke-dasharray:.13 .87;stroke-dashoffset:1;opacity:0}
+.vt .carte-pm.vue .pm-flux{animation:pmFlux var(--fd,8s) linear calc(3.2s + var(--ft,0s)) infinite}
+.vt .carte-pm .pm-flux-fort{stroke:var(--or-clair);stroke-width:5}
+.vt .carte-pm .pm-flux-moyen{stroke:var(--or-clair);stroke-width:3.6}
+.vt .carte-pm .pm-flux-fin{stroke:var(--or-clair);stroke-width:3}
+
 .vt .carte-pm.vue .pm-halo{animation:pmSouffle 4.6s ease-in-out 2.8s infinite}
 
-/* Aucun mouvement pendant la saisie : le seul élément qui bouge encore
-   s'arrête dès qu'un champ du formulaire a le focus. */
-html:has(.vt .devis-card :focus) .carte-pm .pm-luciole,
+/* Aucun mouvement pendant la saisie : tout ce qui bouge encore s'arrête
+   dès qu'un champ du formulaire a le focus. */
+html:has(.vt .devis-card :focus) .carte-pm .pm-flux,
 html:has(.vt .devis-card :focus) .carte-pm .pm-halo{animation-play-state:paused}
 
 @keyframes pmTrace{to{stroke-dashoffset:0}}
 @keyframes pmNait{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
 @keyframes pmDeploie{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
 @keyframes pmSouffle{0%,100%{opacity:.16;transform:scale(1)}50%{opacity:.42;transform:scale(1.5)}}
-@keyframes pmParcourt{0%{offset-distance:0%;opacity:0}7%{opacity:1}93%{opacity:1}
-  100%{offset-distance:100%;opacity:0}}
+/* 0 → 52 % : la lumière parcourt la liaison. 52 → 100 % : elle est éteinte,
+   et l'offset reste à 0 pour que le retour à 1 ne se voie pas. */
+@keyframes pmFlux{
+  0%{stroke-dashoffset:1;opacity:0}
+  5%{opacity:1}
+  45%{opacity:1}
+  52%{stroke-dashoffset:0;opacity:0}
+  100%{stroke-dashoffset:0;opacity:0}}
 
 /* ── Mouvement réduit ────────────────────────────────────────────────────
-   Le dessin reste, entier et lisible ; seul le mouvement disparaît. Le
-   point lumineux, lui, n'a de sens qu'en mouvement : il est retiré. */
+   Le dessin reste, entier et lisible ; seul le mouvement disparaît. Les
+   lumières, elles, n'ont de sens qu'en mouvement : arrêtées, elles ne
+   seraient que douze taches posées au départ de chaque liaison. Retirées. */
 @media (prefers-reduced-motion:reduce){
   /* Les sélecteurs portent `.vue`, comme ceux de la chorégraphie. Sans
      cela ils perdent : `.vt .carte-pm.vue .pm-halo` compte quatre classes,
@@ -1583,7 +1600,7 @@ html:has(.vt .devis-card :focus) .carte-pm .pm-halo{animation-play-state:paused}
   .vt .carte-pm.vue .pm-arc,.vt .carte-pm.vue .pm-pt{opacity:1;transform:none;animation:none}
   .vt .carte-pm.vue .pm-route{stroke-dashoffset:0;animation:none}
   .vt .carte-pm.vue .pm-halo{animation:none;opacity:.28}
-  .vt .carte-pm.vue .pm-luciole{display:none;animation:none}
+  .vt .carte-pm.vue .pm-flux{display:none;animation:none}
 }
 
 @media(max-width:560px){
