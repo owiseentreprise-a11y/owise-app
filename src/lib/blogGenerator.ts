@@ -383,7 +383,7 @@ function genTransfert(s: Sujet, prix?: number): BlogPost {
       },
       {
         titre: `Tarifs VTC ${dep} → ${arr} : ce que vous payez vraiment`,
-        texte: `Chez Owise, le tarif ${dep} → ${arr} est calculé à l'avance et confirmé lors de la réservation. ${prix ? `Pour une berline standard (1 à 4 passagers), comptez ${prix} € TTC, tout compris — péages, carburant, prise en charge.` : 'Le prix exact s\'affiche immédiatement dans notre estimateur en ligne, selon votre adresse précise. Aucun supplément ne s\'ajoute en fin de course.'} Pour un van 7 places, le tarif est adapté au nombre de passagers. Les départs avant 6h ou après 22h sont au même tarif qu'en journée.`,
+        texte: `Chez Owise, le tarif ${dep} → ${arr} est calculé à l'avance et confirmé lors de la réservation. ${prix ? `Pour une berline standard (1 à 3 passagers), comptez ${prix} € TTC, tout compris — péages, carburant, prise en charge.` : 'Le prix exact s\'affiche immédiatement dans notre estimateur en ligne, selon votre adresse précise. Aucun supplément ne s\'ajoute en fin de course.'} Pour un van 7 places, le tarif est adapté au nombre de passagers. Les départs avant 6h ou après 22h sont au même tarif qu'en journée.`,
       },
       {
         titre: `Durée du trajet ${dep} → ${arr}`,
@@ -410,7 +410,7 @@ function genTransfert(s: Sujet, prix?: number): BlogPost {
       { question: `Peut-on réserver un chauffeur Owise à la dernière minute ?`, reponse: `Oui, votre chauffeur Owise est disponible 24h/24. Nous recommandons toutefois de réserver à l'avance pour les vols matinaux ou les événements.` },
       ...(isAirport ? [{ question: `Que se passe-t-il si mon vol est retardé ?`, reponse: `Votre chauffeur Owise suit votre vol en temps réel. En cas de retard, il ajuste automatiquement son heure d'arrivée — sans frais supplémentaires.` }] : [{ question: `Peut-on réserver un aller-retour ${dep} ↔ ${arr} ?`, reponse: `Oui, l'option aller-retour est disponible sur owise.fr. Votre chauffeur Owise peut également vous attendre sur place si vous avez besoin d'une mise à disposition.` }]),
       { question: `Peut-on transporter des bagages volumineux (skis, poussette) ?`, reponse: `Oui, les berlines Owise ont un grand coffre adapté aux bagages standards. Pour les équipements volumineux, le van 7 places est recommandé.` },
-      { question: `Quel véhicule choisir pour le trajet ${dep} → ${arr} ?`, reponse: `Pour 1 à 4 passagers, la berline est idéale. Pour 5 à 7 passagers ou des bagages nombreux, optez pour le van 7 places.` },
+      { question: `Quel véhicule choisir pour le trajet ${dep} → ${arr} ?`, reponse: `Pour 1 à 3 passagers, la berline est idéale. Pour 5 à 7 passagers ou des bagages nombreux, optez pour le van 7 places. Pour 4 passagers, contactez Owise afin de vérifier la solution adaptée.` },
       { question: `Y a-t-il un supplément pour un départ de nuit (avant 6h) ?`, reponse: `Non, les courses avant 6h sont au même tarif qu'en journée ou après 22h. Il est inclus et visible dans votre estimation avant de confirmer.` },
       { question: `Comment payer mon chauffeur Owise ?`, reponse: `Paiement en ligne sécurisé par carte bancaire lors de la réservation (Stripe). Le paiement en espèces directement à votre chauffeur est également possible.` },
       { question: `Votre chauffeur Owise dessert-il les communes proches de ${dep} ?`, reponse: `Oui, toutes les communes dans un rayon de 10 à 15 km autour de ${dep} sont desservies. Renseignez votre adresse précise sur owise.fr pour obtenir votre tarif exact.` },
@@ -470,7 +470,7 @@ function genGuide(s: Sujet): BlogPost {
       { question: `Votre chauffeur Owise peut-il attendre sur place ?`, reponse: `Oui, pour les événements ou visites longues, votre chauffeur Owise peut se mettre à disposition et vous attendre sur place selon vos besoins.` },
       { question: `Quel est le tarif depuis Creil vers ${theme} ?`, reponse: `Depuis Creil, le tarif est calculé selon votre adresse précise sur owise.fr. Obtenez votre prix exact en quelques secondes, sans engagement.` },
       { question: `Le service est-il disponible pour les événements en soirée ?`, reponse: `Oui, 24h/24 et 7j/7. Les retours après 22h sont au même tarif qu'en journée — le prix est visible avant confirmation.` },
-      { question: `Combien de passagers peut-on être ?`, reponse: `Jusqu'à 4 passagers en berline, jusqu'à 7 en van. Renseignez le nombre lors de la réservation pour le tarif adapté.` },
+      { question: `Combien de passagers peut-on être ?`, reponse: `Jusqu'à 3 passagers en berline, jusqu'à 7 en van. Renseignez le nombre lors de la réservation pour le tarif adapté.` },
       { question: `Peut-on transporter du matériel (équipement sport, musical) ?`, reponse: `Oui, dans la limite des capacités du véhicule. Pour du matériel volumineux, le van 7 places est recommandé.` },
       { question: `Votre chauffeur Owise dessert-il toute la zone autour de ${theme} ?`, reponse: `Oui, toutes les communes dans un rayon de 15 km sont desservies. Renseignez votre adresse exacte sur owise.fr.` },
     ],
