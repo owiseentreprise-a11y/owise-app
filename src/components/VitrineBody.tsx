@@ -984,6 +984,31 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setCookieModalOpen(false)
   }
 
+  /* Descendre jusqu'au formulaire de devis.
+     Un seul `scrollIntoView` ne suffit pas : la page fait 13 135 px et son
+     contenu se charge au fur et a mesure de la descente, si bien que la
+     position visee est perimee avant d'etre atteinte. Mesure sur la
+     previsualisation : le clic partait de 2 739 px, s'arretait a 3 604, et
+     laissait #devis 6 376 px plus bas. Le defilement manuel depuis le haut
+     de la page echouait pareillement.
+     On recale donc jusqu'a quatre fois, a 220 ms d'intervalle, et on
+     s'arrete des que la section est en haut de l'ecran. Le compteur borne
+     la boucle : elle ne peut pas tourner indefiniment si la page continue
+     de bouger. */
+  function allerAuDevis() {
+    let essais = 0
+    const viser = () => {
+      const el = document.getElementById('devis')
+      if (!el) return
+      const haut = el.getBoundingClientRect().top
+      if (Math.abs(haut) < 80 || essais >= 4) return
+      essais++
+      window.scrollBy({ top: haut, behavior: 'auto' })
+      setTimeout(viser, 220)
+    }
+    viser()
+  }
+
   const currentEst = devisPrix
   const currentVeh = getVehicle(pax)
   /* Même source que les cartes véhicules : NOM_VERS_CLE fait correspondre le
@@ -1479,7 +1504,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     className="vc-devis-btn"
                     onClick={() => {
                       setPaxN(8)
-                      document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      allerAuDevis()
                     }}
                   >
                     Demander un devis
