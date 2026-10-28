@@ -1023,7 +1023,7 @@ export const DESTINATIONS: Record<string, {
       { q: 'Combien de temps prend le trajet Compiègne → CDG ?', a: '58 km, soit 44 à 48 minutes via l\'A1 — l\'accès se fait par Verberie ou Lacroix-Saint-Ouen. Quatre minutes séparent le trajet de 6h de celui de 8h : la portion autoroutière absorbe l\'essentiel du parcours.' },
       { q: 'Y a-t-il des alternatives moins chères depuis Compiègne pour aller à CDG ?', a: 'Les bus et navettes collectifs existent mais ont des horaires fixes et des trajets avec arrêts multiples. Le VTC Owise depuis Compiègne offre la prise en charge directe à domicile, à l\'heure voulue, sans correspondance — avec un chauffeur dédié.' },
       { q: 'Le service couvre-t-il Margny-lès-Compiègne et Venette ?', a: 'Oui. Toutes les communes de l\'agglomération de Compiègne sont couvertes : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Choisy-au-Bac, Lacroix-Saint-Ouen et leurs environs.' },
-      { q: 'Peut-on réserver un VTC Compiègne–CDG pour plusieurs personnes ?', a: 'Oui. Owise propose des berlines (jusqu\'à 4 passagers) et des vans 7 places pour les groupes. Réservez le véhicule adapté à votre groupe sur owise.fr.' },
+      { q: 'Peut-on réserver un VTC Compiègne–CDG pour plusieurs personnes ?', a: 'Oui. La berline standard accueille jusqu\'à 3 passagers, la Berline Premium jusqu\'à 4, et le van 7 places jusqu\'à 7 passagers. Pour 4 passagers, contactez Owise afin de vérifier la solution adaptée.' },
     ],
   },
 
