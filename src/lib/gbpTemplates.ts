@@ -89,7 +89,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       '📅 Conseil : Réservez votre VTC à l\'avance\n\n' +
       'Pour ne jamais rater votre vol ou votre train, pensez à réserver votre chauffeur au moins 24h à l\'avance.\n\n' +
       'Avec Owise :\n' +
-      '• Confirmation immédiate par email et SMS\n' +
+      '• Confirmation immédiate par email\n' +
       '• Annulation gratuite avant attribution\n' +
       '• Rappel automatique la veille de votre course\n\n' +
       'Serein le jour J. Réservez dès maintenant.',
@@ -119,7 +119,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       '• Pas de majoration surprise\n' +
       '• Tarif fixe affiché avant réservation\n' +
       '• Chauffeur professionnel et ponctuel\n' +
-      '• Confirmation SMS avant la prise en charge\n\n' +
+      '• Rappel par e-mail la veille de votre course\n\n' +
       'La sécurité d\'un chauffeur fiable, à n\'importe quelle heure.',
     cta: 'BOOK',
     url: `${BASE_URL}/reserver`,
