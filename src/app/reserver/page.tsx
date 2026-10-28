@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import ReserverClient from './ReserverClient'
 import TarifsReference from './TarifsReference'
+import ParcoursEtQuestions, { QUESTIONS } from './ParcoursEtQuestions'
 import { lireAvis } from '@/lib/identite-owise'
 
 export const dynamic = 'force-dynamic'
@@ -116,6 +117,20 @@ export default async function ReserverPage() {
     },
   }
 
+  /* Les questions ne sont pas recopiées ici : elles sont lues dans le même
+     tableau que celui affiché par ParcoursEtQuestions. Une fiche FAQPage qui
+     dit autre chose que la page qu'elle décrit est une fiche fausse — et
+     c'est exactement ainsi que cinq politiques d'annulation ont coexisté. */
+  const ficheQuestions = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: QUESTIONS.map(({ q, r }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: r },
+    })),
+  }
+
   const ficheFilAriane = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -130,6 +145,7 @@ export default async function ReserverPage() {
       {/* Ces deux fiches décrivent la page à Google et aux assistants IA.
           Elles étaient absentes : /reserver ne déclarait rien du tout. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheService) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheQuestions) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
 
       <ReserverClient
@@ -142,6 +158,8 @@ export default async function ReserverPage() {
       />
 
       <TarifsReference forfaits={forfaits} />
+
+      <ParcoursEtQuestions />
     </>
   )
 }
