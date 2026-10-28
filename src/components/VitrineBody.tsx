@@ -71,7 +71,7 @@ function getVehicle(p:number) { return VEHICLES.find(v=>p>=v.min&&p<=v.max)||VEH
 const FAQS = [
   { q:'Comment réserver un VTC Owise ?', a:'Réservez directement via notre formulaire en ligne, disponible 24h/24. Renseignez votre trajet, vos passagers et l\'horaire souhaité, et recevez une confirmation immédiate par e-mail et SMS. Vous pouvez aussi nous joindre par téléphone ou WhatsApp pour une réservation assistée.' },
   { q:'Les tarifs sont-ils fixes et garantis ?', a:'Oui. Chaque devis est calculé à l\'avance et garanti — aucune majoration en cours de route, aucune surprise à l\'arrivée. Le tarif communiqué lors de la réservation est celui que vous payez, quelle que soit la durée du trajet ou les conditions de circulation.' },
-  { q:'Quelles sont vos conditions d\'annulation ?', a:'L\'annulation est gratuite jusqu\'à 2 heures avant le départ prévu. Au-delà, des frais d\'annulation peuvent s\'appliquer. En cas d\'annulation tardive répétée, une empreinte bancaire peut être demandée à la réservation suivante.' },
+  { q:'Quelles sont vos conditions d\'annulation ?', a:'L\'annulation est gratuite tant qu\'aucun chauffeur n\'a été attribué. Après attribution : gratuite dans les 3 premières minutes, 3 € de 3 à 10 minutes, 8 € au-delà. Si le chauffeur est déjà arrivé, la prise en charge et 5 minutes d\'attente sont dues. Le détail figure dans nos mentions légales.' },
   { q:'Comment sont sélectionnés vos chauffeurs ?', a:'Tous nos chauffeurs sont titulaires de la carte professionnelle VTC, obligatoire en France, et justifient d\'un casier judiciaire vierge. Ils sont sélectionnés sur leur expérience de conduite et leur sens du service avant de rejoindre notre flotte, et nos véhicules disposent tous d\'une assurance transport de personnes en cours de validité.' },
   { q:'Quels moyens de paiement acceptez-vous ?', a:'Carte bancaire, Apple Pay et Google Pay, via un paiement 100% sécurisé (Stripe, chiffrement SSL/TLS). Aucune donnée bancaire n\'est stockée sur nos serveurs. Les comptes entreprise peuvent également être facturés mensuellement sur facture unique.' },
   { q:'Quels aéroports desservez-vous ?', a:'Nous assurons les transferts vers et depuis Paris-CDG (Roissy), Paris-Orly, et Beauvais-Tillé. Nous intervenons également sur les héliports parisiens et les aéroports secondaires d\'Île-de-France sur demande. Pour CDG, nous suivons les retards de vol en temps réel.' },
@@ -1351,7 +1351,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <span style={{width:1,height:10,background:'var(--t3)',flexShrink:0}}/>
                   <span style={{fontSize:10,color:'var(--t2)'}}>✓ VTC certifié</span>
                   <span style={{width:1,height:10,background:'var(--t3)',flexShrink:0}}/>
-                  <span style={{fontSize:10,color:'var(--t2)'}}>✓ Annulation gratuite</span>
+                  <span style={{fontSize:10,color:'var(--t2)'}}>✓ Annulation gratuite avant attribution</span>
                 </div>
                 {bcPrice !== null && (
                   <button onClick={async()=>{
@@ -1370,7 +1370,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </div>
           </div>{/* /hero-booking-wrap */}
           <div className="hero-trust-bar">
-            {['Paris · IDF · Oise','Prix fixe garanti','Disponible 24h/24','Annulation gratuite','Paiement sécurisé'].map((label,i)=>(
+            {['Paris · IDF · Oise','Prix fixe garanti','Disponible 24h/24','Annulation gratuite avant attribution','Paiement sécurisé'].map((label,i)=>(
               <Fragment key={label}>
                 {i>0 && <div className="htb-sep"/>}
                 <div className="htb-item">

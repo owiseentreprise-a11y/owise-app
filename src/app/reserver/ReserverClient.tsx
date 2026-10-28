@@ -1327,7 +1327,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
               {[
                 { icon: '✓', text: 'Tarif fixe garanti' },
-                { icon: '✓', text: 'Annulation gratuite 24h avant' },
+                { icon: '✓', text: 'Annulation gratuite avant attribution' },
                 { icon: '✓', text: 'Confirmation immédiate' },
               ].map(({ icon, text }) => (
                 <span key={text} style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4 }}>

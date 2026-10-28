@@ -631,7 +631,7 @@ function genComparatif(s: Sujet, prix?: number): BlogPost {
       },
       {
         titre: `Flexibilité et disponibilité`,
-        texte: `Votre chauffeur Owise est disponible 24h/24 sans contrainte d'horaires, avec réservation en ligne en 2 minutes. Modification ou annulation sans pénalité jusqu'à l'arrivée du chauffeur. Cette flexibilité est particulièrement précieuse pour les déplacements professionnels imprévus ou les retards de vol.`,
+        texte: `Votre chauffeur Owise est disponible 24h/24 sans contrainte d'horaires, avec réservation en ligne en 2 minutes. Annulation gratuite tant qu'aucun chauffeur n'a été attribué. Cette flexibilité est particulièrement précieuse pour les déplacements professionnels imprévus ou les retards de vol.`,
       },
       {
         titre: `Notre verdict`,
@@ -653,7 +653,7 @@ function genFaqGenerique(theme: string): { question: string; reponse: string }[]
     { question: `Peut-on payer en espèces ?`, reponse: `Oui, le paiement en espèces est possible directement à votre chauffeur. Le paiement en ligne par carte est également disponible à la réservation.` },
     { question: `Y a-t-il un supplément pour plusieurs arrêts ?`, reponse: `Oui, pour les trajets avec étapes intermédiaires. Le tarif exact avec étapes s'affiche sur owise.fr.` },
     { question: `Votre chauffeur Owise propose-t-il des véhicules accessibles PMR ?`, reponse: `Contactez-nous directement pour les besoins spécifiques PMR. Nous faisons notre possible pour adapter le service.` },
-    { question: `Que se passe-t-il si je dois annuler ?`, reponse: `L'annulation est gratuite jusqu'à l'arrivée de votre chauffeur Owise. Aucune pénalité sur la carte bancaire.` },
+    { question: `Que se passe-t-il si je dois annuler ?`, reponse: `L'annulation est gratuite tant qu'aucun chauffeur n'a été attribué. Après attribution : gratuite dans les 3 premières minutes, 3 € de 3 à 10 minutes, 8 € au-delà. Le détail figure dans les mentions légales d'owise.fr.` },
     { question: `Les chauffeurs Owise sont-ils certifiés VTC ?`, reponse: `Oui, tous nos chauffeurs sont titulaires d'une carte professionnelle VTC délivrée par la préfecture.` },
     { question: `Peut-on réserver pour quelqu'un d'autre (client, famille) ?`, reponse: `Oui, le compte et le paiement sont à votre nom, le passager peut être différent. Indiquez simplement les coordonnées de la personne transportée.` },
     { question: `Owise propose-t-il des forfaits pour trajets récurrents ?`, reponse: `Oui, pour les clients réguliers et les comptes entreprise. Contactez-nous à owise.entreprise@gmail.com pour un devis personnalisé.` },

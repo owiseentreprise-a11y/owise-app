@@ -90,8 +90,7 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Pour ne jamais rater votre vol ou votre train, pensez à réserver votre chauffeur au moins 24h à l\'avance.\n\n' +
       'Avec Owise :\n' +
       '• Confirmation immédiate par email et SMS\n' +
-      '• Modification gratuite jusqu\'à 2h avant\n' +
-      '• Annulation sans frais jusqu\'à 24h avant\n' +
+      '• Annulation gratuite avant attribution\n' +
       '• Rappel automatique la veille de votre course\n\n' +
       'Serein le jour J. Réservez dès maintenant.',
     cta: 'BOOK',
