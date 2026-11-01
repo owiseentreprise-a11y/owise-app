@@ -1,4 +1,7 @@
 import { notFound } from 'next/navigation'
+/* La palette « Paris en mouvement » vit dans `vitrine.css`, sous
+   `.vt.vt-palette-a`. On l'importe plutôt que d'en recopier les valeurs. */
+import '../../vitrine.css'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -997,15 +1000,15 @@ export default async function BlogPostPage({ params }: Props) {
   } : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
+    <div className="vt vt-palette-a" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}
 
       {/* Header */}
-      <div style={{ background: '#09091A', padding: '24px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 860, margin: '0 auto' }}>
-        <Link href="/blog" style={{ fontSize: 12, color: 'rgba(201,168,76,.8)', textDecoration: 'none', letterSpacing: '.08em' }}>← Blog</Link>
-        <Link href="/" style={{ fontFamily: 'Georgia, serif', fontSize: 16, fontWeight: 600, letterSpacing: '.1em', color: '#EDE8DF', textDecoration: 'none' }}>OWISE</Link>
-        <Link href="/reserver" style={{ fontSize: 12, color: 'rgba(201,168,76,.8)', textDecoration: 'none' }}>Réserver →</Link>
+      <div style={{ background: 'var(--nuit)', padding: '24px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 860, margin: '0 auto' }}>
+        <Link href="/blog" style={{ fontSize: 12, color: 'rgba(var(--or-rvb),.85)', textDecoration: 'none', letterSpacing: '.08em' }}>← Blog</Link>
+        <Link href="/" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 600, letterSpacing: '.1em', color: 'var(--t1)', textDecoration: 'none' }}>OWISE</Link>
+        <Link href="/reserver" style={{ fontSize: 12, color: 'rgba(var(--or-rvb),.85)', textDecoration: 'none' }}>Réserver →</Link>
       </div>
 
       <article style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px' }}>
@@ -1013,42 +1016,42 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Meta */}
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
           {post.categorie && (
-            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, background: 'rgba(201,168,76,.12)', color: '#C9A84C' }}>
+            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, background: 'rgba(var(--or-rvb),.12)', color: 'var(--sur-voile-or)' }}>
               {post.categorie}
             </span>
           )}
-          {date && <span style={{ fontSize: 11, color: '#9B9B9B' }}>{date}</span>}
+          {date && <span style={{ fontSize: 11, color: 'var(--t2)' }}>{date}</span>}
         </div>
 
         {/* Titre */}
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 34, fontWeight: 500, color: '#09091A', lineHeight: 1.2, margin: '0 0 24px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4.6vw, 44px)', fontWeight: 500, color: 'var(--t1)', lineHeight: 1.16, margin: '0 0 24px' }}>
           {post.titre}
         </h1>
 
         {/* Intro */}
-        <p style={{ fontSize: 16, color: '#3a3a4a', lineHeight: 1.8, marginBottom: 36, padding: '20px 22px', background: '#fff', borderRadius: 10, borderLeft: '3px solid #C9A84C' }}>
+        <p style={{ fontSize: 16, color: 'var(--t1)', lineHeight: 1.8, marginBottom: 36, padding: '20px 22px', background: 'var(--papier)', borderRadius: 10, borderLeft: '3px solid var(--gold)' }}>
           {post.intro}
         </p>
 
         {/* Paragraphes */}
         {paragraphes.map((para, i) => (
           <div key={i} style={{ marginBottom: 32 }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 22, fontWeight: 500, color: '#09091A', marginBottom: 12 }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 500, color: 'var(--t1)', marginBottom: 12 }}>
               {para.titre}
             </h2>
-            <p style={{ fontSize: 15, color: '#3a3a4a', lineHeight: 1.8 }}>{para.texte}</p>
+            <p style={{ fontSize: 15, color: 'var(--t2)', lineHeight: 1.8 }}>{para.texte}</p>
           </div>
         ))}
 
         {/* Conclusion */}
-        <div style={{ background: '#09091A', borderRadius: 12, padding: '24px 22px', margin: '40px 0' }}>
-          <p style={{ color: '#EDE8DF', lineHeight: 1.8, margin: 0, fontSize: 15 }}>{post.conclusion}</p>
+        <div style={{ background: 'var(--nuit)', borderRadius: 12, padding: '24px 22px', margin: '40px 0' }}>
+          <p style={{ color: 'var(--t1)', lineHeight: 1.8, margin: 0, fontSize: 15 }}>{post.conclusion}</p>
         </div>
 
         {/* CTA */}
         <div style={{ textAlign: 'center', margin: '40px 0' }}>
           <Link href="/reserver" style={{
-            display: 'inline-block', background: '#C9A84C', color: '#09091A',
+            display: 'inline-block', background: 'var(--gold)', color: 'var(--sur-or)',
             textDecoration: 'none', padding: '14px 36px', borderRadius: 8,
             fontWeight: 700, fontSize: 14,
           }}>
@@ -1059,14 +1062,14 @@ export default async function BlogPostPage({ params }: Props) {
         {/* FAQ */}
         {faq.length > 0 && (
           <div style={{ marginTop: 48 }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 500, color: '#09091A', marginBottom: 24 }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 500, color: 'var(--t1)', marginBottom: 24 }}>
               Questions fréquentes
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {faq.map((f, i) => (
-                <div key={i} style={{ background: '#fff', borderRadius: 10, padding: '18px 20px', border: '1px solid rgba(0,0,0,.06)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#09091A', marginBottom: 6 }}>{f.question}</div>
-                  <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.7 }}>{f.reponse}</div>
+                <div key={i} style={{ background: 'var(--papier)', borderRadius: 10, padding: '18px 20px', border: '1px solid rgba(var(--contraste-rvb),.08)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 6 }}>{f.question}</div>
+                  <div style={{ fontSize: 13, color: 'var(--t2)', lineHeight: 1.7 }}>{f.reponse}</div>
                 </div>
               ))}
             </div>
@@ -1077,22 +1080,22 @@ export default async function BlogPostPage({ params }: Props) {
         {mots.length > 0 && (
           <div style={{ marginTop: 32, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {mots.map(m => (
-              <span key={m} style={{ fontSize: 10, color: '#9B9B9B', background: '#f0ede8', borderRadius: 20, padding: '4px 12px' }}>{m}</span>
+              <span key={m} style={{ fontSize: 10, color: 'var(--t2)', background: 'var(--elevated)', borderRadius: 20, padding: '4px 12px' }}>{m}</span>
             ))}
           </div>
         )}
 
         {/* Pages associées */}
         {(DESTINATIONS[slug] ?? []).length > 0 && (
-          <div style={{ marginTop: 40, padding: '20px 22px', background: '#fff', borderRadius: 10, border: '1px solid rgba(0,0,0,.06)' }}>
-            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: '#9B9B9B', marginBottom: 12 }}>
+          <div style={{ marginTop: 40, padding: '20px 22px', background: 'var(--papier)', borderRadius: 10, border: '1px solid rgba(var(--contraste-rvb),.08)' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
               Pages associées
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {(DESTINATIONS[slug] ?? []).map(d => (
                 <Link key={d.href} href={d.href} style={{
-                  fontSize: 12, fontWeight: 500, color: '#09091A',
-                  background: '#F8F6F1', border: '1px solid rgba(201,168,76,.2)',
+                  fontSize: 12, fontWeight: 500, color: 'var(--t1)',
+                  background: 'var(--elevated)', border: '1px solid rgba(var(--or-rvb),.26)',
                   borderRadius: 6, padding: '6px 14px', textDecoration: 'none',
                 }}>
                   {d.label} →
@@ -1103,9 +1106,9 @@ export default async function BlogPostPage({ params }: Props) {
         )}
 
         {/* Retour blog */}
-        <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(0,0,0,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link href="/blog" style={{ fontSize: 13, color: '#C9A84C', textDecoration: 'none' }}>← Tous les articles</Link>
-          <Link href="/reserver" style={{ fontSize: 13, color: '#09091A', textDecoration: 'none', fontWeight: 600 }}>Réserver maintenant →</Link>
+        <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(var(--contraste-rvb),.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link href="/blog" style={{ fontSize: 13, color: 'var(--gold)', textDecoration: 'none' }}>← Tous les articles</Link>
+          <Link href="/reserver" style={{ fontSize: 13, color: 'var(--t1)', textDecoration: 'none', fontWeight: 600 }}>Réserver maintenant →</Link>
         </div>
       </article>
     </div>

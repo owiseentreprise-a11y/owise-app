@@ -16,10 +16,10 @@
 
 export type ForfaitReference = { depart: string; arrivee: string; prix: number }
 
-const OR = '#C9A84C'
-const CREME = '#F8F6F1'
-const ENCRE = '#09091A'
-const ENCRE_2 = '#6B6B7B'
+const OR = 'var(--gold)'
+const CREME = 'var(--elevated)'
+const ENCRE = 'var(--t1)'
+const ENCRE_2 = 'var(--t2)'
 
 export default function TarifsReference({ forfaits }: { forfaits: ForfaitReference[] }) {
   if (forfaits.length === 0) return null
@@ -29,7 +29,7 @@ export default function TarifsReference({ forfaits }: { forfaits: ForfaitReferen
       aria-labelledby="titre-forfaits"
       style={{
         background: CREME,
-        borderTop: '1px solid rgba(201,168,76,.18)',
+        borderTop: '1px solid rgba(var(--or-rvb),.18)',
         padding: '56px 20px 64px',
       }}
     >
@@ -70,9 +70,9 @@ export default function TarifsReference({ forfaits }: { forfaits: ForfaitReferen
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 gap: 14, padding: '14px 16px', borderRadius: 11,
-                background: '#FFFDF9',
-                border: '1px solid rgba(201,168,76,.16)',
-                boxShadow: '0 1px 2px rgba(9,9,26,.04)',
+                background: 'var(--surface)',
+                border: '1px solid rgba(var(--or-rvb),.16)',
+                boxShadow: '0 1px 2px rgba(var(--nuit-rvb),.04)',
               }}
             >
               <span style={{ fontSize: 13, lineHeight: 1.45, color: ENCRE, minWidth: 0 }}>

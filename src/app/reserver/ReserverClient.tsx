@@ -150,23 +150,23 @@ function AddressInput({
         </span>
         {loading && (
           <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#848499" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
             </svg>
           </span>
         )}
         {hasSelection && !loading && (
-          <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#3DB87A', fontSize: 14, pointerEvents: 'none' }}>✓</span>
+          <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--green)', fontSize: 14, pointerEvents: 'none' }}>✓</span>
         )}
         <input
           className="res-input"
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: 'rgba(255,255,255,.95)',
-            border: `1px solid ${hasSelection ? 'rgba(61,184,122,.35)' : open ? 'rgba(201,168,76,.5)' : 'rgba(10,10,10,.12)'}`,
+            background: 'rgba(var(--papier-rvb),.95)',
+            border: `1px solid ${hasSelection ? 'rgba(var(--vert-rvb),.35)' : open ? 'rgba(var(--or-rvb),.5)' : 'rgba(var(--contraste-rvb),.12)'}`,
             borderRadius: open && suggestions.length > 0 ? '10px 10px 0 0' : 10,
             padding: '13px 40px 13px 40px',
-            fontSize: 14, color: '#09091A', outline: 'none',
+            fontSize: 14, color: 'var(--t1)', outline: 'none',
             fontFamily: 'inherit', transition: 'border-color .15s',
           }}
           placeholder={placeholder}
@@ -181,9 +181,9 @@ function AddressInput({
       {open && suggestions.length > 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-          background: '#FFFFFF', border: '1px solid rgba(201,168,76,.25)',
+          background: 'var(--papier)', border: '1px solid rgba(var(--or-rvb),.25)',
           borderTop: 'none', borderRadius: '0 0 10px 10px',
-          overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,.08)',
+          overflow: 'hidden', boxShadow: '0 4px 16px rgba(var(--ombre-rvb),.08)',
         }}>
           {suggestions.map((s, i) => (
             <button
@@ -193,9 +193,9 @@ function AddressInput({
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 width: '100%', padding: '11px 16px',
-                background: i === focused ? 'rgba(201,168,76,.1)' : 'transparent',
+                background: i === focused ? 'rgba(var(--or-rvb),.1)' : 'transparent',
                 border: 'none', cursor: 'pointer', textAlign: 'left',
-                borderBottom: i < suggestions.length - 1 ? '1px solid rgba(0,0,0,.05)' : 'none',
+                borderBottom: i < suggestions.length - 1 ? '1px solid rgba(var(--contraste-rvb),.05)' : 'none',
                 transition: 'background .1s',
               }}
               onMouseEnter={() => setFocused(i)}
@@ -203,9 +203,9 @@ function AddressInput({
             >
               <span style={{ fontSize: 14, flexShrink: 0 }}>{getSuggestionIcon(s)}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: '#09091A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
                 {(s.sublabel || s.postcode) && (
-                  <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1 }}>
                     {s.sublabel ?? `${s.postcode} ${s.city}`}
                   </div>
                 )}
@@ -249,7 +249,7 @@ const VEHICULES = [
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 7, fontWeight: 500 }}>
+    <div style={{ fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 7, fontWeight: 500 }}>
       {children}
     </div>
   )
@@ -257,10 +257,10 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 const baseInput: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
-  background: 'rgba(255,255,255,.95)',
-  border: '1px solid rgba(10,10,10,.12)',
+  background: 'rgba(var(--papier-rvb),.95)',
+  border: '1px solid rgba(var(--contraste-rvb),.12)',
   borderRadius: 10, padding: '13px 16px',
-  fontSize: 14, color: '#09091A', outline: 'none', fontFamily: 'inherit',
+  fontSize: 14, color: 'var(--t1)', outline: 'none', fontFamily: 'inherit',
 }
 
 // Bornes du sélecteur de date — calculées une fois au chargement du module,
@@ -691,15 +691,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
   // Badge de tarification
   const pricingBadge = useForfait
-    ? { label: 'Forfait zone', color: '#4A8ED0' }
-    : { label: 'Tarif au km', color: '#C9A84C' }
+    ? { label: 'Forfait zone', color: 'var(--blue)' }
+    : { label: 'Tarif au km', color: 'var(--gold)' }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: '#09091A' }}>
+    <div style={{ minHeight: '100vh', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: 'var(--t1)' }}>
       <style>{`
-        .res-input { background: #FFFFFF !important; border: 1px solid rgba(0,0,0,.12) !important; color: #09091A !important; }
-        .res-input:focus { border-color: rgba(201,168,76,.6) !important; background: #FFFFFF !important; outline: none !important; box-shadow: 0 0 0 3px rgba(201,168,76,.1) !important; }
-        .res-input::placeholder { color: rgba(9,9,26,.35) !important; }
+        .res-input { background: var(--papier) !important; border: 1px solid rgba(var(--contraste-rvb),.14) !important; color: var(--t1) !important; }
+        .res-input:focus { border-color: rgba(var(--or-rvb),.6) !important; background: var(--papier) !important; outline: none !important; box-shadow: 0 0 0 3px rgba(var(--or-rvb),.1) !important; }
+        .res-input::placeholder { color: rgba(var(--sur-fonce-rvb),.42) !important; }
         /* Sous 360 px, la date et l'heure ne tiennent plus côte à côte sans
            que l'un des deux devienne illisible : mesuré, il leur faudrait
            260 px à elles deux quand la carte n'en offre que 228. On les
@@ -708,22 +708,22 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
            1280 et 1440 px. */
         @media (max-width: 359px) { .res-dt { grid-template-columns: 1fr !important; } }
         .veh-card { cursor: pointer; transition: border-color .15s, background .15s; }
-        .veh-card:hover { background: rgba(201,168,76,.05) !important; border-color: rgba(201,168,76,.4) !important; }
-        .veh-card.active { border-color: #C9A84C !important; background: rgba(201,168,76,.08) !important; }
-        .pas-btn:hover { background: rgba(0,0,0,.06) !important; }
-        .pay-btn:hover:not(:disabled) { background: #09091A !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.15) !important; }
-        .confirm-seal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; background: #09091A; opacity: 0; animation: seal-in .5s ease forwards; }
-        .confirm-seal-ring { width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid rgba(201,168,76,.25); position: relative; display: flex; align-items: center; justify-content: center; }
-        .confirm-seal-ring::before { content: ''; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid transparent; border-top-color: #C9A84C; animation: seal-spin 1.1s linear infinite; }
-        .confirm-seal-label { font-family: var(--font-cormorant, Georgia), serif; font-style: italic; font-size: 15px; color: rgba(237,232,223,.75); letter-spacing: .02em; }
+        .veh-card:hover { background: rgba(var(--or-rvb),.05) !important; border-color: rgba(var(--or-rvb),.4) !important; }
+        .veh-card.active { border-color: var(--gold) !important; background: rgba(var(--or-rvb),.08) !important; }
+        .pas-btn:hover { background: rgba(var(--contraste-rvb),.06) !important; }
+        .pay-btn:hover:not(:disabled) { background: var(--encre-douce) !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(var(--ombre-rvb),.15) !important; }
+        .confirm-seal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; background: var(--nuit); opacity: 0; animation: seal-in .5s ease forwards; }
+        .confirm-seal-ring { width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid rgba(var(--or-rvb),.25); position: relative; display: flex; align-items: center; justify-content: center; }
+        .confirm-seal-ring::before { content: ''; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid transparent; border-top-color: var(--gold); animation: seal-spin 1.1s linear infinite; }
+        .confirm-seal-label { font-family: var(--font-cormorant, Georgia), serif; font-style: italic; font-size: 15px; color: rgba(var(--sur-fonce-rvb),.75); letter-spacing: .02em; }
         @keyframes seal-in { to { opacity: 1; } }
         @keyframes seal-spin { to { transform: rotate(360deg); } }
-        .back-btn:hover { color: #09091A !important; }
-        .res-time { color: #C9A84C !important; }
-        .res-time::-webkit-datetime-edit { color: #C9A84C !important; }
+        .back-btn:hover { color: var(--t1) !important; }
+        .res-time { color: var(--gold) !important; }
+        .res-time::-webkit-datetime-edit { color: var(--gold) !important; }
         .res-time::-webkit-datetime-edit-hour-field,
-        .res-time::-webkit-datetime-edit-minute-field { color: #C9A84C !important; background: transparent; }
-        .res-time:focus { border-color: rgba(201,168,76,.6) !important; box-shadow: 0 0 0 3px rgba(201,168,76,.12) !important; }
+        .res-time::-webkit-datetime-edit-minute-field { color: var(--gold) !important; background: transparent; }
+        .res-time:focus { border-color: rgba(var(--or-rvb),.6) !important; box-shadow: 0 0 0 3px rgba(var(--or-rvb),.12) !important; }
         @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
         @media (max-width: 1024px) {
           /* Tant qu'aucun prix n'est calculé, le récapitulatif reste après le
@@ -747,17 +747,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
       {/* Header */}
       <div style={{
-        borderBottom: '1px solid rgba(0,0,0,.08)',
+        borderBottom: '1px solid rgba(var(--contraste-rvb),.08)',
         padding: '16px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: '#FFFFFF',
-        boxShadow: '0 1px 8px rgba(0,0,0,.04)',
+        background: 'var(--papier)',
+        boxShadow: '0 1px 8px rgba(var(--ombre-rvb),.04)',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
           <img src="/brand_assets/icon.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           <div>
-            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: '#09091A', lineHeight: 1 }}>OWISE</div>
-            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: '#9B9B9B', fontWeight: 400 }}>Chauffeur privé VTC</div>
+            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: 'var(--t1)', lineHeight: 1 }}>OWISE</div>
+            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 400 }}>Chauffeur privé VTC</div>
           </div>
         </Link>
         {/* Étapes */}
@@ -766,31 +766,31 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: '50%',
-                background: s <= step ? '#09091A' : 'rgba(0,0,0,.06)',
-                border: `1px solid ${s <= step ? '#09091A' : 'rgba(0,0,0,.12)'}`,
+                background: s <= step ? 'var(--encre)' : 'rgba(var(--contraste-rvb),.08)',
+                border: `1px solid ${s <= step ? 'var(--t1)' : 'rgba(var(--contraste-rvb),.12)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 9, fontWeight: 700,
-                color: s <= step ? '#FFFFFF' : '#9B9B9B',
+                color: s <= step ? 'var(--sur-encre)' : 'var(--t2)',
                 transition: 'all .3s',
               }}>
                 {s < step ? '✓' : s}
               </div>
-              <span style={{ fontSize: 10, color: s <= step ? '#09091A' : '#9B9B9B', display: s === 2 ? 'none' : undefined }}>
+              <span style={{ fontSize: 10, color: s <= step ? 'var(--t1)' : 'var(--t2)', display: s === 2 ? 'none' : undefined }}>
                 {s === 1 ? 'Trajet' : ''}
               </span>
-              {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(0,0,0,.1)' }} />}
+              {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(var(--contraste-rvb),.1)' }} />}
             </div>
           ))}
-          <div style={{ fontSize: 10, color: step === 2 ? '#09091A' : '#9B9B9B', marginLeft: 2 }}>Paiement</div>
+          <div style={{ fontSize: 10, color: step === 2 ? 'var(--t1)' : 'var(--t2)', marginLeft: 2 }}>Paiement</div>
         </div>
       </div>
 
       {isInAppBrowser && (
-        <div style={{ background: '#FFF8E1', borderBottom: '1px solid #F9A825', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#5D4037' }}>
+        <div style={{ background: 'rgba(var(--ambre-vif-rvb),.12)', borderBottom: '1px solid var(--amber)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--t2)' }}>
           <span style={{ fontSize: 18 }}>⚠️</span>
           <span>
             <strong>Navigateur intégré détecté.</strong> Pour finaliser votre paiement en sécurité, ouvrez cette page dans votre navigateur.{' '}
-            <a href={typeof window !== 'undefined' ? window.location.href : ''} target="_blank" rel="noopener noreferrer" style={{ color: '#C9A84C', fontWeight: 600, textDecoration: 'underline' }}>
+            <a href={typeof window !== 'undefined' ? window.location.href : ''} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold)', fontWeight: 600, textDecoration: 'underline' }}>
               Ouvrir dans Chrome / Safari
             </a>
           </span>
@@ -805,17 +805,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
           <div>
             {/* Titre */}
             <div style={{ marginBottom: 32, textAlign: 'center' }}>
-              <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: '#C9A84C', fontWeight: 500, marginBottom: 10 }}>
+              <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 500, marginBottom: 10 }}>
                 Réservation en ligne
               </div>
-              <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: '#09091A', margin: '0 0 8px', lineHeight: 1.15 }}>
+              <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: 'var(--t1)', margin: '0 0 8px', lineHeight: 1.15 }}>
                 Réservez votre course
               </h1>
-              <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
+              <p style={{ fontSize: 13, color: 'var(--t2)', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <span style={{ fontSize: 13, color: '#C9A84C', letterSpacing: 1 }}>★★★★★</span>
-                <span style={{ fontSize: 12, color: '#9B9B9B' }}>
-                  <span style={{ color: '#09091A', fontWeight: 600 }}>{avis.note} / 5</span>
+                <span style={{ fontSize: 13, color: 'var(--gold)', letterSpacing: 1 }}>★★★★★</span>
+                <span style={{ fontSize: 12, color: 'var(--t2)' }}>
+                  <span style={{ color: 'var(--t1)', fontWeight: 600 }}>{avis.note} / 5</span>
                   {` · ${avis.nombre} avis Google vérifiés`}
                 </span>
               </div>
@@ -823,12 +823,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
             {/* ── Carte Trajet ── */}
             <div style={{
-              background: '#FFFFFF', borderRadius: 14,
-              border: '1px solid rgba(0,0,0,.08)',
-              boxShadow: '0 2px 16px rgba(0,0,0,.06)',
+              background: 'var(--papier)', borderRadius: 14,
+              border: '1px solid rgba(var(--contraste-rvb),.08)',
+              boxShadow: '0 2px 16px rgba(var(--ombre-rvb),.06)',
               padding: '20px', marginBottom: 16,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 16, fontWeight: 500 }}>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16, fontWeight: 500 }}>
                 Itinéraire
               </div>
               {/* Adresses */}
@@ -838,17 +838,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 <FieldLabel>Adresse de départ</FieldLabel>
                 <AddressInput value={depart} placeholder="15 Rue de la Paix, 75001 Paris" icon={
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7" stroke="#3DB87A" strokeWidth="1.5" fill="rgba(61,184,122,.12)"/>
-                    <circle cx="8" cy="8" r="3.5" fill="#3DB87A"/>
+                    <circle cx="8" cy="8" r="7" stroke="var(--green)" strokeWidth="1.5" fill="rgba(var(--vert-rvb),.12)"/>
+                    <circle cx="8" cy="8" r="3.5" fill="var(--green)"/>
                   </svg>
                 } onSelect={setDepart} />
                 {depart.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneDepart
-                      ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneDepart.nom}</span>
+                      ? <span style={{ color: 'var(--green)' }}>✓ Zone : {zoneDepart.nom}</span>
                       : (depart.codePostal || depart.lat)
-                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
-                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: 'var(--t2)' }}>Tarif calculé au km</span>
+                        : <span style={{ color: 'var(--t2)' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
@@ -862,8 +862,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <AddressInput value={etape} placeholder="Adresse de l'arrêt" icon={
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <circle cx="8" cy="8" r="7" stroke="#E8A030" strokeWidth="1.5" fill="rgba(232,160,48,.12)"/>
-                          <circle cx="8" cy="8" r="3" fill="#E8A030"/>
+                          <circle cx="8" cy="8" r="7" stroke="var(--amber)" strokeWidth="1.5" fill="rgba(var(--ambre-vif-rvb),.12)"/>
+                          <circle cx="8" cy="8" r="3" fill="var(--amber)"/>
                         </svg>
                       } onSelect={v => setEtapes(prev => prev.map((old, j) => j === i ? v : old))} />
                     </div>
@@ -871,8 +871,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       onClick={() => setEtapes(prev => prev.filter((_, j) => j !== i))}
                       style={{
                         width: 38, height: 38, flexShrink: 0, borderRadius: 8, cursor: 'pointer',
-                        background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
-                        color: '#D95454', fontSize: 17, lineHeight: 1,
+                        background: 'rgba(var(--rouge-rvb),.08)', border: '1px solid rgba(var(--rouge-rvb),.2)',
+                        color: 'var(--red)', fontSize: 17, lineHeight: 1,
                       }}>×</button>
                   </div>
                 </div>
@@ -882,8 +882,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 <button type="button" onClick={() => setEtapes(prev => [...prev, { label: '', codePostal: '' }])}
                   style={{
                     alignSelf: 'flex-start', padding: '6px 13px', borderRadius: 8, cursor: 'pointer',
-                    background: 'transparent', border: '1px dashed rgba(201,168,76,.35)',
-                    color: '#C9A84C', fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                    background: 'transparent', border: '1px dashed rgba(var(--or-rvb),.35)',
+                    color: 'var(--gold)', fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
                   }}>
                   + Ajouter un arrêt en chemin
                 </button>
@@ -894,17 +894,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 <FieldLabel>Adresse d&apos;arrivée</FieldLabel>
                 <AddressInput value={arrivee} placeholder="Aéroport CDG, Terminal 2, 95700 Roissy" icon={
                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
-                    <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="#C9A84C"/>
-                    <circle cx="8" cy="6" r="2.2" fill="#fff"/>
+                    <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="var(--gold)"/>
+                    <circle cx="8" cy="6" r="2.2" fill="var(--papier)"/>
                   </svg>
                 } onSelect={setArrivee} />
                 {arrivee.label && (
                   <div style={{ marginTop: 6, fontSize: 11 }}>
                     {zoneArrivee
-                      ? <span style={{ color: '#3DB87A' }}>✓ Zone : {zoneArrivee.nom}</span>
+                      ? <span style={{ color: 'var(--green)' }}>✓ Zone : {zoneArrivee.nom}</span>
                       : (arrivee.codePostal || arrivee.lat)
-                        ? <span style={{ color: '#6B6B6B' }}>Tarif calculé au km</span>
-                        : <span style={{ color: '#6B6B6B' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: 'var(--t2)' }}>Tarif calculé au km</span>
+                        : <span style={{ color: 'var(--t2)' }}>Sélectionnez dans la liste</span>
                     }
                   </div>
                 )}
@@ -923,10 +923,10 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     {pricingBadge.label}
                   </span>
                   {!useForfait && distanceKm !== null && (
-                    <span style={{ fontSize: 11, color: '#6B6B6B' }}>{distanceKm} km</span>
+                    <span style={{ fontSize: 11, color: 'var(--t2)' }}>{distanceKm} km</span>
                   )}
                   {!useForfait && loadingRoute && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#848499" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                     </svg>
                   )}
@@ -935,7 +935,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               </div>{/* fin .gap-14 adresses */}
 
               {/* Date + Heure */}
-              <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16, marginTop: 4 }}>
+              <div style={{ borderTop: '1px solid rgba(var(--or-rvb),.08)', paddingTop: 16, marginTop: 4 }}>
                 {/* `res-dt` : la ligne passe sur une seule colonne sous
                     360 px (règle plus bas dans la feuille de ce composant).
                     Une piste `fr` vaut `minmax(auto, 3fr)` et ne descend
@@ -956,15 +956,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   <div>
                     <FieldLabel>Date de prise en charge</FieldLabel>
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9B9B9B' }}>
+                      <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--t2)' }}>
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                           <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
                       </span>
                       <input className="res-input" type="date"
                         style={{ ...baseInput, paddingLeft: 34,
-                          border: `1px solid ${datePast ? '#D95454' : 'rgba(0,0,0,.12)'}`,
-                          boxShadow: datePast ? '0 0 0 3px rgba(217,84,84,.1)' : 'none',
+                          border: `1px solid ${datePast ? 'var(--red)' : 'rgba(var(--contraste-rvb),.12)'}`,
+                          boxShadow: datePast ? '0 0 0 3px rgba(var(--rouge-rvb),.1)' : 'none',
                         }}
                         value={dateOnly}
                         min={DATE_MIN}
@@ -977,7 +977,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     <FieldLabel>Heure</FieldLabel>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" strokeWidth={2}>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--gold)" strokeWidth={2}>
                           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                         </svg>
                       </span>
@@ -985,7 +985,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                         style={{ ...baseInput, paddingLeft: 32,
                           fontFamily: 'var(--font-jetbrains, monospace)',
                           fontSize: 17, fontWeight: 700, textAlign: 'center',
-                          border: `1px solid ${datePast ? '#D95454' : 'rgba(201,168,76,.35)'}`,
+                          border: `1px solid ${datePast ? 'var(--red)' : 'rgba(var(--or-rvb),.35)'}`,
                         }}
                         value={timeOnly}
                         onChange={e => handleTimeChange(e.target.value)} />
@@ -993,7 +993,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   </div>
                 </div>
                 {datePast && (
-                  <div style={{ marginTop: 6, fontSize: 11, color: '#D95454', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ marginTop: 6, fontSize: 11, color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 5 }}>
                     <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                     </svg>
@@ -1010,28 +1010,28 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     width: '100%', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
                     fontFamily: 'inherit',
-                    border: `1.5px solid ${allerRetour ? '#C9A84C' : 'rgba(201,168,76,.25)'}`,
-                    background: allerRetour ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.03)',
+                    border: `1.5px solid ${allerRetour ? 'var(--gold)' : 'rgba(var(--or-rvb),.25)'}`,
+                    background: allerRetour ? 'rgba(var(--or-rvb),.08)' : 'rgba(var(--or-rvb),.03)',
                     transition: 'all .15s',
-                    boxShadow: allerRetour ? '0 0 0 3px rgba(201,168,76,.1)' : 'none',
+                    boxShadow: allerRetour ? '0 0 0 3px rgba(var(--or-rvb),.1)' : 'none',
                   }}>
                   {/* Gauche */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{
                       width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                      background: allerRetour ? 'rgba(201,168,76,.15)' : 'rgba(0,0,0,.05)',
+                      background: allerRetour ? 'rgba(var(--or-rvb),.15)' : 'rgba(var(--contraste-rvb),.05)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       transition: 'background .15s',
                     }}>
-                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={allerRetour ? '#C9A84C' : '#9B9B9B'} strokeWidth={2}>
+                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={allerRetour ? 'var(--gold)' : 'var(--t2)'} strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                       </svg>
                     </div>
                     <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: allerRetour ? '#C9A84C' : '#09091A' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: allerRetour ? 'var(--gold)' : 'var(--t1)' }}>
                         Ajouter un retour
                       </div>
-                      <div style={{ fontSize: 11, color: '#9B9B9B', marginTop: 1 }}>
+                      <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 1 }}>
                         {allerRetour ? 'Prix aller × 2 — même tarif garanti' : 'Économisez avec un trajet retour inclus'}
                       </div>
                     </div>
@@ -1039,21 +1039,21 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   {/* Toggle switch */}
                   <div style={{
                     width: 44, height: 24, borderRadius: 12, flexShrink: 0,
-                    background: allerRetour ? '#C9A84C' : 'rgba(0,0,0,.12)',
+                    background: allerRetour ? 'var(--gold)' : 'rgba(var(--contraste-rvb),.12)',
                     position: 'relative', transition: 'background .2s',
                   }}>
                     <div style={{
                       position: 'absolute', top: 3, borderRadius: '50%',
-                      width: 18, height: 18, background: '#fff',
+                      width: 18, height: 18, background: 'var(--encre)',
                       left: allerRetour ? 23 : 3,
                       transition: 'left .2s',
-                      boxShadow: '0 1px 4px rgba(0,0,0,.2)',
+                      boxShadow: '0 1px 4px rgba(var(--ombre-rvb),.2)',
                     }}/>
                   </div>
                 </button>
 
                 {allerRetour && (
-                  <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)' }}>
+                  <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 10, background: 'rgba(var(--or-rvb),.06)', border: '1px solid rgba(var(--or-rvb),.2)' }}>
                     {/* Même ligne, même règle : le bloc du retour vit dans un
                         conteneur encore plus étroit (14 px de remplissage de
                         chaque côté), il déborderait donc avant la ligne
@@ -1062,7 +1062,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       <div>
                         <FieldLabel>Date du retour</FieldLabel>
                         <input className="res-input" type="date"
-                          style={{ ...baseInput, background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)', color: '#09091A' }}
+                          style={{ ...baseInput, background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.12)', color: 'var(--t1)' }}
                           value={dateRetourOnly}
                           min={dateOnly || new Date().toISOString().slice(0, 10)}
                           onChange={e => handleDateRetourChange(e.target.value)} />
@@ -1070,7 +1070,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       <div>
                         <FieldLabel>Heure</FieldLabel>
                         <input className="res-input res-time" type="time"
-                          style={{ ...baseInput, background: '#FFFFFF', fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 17, fontWeight: 700, border: '1px solid rgba(201,168,76,.35)' }}
+                          style={{ ...baseInput, background: 'var(--papier)', fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 17, fontWeight: 700, border: '1px solid rgba(var(--or-rvb),.35)' }}
                           value={timeRetourOnly}
                           onChange={e => handleTimeRetourChange(e.target.value)} />
                       </div>
@@ -1083,7 +1083,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                         <button type="button" onClick={() => setRetourAutreAdresse(true)}
                           style={{
                             background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                            fontSize: 12, color: '#C9A84C', fontWeight: 500, textDecoration: 'underline',
+                            fontSize: 12, color: 'var(--gold)', fontWeight: 500, textDecoration: 'underline',
                             fontFamily: 'inherit',
                           }}>
                           Le retour se fait à une autre adresse
@@ -1093,15 +1093,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                           <FieldLabel>Adresse d&apos;arrivée du retour</FieldLabel>
                           <AddressInput value={arriveeRetour} placeholder={depart.label || 'Votre adresse de retour'} icon={
                             <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
-                              <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="#3DB87A"/>
-                              <circle cx="8" cy="6" r="2.2" fill="#fff"/>
+                              <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="var(--green)"/>
+                              <circle cx="8" cy="6" r="2.2" fill="var(--papier)"/>
                             </svg>
                           } onSelect={setArriveeRetour} />
                           <button type="button"
                             onClick={() => { setRetourAutreAdresse(false); setArriveeRetour({ label: '', codePostal: '' }) }}
                             style={{
                               marginTop: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                              fontSize: 11, color: '#6B6B6B', textDecoration: 'underline', fontFamily: 'inherit',
+                              fontSize: 11, color: 'var(--t2)', textDecoration: 'underline', fontFamily: 'inherit',
                             }}>
                             Revenir à l&apos;adresse de départ
                           </button>
@@ -1109,12 +1109,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       )}
                     </div>
                     {(depart.label || arrivee.label) && (
-                      <div style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <span style={{ color: '#D95454', fontSize: 9 }}>●</span>
+                      <div style={{ fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ color: 'var(--red)', fontSize: 9 }}>●</span>
                         <span>{arrivee.label || '…'}</span>
                         <span>→</span>
-                        <span style={{ color: '#3DB87A', fontSize: 9 }}>●</span>
-                        <span style={{ color: arriveeRetour.label ? '#C9A84C' : undefined, fontWeight: arriveeRetour.label ? 600 : 400 }}>
+                        <span style={{ color: 'var(--green)', fontSize: 9 }}>●</span>
+                        <span style={{ color: arriveeRetour.label ? 'var(--gold)' : undefined, fontWeight: arriveeRetour.label ? 600 : 400 }}>
                           {arriveeRetour.label || depart.label || '…'}
                         </span>
                         <span style={{ fontSize: 10, opacity: .6 }}>
@@ -1130,14 +1130,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             {/* ── Carte Vol / Train — apparaît si aéroport ou gare détecté ── */}
             {showVolInfo && (
               <div style={{
-                background: '#FFFFFF', borderRadius: 14,
-                border: `1px solid ${isAero ? 'rgba(77,142,212,.25)' : 'rgba(61,184,122,.25)'}`,
-                boxShadow: `0 2px 12px rgba(0,0,0,.06)`,
+                background: 'var(--papier)', borderRadius: 14,
+                border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.25)' : 'rgba(var(--vert-rvb),.25)'}`,
+                boxShadow: `0 2px 12px rgba(var(--ombre-rvb),.06)`,
                 padding: '20px', marginBottom: 16,
               }}>
-                <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? '#4D8ED4' : '#3DB87A' }}>
+                <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? 'var(--blue)' : 'var(--green)' }}>
                   {isAero ? '✈ Informations de vol' : '🚄 Informations train'}
-                  {(isAeroDepart || isGareDepart) && <span style={{ color: '#D95454', marginLeft: 6 }}>— requis</span>}
+                  {(isAeroDepart || isGareDepart) && <span style={{ color: 'var(--red)', marginLeft: 6 }}>— requis</span>}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                   <div>
@@ -1145,33 +1145,33 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     <input className="res-input" value={numVolTrain}
                       placeholder={isAero ? 'AF1234, ou Reykjavik' : 'TGV 6423, ou Lyon'}
                       onChange={e => setNumVolTrain(e.target.value)}
-                      style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
+                      style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
                   </div>
                   <div>
                     <FieldLabel>{isAero ? 'Terminal' : 'Voie / Quai'}</FieldLabel>
                     <input className="res-input" value={terminal}
                       placeholder={isAero ? '2E, T1…' : 'Voie 6…'}
                       onChange={e => setTerminal(e.target.value)}
-                      style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A' }} />
+                      style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)' }} />
                   </div>
                 </div>
                 <div>
                   <FieldLabel>Heure {(isAeroDepart || isGareDepart) ? "d'arrivée" : "de départ"} du {typeVol}</FieldLabel>
                   <input className="res-input" type="time" value={heureArrivee}
                     onChange={e => setHeureArrivee(e.target.value)}
-                    style={{ ...baseInput, background: '#FFFFFF', border: `1px solid ${isAero ? 'rgba(77,142,212,.3)' : 'rgba(61,184,122,.3)'}`, color: '#09091A', width: '50%' }} />
+                    style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)', width: '50%' }} />
                 </div>
               </div>
             )}
 
             {/* ── Carte Véhicule + Passagers ── */}
             <div style={{
-              background: '#FFFFFF', borderRadius: 14,
-              border: '1px solid rgba(0,0,0,.08)',
-              boxShadow: '0 2px 12px rgba(0,0,0,.06)',
+              background: 'var(--papier)', borderRadius: 14,
+              border: '1px solid rgba(var(--contraste-rvb),.08)',
+              boxShadow: '0 2px 12px rgba(var(--ombre-rvb),.06)',
               padding: '20px', marginBottom: 16,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {VEHICULES.map(v => {
                   const active = vehicule === v.value
@@ -1181,16 +1181,16 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       style={{
                         display: 'flex', alignItems: 'center', gap: 0,
                         borderRadius: 12,
-                        border: `1.5px solid ${active ? '#C9A84C' : 'rgba(0,0,0,.09)'}`,
-                        background: active ? 'rgba(201,168,76,.06)' : '#FAFAF8',
+                        border: `1.5px solid ${active ? 'var(--gold)' : 'rgba(var(--contraste-rvb),.09)'}`,
+                        background: active ? 'rgba(var(--or-rvb),.06)' : 'var(--surface)',
                         cursor: 'pointer', overflow: 'hidden',
-                        boxShadow: active ? '0 0 0 3px rgba(201,168,76,.12)' : 'none',
+                        boxShadow: active ? '0 0 0 3px rgba(var(--or-rvb),.12)' : 'none',
                         transition: 'border-color .15s, box-shadow .15s, background .15s',
                       }}>
                       {/* Image véhicule */}
                       <div style={{
                         width: 150, minWidth: 150, height: 96,
-                        background: 'linear-gradient(135deg, #f0ede8 0%, #e8e4de 100%)',
+                        background: 'linear-gradient(135deg, var(--elevated) 0%, var(--encre-sourde) 100%)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         overflow: 'hidden', flexShrink: 0,
                       }}>
@@ -1221,25 +1221,25 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                           téléphone et ne bouge pas sur ordinateur. */}
                       <div style={{ flex: 1, minWidth: 0, padding: '10px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: '#09091A' }}>{v.label}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>{v.label}</div>
                           {v.badge && (
                             <span style={{
                               fontSize: 8.5, fontWeight: 600, letterSpacing: '.08em',
                               textTransform: 'uppercase', padding: '2px 7px', borderRadius: 20,
-                              background: '#C9A84C', color: '#fff',
+                              background: 'var(--gold)', color: 'var(--sur-or)',
                             }}>{v.badge}</span>
                           )}
                         </div>
-                        <div style={{ fontSize: 10.5, color: '#6B6B6B', marginBottom: 2 }}>{v.models}</div>
-                        <div style={{ fontSize: 10, color: '#C9A84C', fontWeight: 500 }}>{v.places}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--t2)', marginBottom: 2 }}>{v.models}</div>
+                        <div style={{ fontSize: 10, color: 'var(--sur-voile-or)', fontWeight: 500 }}>{v.places}</div>
                       </div>
                       {/* Check */}
                       <div style={{ paddingRight: 14 }}>
                         <div style={{
                           width: 22, height: 22, borderRadius: '50%',
-                          background: active ? '#C9A84C' : 'rgba(0,0,0,.08)',
+                          background: active ? 'var(--gold)' : 'rgba(var(--contraste-rvb),.08)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 11, color: active ? '#fff' : 'transparent',
+                          fontSize: 11, color: active ? 'var(--sur-or)' : 'transparent',
                           fontWeight: 700, transition: 'background .15s',
                         }}>✓</div>
                       </div>
@@ -1257,24 +1257,24 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 href="/#devis"
                 style={{
                   display: 'block', marginTop: 10, padding: '11px 14px',
-                  border: '1px dashed rgba(0,0,0,.18)', borderRadius: 10,
-                  fontSize: 12, color: '#6B6B6B', textAlign: 'center',
-                  textDecoration: 'none', background: 'rgba(0,0,0,.015)',
+                  border: '1px dashed rgba(var(--contraste-rvb),.18)', borderRadius: 10,
+                  fontSize: 12, color: 'var(--t2)', textAlign: 'center',
+                  textDecoration: 'none', background: 'rgba(var(--contraste-rvb),.015)',
                 }}
               >
                 Plus de 7 passagers ?{' '}
-                <strong style={{ color: '#C9A84C' }}>Demandez un devis</strong>
+                <strong style={{ color: 'var(--gold)' }}>Demandez un devis</strong>
                 {' '}— nous verifions la disponibilite avant toute reservation.
               </Link>
 
-              <div style={{ borderTop: '1px solid rgba(201,168,76,.08)', paddingTop: 16 }}>
+              <div style={{ borderTop: '1px solid rgba(var(--or-rvb),.08)', paddingTop: 16 }}>
                 <FieldLabel>Nombre de passagers</FieldLabel>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
-                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
-                  <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: '#09091A', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--or-rvb),.1)', border: '1px solid rgba(var(--or-rvb),.25)', color: 'var(--sur-voile-or)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
+                  <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: 'var(--t1)', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'van' ? 7 : 4, p + 1))}
-                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', color: '#C9A84C', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--or-rvb),.1)', border: '1px solid rgba(var(--or-rvb),.25)', color: 'var(--sur-voile-or)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
                 </div>
               </div>
             </div>
@@ -1282,17 +1282,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             {/* Prix estimé */}
             {(prix !== null || loadingRoute) && (depart.codePostal || zoneDepart || depart.lat) && (arrivee.codePostal || zoneArrivee || arrivee.lat) && (
               <div style={{
-                background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05))',
-                border: '1px solid rgba(201,168,76,.25)',
+                background: 'linear-gradient(135deg,rgba(var(--or-rvb),.1),rgba(var(--or-rvb),.05))',
+                border: '1px solid rgba(var(--or-rvb),.25)',
                 borderRadius: 12, padding: '16px 20px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 marginBottom: 20,
               }}>
                 <div>
-                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6B6B6B' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)' }}>
                     {allerRetour ? 'Prix aller-retour' : 'Prix estimé'}
                   </div>
-                  <div style={{ fontSize: 10, color: '#9B9B9B', marginTop: 3 }}>
+                  <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 3 }}>
                     {useForfait && zoneDepart && zoneArrivee
                       ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}`
                       : distanceKm !== null
@@ -1304,14 +1304,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 {prixTotal !== null ? (
                   <div style={{ textAlign: 'right' }}>
                     {allerRetour && prix !== null && (
-                      <div style={{ fontSize: 10, color: '#6B6B6B', marginBottom: 2 }}>{Math.round(prix)} € × 2</div>
+                      <div style={{ fontSize: 10, color: 'var(--t2)', marginBottom: 2 }}>{Math.round(prix)} € × 2</div>
                     )}
-                    <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: '#C9A84C' }}>
+                    <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 700, color: 'var(--gold)' }}>
                       {Math.round(prixTotal)} €
                     </div>
                   </div>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                   </svg>
                 )}
@@ -1319,7 +1319,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             )}
 
             {step1Error && (
-              <div style={{ color: '#D95454', fontSize: 12, marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)' }}>
+              <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(var(--rouge-rvb),.08)', border: '1px solid rgba(var(--rouge-rvb),.2)' }}>
                 {step1Error}
               </div>
             )}
@@ -1330,16 +1330,16 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 { icon: '✓', text: 'Annulation gratuite avant attribution' },
                 { icon: '✓', text: 'Confirmation immédiate' },
               ].map(({ icon, text }) => (
-                <span key={text} style={{ fontSize: 11, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ color: '#3DB87A', fontWeight: 700 }}>{icon}</span> {text}
+                <span key={text} style={{ fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: 'var(--green)', fontWeight: 700 }}>{icon}</span> {text}
                 </span>
               ))}
             </div>
             <button type="button" onClick={handleStep1} className="pay-btn"
-              style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              style={{ width: '100%', padding: '14px', borderRadius: 10, background: 'var(--encre)', color: 'var(--sur-encre)', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <span>Continuer</span>
               {prixTotal !== null && (
-                <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>
+                <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 16, fontWeight: 700, color: 'var(--gold)' }}>
                   — {Math.round(prixTotal)} €
                 </span>
               )}
@@ -1359,14 +1359,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 Aucune promesse d'horaire n'est faite — la disponibilité
                 téléphonique n'est pas établie. */}
             <div style={{ marginTop: 16, textAlign: 'center', lineHeight: 1.6 }}>
-              <span style={{ fontSize: 12, color: '#9B9B9B' }}>Une question avant de réserver ?{' '}</span>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>Une question avant de réserver ?{' '}</span>
               <a href="tel:+33619106356"
-                 style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
+                 style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
                 06 19 10 63 56
               </a>
-              <span style={{ fontSize: 12, color: '#9B9B9B' }}>{' '}ou sur{' '}</span>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{' '}ou sur{' '}</span>
               <a href="https://wa.me/33619106356" target="_blank" rel="noopener"
-                 style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
+                 style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
                 WhatsApp
               </a>
             </div>
@@ -1377,51 +1377,51 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
         {step === 2 && (
           <div>
             <button className="back-btn" type="button" onClick={() => setStep(1)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#6B6B6B', marginBottom: 24, padding: 0, transition: 'color .15s' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--t2)', marginBottom: 24, padding: 0, transition: 'color .15s' }}>
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
               </svg>
               Modifier le trajet
             </button>
 
-            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 500, color: '#09091A', margin: '0 0 6px' }}>
+            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 500, color: 'var(--t1)', margin: '0 0 6px' }}>
               Vos informations
             </h1>
-            <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 28px' }}>Un email de confirmation vous sera envoyé après le paiement.</p>
+            <p style={{ fontSize: 13, color: 'var(--t2)', margin: '0 0 28px' }}>Un email de confirmation vous sera envoyé après le paiement.</p>
 
             {/* Récap */}
-            <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, padding: '14px 18px', marginBottom: 28 }}>
-              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 10 }}>Récapitulatif</div>
-              <div style={{ fontSize: 13, color: '#09091A', marginBottom: 4 }}>
-                <span style={{ color: '#6B6B6B', fontSize: 11 }}>Départ · </span>{depart.label}
+            <div style={{ background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)', borderRadius: 10, padding: '14px 18px', marginBottom: 28 }}>
+              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 10 }}>Récapitulatif</div>
+              <div style={{ fontSize: 13, color: 'var(--t1)', marginBottom: 4 }}>
+                <span style={{ color: 'var(--t2)', fontSize: 11 }}>Départ · </span>{depart.label}
               </div>
-              <div style={{ fontSize: 13, color: '#09091A', marginBottom: 10 }}>
-                <span style={{ color: '#6B6B6B', fontSize: 11 }}>Arrivée · </span>{arrivee.label}
+              <div style={{ fontSize: 13, color: 'var(--t1)', marginBottom: 10 }}>
+                <span style={{ color: 'var(--t2)', fontSize: 11 }}>Arrivée · </span>{arrivee.label}
               </div>
-              <div style={{ display: 'flex', gap: 20, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.06)', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 20, paddingTop: 10, borderTop: '1px solid rgba(var(--or-rvb),.06)', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Date</div>
-                  <div style={{ fontSize: 12, color: '#09091A' }}>{fmtDate(date)}</div>
+                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Date</div>
+                  <div style={{ fontSize: 12, color: 'var(--t1)' }}>{fmtDate(date)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
-                  <div style={{ fontSize: 12, color: '#09091A' }}>{labelVehicule}</div>
+                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
+                  <div style={{ fontSize: 12, color: 'var(--t1)' }}>{labelVehicule}</div>
                 </div>
                 {!useForfait && distanceKm && (
                   <div>
-                    <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
-                    <div style={{ fontSize: 12, color: '#09091A' }}>{distanceKm} km</div>
+                    <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
+                    <div style={{ fontSize: 12, color: 'var(--t1)' }}>{distanceKm} km</div>
                   </div>
                 )}
                 {prixTotal !== null && (
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#9B9B9B', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+                    <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
                       {allerRetour ? 'Total aller-retour' : 'Total'}
                     </div>
                     {allerRetour && prix !== null && (
-                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{Math.round(prix)} € × 2</div>
+                      <div style={{ fontSize: 10, color: 'var(--t2)' }}>{Math.round(prix)} € × 2</div>
                     )}
-                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: '#C9A84C' }}>{Math.round(prixTotal)} €</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>{Math.round(prixTotal)} €</div>
                   </div>
                 )}
               </div>
@@ -1451,7 +1451,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
             {/* Comment nous avez-vous connus ? */}
             <div style={{ marginBottom: 14 }}>
-              <label htmlFor="res-origine" style={{ fontSize: 11, fontWeight: 600, color: '#6B6B6B', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+              <label htmlFor="res-origine" style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                 Comment nous avez-vous connus&nbsp;? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel)</span>
               </label>
               <select
@@ -1474,7 +1474,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
             {/* Code parrainage */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#6B6B6B', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                 Code parrain <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel — -10%)</span>
               </label>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -1491,18 +1491,18 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   type="button"
                   onClick={() => checkCodeParrain(codeParrain)}
                   disabled={codeLoading}
-                  style={{ padding: '0 16px', borderRadius: 8, border: '1px solid rgba(0,0,0,.12)', background: '#F7F7F7', fontSize: 12, color: '#09091A', cursor: 'pointer', flexShrink: 0 }}
+                  style={{ padding: '0 16px', borderRadius: 8, border: '1px solid rgba(var(--contraste-rvb),.12)', background: 'var(--elevated)', fontSize: 12, color: 'var(--t1)', cursor: 'pointer', flexShrink: 0 }}
                 >
                   {codeLoading ? '…' : 'Vérifier'}
                 </button>
               </div>
               {codeMsg && (
-                <div style={{ marginTop: 6, fontSize: 12, color: codeValide ? '#3DB87A' : '#D95454', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ marginTop: 6, fontSize: 12, color: codeValide ? 'var(--green)' : 'var(--red)', display: 'flex', alignItems: 'center', gap: 5 }}>
                   {codeMsg}
                   {codeValide && prixTotal !== null && (
                     <span style={{ marginLeft: 8, fontFamily: 'monospace', fontWeight: 700 }}>
-                      <span style={{ textDecoration: 'line-through', color: '#9B9B9B', marginRight: 6 }}>{Math.round(prixTotal)} €</span>
-                      <span style={{ color: '#C9A84C' }}>{Math.round(prixFinal ?? prixTotal)} €</span>
+                      <span style={{ textDecoration: 'line-through', color: 'var(--t2)', marginRight: 6 }}>{Math.round(prixTotal)} €</span>
+                      <span style={{ color: 'var(--gold)' }}>{Math.round(prixFinal ?? prixTotal)} €</span>
                     </span>
                   )}
                 </div>
@@ -1510,13 +1510,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             </div>
 
             {step2Error && (
-              <div style={{ color: '#D95454', fontSize: 12, marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)' }}>
+              <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(var(--rouge-rvb),.08)', border: '1px solid rgba(var(--rouge-rvb),.2)' }}>
                 {step2Error}
               </div>
             )}
 
             <button type="button" onClick={handlePayer} disabled={pending} className="pay-btn"
-              style={{ width: '100%', padding: '16px', borderRadius: 10, background: pending ? 'rgba(9,9,26,.5)' : '#09091A', color: '#FFFFFF', fontSize: 14, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              style={{ width: '100%', padding: '16px', borderRadius: 10, background: pending ? 'rgba(var(--sur-fonce-rvb),.45)' : 'var(--encre)', color: 'var(--sur-encre)', fontSize: 14, fontWeight: 700, border: 'none', cursor: pending ? 'wait' : 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               {pending ? (
                 <>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }}>
@@ -1534,12 +1534,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               )}
             </button>
 
-            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: '#9B9B9B' }}>
+            <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: 'var(--t2)' }}>
               Paiement sécurisé par Stripe · SSL/TLS · Aucune donnée bancaire stockée
             </div>
             <div style={{ marginTop: 16, textAlign: 'center' }}>
-              <span style={{ fontSize: 12, color: '#9B9B9B' }}>Vous préférez réserver par téléphone ?{' '}</span>
-              <a href="tel:+33619106356" style={{ fontSize: 12, color: '#C9A84C', textDecoration: 'none', fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>Vous préférez réserver par téléphone ?{' '}</span>
+              <a href="tel:+33619106356" style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>
                 +33 6 19 10 63 56
               </a>
             </div>

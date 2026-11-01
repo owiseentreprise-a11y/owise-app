@@ -103,16 +103,21 @@ export default function CookieBanner() {
     /* `bandeau-cookies` : le bandeau n'avait aucune classe, donc aucun moyen
        de le retirer à l'impression. Il apparaissait en bas des factures
        imprimées depuis /admin — constaté le 2026-10-16. */
+    /* Les couleurs passent par des jetons AVEC repli : sur une page en palette
+       « Paris en mouvement » le bandeau suit la page (vitrine.css donne les
+       jetons à `.bandeau-cookies`) ; partout ailleurs — administration, espace
+       client, portail sous-traitant — le repli rend exactement la valeur
+       d'avant, au pixel près. */
     <div ref={ref} className="bandeau-cookies" style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
-      background: '#09091A',
-      borderTop: '1px solid rgba(201,168,76,.2)',
+      background: 'var(--nuit, #09091A)',
+      borderTop: '1px solid rgba(var(--or-rvb, 201,168,76),.2)',
       padding: '16px 24px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       gap: 16, flexWrap: 'wrap',
-      boxShadow: '0 -4px 32px rgba(0,0,0,.3)',
+      boxShadow: '0 -4px 32px rgba(var(--ombre-rvb, 0,0,0),.3)',
     }}>
-      <p style={{ fontSize: 13, color: 'rgba(237,232,223,.7)', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 13, color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.7)', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
         {/* Étape 89 : l'ancienne phrase « En continuant, vous acceptez leur
             utilisation » annonçait un consentement tacite que le code ne
             pratique plus — et ne pratiquait d'ailleurs plus correctement
@@ -121,21 +126,21 @@ export default function CookieBanner() {
         Les cookies nécessaires au fonctionnement du site sont toujours actifs. Les cookies de mesure
         d&apos;audience (Google Analytics, PostHog, Meta Pixel) ne sont déposés qu&apos;après votre
         acceptation : tant que vous n&apos;avez pas répondu, aucune mesure n&apos;est effectuée.{' '}
-        <a href="/mentions-legales" style={{ color: '#C9A84C', textDecoration: 'none' }}>
+        <a href="/mentions-legales" style={{ color: 'var(--gold, #C9A84C)', textDecoration: 'none' }}>
           En savoir plus
         </a>
       </p>
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={refuse} style={{
-          padding: '9px 18px', borderRadius: 8, border: '1px solid rgba(237,232,223,.2)',
-          background: 'transparent', color: 'rgba(237,232,223,.6)',
+          padding: '9px 18px', borderRadius: 8, border: '1px solid rgba(var(--sur-fonce-rvb, 237,232,223),.2)',
+          background: 'transparent', color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.6)',
           fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
         }}>
           Refuser
         </button>
         <button onClick={accept} style={{
           padding: '9px 18px', borderRadius: 8, border: 'none',
-          background: '#C9A84C', color: '#09091A',
+          background: 'var(--gold, #C9A84C)', color: 'var(--sur-or, #09091A)',
           fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
         }}>
           Accepter
