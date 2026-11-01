@@ -1,4 +1,8 @@
 import type { Metadata } from 'next'
+/* La palette « Paris en mouvement » vit dans `vitrine.css`, sous
+   `.vt.vt-palette-a`. On l'importe plutôt que d'en recopier les valeurs :
+   une seule définition pour l'accueil, le blog, la FAQ et cette page. */
+import '../vitrine.css'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import ReserverClient from './ReserverClient'
@@ -141,7 +145,13 @@ export default async function ReserverPage() {
   }
 
   return (
-    <>
+    /* La classe de palette est posée ICI, et non dans `ReserverClient` :
+       `TarifsReference` et `ParcoursEtQuestions` en sont des frères, pas des
+       descendants. Placée plus bas, elle les laissait retomber sur les jetons
+       de `globals.css` — mesuré le 2026-11-01 : 11 échecs de contraste, tous
+       dans ces deux blocs, avec un gris #7A7A96 sur un bleu #161630 qui
+       n'appartiennent à aucune des deux palettes du site. */
+    <div className="vt vt-palette-a">
       {/* Ces deux fiches décrivent la page à Google et aux assistants IA.
           Elles étaient absentes : /reserver ne déclarait rien du tout. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheService) }} />
@@ -160,6 +170,6 @@ export default async function ReserverPage() {
       <TarifsReference forfaits={forfaits} />
 
       <ParcoursEtQuestions />
-    </>
+    </div>
   )
 }

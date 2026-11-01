@@ -1742,7 +1742,12 @@ html:has(.vt-palette-a) body { background: var(--pa-fond-page); }
 /* ── jetons .vt (80 couleurs) ── */
 .vt.vt-palette-a,
 html:has(.vt-palette-a) .cookie-banner,
-html:has(.vt-palette-a) .cookie-overlay {
+html:has(.vt-palette-a) .cookie-overlay,
+/* Le bandeau de consentement global (`CookieBanner.tsx`) vit dans le layout,
+   hors du `.vt` : sans cette ligne il garde le bleu nuit pendant que la page
+   passe au charbon. Il ne coexiste jamais avec `.cookie-banner` — l'un est
+   rendu par la vitrine, l'autre par le layout — donc l'accueil ne bouge pas. */
+html:has(.vt-palette-a) .bandeau-cookies {
 
   /* ── Surfaces : la page s'assombrit par paliers, en chaud ───────────── */
   --base:#17120E;             /* le fond de la page */

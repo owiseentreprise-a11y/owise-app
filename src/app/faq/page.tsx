@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+/* La palette « Paris en mouvement » vit dans `vitrine.css`, sous
+   `.vt.vt-palette-a`. On l'importe plutôt que d'en recopier les valeurs :
+   une seule définition pour l'accueil, les pages villes et cette page. */
+import '../vitrine.css'
 
 export const metadata: Metadata = {
   title: 'FAQ — Questions fréquentes VTC Owise',
@@ -85,21 +89,21 @@ const jsonLd = {
 
 export default function FaqPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F6F1', fontFamily: 'DM Sans, sans-serif' }}>
+    <div className="vt vt-palette-a" style={{ fontFamily: 'DM Sans, sans-serif' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       {/* Header */}
-      <div style={{ background: '#09091A', padding: '48px 24px 40px', textAlign: 'center' }}>
+      <div style={{ background: 'var(--nuit)', padding: '48px 24px 40px', textAlign: 'center' }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <div style={{ color: '#C9A84C', fontSize: 22, fontWeight: 700, letterSpacing: 2, marginBottom: 16 }}>OWISE</div>
+          <div style={{ color: 'var(--gold)', fontSize: 22, fontWeight: 700, letterSpacing: 2, marginBottom: 16 }}>OWISE</div>
         </Link>
-        <h1 style={{ color: '#EDE8DF', fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 700, margin: '0 0 12px' }}>
+        <h1 style={{ color: 'var(--t1)', fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(32px, 5.6vw, 52px)', fontWeight: 500, letterSpacing: '-.01em', lineHeight: 1.12, margin: '0 0 12px' }}>
           Questions fréquentes
         </h1>
-        <p style={{ color: '#848499', fontSize: 16, margin: 0 }}>
+        <p style={{ color: 'var(--t2)', fontSize: 16, margin: 0 }}>
           Tout ce qu'il faut savoir sur votre chauffeur privé VTC dans l'Oise
         </p>
       </div>
@@ -110,35 +114,40 @@ export default function FaqPage() {
           <div
             key={i}
             style={{
-              background: '#fff',
+              background: 'var(--papier)',
               borderRadius: 12,
               padding: '24px 28px',
               marginBottom: 16,
-              boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
-              borderLeft: '3px solid #C9A84C',
+              /* Sur fond clair une ombre à 7 % suffisait à détacher la carte.
+                 Sur l'anthracite elle est invisible : c'est le filet qui
+                 prend le relais, comme sur les cartes de l'accueil. */
+              border: '1px solid rgba(var(--contraste-rvb),.08)',
+              borderLeft: '3px solid var(--gold)',
             }}
           >
-            <h2 style={{ color: '#09091A', fontSize: 17, fontWeight: 600, margin: '0 0 10px', lineHeight: 1.4 }}>
+            <h2 style={{ color: 'var(--t1)', fontSize: 17, fontWeight: 600, margin: '0 0 10px', lineHeight: 1.4 }}>
               {q}
             </h2>
-            <p style={{ color: '#444', fontSize: 15, lineHeight: 1.7, margin: 0 }}>
+            <p style={{ color: 'var(--t2)', fontSize: 15, lineHeight: 1.7, margin: 0 }}>
               {a}
             </p>
           </div>
         ))}
 
         {/* CTA */}
-        <div style={{ textAlign: 'center', marginTop: 40, padding: '32px 24px', background: '#09091A', borderRadius: 16 }}>
-          <p style={{ color: '#848499', fontSize: 14, margin: '0 0 8px' }}>Vous avez d'autres questions ?</p>
-          <p style={{ color: '#EDE8DF', fontSize: 18, fontWeight: 600, margin: '0 0 24px' }}>
+        <div style={{ textAlign: 'center', marginTop: 40, padding: '32px 24px', background: 'var(--nuit)', borderRadius: 16, border: '1px solid rgba(var(--contraste-rvb),.08)' }}>
+          <p style={{ color: 'var(--t2)', fontSize: 14, margin: '0 0 8px' }}>Vous avez d'autres questions ?</p>
+          <p style={{ color: 'var(--t1)', fontSize: 18, fontWeight: 600, margin: '0 0 24px' }}>
             Réservez directement en ligne — tarif fixe, 24h/24
           </p>
           <Link
             href="/reserver"
             style={{
               display: 'inline-block',
-              background: '#C9A84C',
-              color: '#09091A',
+              background: 'var(--gold)',
+              /* `--sur-or` est le jeton prévu pour écrire sur le terracotta :
+                 mesuré 4,79 à l'étape 145, là où un écho du fond donnait 4,4999. */
+              color: 'var(--sur-or)',
               fontWeight: 700,
               fontSize: 15,
               padding: '14px 32px',

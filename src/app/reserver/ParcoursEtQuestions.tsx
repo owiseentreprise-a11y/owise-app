@@ -39,10 +39,10 @@ import Link from 'next/link'
 
 export type Question = { q: string; r: string }
 
-const OR = '#C9A84C'
-const CREME = '#F8F6F1'
-const ENCRE = '#09091A'
-const ENCRE_2 = '#6B6B7B'
+const OR = 'var(--gold)'
+const CREME = 'var(--elevated)'
+const ENCRE = 'var(--t1)'
+const ENCRE_2 = 'var(--t2)'
 
 const ETAPES = [
   {
@@ -87,8 +87,8 @@ export default function ParcoursEtQuestions() {
     <section
       aria-labelledby="titre-parcours"
       style={{
-        background: '#FFFFFF',
-        borderTop: '1px solid rgba(201,168,76,.18)',
+        background: 'var(--papier)',
+        borderTop: '1px solid rgba(var(--or-rvb),.18)',
         padding: '56px 20px 64px',
       }}
     >
@@ -128,7 +128,7 @@ export default function ParcoursEtQuestions() {
           {ETAPES.map((e, i) => (
             <li key={e.titre} style={{
               background: CREME,
-              border: '1px solid rgba(201,168,76,.16)',
+              border: '1px solid rgba(var(--or-rvb),.16)',
               borderRadius: 12,
               padding: '22px 22px 24px',
             }}>
@@ -177,7 +177,7 @@ export default function ParcoursEtQuestions() {
               key={q}
               name="questions-reserver"
               style={{
-                borderBottom: '1px solid rgba(9,9,26,.09)',
+                borderBottom: '1px solid rgba(var(--contraste-rvb),.1)',
                 padding: '4px 0',
               }}
             >
@@ -231,7 +231,7 @@ export default function ParcoursEtQuestions() {
           outline-offset: 3px;
           border-radius: 3px;
         }
-        .lien-conditions:hover { color: #DDB95A; text-decoration: underline; }
+        .lien-conditions:hover { color: var(--gold-bright); text-decoration: underline; }
         .lien-conditions:focus-visible {
           outline: 2px solid ${OR};
           outline-offset: 3px;
