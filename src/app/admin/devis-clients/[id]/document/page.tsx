@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { formaterMontant } from '@/lib/montant'
 import { CSS_DOCUMENT } from '@/lib/document-feuille'
 import {
-  chargerDevis, chargerPrestataire, dateCourte, dateLongue, phraseAttente,
+  chargerDevis, chargerPrestataire, dateCourte, dateLongue, jourEmission, phraseAttente,
 } from '@/lib/devis-client'
 
 export const dynamic = 'force-dynamic'
@@ -79,7 +79,7 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
             {devis.date_prestation && (
               <>Prestations prévues le &nbsp; <b>{dateCourte(devis.date_prestation)}</b><br /></>
             )}
-            Devis émis le &nbsp; <b>{dateCourte(devis.created_at.slice(0, 10))}</b><br />
+            Devis émis le &nbsp; <b>{dateCourte(jourEmission(devis))}</b><br />
             {devis.date_validite && (
               <>Valable jusqu&apos;au &nbsp; <b>{dateCourte(devis.date_validite)}</b></>
             )}

@@ -26,7 +26,7 @@ import {
 import {
   CADRE_SIGNATURE, LIBELLE_NET, LIGNES_REGLEMENT, TITRE_ATTENTE, TITRE_REGLEMENT,
   chargerDevis, chargerPrestataire, dateCourte, dateLongue, detailLigne,
-  lignesTotaux, mentionsDevis, phraseAccord, phraseAttente,
+  jourEmission, lignesTotaux, mentionsDevis, phraseAccord, phraseAttente,
   type DevisClient, type Prestataire,
 } from '@/lib/devis-client'
 
@@ -101,7 +101,7 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
     // Les repères de date, en une ligne sous les deux blocs.
     const reperes = [
       dateCourte(d.date_prestation) ? `Prestations prévues le ${dateCourte(d.date_prestation)}` : null,
-      `Devis émis le ${dateCourte(d.created_at.slice(0, 10))}`,
+      `Devis émis le ${dateCourte(jourEmission(d))}`,
       dateCourte(d.date_validite) ? `Valable jusqu'au ${dateCourte(d.date_validite)}` : null,
     ].filter(Boolean).join('   ·   ')
     ecrire(ctx, reperes, MARGE, 9, TEXTE_2)

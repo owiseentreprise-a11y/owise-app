@@ -12,6 +12,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { jourParis } from '@/lib/heure'
 import { formaterMontant } from '@/lib/montant'
 
 /** Une prestation du devis. Les champs vides sont permis a la saisie. */
@@ -106,6 +107,18 @@ export function dateLongue(iso: string | null): string | null {
   return new Date(Date.UTC(a, m - 1, j)).toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
   })
+}
+
+/**
+ * Le jour ou le devis a ete emis, lu A PARIS.
+ *
+ * `created_at.slice(0, 10)` donnait le jour en temps universel : un devis
+ * rempli a 00h30 a Paris s'annoncait « emis le » la veille, parce que le
+ * serveur etait encore a 23h30. Constate le 2026-11-03 sur DEV-202611-0002.
+ * C'est la regle de CLAUDE.md sur les heures, appliquee aux dates.
+ */
+export function jourEmission(d: Pick<DevisClient, 'created_at'>): string {
+  return jourParis(d.created_at)
 }
 
 /** L'identite d'Owise sur le document, lue la ou les factures la lisent. */

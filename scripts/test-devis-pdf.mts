@@ -7,6 +7,14 @@
  * rassure à tort.
  *
  *   npx tsx scripts/test-devis-pdf.mts [--ecrire <dossier>]
+ *
+ * LIMITE CONNUE — les contrôles de ligne cherchent dans TOUT le texte du
+ * document, pas dans la ligne concernee. Sur un devis ou une arrivee figure
+ * aussi comme depart d'un autre trajet (DEV-202611-0001 : Chasseloup-Laubat,
+ * Chantilly), une arrivee fausse reste trouvee ailleurs et le controle passe.
+ * Mesure du 2026-11-03 : en remplacant TOUTES les arrivees par « Gare du
+ * Nord », un seul des neuf controles d'arrivee est passe au rouge.
+ * Pour y remedier il faudrait decouper le texte par ligne de prestation.
  */
 import { config } from 'dotenv'
 import { resolve } from 'node:path'
@@ -35,9 +43,25 @@ function verifier(nom: string, condition: boolean, detail = '') {
   echecs.push(`${nom}${detail ? ` — ${detail}` : ''}`)
 }
 
-/** Comparaison indulgente sur les accents et la casse, stricte sur le reste. */
+/**
+ * Comparaison indulgente sur les accents, la casse et les retours a la ligne,
+ * stricte sur le reste.
+ *
+ * Les espaces sont ramenes a un seul : un trajet long est coupe sur deux
+ * lignes dans le PDF, et chercher la chaine telle quelle echouait sur un
+ * document pourtant juste (releve le 2026-11-03 sur DEV-202611-0002). Les
+ * mots doivent toujours s'y trouver, et dans l'ordre.
+ */
 function normaliser(s: string): string {
-  return nettoyerPourPdf(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  /* Les espaces d'abord : `nettoyerPourPdf` SUPPRIME le saut de ligne au lieu
+     de le remplacer — il n'est pas encodable en WinAnsi — et « Aeroport
+Paris »
+     devenait « AeroportParis ». Nettoyer ensuite arrivait trop tard. */
+  return nettoyerPourPdf(s.replace(/\s+/g, ' '))
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
 }
 
 function contient(texte: string, attendu: string): boolean {
