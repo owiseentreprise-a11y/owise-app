@@ -1,6 +1,3 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib'
-import { chargerDocumentFacture, formaterMontant, type DocumentFacture } from '@/lib/facture-document'
-
 /**
  * Rend une facture en PDF, pour la joindre à l'e-mail envoyé au client.
  *
@@ -9,113 +6,23 @@ import { chargerDocumentFacture, formaterMontant, type DocumentFacture } from '@
  * jamais — le cas le plus courant sur une réservation prise par téléphone —
  * n'avait donc aucun moyen d'obtenir son justificatif.
  *
- * Le document reprend la palette d'impression de globals.css (@media print),
- * pour que le PDF et la page imprimée depuis le navigateur se ressemblent.
+ * Le papier lui-même — palette, marges, polices, tracé — vit dans
+ * `pdf-feuille.ts`, que le devis partage. Les deux documents sont le même
+ * papier à en-tête : les dessiner séparément les ferait diverger.
  */
+import { PDFDocument, StandardFonts } from 'pdf-lib'
+import { chargerDocumentFacture, formaterMontant, type DocumentFacture } from '@/lib/facture-document'
+import {
+  A4, MARGE, OR, TEXTE, TEXTE_2, TEXTE_3, TRAIT, VERT,
+  couper, ecrire, nettoyerPourPdf, piedDePage, placePour, trait,
+  type Contexte,
+} from '@/lib/pdf-feuille'
 
-// Palette papier — identique au bloc @media print de globals.css.
-const OR      = rgb(0x9a / 255, 0x7a / 255, 0x2a / 255)
-const TEXTE   = rgb(0x11 / 255, 0x11 / 255, 0x11 / 255)
-const TEXTE_2 = rgb(0x44 / 255, 0x44 / 255, 0x44 / 255)
-const TEXTE_3 = rgb(0x88 / 255, 0x88 / 255, 0x88 / 255)
-const TRAIT   = rgb(0xdd / 255, 0xdd / 255, 0xdd / 255)
-const VERT    = rgb(0x1a / 255, 0x7a / 255, 0x40 / 255)
-
-const A4 = { largeur: 595.28, hauteur: 841.89 }
-const MARGE = 52
-const BAS_DE_PAGE = 84
-
-/**
- * Les polices standard d'un PDF n'encodent que le jeu WinAnsi. Une adresse
- * saisie au clavier peut contenir n'importe quoi (flèche, emoji, guillemet
- * exotique) : sans ce filtre, la génération lève une exception et le client
- * ne reçoit plus rien du tout. On préfère un caractère approché à un échec.
- */
-const REMPLACEMENTS: Record<string, string> = {
-  '→': 'vers', '←': 'de', '‑': '-', '−': '-',
-  ' ': ' ', ' ': ' ', ' ': ' ',
-  '№': 'n',
-}
-
-/**
- * Jeu WinAnsi : ASCII imprimable, Latin-1 haut, plus quelques signes
- * typographiques dont l'euro — vérifié caractère par caractère contre la
- * police Helvetica embarquée, pas supposé.
- */
-const SIGNES_WINANSI = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ'
-
-function encodable(code: number): boolean {
-  return (code >= 0x20 && code <= 0x7e)
-    || (code >= 0xa0 && code <= 0xff)
-    || SIGNES_WINANSI.includes(String.fromCodePoint(code))
-}
-
-export function nettoyerPourPdf(texte: string): string {
-  let out = ''
-  for (const ch of texte ?? '') {
-    if (REMPLACEMENTS[ch] !== undefined) { out += REMPLACEMENTS[ch]; continue }
-    if (encodable(ch.codePointAt(0)!)) { out += ch; continue }
-    // Dernière chance : retirer l'accent (« ā » → « a »), sinon abandonner.
-    const sansAccent = ch.normalize('NFD').replace(/[̀-ͯ]/g, '')
-    out += [...sansAccent].every(c => encodable(c.codePointAt(0)!)) ? sansAccent : ''
-  }
-  return out
-}
+/* Réexporté parce que `scripts/test-facture-pdf.mts` le lit ici. */
+export { nettoyerPourPdf }
 
 /** Une seule écriture des montants pour les trois documents. */
 const montant = formaterMontant
-
-type Contexte = { doc: PDFDocument; page: PDFPage; y: number; normal: PDFFont; gras: PDFFont }
-
-function nouvellePage(ctx: Contexte) {
-  ctx.page = ctx.doc.addPage([A4.largeur, A4.hauteur])
-  ctx.y = A4.hauteur - MARGE
-}
-
-function placePour(ctx: Contexte, hauteur: number) {
-  if (ctx.y - hauteur < BAS_DE_PAGE) nouvellePage(ctx)
-}
-
-function ecrire(
-  ctx: Contexte,
-  texte: string,
-  x: number,
-  taille: number,
-  couleur = TEXTE,
-  gras = false,
-  aligneADroite?: number,
-) {
-  const police = gras ? ctx.gras : ctx.normal
-  const t = nettoyerPourPdf(texte)
-  const posX = aligneADroite !== undefined
-    ? aligneADroite - police.widthOfTextAtSize(t, taille)
-    : x
-  ctx.page.drawText(t, { x: posX, y: ctx.y, size: taille, font: police, color: couleur })
-}
-
-function trait(ctx: Contexte, y: number) {
-  ctx.page.drawLine({
-    start: { x: MARGE, y },
-    end:   { x: A4.largeur - MARGE, y },
-    thickness: 0.7,
-    color: TRAIT,
-  })
-}
-
-/** Découpe un texte pour qu'aucune ligne ne dépasse `largeur`. */
-function couper(texte: string, police: PDFFont, taille: number, largeur: number): string[] {
-  const mots = nettoyerPourPdf(texte).split(/\s+/).filter(Boolean)
-  const lignes: string[] = []
-  let courante = ''
-  for (const mot of mots) {
-    const essai = courante ? `${courante} ${mot}` : mot
-    if (police.widthOfTextAtSize(essai, taille) <= largeur) { courante = essai; continue }
-    if (courante) lignes.push(courante)
-    courante = mot
-  }
-  if (courante) lignes.push(courante)
-  return lignes.length ? lignes : ['']
-}
 
 export function rendreFacturePdf(f: DocumentFacture): Promise<Uint8Array> {
   return (async () => {
@@ -253,20 +160,7 @@ export function rendreFacturePdf(f: DocumentFacture): Promise<Uint8Array> {
     }
 
     // ── Pied de page sur chaque page ──────────────────────────────────────
-    const pages = doc.getPages()
-    pages.forEach((page, i) => {
-      const pied = nettoyerPourPdf(`${f.societe.nom} · Service VTC · Paris & Île-de-France · owise.fr`)
-      page.drawText(pied, {
-        x: MARGE, y: 48, size: 8, font: ctx.normal, color: TEXTE_3,
-      })
-      if (pages.length > 1) {
-        const num = `${i + 1} / ${pages.length}`
-        page.drawText(num, {
-          x: droite - ctx.normal.widthOfTextAtSize(num, 8),
-          y: 48, size: 8, font: ctx.normal, color: TEXTE_3,
-        })
-      }
-    })
+    piedDePage(ctx, `${f.societe.nom} · Service VTC · Paris & Île-de-France · owise.fr`)
 
     return doc.save()
   })()

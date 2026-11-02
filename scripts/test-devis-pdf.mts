@@ -1,0 +1,143 @@
+/**
+ * Contrôle du PDF de devis.
+ *
+ * Il ne vérifie pas que le fichier « existe » : il le RELIT et compare ce
+ * qu'on y trouve à ce que dit la base, sur TOUS les devis. C'est la règle
+ * tirée du 2026-09-23 — un contrôle qui ne cherche pas au bon endroit
+ * rassure à tort.
+ *
+ *   npx tsx scripts/test-devis-pdf.mts [--ecrire <dossier>]
+ */
+import { config } from 'dotenv'
+import { resolve } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+
+config({ path: resolve(process.cwd(), '.env.local') })
+
+const { lireTextePdf } = await import('./lire-pdf.mjs')
+const { createAdminClient } = await import('../src/lib/supabase/admin')
+const { rendreDevisPdf } = await import('../src/lib/devis-pdf')
+const { nettoyerPourPdf } = await import('../src/lib/pdf-feuille')
+const { formaterMontant } = await import('../src/lib/montant')
+const {
+  chargerPrestataire, dateCourte, detailLigne, lignesTotaux,
+  mentionsDevis, phraseAttente, LIBELLE_NET,
+} = await import('../src/lib/devis-client')
+
+const iEcrire = process.argv.indexOf('--ecrire')
+const dossier = iEcrire >= 0 ? process.argv[iEcrire + 1] : null
+
+let reussis = 0
+const echecs: string[] = []
+
+function verifier(nom: string, condition: boolean, detail = '') {
+  if (condition) { reussis++; return }
+  echecs.push(`${nom}${detail ? ` — ${detail}` : ''}`)
+}
+
+/** Comparaison indulgente sur les accents et la casse, stricte sur le reste. */
+function normaliser(s: string): string {
+  return nettoyerPourPdf(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
+function contient(texte: string, attendu: string): boolean {
+  return normaliser(texte).includes(normaliser(attendu))
+}
+
+const supabase = createAdminClient()
+const { data, error } = await supabase
+  .from('devis_clients').select('*').order('numero', { ascending: true })
+
+if (error) { console.error('Lecture impossible :', error.message); process.exit(1) }
+const devis = (data ?? []).map(d => ({ ...d, lignes: Array.isArray(d.lignes) ? d.lignes : [] }))
+
+if (devis.length === 0) {
+  console.log('\nAucun devis en base — rien à contrôler.\n')
+  process.exit(0)
+}
+
+const prestataire = await chargerPrestataire()
+if (dossier) mkdirSync(dossier, { recursive: true })
+
+console.log(`\nContrôle du PDF de devis — ${devis.length} devis\n`)
+
+for (const d of devis) {
+  const octets = await rendreDevisPdf(d as never, prestataire)
+  const texte = lireTextePdf(octets)
+  const ref = d.numero
+
+  if (dossier) writeFileSync(resolve(dossier, `${d.numero}.pdf`), Buffer.from(octets))
+
+  // Identité du document
+  verifier(`${ref} · numéro`, contient(texte, d.numero))
+  verifier(`${ref} · mot DEVIS`, contient(texte, 'DEVIS'))
+  verifier(`${ref} · nom du client`,
+    contient(texte, d.client_societe || d.client_nom || ''),
+    `cherché « ${d.client_societe || d.client_nom} »`)
+
+  // Chaque prestation, son heure, son trajet, son prix
+  for (const [i, l] of (d.lignes as never[]).entries()) {
+    const ligne = l as { heure: string; depart: string; arrivee: string; prix: number }
+    const n = `${ref} · ligne ${i + 1}`
+    if (ligne.depart)  verifier(`${n} départ`,  contient(texte, ligne.depart.slice(0, 28)))
+    if (ligne.arrivee) verifier(`${n} arrivée`, contient(texte, ligne.arrivee.slice(0, 28)))
+    if (ligne.heure)   verifier(`${n} heure`,   contient(texte, ligne.heure))
+    verifier(`${n} prix`, contient(texte, formaterMontant(Number(ligne.prix))),
+      `cherché « ${formaterMontant(Number(ligne.prix))} »`)
+    const detail = detailLigne(l as never)
+    if (detail) verifier(`${n} détail`, contient(texte, detail.slice(0, 30)))
+  }
+
+  // Les montants s'écrivent en français — jamais « 1234.00 »
+  verifier(`${ref} · total en français`,
+    contient(texte, formaterMontant(Number(d.total_ht))),
+    `cherché « ${formaterMontant(Number(d.total_ht))} »`)
+  verifier(`${ref} · aucun montant à l'anglaise`,
+    !/\d\.\d{2}\s*(?:EUR|€|\\u20ac)/.test(texte),
+    'un montant est écrit avec un point décimal')
+  verifier(`${ref} · libellé du net`, contient(texte, LIBELLE_NET))
+
+  // Les lignes de total annoncées par la source unique y sont toutes
+  for (const t of lignesTotaux(d as never)) {
+    verifier(`${ref} · total « ${t.libelle} »`, contient(texte, t.libelle))
+  }
+
+  // La clause d'attente : présente si et seulement si elle est due
+  const attente = phraseAttente(d as never)
+  verifier(`${ref} · clause d'attente`,
+    attente ? contient(texte, attente.slice(0, 40)) : !contient(texte, "d'attente est facturee"),
+    attente ? 'attendue, absente' : 'non due, pourtant présente')
+
+  // Les mentions légales, et SURTOUT la bonne selon le type de client
+  for (const m of mentionsDevis(d as never)) {
+    verifier(`${ref} · mention`, contient(texte, m.slice(0, 50)), m.slice(0, 50))
+  }
+  verifier(`${ref} · pénalité L441-10 réservée aux pros`,
+    Boolean(d.client_societe) === contient(texte, 'L441-10'),
+    d.client_societe
+      ? 'client professionnel : la pénalité devrait figurer'
+      : 'client particulier : la pénalité ne doit PAS figurer')
+
+  // Les dates
+  if (d.date_validite) {
+    verifier(`${ref} · date de validité`, contient(texte, dateCourte(d.date_validite) ?? ''))
+  }
+  if (d.date_prestation) {
+    verifier(`${ref} · date de prestation`, contient(texte, dateCourte(d.date_prestation) ?? ''))
+  }
+
+  // Le pied de page
+  verifier(`${ref} · pied de page`, contient(texte, 'owise.fr'))
+
+  const n = (d.lignes as unknown[]).length
+  console.log(`  ${d.numero.padEnd(20)} ${String(octets.length).padStart(5)} o · ${n} ligne(s) · ${d.statut}`)
+}
+
+console.log()
+if (echecs.length) {
+  console.log(`${reussis} contrôle(s) réussi(s), ${echecs.length} échec(s) :\n`)
+  for (const e of echecs) console.log(`  ✗ ${e}`)
+  console.log()
+  process.exit(1)
+}
+console.log(`${reussis} contrôle(s) réussi(s), 0 échec(s)\n`)

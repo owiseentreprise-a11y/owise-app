@@ -4,6 +4,8 @@ import { genererFacturePdf } from './facture-pdf'
 import { formaterMontant } from './montant'
 import type { InfosCourseParams } from './courseMessage'
 import { dateCourse, heureCourse } from '@/lib/heure'
+import { base, row } from '@/lib/email-gabarit'
+import { trouRestant, type EmailDevis } from '@/lib/devis-email'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'OWISE <noreply@owise.fr>'
@@ -19,37 +21,6 @@ async function send(to: string, subject: string, html: string, attachments?: Pie
   } catch {
     // Ne pas faire planter l'action si l'email échoue
   }
-}
-
-function base(content: string) {
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OWISE</title></head>
-<body style="margin:0;padding:0;background:#F4F2EE;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px;">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-  <!-- Header -->
-  <tr><td style="background:#09091A;border-radius:12px 12px 0 0;padding:24px 32px;text-align:center;">
-    <div style="display:inline-block;width:36px;height:36px;background:linear-gradient(135deg,#C9A84C,#8B6A1A);border-radius:8px;line-height:36px;text-align:center;font-size:20px;font-weight:600;color:#09091A;font-family:Georgia,serif;vertical-align:middle;margin-right:10px;">O</div>
-    <span style="font-family:Georgia,serif;font-size:22px;font-weight:500;letter-spacing:.12em;color:#EDE8DF;vertical-align:middle;">OWISE</span>
-  </td></tr>
-  <!-- Body -->
-  <tr><td style="background:#ffffff;padding:32px 32px 24px;">
-    ${content}
-  </td></tr>
-  <!-- Footer -->
-  <tr><td style="background:#F4F2EE;border-radius:0 0 12px 12px;padding:16px 32px;text-align:center;border-top:1px solid #E8E4DC;">
-    <p style="margin:0;font-size:11px;color:#848499;">OWISE · Service VTC · Paris & Île-de-France<br>
-    <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
-  </td></tr>
-</table>
-</td></tr></table>
-</body></html>`
-}
-
-function row(label: string, value: string) {
-  return `<tr>
-    <td style="padding:6px 0;font-size:11px;color:#848499;text-transform:uppercase;letter-spacing:.1em;width:140px;">${label}</td>
-    <td style="padding:6px 0;font-size:13px;color:#1a1a2e;font-weight:500;">${value}</td>
-  </tr>`
 }
 
 // L'heure d'une course passe par @/lib/heure : sans cela, le meme e-mail
@@ -1226,4 +1197,64 @@ export async function envoyerInfosCourseEmail(params: InfosCourseParams & {
   `)
 
   await send(destinataireEmail, `[OWISE] Course #${ref} – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`, html)
+}
+
+// ── 14. Devis commercial ─────────────────────────────────────────────────────
+
+/**
+ * Le devis part d'une adresse à laquelle on peut RÉPONDRE.
+ *
+ * Tous les autres messages d'Owise sortent de `noreply@owise.fr` : ce sont
+ * des notifications. Un devis, lui, attend une réponse — un secrétariat qui
+ * écrit à « noreply » écrit dans le vide. Le domaine étant déjà vérifié chez
+ * Resend, aucune boîte n'est à créer : `replyTo` redirige vers la messagerie
+ * de l'exploitant.
+ */
+export const FROM_DEVIS = 'OWISE <devis@owise.fr>'
+
+/** L'adresse vers laquelle les réponses au devis sont redirigées. */
+export const REPONSE_DEVIS = ADMIN_EMAIL
+
+/**
+ * Envoie un devis, le PDF en pièce jointe.
+ *
+ * Seul envoi du fichier à REMONTER ses erreurs. Les autres les avalent, et
+ * c'est voulu : une confirmation de course ne doit pas faire échouer la
+ * création de la course. Ici, l'exploitant vient de cliquer « Envoyer » et
+ * attend un verdict — un échec silencieux lui ferait croire que le devis est
+ * parti, et il n'enverrait rien d'autre.
+ */
+export async function envoyerDevisClient(params: {
+  message: EmailDevis
+  pdf?: PieceJointe
+}): Promise<void> {
+  const { message, pdf } = params
+
+  if (!message.destinataire) {
+    throw new Error("Ce devis n'a pas d'adresse e-mail client : renseignez-la avant d'envoyer.")
+  }
+
+  /* Le garde-fou qui manquait le 2026-11-02 : un reste de modèle ne part pas. */
+  const trou = trouRestant(message.texte)
+  if (trou) {
+    throw new Error(
+      `Le message contient encore « ${trou} » — un reste de modèle. `
+      + `Corrigez les notes du devis avant d'envoyer.`)
+  }
+
+  if (!resend) {
+    throw new Error("L'envoi d'e-mails n'est pas configuré sur ce serveur (RESEND_API_KEY absente).")
+  }
+
+  const { error } = await resend.emails.send({
+    from: FROM_DEVIS,
+    to: message.destinataire,
+    replyTo: REPONSE_DEVIS,
+    subject: message.sujet,
+    html: message.html,
+    text: message.texte,
+    ...(pdf ? { attachments: [pdf] } : {}),
+  })
+
+  if (error) throw new Error(`L'envoi a échoué : ${error.message}`)
 }

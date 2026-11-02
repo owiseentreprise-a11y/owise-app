@@ -5,7 +5,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
-import { calculerTotal, genererNumeroDevis, type LigneDevis } from '@/lib/devis-client'
+import { calculerTotal, chargerDevis, chargerPrestataire, genererNumeroDevis, type LigneDevis } from '@/lib/devis-client'
+import { composerEmailDevis } from '@/lib/devis-email'
+import { genererDevisPdf } from '@/lib/devis-pdf'
+import { envoyerDevisClient } from '@/lib/email'
 
 /** Les champs que le formulaire renvoie. Le total n'en fait pas partie. */
 export type SaisieDevis = {
@@ -195,4 +198,56 @@ export async function convertirDevisEnCourses(id: string): Promise<number> {
   revalidatePath('/admin/planning')
 
   return aInserer.length
+}
+
+/**
+ * Envoie le devis au client, le PDF en pièce jointe, et le passe en « envoyé ».
+ *
+ * Le message n'est pas composé ici : `composerEmailDevis` le fabrique, et
+ * l'écran d'aperçu affiche exactement ce même résultat. Composer une
+ * deuxième fois à l'envoi reviendrait à faire valider un message et à en
+ * expédier un autre.
+ *
+ * Le statut ne passe à « envoyé » qu'APRÈS un envoi réussi : `envoyerDevisClient`
+ * lève si Resend refuse, et la ligne suivante n'est jamais atteinte. Un devis
+ * marqué « envoyé » l'a donc réellement été.
+ */
+export async function envoyerDevisAction(id: string): Promise<string> {
+  await requireAdminClient()
+
+  const [devis, prestataire] = await Promise.all([chargerDevis(id), chargerPrestataire()])
+  if (!devis) throw new Error('Devis introuvable.')
+
+  const message = composerEmailDevis(devis, prestataire)
+  const pdf = await genererDevisPdf(id)
+
+  await envoyerDevisClient({
+    message,
+    pdf: pdf ? { filename: pdf.nomFichier, content: Buffer.from(pdf.contenu) } : undefined,
+  })
+
+  const supabase = createAdminClient()
+  await supabase.from('devis_clients')
+    .update({ statut: 'envoye', updated_at: new Date().toISOString() })
+    .eq('id', id)
+
+  revalidatePath('/admin/devis-clients')
+  revalidatePath(`/admin/devis-clients/${id}`)
+  revalidatePath(`/admin/devis-clients/${id}/envoi`)
+
+  return message.destinataire as string
+}
+
+/**
+ * Le PDF du devis, pour l'envoi à la main depuis sa propre messagerie.
+ *
+ * Il passe par une action plutôt que par une route HTTP : `requireAdminClient`
+ * garde ainsi le fichier, sans avoir à raisonner sur la protection d'une URL
+ * publique. Un devis pèse quelques kilo-octets, le base64 ne coûte rien.
+ */
+export async function telechargerDevisPdfAction(id: string): Promise<{ nom: string; base64: string }> {
+  await requireAdminClient()
+  const pdf = await genererDevisPdf(id)
+  if (!pdf) throw new Error('Devis introuvable.')
+  return { nom: pdf.nomFichier, base64: Buffer.from(pdf.contenu).toString('base64') }
 }

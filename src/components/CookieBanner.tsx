@@ -18,6 +18,20 @@ const ROUTES_SANS_VITRINE_BODY = new Set([
   '/reserver', '/sous-traitant', '/sous-traitant-login', '/auth',
 ])
 
+/**
+ * L'administration n'est pas une page publique : celui qui l'ouvre est
+ * l'exploitant, pas un visiteur. Lui demander son consentement à la mesure
+ * d'audience n'a pas de sens, et le bandeau recouvrait le bas de chaque
+ * écran — sur téléphone, le tiers inférieur, boutons de validation compris
+ * (constaté le 2026-11-02 sur l'écran d'envoi d'un devis).
+ *
+ * Conséquence volontaire : ni GA ni le pixel ne démarrent sur /admin. C'est
+ * ce qu'on veut — les visites de l'exploitant ne doivent pas être comptées.
+ */
+function estEspaceInterne(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
 function hasOwnCookieBanner(pathname: string): boolean {
   if (pathname === '/') return true
   const first = '/' + pathname.split('/')[1]
@@ -32,7 +46,7 @@ export default function CookieBanner() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (hasOwnCookieBanner(pathname)) return
+    if (estEspaceInterne(pathname) || hasOwnCookieBanner(pathname)) return
     const choix = lireConsentement()
     if (choix === 'accepted') {
       initFbPixel()
@@ -51,7 +65,7 @@ export default function CookieBanner() {
      auparavant. Sans cela, une fois la question répondue, le choix était
      définitif — c'est ce que l'étape 85 avait relevé. */
   useEffect(() => {
-    if (hasOwnCookieBanner(pathname)) return
+    if (estEspaceInterne(pathname) || hasOwnCookieBanner(pathname)) return
     const ouvrir = () => setVisible(true)
     window.addEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
     return () => window.removeEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)

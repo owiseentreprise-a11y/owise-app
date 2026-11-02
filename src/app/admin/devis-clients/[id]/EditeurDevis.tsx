@@ -62,23 +62,44 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
     setLignes(l => { const c = [...l]; [c[i], c[j]] = [c[j], c[i]]; return c })
   }
 
+  /* Un seul endroit qui met le formulaire en forme pour la base : « Enregistrer »
+     et « Envoyer » doivent écrire exactement la même chose. */
+  function saisieCourante() {
+    return { ...form, lignes,
+      client_societe: form.client_societe || null,
+      client_email:   form.client_email || null,
+      client_tel:     form.client_tel || null,
+      client_adresse: form.client_adresse || null,
+      date_prestation: form.date_prestation || null,
+      date_validite:   form.date_validite || null,
+      notes:           form.notes || null,
+      attente_offerte_min: form.attente_tarif_heure == null ? null : Number(form.attente_offerte_min),
+      attente_tarif_heure: form.attente_tarif_heure == null ? null : Number(form.attente_tarif_heure),
+    }
+  }
+
   function enregistrer() {
     demarrer(async () => {
       setErreur(''); setMessage('')
       try {
-        await enregistrerDevis(devis.id, { ...form, lignes,
-          client_societe: form.client_societe || null,
-          client_email:   form.client_email || null,
-          client_tel:     form.client_tel || null,
-          client_adresse: form.client_adresse || null,
-          date_prestation: form.date_prestation || null,
-          date_validite:   form.date_validite || null,
-          notes:           form.notes || null,
-          attente_offerte_min: form.attente_tarif_heure == null ? null : Number(form.attente_offerte_min),
-          attente_tarif_heure: form.attente_tarif_heure == null ? null : Number(form.attente_tarif_heure),
-        })
+        await enregistrerDevis(devis.id, saisieCourante())
         setMessage('Enregistré.')
         router.refresh()
+      } catch (e) { setErreur(e instanceof Error ? e.message : 'Enregistrement impossible.') }
+    })
+  }
+
+  /**
+   * L'écran d'envoi compose le message à partir de la BASE, pas du formulaire
+   * ouvert ici. Un simple lien aurait donc fait partir la version précédente
+   * dès qu'une correction n'était pas enregistrée — on enregistre d'abord.
+   */
+  function allerEnvoyer() {
+    demarrer(async () => {
+      setErreur(''); setMessage('')
+      try {
+        await enregistrerDevis(devis.id, saisieCourante())
+        router.push(`/admin/devis-clients/${devis.id}/envoi`)
       } catch (e) { setErreur(e instanceof Error ? e.message : 'Enregistrement impossible.') }
     })
   }
@@ -110,15 +131,28 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
             {devis.numero} · {STATUTS[devis.statut]}
           </div>
         </div>
-        <Link
-          href={`/admin/devis-clients/${devis.id}/document`}
-          style={{
-            background: '#0A0A0A', color: '#F8F6F1', borderRadius: 9, padding: '11px 18px',
-            fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
-          }}
-        >
-          Voir le document →
-        </Link>
+        <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+          <Link
+            href={`/admin/devis-clients/${devis.id}/document`}
+            style={{
+              background: 'none', border: '1px solid rgba(0,0,0,.18)', color: '#0A0A0A',
+              borderRadius: 9, padding: '10px 16px',
+              fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            Voir le document
+          </Link>
+          <button
+            type="button" onClick={allerEnvoyer} disabled={enCours}
+            style={{
+              background: '#0A0A0A', color: '#F8F6F1', border: 'none', borderRadius: 9,
+              padding: '11px 18px', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+              cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            {enCours ? 'Enregistrement…' : 'Envoyer au client →'}
+          </button>
+        </div>
       </div>
 
       {/* ── Client ─────────────────────────────────────────── */}

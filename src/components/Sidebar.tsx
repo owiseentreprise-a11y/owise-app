@@ -103,6 +103,13 @@ export default function Sidebar() {
   const pathname = usePathname()
   const [logoutHover, setLogoutHover] = useState(false)
 
+  /* Sur téléphone, la barre prenait 220 px sur 390 — 56 % de l'écran — et le
+     contenu tombait à un ou deux mots par ligne. Mesuré le 2026-11-02 sur
+     l'écran d'envoi d'un devis : inutilisable. Elle devient donc un tiroir
+     en dessous de 900 px, refermé à chaque changement de page. */
+  const [ouvert, setOuvert] = useState(false)
+  useEffect(() => { setOuvert(false) }, [pathname])
+
   // Masque le sidebar le temps de deux frames après le montage : sur certaines
   // machines/navigateurs, le tout premier paint après une connexion peut
   // survenir avant que la mise en page (flex/overflow) ne soit stabilisée,
@@ -119,7 +126,62 @@ export default function Sidebar() {
   }, [])
 
   return (
-    <aside style={{
+    <>
+      {/* Les règles n'existent qu'en dessous de 900 px : au-dessus, la barre
+          reste exactement ce qu'elle était. `!important` est nécessaire —
+          les styles de ce composant sont en ligne, et l'emportent sinon. */}
+      <style>{`
+        .adm-ouvrir, .adm-voile { display: none; }
+        @media (max-width: 900px) {
+          .adm-barre {
+            position: fixed !important; top: 0; left: 0; z-index: 70;
+            transform: translateX(-100%);
+            transition: transform .22s ease, opacity .1s;
+            box-shadow: 0 0 44px rgba(10,10,10,.22);
+          }
+          .adm-barre[data-ouvert="oui"] { transform: translateX(0); }
+          .adm-ouvrir { display: flex !important; }
+          .adm-voile  { display: block; }
+          /* Laisse la place au bouton : sans cela il recouvre le premier
+             lien de chaque page. */
+          .adm-contenu { padding-top: 54px !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .adm-barre { transition: none !important; }
+        }
+      `}</style>
+
+      <button
+        type="button"
+        className="adm-ouvrir"
+        onClick={() => setOuvert(o => !o)}
+        aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
+        aria-expanded={ouvert}
+        style={{
+          position: 'fixed', top: 9, left: 9, zIndex: 80,
+          width: 40, height: 40, borderRadius: 10,
+          alignItems: 'center', justifyContent: 'center',
+          background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)',
+          boxShadow: '0 2px 10px rgba(10,10,10,.10)',
+          cursor: 'pointer', color: '#0A0A0A', padding: 0,
+        }}
+      >
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          {ouvert
+            ? <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+            : <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />}
+        </svg>
+      </button>
+
+      {ouvert && (
+        <div
+          className="adm-voile"
+          onClick={() => setOuvert(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(10,10,10,.45)' }}
+        />
+      )}
+
+    <aside className="adm-barre" data-ouvert={ouvert ? 'oui' : 'non'} style={{
       width: 220, minWidth: 220, height: '100dvh',
       background: '#FFFFFF',
       borderRight: '1px solid rgba(0,0,0,.07)',
@@ -208,5 +270,6 @@ export default function Sidebar() {
         </form>
       </div>
     </aside>
+    </>
   )
 }
