@@ -111,15 +111,29 @@ const page = `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><title>Signature Gmail — Owise</title></head>
 <body style="margin:0;padding:40px 28px;background:#F4F2EE;${POLICE};color:${ENCRE};">
   <div style="max-width:720px;margin:0 auto;">
-    <h1 style="font-size:20px;margin:0 0 8px;">Votre signature Gmail</h1>
-    <p style="font-size:14px;color:${GRIS};margin:0 0 24px;line-height:1.7;">
-      Sélectionnez tout le bloc encadré ci-dessous — <b>du carré sombre à la ligne du SIRET</b> —
-      copiez-le&nbsp;(Ctrl+C), puis dans Gmail&nbsp;:
-      <b>Paramètres</b> (roue dentée) → <b>Voir tous les paramètres</b> → onglet <b>Général</b> →
-      <b>Signature</b> → <b>Créer</b>, et collez&nbsp;(Ctrl+V).<br>
-      Juste en dessous, pensez à la choisir pour les <b>nouveaux messages</b> <u>et</u> pour les
-      <b>réponses</b> — c'est le réglage qu'on oublie.
-    </p>
+    <h1 style="font-size:20px;margin:0 0 14px;">Votre signature Gmail</h1>
+
+    <ol style="font-size:14px;color:${ENCRE};margin:0 0 26px;padding-left:22px;line-height:1.85;">
+      <li>Dans ce fichier, sélectionnez tout le bloc encadré ci-dessous —
+          <b>du carré sombre à la ligne du SIRET</b> — et copiez&nbsp;(Ctrl+C).</li>
+      <li>Dans Gmail&nbsp;: <b>Paramètres</b> (roue dentée) →
+          <b>Voir tous les paramètres</b> → onglet <b>Général</b> → section
+          <b>Signature</b> → <b>Créer</b>.</li>
+      <li>Gmail demande « <b>Donnez un nom à la nouvelle signature</b> ». Il attend
+          une simple étiquette&nbsp;: tapez <b>Owise</b>, rien d'autre, puis
+          <b>Créer</b>. <span style="color:${GRIS};">Ne collez pas la signature ici&nbsp;:
+          cette case est limitée à 320 caractères et ne sert qu'à nommer.</span></li>
+      <li>Une <b>grande case avec une barre d'outils</b> (gras, italique, couleur…)
+          apparaît à droite du nom. <b>Cliquez dedans</b>, puis collez&nbsp;(Ctrl+V).
+          C'est là que va le bloc.</li>
+      <li>Juste en dessous, deux menus déroulants&nbsp;: choisissez <b>Owise</b>
+          pour les <b>nouveaux messages</b> <u>et</u> pour les
+          <b>réponses/transferts</b>.</li>
+      <li><b>Descendez tout en bas de la page</b> et cliquez sur
+          <b>« Enregistrer les modifications »</b>.
+          <span style="color:${GRIS};">Sans ce clic, Gmail ne garde rien — c'est
+          l'étape qui fait croire que la signature n'est pas prise en compte.</span></li>
+    </ol>
 
     <div style="background:#fff;border:1px solid #dadce0;border-radius:12px;padding:28px 30px;">
 ${signature}
