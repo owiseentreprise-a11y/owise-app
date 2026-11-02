@@ -211,13 +211,6 @@ export function composerEmailDevis(d: DevisClient, p: Prestataire): EmailDevis {
       </tr>`).join('')}
     </table>` : ''}
 
-    <p style="margin:0 0 20px;font-size:12.5px;color:#848499;">${echapper(MENTION_TVA)}</p>
-
-    ${e.attente ? `<div style="background:#FAF8F3;border:1px solid #EDE7D8;border-radius:8px;padding:14px 16px;margin:0 0 20px;">
-      <div style="font-size:11px;color:#848499;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Temps d'attente</div>
-      <p style="margin:0;font-size:12.5px;color:#4a4a5e;line-height:1.7;">${echapper(e.attente)}</p>
-    </div>` : ''}
-
     ${e.notes ? `<p style="margin:0 0 20px;font-size:13.5px;color:#1a1a2e;line-height:1.7;white-space:pre-line;">${echapper(e.notes)}</p>` : ''}
 
     <p style="margin:0 0 20px;font-size:13.5px;color:#1a1a2e;line-height:1.7;">${echapper(PHRASE_ACCORD)}</p>
@@ -228,6 +221,10 @@ export function composerEmailDevis(d: DevisClient, p: Prestataire): EmailDevis {
       <tr><td style="padding-top:16px;font-size:12.5px;color:#848499;line-height:1.8;">
         <strong style="color:#09091A;font-size:13.5px;">${echapper(e.signature[0])}</strong><br>
         ${e.signature.slice(1).map(l => echapper(l)).join('<br>')}
+      </td></tr>
+      <tr><td style="padding-top:16px;font-size:11px;color:#9a9aae;line-height:1.6;">
+        ${echapper(MENTION_TVA)}
+        ${e.attente ? `<br>Temps d'attente — ${echapper(e.attente)}` : ''}
       </td></tr>
     </table>
   `)
