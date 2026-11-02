@@ -180,7 +180,82 @@ export function phraseAttente(d: Pick<DevisClient, 'attente_offerte_min' | 'atte
   const debut = offertes > 0
     ? `Les ${offertes} premières minutes d'attente sont offertes sur chaque prise en charge. Au-delà, l'attente`
     : `L'attente`
+  /* « ci-dessous » a été retiré le 2026-11-02 : la phrase sert maintenant
+     trois mises en page — le document, le PDF (où un devis long renvoie le
+     total en page 2) et la réponse e-mail (où le montant est AU-DESSUS).
+     Une phrase qui désigne une position se trompe dès qu'on la déplace. */
   return `${debut} est facturée ${tarif} par heure, toute heure commencée étant due. `
-    + `Ces frais ne sont pas compris dans le montant ci-dessous : ils ne s'appliquent que s'ils sont constatés, `
+    + `Ces frais ne sont pas compris dans le montant indiqué : ils ne s'appliquent que s'ils sont constatés, `
     + `et figureront alors sur la facture.`
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Ce que le document DIT.
+
+   Ces libellés vivaient dans le JSX de `[id]/document/page.tsx`, seul endroit
+   où le devis existait. Le PDF joint à l'e-mail en est une deuxième forme :
+   les laisser dans le JSX obligeait à les recopier, et une copie dérive.
+   C'est la leçon du 2026-09-20 sur les factures — « 59,00 € » d'un côté,
+   « 59.00 € » de l'autre.
+   ──────────────────────────────────────────────────────────────────────── */
+
+export const TITRE_ATTENTE   = "Conditions particulières — temps d'attente"
+export const TITRE_REGLEMENT = "Règlement"
+export const CADRE_SIGNATURE = "Date, signature et mention « bon pour accord »"
+
+export const LIGNES_REGLEMENT = [
+  "Par virement bancaire, à réception de la facture.",
+  "Les coordonnées bancaires figureront sur celle-ci.",
+]
+
+/** Le libellé de la dernière ligne des totaux. */
+export const LIBELLE_NET = "Net à payer"
+
+/** Les lignes de total, au-dessus du net à payer. */
+export function lignesTotaux(
+  d: Pick<DevisClient, 'lignes' | 'total_ht' | 'attente_offerte_min' | 'attente_tarif_heure'>,
+): { libelle: string; valeur: string }[] {
+  const n = d.lignes.length
+  return [
+    { libelle: `${n} transfert${n > 1 ? 's' : ''}`, valeur: formaterMontant(Number(d.total_ht)) },
+    ...(phraseAttente(d) ? [{ libelle: "Frais d'attente", valeur: "selon conditions" }] : []),
+    { libelle: "TVA", valeur: "non applicable" },
+  ]
+}
+
+/** La phrase d'accord, sous le total. */
+export function phraseAccord(d: Pick<DevisClient, 'date_validite'>): string {
+  const validite = dateCourte(d.date_validite)
+  return (validite ? `Devis valable jusqu'au ${validite}. ` : "")
+    + "Pour accord, retournez ce document daté et signé, avec la mention "
+    + "« bon pour accord », ou répondez par écrit à l'adresse ci-dessus."
+}
+
+/**
+ * Les mentions de bas de document.
+ *
+ * L'indemnité forfaitaire de 40 € et les pénalités de l'article L441-10 ne
+ * valent qu'ENTRE PROFESSIONNELS. Les porter sur un devis adressé à un
+ * particulier annonce une pénalité qui n'existe pas — relevé le 2026-11-02,
+ * sur un devis destiné à une cliente particulière. La société renseignée sert
+ * d'indice : un client professionnel en porte toujours une sur un devis.
+ */
+export function mentionsDevis(d: Pick<DevisClient, 'client_societe'>): string[] {
+  return [
+    "TVA non applicable, article 293 B du Code général des impôts — le montant indiqué est net de taxe.",
+    d.client_societe
+      ? "En cas de retard de paiement : pénalités au taux légal en vigueur et indemnité forfaitaire "
+        + "pour frais de recouvrement de 40 € (art. L441-10 du Code de commerce). "
+        + "Pas d'escompte pour paiement anticipé."
+      : "Devis gratuit et sans engagement. Pas d'escompte pour paiement anticipé.",
+  ]
+}
+
+/** Le détail d'une prestation : véhicule, passagers, observations. */
+export function detailLigne(l: LigneDevis): string {
+  return [
+    l.vehicule,
+    l.passagers ? `${l.passagers} passager${l.passagers > 1 ? 's' : ''}` : null,
+    l.observations,
+  ].filter(Boolean).join(' · ')
 }
