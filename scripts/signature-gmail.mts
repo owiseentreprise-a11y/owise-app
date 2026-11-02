@@ -126,11 +126,9 @@ ${signature}
     </div>
 
     <p style="font-size:13px;color:${GRIS};margin:24px 0 0;line-height:1.7;">
-      <b>Si le carré n'apparaît pas</b>, c'est que l'image n'est pas encore en ligne :
-      elle est servie depuis <code style="font-size:12px;">${URL_IMAGE}</code>, qui n'existera
-      qu'après la mise en ligne du site. Le reste de la signature s'affiche normalement en
-      attendant, et le mot « Owise » remplace l'image chez les destinataires qui bloquent
-      les images.
+      Le carré est servi depuis <code style="font-size:12px;">${URL_IMAGE}</code>.
+      Chez un destinataire qui bloque les images — c'est le réglage par défaut d'Outlook —
+      le mot « Owise » s'affiche à sa place, et le reste de la signature reste entier.
     </p>
     <p style="font-size:12.5px;color:#9aa0a6;margin:14px 0 0;line-height:1.7;">
       Généré depuis les coordonnées enregistrées dans Owise. Si un numéro change,
