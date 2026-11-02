@@ -228,8 +228,29 @@ const CSS_DEVIS = `
   .dv-signature{grid-template-columns:1fr}
 }
 @media print{
-  .dv-conditions{margin-top:18px; padding:12px 15px}
-  .dv-signature{margin-top:20px; padding-top:12px}
+  .dv-conditions{margin-top:16px; padding:11px 14px}
+  .dv-signature{margin-top:16px; padding-top:12px}
+  .dv-cadre{height:62px}
   .fac-table td.dv-heure{padding-top:10px}
+
+  /* Un devis de huit prestations dépasse l'A4 : mesuré le 2026-11-02, la
+     feuille faisait 1 509 px pour 1 123 px de page utile. La coupure tombait
+     juste après l'encadré d'attente et laissait le TOTAL seul en page 2 —
+     c'est le chiffre que le client cherche en premier.
+
+     Plutôt que de comprimer la typographie jusqu'à l'illisible pour gagner
+     390 px, on interdit à chaque bloc de se couper en deux. Le navigateur
+     repousse alors le bloc entier sur la page suivante. Un devis court tient
+     toujours sur une page ; un devis long se coupe à un endroit choisi. */
+  .fac-table tr,
+  .dv-conditions,
+  .fac-bas,
+  .dv-signature,
+  .fac-pied        { break-inside: avoid; page-break-inside: avoid }
+
+  /* Le total, la signature et les mentions forment un tout : les séparer
+     donnerait une page avec un montant sans son cadre d'accord. */
+  .fac-bas         { break-after: avoid; page-break-after: avoid }
+  .dv-signature    { break-after: avoid; page-break-after: avoid }
 }
 `
