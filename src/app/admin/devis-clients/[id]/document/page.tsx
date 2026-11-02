@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { formaterMontant } from '@/lib/montant'
 import { CSS_DOCUMENT } from '@/lib/document-feuille'
 import {
-  chargerDevis, chargerPrestataire, dateCourte, dateLongue, jourEmission, phraseAttente,
+  basDePage, chargerDevis, chargerPrestataire, dateCourte, dateLongue, jourEmission,
 } from '@/lib/devis-client'
 
 export const dynamic = 'force-dynamic'
@@ -33,7 +33,6 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
   if (!devis) notFound()
 
   const n = (i: number) => String(i + 1).padStart(2, '0')
-  const attente = phraseAttente(devis)
   const jour = dateLongue(devis.date_prestation)
 
   return (
@@ -93,9 +92,6 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
               <strong>{prestataire.nom}</strong>
               {prestataire.metier}<br />
               {prestataire.telephone} · {prestataire.email}
-              <span className="fac-legal">
-                {prestataire.legal.map((l, i) => <span key={i}>{l}<br /></span>)}
-              </span>
             </p>
           </div>
           <div className="fac-bloc">
@@ -144,13 +140,6 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
           </tbody>
         </table>
 
-        {attente && (
-          <div className="dv-conditions">
-            <div className="fac-etiquette">Conditions particulières — temps d&apos;attente</div>
-            <p>{attente}</p>
-          </div>
-        )}
-
         <div className="fac-bas">
           <div className="fac-reglement">
             <div className="fac-etiquette">Règlement</div>
@@ -163,7 +152,6 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
               <span>{devis.lignes.length} transfert{devis.lignes.length > 1 ? 's' : ''}</span>
               <span>{formaterMontant(Number(devis.total_ht))}</span>
             </div>
-            {attente && <div className="fac-ligne"><span>Frais d&apos;attente</span><span>selon conditions</span></div>}
             <div className="fac-ligne"><span>TVA</span><span>non applicable</span></div>
             <div className="fac-total">
               <span>Net à payer</span>
@@ -181,18 +169,12 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
           <div className="dv-cadre">Date, signature et mention « bon pour accord »</div>
         </div>
 
+        {/* Tout ce qui doit figurer sans prendre la place : clause d'attente,
+            identite de l'entreprise, regime de TVA, penalites de retard. La
+            liste et son ordre viennent de `basDePage()`, partagee avec le PDF
+            — ecrire ce pied deux fois le ferait diverger. */}
         <footer className="fac-pied">
-          <b>TVA non applicable</b>, article 293 B du Code général des impôts — le montant indiqué est net de taxe.<br />
-          {/* L'indemnité forfaitaire de 40 € et les pénalités de l'article
-              L441-10 ne valent qu'ENTRE PROFESSIONNELS. Les porter sur un
-              devis adressé à un particulier annonce une pénalité qui n'existe
-              pas — releve le 2026-11-02, sur un devis destine a une cliente
-              particuliere. La societe renseignee sert d'indice : un client
-              professionnel en porte toujours une sur un devis. */}
-          {devis.client_societe
-            ? <>En cas de retard de paiement : pénalités au taux légal en vigueur et indemnité forfaitaire
-               pour frais de recouvrement de 40 € (art. L441-10 du Code de commerce). Pas d&apos;escompte pour paiement anticipé.</>
-            : <>Devis gratuit et sans engagement. Pas d&apos;escompte pour paiement anticipé.</>}
+          {basDePage(devis, prestataire).map((m, i) => <p key={i}>{m}</p>)}
         </footer>
 
       </div>
@@ -204,16 +186,18 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
  * d'attente et le cadre de signature. Les classes gardent le préfixe « dv- »
  * pour qu'on voie d'un coup d'œil ce qui appartient au devis seul. */
 const CSS_DEVIS = `
+/* Le pied porte quatre mentions au lieu de deux : clause d'attente,
+   identite de l'entreprise, TVA, penalites. A 10,5 px — la taille heritee
+   de la facture — il reprenait le tiers de la page qu'on venait de lui
+   retirer. Il descend a 8,5 px : lisible de pres, invisible de loin. */
+.fac-pied{font-size:8.5px; line-height:1.7}
+.fac-pied p{margin:0 0 4px}
+.fac-pied p:last-child{margin-bottom:0}
+
 .fac-table td.dv-heure{
   width:72px; font-family:var(--font-jetbrains),'JetBrains Mono',monospace;
   font-size:12.5px; color:var(--encre); padding-top:15px; white-space:nowrap;
 }
-.dv-conditions{
-  margin-top:28px; padding:16px 18px; border-radius:9px;
-  background:var(--or-pale); border:1px solid var(--or-trait);
-}
-.dv-conditions .fac-etiquette{margin-bottom:7px}
-.dv-conditions p{margin:0; font-size:12.5px; line-height:1.8; color:var(--encre-2)}
 .dv-signature{
   margin-top:34px; padding-top:18px; border-top:1px solid var(--or-trait);
   display:grid; grid-template-columns:1fr 240px; gap:30px; align-items:start;
@@ -228,7 +212,6 @@ const CSS_DEVIS = `
   .dv-signature{grid-template-columns:1fr}
 }
 @media print{
-  .dv-conditions{margin-top:16px; padding:11px 14px}
   .dv-signature{margin-top:16px; padding-top:12px}
   .dv-cadre{height:62px}
   .fac-table td.dv-heure{padding-top:10px}
@@ -243,7 +226,6 @@ const CSS_DEVIS = `
      repousse alors le bloc entier sur la page suivante. Un devis court tient
      toujours sur une page ; un devis long se coupe à un endroit choisi. */
   .fac-table tr,
-  .dv-conditions,
   .fac-bas,
   .dv-signature,
   .fac-pied        { break-inside: avoid; page-break-inside: avoid }

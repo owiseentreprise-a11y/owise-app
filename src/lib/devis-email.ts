@@ -168,15 +168,17 @@ function enTexte(e: ReturnType<typeof elements>, signature = true): string {
         `          ${t.prix}`,
       ]),
     ] : []),
-    '',
-    MENTION_TVA,
-    ...(e.attente ? ['', `Temps d'attente : ${e.attente}`] : []),
     ...(e.notes ? ['', e.notes] : []),
     '',
     PHRASE_ACCORD,
     '',
     'Bien à vous,',
     ...(signature ? ['', ...e.signature] : []),
+    /* Les mentions en dernier, apres la signature : elles doivent figurer,
+       elles ne doivent pas occuper la place. Meme regle que sur le devis. */
+    '',
+    MENTION_TVA,
+    ...(e.attente ? [`Temps d'attente — ${e.attente}`] : []),
   ].join('\n')
 }
 
@@ -274,12 +276,17 @@ ${e.prestations.map(t => `  <tr>
   </tr>`).join('\n')}
 </table>` : ''}
 
-<p style="margin:0 0 18px;${police};font-size:13px;${discret};">${echapper(MENTION_TVA)}</p>
-${e.attente ? `<p style="margin:0 0 18px;${police};font-size:13px;${discret};"><b style="color:#202124;">Temps d'attente.</b> ${echapper(e.attente)}</p>` : ''}
 ${e.notes ? `<p style="margin:0 0 18px;${police};white-space:pre-line;">${echapper(e.notes)}</p>` : ''}
 
 <p style="margin:0 0 18px;">${echapper(PHRASE_ACCORD)}</p>
-<p style="margin:0 0 4px;">Bien à vous,</p>
+<p style="margin:0 0 16px;">Bien à vous,</p>
+
+<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  <tr><td style="padding:10px 0 0;border-top:1px solid #e8eaed;">
+    <div style="${police};font-size:11px;color:#80868b;line-height:1.6;">${echapper(MENTION_TVA)}</div>
+${e.attente ? `    <div style="${police};font-size:11px;color:#80868b;line-height:1.6;margin-top:3px;">Temps d'attente — ${echapper(e.attente)}</div>` : ''}
+  </td></tr>
+</table>
 </div>`
 
   /* Pas de signature ici : Gmail ajoute la sienne sous la réponse. En

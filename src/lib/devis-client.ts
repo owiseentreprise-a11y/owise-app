@@ -228,10 +228,12 @@ export const LIBELLE_NET = "Net à payer"
 export function lignesTotaux(
   d: Pick<DevisClient, 'lignes' | 'total_ht' | 'attente_offerte_min' | 'attente_tarif_heure'>,
 ): { libelle: string; valeur: string }[] {
+  /* Pas de ligne « Frais d'attente » ici : elle attirait l'oeil sur une
+     eventualite au milieu du prix ferme. La clause descend en bas de page,
+     en petit, avec les autres mentions — decision du 2026-11-03. */
   const n = d.lignes.length
   return [
     { libelle: `${n} transfert${n > 1 ? 's' : ''}`, valeur: formaterMontant(Number(d.total_ht)) },
-    ...(phraseAttente(d) ? [{ libelle: "Frais d'attente", valeur: "selon conditions" }] : []),
     { libelle: "TVA", valeur: "non applicable" },
   ]
 }
@@ -271,4 +273,28 @@ export function detailLigne(l: LigneDevis): string {
     l.passagers ? `${l.passagers} passager${l.passagers > 1 ? 's' : ''}` : null,
     l.observations,
   ].filter(Boolean).join(' · ')
+}
+
+/**
+ * Le bas de page — tout ce qui doit figurer sans occuper la place.
+ *
+ * Un devis parle d'une prestation. L'identite de l'entreprise, le regime de
+ * TVA, les penalites de retard et la clause d'attente sont obligatoires ou
+ * utiles, mais ils ne sont pas ce que le client lit. Ils occupaient le tiers
+ * de la page ; ils tiennent maintenant en quatre lignes grises en pied de
+ * document — decision du 2026-11-03.
+ *
+ * L'ordre compte : la clause d'attente d'abord, parce qu'elle engage le
+ * client ; l'identite ensuite ; les mentions legales en dernier.
+ */
+export function basDePage(
+  d: Pick<DevisClient, 'client_societe' | 'attente_offerte_min' | 'attente_tarif_heure'>,
+  p: Prestataire,
+): string[] {
+  const attente = phraseAttente(d)
+  return [
+    ...(attente ? [`Temps d'attente — ${attente}`] : []),
+    [p.nom, ...p.legal].filter(Boolean).join(' · '),
+    ...mentionsDevis(d),
+  ]
 }

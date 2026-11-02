@@ -24,9 +24,9 @@ import {
   type Contexte,
 } from '@/lib/pdf-feuille'
 import {
-  CADRE_SIGNATURE, LIBELLE_NET, LIGNES_REGLEMENT, TITRE_ATTENTE, TITRE_REGLEMENT,
+  CADRE_SIGNATURE, LIBELLE_NET, LIGNES_REGLEMENT, TITRE_REGLEMENT, basDePage,
   chargerDevis, chargerPrestataire, dateCourte, dateLongue, detailLigne,
-  jourEmission, lignesTotaux, mentionsDevis, phraseAccord, phraseAttente,
+  jourEmission, lignesTotaux, phraseAccord,
   type DevisClient, type Prestataire,
 } from '@/lib/devis-client'
 
@@ -67,10 +67,12 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
     ecrire(ctx, 'PRESTATAIRE', MARGE, 7, TEXTE_3)
     ctx.y -= 14
     ecrire(ctx, p.nom, MARGE, 11, TEXTE, true)
+    /* L'identite legale — exploitant, adresse, SIRET, APE — descend en bas
+       de page. Elle occupait cinq lignes en haut du document, a cote du nom
+       du client, pour une information que personne ne lit a cet endroit. */
     for (const l of [
       p.metier,
       [p.telephone, p.email].filter(Boolean).join(' · '),
-      ...p.legal,
     ].filter(Boolean)) {
       for (const bout of couper(String(l), ctx.normal, 8.5, 240)) {
         ctx.y -= 11
@@ -156,19 +158,6 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
       trait(ctx, ctx.y)
     }
 
-    // ── Conditions d'attente ──────────────────────────────────────────────
-    const attente = phraseAttente(d)
-    if (attente) {
-      const lignes = couper(attente, ctx.normal, 8.5, A4.largeur - 2 * MARGE)
-      placePour(ctx, 30 + lignes.length * 12)
-      ctx.y -= 26
-      ecrire(ctx, TITRE_ATTENTE.toUpperCase(), MARGE, 7, TEXTE_3)
-      for (const bout of lignes) {
-        ctx.y -= 12
-        ecrire(ctx, bout, MARGE, 8.5, TEXTE_2)
-      }
-    }
-
     // ── Règlement et totaux ───────────────────────────────────────────────
     const totaux = lignesTotaux(d)
     placePour(ctx, 60 + totaux.length * 16)
@@ -230,15 +219,22 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
 
     ctx.y = Math.min(ctx.y, cadreHaut - cadreHauteur) - 24
 
-    // ── Mentions légales ──────────────────────────────────────────────────
-    for (const mention of mentionsDevis(d)) {
-      const lignes = couper(mention, ctx.normal, 7.5, A4.largeur - 2 * MARGE)
-      placePour(ctx, lignes.length * 10 + 8)
-      for (const bout of lignes) {
-        ecrire(ctx, bout, MARGE, 7.5, TEXTE_3)
-        ctx.y -= 10
+    // ── Bas de page ───────────────────────────────────────────────────────
+    /* Tout ce qui doit figurer sans prendre la place : clause d'attente,
+       identite de l'entreprise, regime de TVA, penalites. 6,5 pt, gris. */
+    const lignesBas = basDePage(d, p)
+    const hauteurBas = lignesBas.reduce(
+      (h, m) => h + couper(m, ctx.normal, 6.5, A4.largeur - 2 * MARGE).length * 8.5 + 3, 0)
+    placePour(ctx, hauteurBas + 16)
+    ctx.y -= 16
+    trait(ctx, ctx.y)
+    ctx.y -= 12
+    for (const mention of lignesBas) {
+      for (const bout of couper(mention, ctx.normal, 6.5, A4.largeur - 2 * MARGE)) {
+        ecrire(ctx, bout, MARGE, 6.5, TEXTE_3)
+        ctx.y -= 8.5
       }
-      ctx.y -= 4
+      ctx.y -= 3
     }
 
     piedDePage(ctx, `${p.nom} · Service VTC · Paris & Île-de-France · owise.fr`)
