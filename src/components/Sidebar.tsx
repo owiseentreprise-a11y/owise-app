@@ -12,7 +12,12 @@ const navItems = [
       { href: '/admin',               label: 'Dashboard',    icon: 'grid'      },
       { href: '/admin/planning',      label: 'Planning',     icon: 'calendar'  },
       { href: '/admin/courses',       label: 'Courses',      icon: 'map'       },
-      { href: '/admin/devis',         label: 'Devis',        icon: 'inbox'     },
+      /* « Devis » tout court désignait les demandes venues du formulaire du
+         site, et l'exploitant y a cherché un devis qu'il m'avait demandé de
+         composer — 2026-11-02. Les deux entrées disent désormais ce qu'elles
+         contiennent : ce qu'on reçoit, et ce qu'on envoie. */
+      { href: '/admin/devis-clients', label: 'Devis clients', icon: 'file'     },
+      { href: '/admin/devis',         label: 'Devis en ligne', icon: 'inbox'   },
       { href: '/admin/chauffeurs',    label: 'Chauffeurs',   icon: 'users'     },
       { href: '/admin/facturation',   label: 'Facturation',  icon: 'file'      },
       { href: '/admin/stats',         label: 'Statistiques', icon: 'bar'       },
