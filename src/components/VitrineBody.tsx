@@ -1,6 +1,7 @@
 'use client'
 
 import { ANNULATION_COURTE, ANNULATION_PHRASE } from '@/lib/conditions'
+import { exigeUnDevis, vehiculeParDefaut } from '@/lib/gamme'
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import type { CSSProperties } from 'react'
@@ -672,6 +673,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     const dep = bcDepart.label.trim()
     const arr = bcArrivee.label.trim()
     if (dep.length < 3 || arr.length < 3) return
+    /* 8 passagers : aucun prix automatique. Le Grand Van depend d'un
+       partenaire, et la table `tarifs` n'a pas de ligne pour lui — faute de
+       quoi le code retombait sur une valeur en dur et annoncait 120 € quelle
+       que soit la distance, moins cher qu'un van 7 places a 196 €.
+       Mesure du 2026-11-03 sur owise.fr. */
+    /* Sortie seche, sans toucher a l'etat : l'affichage du prix est deja
+       conditionne a `!exigeUnDevis(bcPax)`, et appeler setState ici
+       declencherait un rendu en cascade. */
+    if (exigeUnDevis(bcPax)) return
     if (autoEstTimer.current) clearTimeout(autoEstTimer.current)
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
@@ -1314,7 +1324,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     Saisissez vos adresses pour voir le prix instantanément
                   </div>
                 )}
-                {bcPrice !== null && (
+                {exigeUnDevis(bcPax) && (
+                  <div style={{padding:'14px 16px',borderRadius:10,background:'rgba(var(--or-rvb),0.06)',border:'1px solid rgba(var(--or-rvb),0.18)'}}>
+                    <div style={{fontSize:12.5,fontWeight:600,color:'var(--gold)',marginBottom:5}}>
+                      {vehiculeParDefaut(bcPax)?.nom ?? 'Grand Van'} · sur devis
+                    </div>
+                    <div style={{fontSize:11.5,color:'var(--t2)',lineHeight:1.65}}>
+                      Ce transfert dépend de la disponibilité de nos partenaires.
+                      Laissez-nous vos coordonnées, nous revenons vers vous rapidement
+                      avec un tarif ferme.
+                    </div>
+                  </div>
+                )}
+                {bcPrice !== null && !exigeUnDevis(bcPax) && (
                   <div className="bc-price show">
                     <div className="bc-price-label">{bcIsKm ? 'Estimation TTC' : 'Tarif fixe TTC'}</div>
                     <div className="bc-price-amount"><sup className="chrome-gold-static">€</sup><span className="chrome-gold-static">{bcPrice}</span></div>
@@ -1322,6 +1344,21 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   </div>
                 )}
                 <button className="btn-book" onClick={()=>{
+                  /* 8 passagers : pas de reservation en ligne. On reporte ce
+                     que le client vient de saisir dans le formulaire de devis
+                     de cette meme page — le canal deja surveille, qui alimente
+                     /admin/devis — plutot que de l'envoyer sur /reserver, qui
+                     ne sait pas traiter 8 passagers et le perdrait. */
+                  if (exigeUnDevis(bcPax)) {
+                    logFunnel('hero_widget_devis_click', { pax: bcPax })
+                    setForm(f => ({ ...f, origin: bcDepart.label, dest: bcArrivee.label,
+                                    date: bcDate || f.date, time: bcTime || f.time }))
+                    setDevisOrig(bcDepart)
+                    setDesisDest(bcArrivee)
+                    setPaxN(bcPax)
+                    document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    return
+                  }
                   logFunnel('hero_widget_confirm_click', { prix: bcPrice })
                   const p = new URLSearchParams()
                   if (bcDepart.label)  p.set('depart',  bcDepart.label)
@@ -1343,7 +1380,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   router.push('/reserver?' + p.toString())
                 }}>
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  Confirmer la réservation
+                  {exigeUnDevis(bcPax) ? 'Demander un devis' : 'Confirmer la réservation'}
                 </button>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14,marginTop:4,flexWrap:'wrap'}}>
                   <span style={{display:'flex',alignItems:'center',gap:4,fontSize:10,color:'var(--t2)'}}>
