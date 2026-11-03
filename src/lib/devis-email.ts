@@ -128,7 +128,10 @@ function elements(d: DevisClient, p: Prestataire) {
        ou seul l'e-mail d'Owise gardait encore l'ancienne mise en page. */
     mentions: [
       ANNULATION_MENTION,
-      ...(attente ? [`Temps d'attente — ${attente}`] : []),
+      /* Pas de préfixe : `phraseAttente()` rend déjà la mention entière,
+         qui commence par « Temps d'attente — ». L'ajouter donnait
+         « Temps d'attente — Temps d'attente — … ». */
+      ...(attente ? [attente] : []),
       MENTION_TVA,
     ],
     notes: d.notes,

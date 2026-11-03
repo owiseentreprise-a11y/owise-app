@@ -60,21 +60,50 @@ export const ANNULATION_MENTION =
 
 // ── Temps d'attente ─────────────────────────────────────────────────────────
 
-/** Cahier des charges §4.6. */
+/**
+ * Cahier des charges §4.6 pour la berline, decision de l'exploitant du
+ * 2026-11-03 pour les gros vehicules.
+ *
+ * Immobiliser un van ou une berline Premium coute plus cher qu'une berline :
+ * ces deux categories passent a un tarif horaire, a l'heure entamee.
+ */
 export const ATTENTE_OFFERTE_MIN = 15
-export const ATTENTE_PRIX_MINUTE = 0.5
+export const ATTENTE_PRIX_MINUTE = 0.5   // berline
+export const ATTENTE_PRIX_HEURE  = 70    // van, grand van, berline Premium
+
+/**
+ * Le vehicule releve-t-il du tarif horaire d'attente ?
+ *
+ * Le critere, donne par l'exploitant le 2026-11-03 : **tout ce qui depasse
+ * quatre places** — van, minibus, grand van, de 5 a 8 places — **plus la
+ * berline executive (Premium)**, qui n'a que 1 a 4 places mais se loue plus
+ * cher. La berline ordinaire reste au tarif a la minute.
+ *
+ * Le libelle est saisi en texte libre sur un devis : les valeurs reellement
+ * rencontrees en base sont « 1 berline », « 1 berline Premium », « 1 van »,
+ * « 1 van + 1 berline », « Berline ». La fonction accepte aussi les cles de
+ * la base — `van`, `grand_van`, `berline_premium`.
+ *
+ * Une ligne qui melange deux vehicules suit le plus gros : c'est lui qu'on
+ * immobilise.
+ */
+export function attenteAuTarifHoraire(libelleVehicule: string): boolean {
+  return /van|minibus|premium|ex[eé]cutiv/i.test(libelleVehicule ?? '')
+}
 
 export const ATTENTE_PHRASE =
   `Les ${ATTENTE_OFFERTE_MIN} premières minutes d'attente sont offertes sur `
   + `chaque prise en charge. Au-delà, l'attente est facturée `
-  + `${formaterMontant(ATTENTE_PRIX_MINUTE)} par minute entamée.`
+  + `${formaterMontant(ATTENTE_PRIX_MINUTE)} par minute entamée en berline, et `
+  + `${formaterMontant(ATTENTE_PRIX_HEURE)} par heure entamée en van ou en berline Premium.`
 
 /** Une seule ligne, pour le bas d'un devis. */
 export const ATTENTE_MENTION =
-  `Temps d'attente — ${ATTENTE_OFFERTE_MIN} minutes offertes, puis `
-  + `${formaterMontant(ATTENTE_PRIX_MINUTE)} par minute entamée. `
-  + `Ces frais ne sont pas compris dans le montant indiqué : ils ne `
-  + `s'appliquent que s'ils sont constatés, et figureront alors sur la facture.`
+  `Temps d'attente — ${ATTENTE_OFFERTE_MIN} minutes offertes sur chaque prise en charge. `
+  + `Au-delà : ${formaterMontant(ATTENTE_PRIX_MINUTE)} par minute entamée en berline, `
+  + `${formaterMontant(ATTENTE_PRIX_HEURE)} par heure entamée en van ou en berline Premium. `
+  + `Ces frais ne sont pas compris dans le montant indiqué : ils ne s'appliquent `
+  + `que s'ils sont constatés, et figureront alors sur la facture.`
 
 /**
  * Ce que coûte une attente, en euros.
@@ -82,9 +111,12 @@ export const ATTENTE_MENTION =
  * Exposé pour que le calcul d'une facture et l'annonce faite au client
  * viennent du même endroit — c'est la divergence qu'on vient de corriger.
  */
-export function coutAttente(minutes: number): number {
+export function coutAttente(minutes: number, libelleVehicule = ''): number {
   const dues = Math.max(0, Math.ceil(minutes) - ATTENTE_OFFERTE_MIN)
-  return dues * ATTENTE_PRIX_MINUTE
+  if (dues === 0) return 0
+  return attenteAuTarifHoraire(libelleVehicule)
+    ? Math.ceil(dues / 60) * ATTENTE_PRIX_HEURE
+    : Math.round(dues * ATTENTE_PRIX_MINUTE * 100) / 100
 }
 
 /**

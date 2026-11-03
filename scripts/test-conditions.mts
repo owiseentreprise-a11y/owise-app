@@ -22,7 +22,7 @@ const SOURCE = 'src/lib/conditions.ts'
 const BASE = process.argv[2] ?? null
 
 const { ANNULATION_COURTE, ANNULATION_MENTION, ANNULATION_PHRASE, ATTENTE_MENTION,
-        PALIERS_ANNULATION, coutAnnulation, coutAttente } =
+        PALIERS_ANNULATION, attenteAuTarifHoraire, coutAnnulation, coutAttente } =
   await import('../src/lib/conditions')
 
 let ok = 0
@@ -101,10 +101,24 @@ dire('annulation 12 h avant : la moitié',   coutAnnulation(115, 12) === 57.5,
      `obtenu ${coutAnnulation(115, 12)}`)
 dire('annulation 4 h pile : la moitié',     coutAnnulation(115, 4) === 57.5)
 dire('annulation 2 h avant : la totalité',  coutAnnulation(115, 2) === 115)
-dire('attente de 10 min : offerte',         coutAttente(10) === 0)
-dire('attente de 15 min : offerte',         coutAttente(15) === 0)
-dire('attente de 30 min : 7,50 €',          coutAttente(30) === 7.5, `obtenu ${coutAttente(30)}`)
-dire('attente de 90 min : 37,50 €',         coutAttente(90) === 37.5, `obtenu ${coutAttente(90)}`)
+/* Berline : a la minute. Van, minibus, Premium : a l'heure entamee.
+   Les libelles testes sont ceux reellement saisis en base. */
+dire('berline, 10 min : offerte',           coutAttente(10, 'Berline') === 0)
+dire('berline, 15 min : offerte',           coutAttente(15, '1 berline') === 0)
+dire('berline, 30 min : 7,50 €',            coutAttente(30, '1 berline') === 7.5, `obtenu ${coutAttente(30, '1 berline')}`)
+dire('berline, 90 min : 37,50 €',           coutAttente(90, 'Berline') === 37.5, `obtenu ${coutAttente(90, 'Berline')}`)
+
+dire('van, 15 min : offerte',               coutAttente(15, '1 van') === 0)
+dire('van, 20 min : 70 € (heure entamée)',  coutAttente(20, '1 van') === 70, `obtenu ${coutAttente(20, '1 van')}`)
+/* 75 min = 15 offertes + 60 dues = UNE heure pile, pas deux. */
+dire('van, 75 min : 70 € (une heure pile)', coutAttente(75, '1 van') === 70, `obtenu ${coutAttente(75, '1 van')}`)
+dire('van, 80 min : 140 € (deux entamées)', coutAttente(80, '1 van') === 140, `obtenu ${coutAttente(80, '1 van')}`)
+dire('berline Premium, 20 min : 70 €',      coutAttente(20, '1 berline Premium') === 70)
+dire('ligne mixte van + berline : au van',  coutAttente(20, '1 van + 1 berline') === 70)
+dire('minibus reconnu',                     attenteAuTarifHoraire('minibus 7 places'))
+dire('grand_van reconnu',                   attenteAuTarifHoraire('grand_van'))
+dire('berline_premium reconnu',             attenteAuTarifHoraire('berline_premium'))
+dire('berline simple NON concernée',        !attenteAuTarifHoraire('1 berline'))
 
 // ── 4. Les textes annoncent bien les mêmes seuils ───────────────────────────
 
