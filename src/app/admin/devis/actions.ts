@@ -6,6 +6,7 @@ import { instantDepuisSaisieParis } from '@/lib/heure'
 import { revalidatePath } from 'next/cache'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { vehiculePourBase } from '@/lib/vehicule'
+import { genererNumeroDevis } from '@/lib/devis-client'
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -155,4 +156,79 @@ export async function convertirEnFacture(devis: {
   revalidatePath('/admin/facturation')
 
   return numero
+}
+
+/**
+ * La demande reçue devient un devis à chiffrer.
+ *
+ * Il manquait le chaînon : une demande arrivait ici avec « Course » et
+ * « Facture » pour seules actions. Or une demande de groupe — 8 places, un
+ * séminaire — appelle d'abord un DEVIS, qu'on chiffre et qu'on envoie.
+ * L'exploitant devait tout ressaisir dans /admin/devis-clients.
+ *
+ * La demande n'est PAS supprimée : tant que le devis n'est pas parti, elle
+ * reste la trace de ce que le client a demandé. À supprimer à la main une
+ * fois la réponse envoyée.
+ */
+export async function convertirEnDevisClient(devis: {
+  id: string
+  nom: string | null
+  tel: string | null
+  email: string | null
+  societe: string | null
+  price: number | null
+  origin: string | null
+  destination: string | null
+  date_course: string | null
+  heure: string | null
+  vehicle: string | null
+  pax: number | null
+}): Promise<string> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  const numero = await genererNumeroDevis(supabase)
+
+  /* Le prix de la demande n'est qu'un point de départ, et il est souvent
+     absent — c'est le cas sur les demandes « sur devis ». L'exploitant le
+     fixe lui-même dans l'éditeur. */
+  const prix = Number(devis.price) || 0
+
+  const ligne = {
+    heure:        devis.heure ?? '',
+    depart:       devis.origin ?? '',
+    arrivee:      devis.destination ?? '',
+    vehicule:     devis.vehicle ?? '',
+    passagers:    devis.pax ?? null,
+    prix,
+    observations: '',
+  }
+
+  /* Deux semaines de validité : le délai d'usage, modifiable dans l'éditeur. */
+  const validite = new Date()
+  validite.setDate(validite.getDate() + 14)
+
+  const { data, error } = await supabase
+    .from('devis_clients')
+    .insert({
+      numero,
+      client_nom:      devis.nom ?? '',
+      client_societe:  devis.societe || null,
+      client_email:    devis.email || null,
+      client_tel:      devis.tel || null,
+      date_prestation: devis.date_course || null,
+      date_validite:   validite.toISOString().slice(0, 10),
+      statut:          'brouillon',
+      lignes:          [ligne],
+      total_ht:        prix,
+      notes:           `Demande reçue depuis le site le ${new Date().toLocaleDateString('fr-FR')}.`,
+    })
+    .select('id')
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/devis')
+  revalidatePath('/admin/devis-clients')
+  return data.id as string
 }

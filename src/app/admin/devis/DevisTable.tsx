@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { supprimerDevis, convertirEnFacture, convertirEnCourse } from './actions'
+import { supprimerDevis, convertirEnFacture, convertirEnCourse, convertirEnDevisClient } from './actions'
 
 function fmtDate(d: string | null) {
   if (!d) return '—'
@@ -47,6 +47,17 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
         const num = await convertirEnFacture(devisData)
         setSuccess(`Facture ${num} créée`)
         setConfirm(null)
+      } catch (e: any) { alert(e.message) }
+    })
+  }
+
+  /* Mener directement a l'editeur : l'exploitant chiffre et envoie dans la
+     foulee, au lieu de ressaisir la demande dans un autre ecran. */
+  function handleConvertirDevis() {
+    startTransition(async () => {
+      try {
+        const id = await convertirEnDevisClient(devisData)
+        window.location.href = `/admin/devis-clients/${id}`
       } catch (e: any) { alert(e.message) }
     })
   }
@@ -127,6 +138,19 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       <td style={{ padding: '13px 14px', whiteSpace: 'nowrap' }}>
         {confirm === null && (
           <div style={{ display: 'flex', gap: 6 }}>
+            {/* Repondre par un devis — l'action qui manquait. Une demande de
+                groupe appelle d'abord un devis, pas une course ni une facture. */}
+            <button onClick={handleConvertirDevis} disabled={pending}
+              title="Créer un devis à partir de cette demande, puis l'envoyer au client"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(201,168,76,.45)',
+                background: 'rgba(201,168,76,.16)', color: '#A8862F',
+                fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Devis
+            </button>
             {/* Convertir en course */}
             <button onClick={() => setConfirm('course')} disabled={pending}
               title="Créer une course à partir de ce devis"
