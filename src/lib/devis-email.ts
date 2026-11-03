@@ -48,7 +48,7 @@
 import { formaterMontant } from '@/lib/montant'
 import { base, echapper, row } from '@/lib/email-gabarit'
 import {
-  dateCourte, dateLongue, detailLigne, phraseAttente,
+  MENTION_ANNULATION, dateCourte, dateLongue, detailLigne, phraseAttente,
   type DevisClient, type Prestataire,
 } from '@/lib/devis-client'
 
@@ -116,9 +116,20 @@ function elements(d: DevisClient, p: Prestataire) {
   const transferts = `${n} transfert${n > 1 ? 's' : ''}`
   const validite = dateCourte(d.date_validite)
 
+  const attente = phraseAttente(d)
+
   return {
     jour,
-    attente: phraseAttente(d),
+    attente,
+    /* Les mentions, dans l'ordre et au meme endroit pour les trois formes
+       — e-mail d'Owise, bloc a coller, texte brut. Les composer trois fois
+       laissait une forme en retard sur les autres : constate le 2026-11-03,
+       ou seul l'e-mail d'Owise gardait encore l'ancienne mise en page. */
+    mentions: [
+      MENTION_ANNULATION,
+      ...(attente ? [`Temps d'attente — ${attente}`] : []),
+      MENTION_TVA,
+    ],
     notes: d.notes,
     sujet: jour
       ? `Devis ${d.numero} — ${transferts} le ${jour}`
@@ -175,10 +186,11 @@ function enTexte(e: ReturnType<typeof elements>, signature = true): string {
     'Bien à vous,',
     ...(signature ? ['', ...e.signature] : []),
     /* Les mentions en dernier, apres la signature : elles doivent figurer,
-       elles ne doivent pas occuper la place. Meme regle que sur le devis. */
+       elles ne doivent pas occuper la place. Meme regle que sur le devis.
+       Elles viennent de `e.mentions` — les reecrire ici avait deja laisse
+       cette forme en retard d'une mention. */
     '',
-    MENTION_TVA,
-    ...(e.attente ? [`Temps d'attente — ${e.attente}`] : []),
+    ...e.mentions,
   ].join('\n')
 }
 
@@ -223,8 +235,7 @@ export function composerEmailDevis(d: DevisClient, p: Prestataire): EmailDevis {
         ${e.signature.slice(1).map(l => echapper(l)).join('<br>')}
       </td></tr>
       <tr><td style="padding-top:16px;font-size:11px;color:#9a9aae;line-height:1.6;">
-        ${echapper(MENTION_TVA)}
-        ${e.attente ? `<br>Temps d'attente — ${echapper(e.attente)}` : ''}
+        ${e.mentions.map(m => echapper(m)).join('<br>')}
       </td></tr>
     </table>
   `)
@@ -280,8 +291,7 @@ ${e.notes ? `<p style="margin:0 0 18px;${police};white-space:pre-line;">${echapp
 
 <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
   <tr><td style="padding:10px 0 0;border-top:1px solid #e8eaed;">
-    <div style="${police};font-size:11px;color:#80868b;line-height:1.6;">${echapper(MENTION_TVA)}</div>
-${e.attente ? `    <div style="${police};font-size:11px;color:#80868b;line-height:1.6;margin-top:3px;">Temps d'attente — ${echapper(e.attente)}</div>` : ''}
+    ${e.mentions.map(m => `<div style="${police};font-size:11px;color:#80868b;line-height:1.6;margin-top:3px;">${echapper(m)}</div>`).join('')}
   </td></tr>
 </table>
 </div>`

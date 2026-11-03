@@ -138,3 +138,47 @@ export function piedDePage(ctx: Contexte, mention: string) {
     }
   })
 }
+
+/** L'encre du sceau — le bleu nuit de la marque. */
+export const NUIT = rgb(0x09 / 255, 0x09 / 255, 0x1a / 255)
+
+/**
+ * Le sceau Owise : l'anneau, l'arc doré, le point.
+ *
+ * Il existait sur la page web du document (`fac-sceau`) mais pas sur le PDF,
+ * dessiné à la main — le même devis arrivait donc avec un logo s'il était
+ * imprimé depuis le navigateur, et sans logo s'il partait en pièce jointe.
+ * Relevé par l'exploitant le 2026-11-03.
+ *
+ * `x` et `yHaut` repèrent le coin haut-gauche ; le dessin est défini sur une
+ * grille de 56 points, comme le SVG d'origine, et simplement mis à l'échelle.
+ */
+export function cartoucheOwise(ctx: Contexte, x: number, yHaut: number, cote = 46) {
+  /* Le carre dore de `.fac-sceau` : fond or a 10 %, filet a 28 %, rayon 11
+     sur 46 — les memes proportions que la page web. */
+  ctx.page.drawRectangle({
+    x, y: yHaut - cote, width: cote, height: cote,
+    color: OR, opacity: 0.10,
+    borderColor: OR, borderOpacity: 0.28, borderWidth: 1,
+  })
+  const dessin = cote * (26 / 46)
+  sceauOwise(ctx, x + (cote - dessin) / 2, yHaut - (cote - dessin) / 2, dessin)
+}
+
+export function sceauOwise(ctx: Contexte, x: number, yHaut: number, cote = 26) {
+  const k = cote / 56
+  const cx = x + 28 * k
+  const cy = yHaut - 28 * k
+
+  ctx.page.drawCircle({
+    x: cx, y: cy, size: 15.4 * k,
+    borderColor: NUIT, borderOpacity: 0.82, borderWidth: 2.4 * k,
+  })
+  /* L'arc doré, en coordonnées SVG : pdf-lib retourne l'axe vertical
+     lui-même à partir du point d'ancrage. */
+  ctx.page.drawSvgPath('M 28 12.6 A 15.4 15.4 0 0 1 42 21.7', {
+    x, y: yHaut, scale: k,
+    borderColor: OR, borderWidth: 3 * k,
+  })
+  ctx.page.drawCircle({ x: cx, y: cy, size: 3 * k, color: OR })
+}

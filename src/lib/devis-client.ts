@@ -213,6 +213,23 @@ export function phraseAttente(d: Pick<DevisClient, 'attente_offerte_min' | 'atte
    ──────────────────────────────────────────────────────────────────────── */
 
 export const TITRE_ATTENTE   = "Conditions particulières — temps d'attente"
+
+/**
+ * L'annulation, telle qu'elle est annoncée sur un devis.
+ *
+ * ATTENTION — cette règle n'est PAS celle des CGV publiées sur owise.fr,
+ * qui prévoient : gratuit avant attribution du chauffeur, puis 3 € sous dix
+ * minutes, 8 € au-delà, et no-show = prise en charge + cinq minutes.
+ *
+ * Décision de l'exploitant du 2026-11-03, pour les devis : une règle simple
+ * et plus protectrice, que le client lit en une phrase. Des conditions
+ * PARTICULIÈRES inscrites sur un devis signé priment sur des conditions
+ * générales — mais tant que les deux coexistent, un client peut opposer
+ * celles du site. Les CGV restent à aligner.
+ */
+export const MENTION_ANNULATION =
+  "Annulation — sans frais jusqu'à 24 heures avant la prise en charge. "
+  + "Passé ce délai, la totalité de la course est due."
 export const TITRE_REGLEMENT = "Règlement"
 export const CADRE_SIGNATURE = "Date, signature et mention « bon pour accord »"
 
@@ -293,6 +310,7 @@ export function basDePage(
 ): string[] {
   const attente = phraseAttente(d)
   return [
+    MENTION_ANNULATION,
     ...(attente ? [`Temps d'attente — ${attente}`] : []),
     [p.nom, ...p.legal].filter(Boolean).join(' · '),
     ...mentionsDevis(d),

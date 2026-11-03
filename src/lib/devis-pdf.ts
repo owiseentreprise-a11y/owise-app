@@ -20,7 +20,7 @@ import { PDFDocument, StandardFonts } from 'pdf-lib'
 import { formaterMontant } from '@/lib/montant'
 import {
   A4, MARGE, OR, TEXTE, TEXTE_2, TEXTE_3, TRAIT,
-  couper, ecrire, nettoyerPourPdf, piedDePage, placePour, trait,
+  cartoucheOwise, couper, ecrire, nettoyerPourPdf, piedDePage, placePour, trait,
   type Contexte,
 } from '@/lib/pdf-feuille'
 import {
@@ -49,11 +49,22 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
 
     // ── En-tête ───────────────────────────────────────────────────────────
     const hautEntete = ctx.y
-    ecrire(ctx, 'OWISE', MARGE, 20, OR, true)
+    /* Le cartouche, puis le nom : meme composition que l'en-tete de la page
+       web (`.fac-marque`), pour que le PDF joint et le document imprime
+       depuis le navigateur soient le meme papier. Le cartouche fait 46 pt,
+       le texte est centre dessus. */
+    const CARTOUCHE = 46
+    const hautCartouche = hautEntete + 16
+    cartoucheOwise(ctx, MARGE, hautCartouche, CARTOUCHE)
+    const apresCartouche = MARGE + CARTOUCHE + 13
+
+    ctx.y = hautEntete
+    ecrire(ctx, 'OWISE', apresCartouche, 21, OR, true)
     ecrire(ctx, 'DEVIS', 0, 10, TEXTE_2, true, droite)
 
+    ctx.y = hautEntete - 13
+    ecrire(ctx, p.metier.toUpperCase(), apresCartouche, 7.5, TEXTE_3)
     ctx.y = hautEntete - 20
-    ecrire(ctx, p.metier, MARGE, 9, TEXTE_3)
     ecrire(ctx, d.numero, 0, 16, OR, true, droite)
 
     ctx.y = hautEntete - 56
