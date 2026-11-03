@@ -342,7 +342,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   const [dateOnly, setDateOnly] = useState(() => searchParams.get('date') || '')
   const [timeOnly, setTimeOnly] = useState(() => searchParams.get('time') || '09:00')
   const date = dateOnly ? `${dateOnly}T${timeOnly}` : ''
-  const [vehicule,  setVehicule] = useState('berline')
+  /* Le vehicule choisi sur l'accueil arrive par l'URL. Sans cela, un client
+     qui selectionnait une Premium sur le simulateur la retrouvait en Berline
+     ici, avec un prix plus bas et sans rien comprendre. */
+  const [vehicule,  setVehicule] = useState(() => {
+    const demande = searchParams.get('veh') || ''
+    return VEHICULES.some(v => v.value === demande) ? demande : 'berline'
+  })
   const [passagers, setPassagers] = useState(() => parseInt(searchParams.get('pax') || '1') || 1)
 
   const [nom,       setNom]       = useState(profil?.nom       ?? searchParams.get('nom')   ?? '')

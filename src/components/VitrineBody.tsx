@@ -1,7 +1,7 @@
 'use client'
 
 import { ANNULATION_COURTE, ANNULATION_PHRASE } from '@/lib/conditions'
-import { exigeUnDevis, vehiculeParDefaut } from '@/lib/gamme'
+import { capaciteTexte, exigeUnDevis, vehiculeParCle, vehiculeParDefaut, vehiculesPour } from '@/lib/gamme'
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import type { CSSProperties } from 'react'
@@ -408,6 +408,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const [bcEtape,    setBcEtape]    = useState(false)
   const [bcEtapeAddr, setBcEtapeAddr] = useState<BcAddr>({ label: '' })
   const [bcPrice,    setBcPrice]    = useState<number|null>(null)
+  /* Le vehicule retenu par le client, et le prix de chacun de ceux qu'il
+     peut choisir. Avant, le vehicule etait deduit du nombre de passagers :
+     la Premium n'apparaissait qu'a exactement 4 personnes, et pesait
+     8 estimations sur 149 depuis septembre. */
+  const [bcVeh,      setBcVeh]      = useState<string|null>(null)
+  const [bcPrixVeh,  setBcPrixVeh]  = useState<Record<string, number>>({})
   const [bcIsKm,     setBcIsKm]     = useState(false)
   const [bcLoading,  setBcLoading]  = useState(false)
   const [bcDepart,   setBcDepart]   = useState<BcAddr>({ label: '' })
@@ -689,15 +695,37 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       let prixFinal: number
       let isKmFinal: boolean
 
-      if (bcEtape && bcEtapeAddr.label.trim().length >= 3) {
-        const result = await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime)
+      /* Un prix par vehicule compatible : c'est ce qui permet de montrer
+         Berline et Premium cote a cote. `resoudreAdresse` court-circuite
+         quand l'adresse porte deja ses coordonnees, donc deux chiffrages ne
+         font pas deux geocodages. */
+      const compatibles = vehiculesPour(bcPax).filter(v => !v.surDevis)
+      const avecEtape   = bcEtape && bcEtapeAddr.label.trim().length >= 3
+      const parVeh: Record<string, number> = {}
+      for (const v of compatibles) {
+        const r = avecEtape
+          ? await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime, v.cle)
+          : await bcEstimate(v.cle)
+        parVeh[v.cle] = r.prix
+      }
+      setBcPrixVeh(parVeh)
+
+      /* Le choix du client tient tant qu'il reste compatible ; sinon on
+         retombe sur le moins cher, qui est le premier de la gamme. */
+      const retenu = bcVeh && compatibles.some(v => v.cle === bcVeh)
+        ? bcVeh
+        : (compatibles[0]?.cle ?? 'berline')
+      if (retenu !== bcVeh) setBcVeh(retenu)
+
+      if (avecEtape) {
+        const result = await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime, retenu)
         prixFinal = result.prix
         isKmFinal = result.isKm
       } else {
         // Étape ouverte mais adresse pas encore saisie : on ne peut pas mesurer
         // le détour, on n'annonce donc que le trajet direct. Le prix se remet à
         // jour dès que l'adresse de l'étape est renseignée.
-        const result = await bcEstimate()
+        const result = await bcEstimate(retenu)
         prixFinal = result.prix
         isKmFinal = result.isKm
       }
@@ -707,7 +735,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       setBcLoading(false)
       const dep = bcDepart.label.trim()
       const arr = bcArrivee.label.trim()
-      const vh  = NOM_VERS_CLE[getVehicle(bcPax).name] ?? 'berline'
+      /* Le vehicule REELLEMENT retenu, pas celui deduit du nombre de
+         passagers. Avec l'ancienne version, une estimation a 8 places etait
+         enregistree sous l'etiquette « van » et devenait indistinguable des
+         autres — c'est ce qui a empeche, le 2026-11-03, de dire combien de
+         clients avaient declenche le prix errone du Grand Van. */
+      const vh  = retenu
       const key = `${dep}|${arr}|${vh}`
       const depResolved = bcDepart.lat != null || !!bcDepart.cp
       const arrResolved = bcArrivee.lat != null || !!bcArrivee.cp
@@ -807,9 +840,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   }
 
   // Source unique pour le calcul de prix — utilisée par le widget ET le devis
-  async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string): Promise<{ prix: number; isKm: boolean }> {
-    const v     = getVehicle(paxN)
-    const tarif = bcTarifs.find(t => t.vehicule === v.name)
+  /**
+   * Le prix d'un trajet pour UN vehicule donne.
+   *
+   * `cleChoisie` permet de chiffrer plusieurs vehicules sur le meme trajet —
+   * c'est ce qui permet de montrer Berline et Premium cote a cote. Sans elle,
+   * le vehicule etait deduit du nombre de passagers, et la Premium n'etait
+   * jamais proposee en dessous de 4 personnes.
+   */
+  async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string, cleChoisie?: string): Promise<{ prix: number; isKm: boolean }> {
+    const vg    = cleChoisie ? vehiculeParCle(cleChoisie) : vehiculeParDefaut(paxN)
+    const v     = VEHICLES.find(x => x.name === vg?.nomTarif) ?? getVehicle(paxN)
+    const tarif = bcTarifs.find(t => t.vehicule === vg?.nomTarif)
 
     const realDate = date ? `${date}T${time || '09:00'}` : ''
 
@@ -819,7 +861,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const zoneArr = detectZone(arrGc.cp ?? '', zonesProp, arrGc.label)
 
       if (zoneDep && zoneArr) {
-        const cle = NOM_VERS_CLE[v.name] ?? 'berline'
+        const cle = vg?.cle ?? 'berline'
         const px  = calculerPrix(zoneDep.id, zoneArr.id, cle, realDate, grilleProp, tarifsProp, zonesProp, paramsProp)
         if (px !== null) return { prix: Math.round(px), isKm: false }
       }
@@ -827,7 +869,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       if (depGc.lat && depGc.lng && arrGc.lat && arrGc.lng) {
         const distKm = await fetchGoogleDist(depGc, arrGc)
         if (distKm !== null) {
-          const cle = NOM_VERS_CLE[v.name] ?? 'berline'
+          const cle = vg?.cle ?? 'berline'
           const px = calculerPrixKm(distKm, cle, realDate, tarifsProp, paramsProp)
           if (px !== null) return { prix: Math.round(px), isKm: true }
         }
@@ -842,8 +884,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return { prix: Math.round(base), isKm: false }
   }
 
-  async function bcEstimate(): Promise<{ prix: number; isKm: boolean }> {
-    return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime)
+  async function bcEstimate(cle?: string): Promise<{ prix: number; isKm: boolean }> {
+    return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime, cle)
   }
 
   /**
@@ -855,13 +897,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
    */
   async function estimerAvecEtapes(
     dep: BcAddr, etapes: BcAddr[], arr: BcAddr, paxN: number, date: string, time: string,
+    cleChoisie?: string,
   ): Promise<{ prix: number; isKm: boolean }> {
     const retenues = etapes.filter(e => e.label.trim().length >= 3)
-    if (retenues.length === 0) return estimerPrixBase(dep, arr, paxN, date, time)
+    if (retenues.length === 0) return estimerPrixBase(dep, arr, paxN, date, time, cleChoisie)
 
-    const direct   = await estimerPrixBase(dep, arr, paxN, date, time)
+    const direct   = await estimerPrixBase(dep, arr, paxN, date, time, cleChoisie)
     const realDate = date ? `${date}T${time || '09:00'}` : ''
-    const cle      = NOM_VERS_CLE[getVehicle(paxN).name] ?? 'berline'
+    const cle      = cleChoisie ?? vehiculeParDefaut(paxN)?.cle ?? 'berline'
 
     const points = await Promise.all([dep, ...retenues, arr].map(resoudreAdresse))
     const troncons = await Promise.all(
@@ -1324,6 +1367,51 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     Saisissez vos adresses pour voir le prix instantanément
                   </div>
                 )}
+                {/* Le choix du vehicule. Il n'apparait que lorsqu'il y a
+                    vraiment un choix — a 5 passagers seul le van convient, a
+                    8 c'est un devis. C'est entre 1 et 4 personnes que le
+                    client peut arbitrer entre Berline et Premium, et c'est
+                    justement la que la Premium n'etait jamais proposee. */}
+                {!bcLoading && vehiculesPour(bcPax).filter(v => !v.surDevis).length > 1
+                  && Object.keys(bcPrixVeh).length > 1 && (
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    {vehiculesPour(bcPax).filter(v => !v.surDevis).map(v => {
+                      const choisi = (bcVeh ?? '') === v.cle
+                      const prix = bcPrixVeh[v.cle]
+                      return (
+                        <button
+                          key={v.cle}
+                          type="button"
+                          aria-pressed={choisi}
+                          onClick={() => { setBcVeh(v.cle); if (prix != null) setBcPrice(prix) }}
+                          style={{
+                            display:'flex', alignItems:'center', gap:10, width:'100%',
+                            textAlign:'left', cursor:'pointer', fontFamily:'inherit',
+                            padding:'10px 13px', borderRadius:10,
+                            background: choisi ? 'rgba(var(--or-rvb),0.10)' : 'transparent',
+                            border: choisi ? '1px solid rgba(var(--or-rvb),0.45)'
+                                           : '1px solid rgba(var(--contraste-rvb),.12)',
+                          }}
+                        >
+                          <span style={{
+                            width:14, height:14, borderRadius:'50%', flexShrink:0,
+                            border: choisi ? '4px solid var(--gold)'
+                                           : '1px solid rgba(var(--contraste-rvb),.3)',
+                          }} />
+                          <span style={{flex:1, minWidth:0}}>
+                            <span style={{display:'block',fontSize:12.5,fontWeight:600,color:'var(--t1)'}}>{v.nom}</span>
+                            <span style={{display:'block',fontSize:10.5,color:'var(--t2)',marginTop:1}}>
+                              {capaciteTexte(v)}{v.cle === 'berline_premium' ? ' · haut de gamme' : ''}
+                            </span>
+                          </span>
+                          <span style={{fontSize:13.5,fontWeight:700,color: choisi ? 'var(--gold)' : 'var(--t1)',whiteSpace:'nowrap'}}>
+                            {prix != null ? `${prix} €` : '—'}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
                 {exigeUnDevis(bcPax) && (
                   <div style={{padding:'14px 16px',borderRadius:10,background:'rgba(var(--or-rvb),0.06)',border:'1px solid rgba(var(--or-rvb),0.18)'}}>
                     <div style={{fontSize:12.5,fontWeight:600,color:'var(--gold)',marginBottom:5}}>
@@ -1340,7 +1428,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <div className="bc-price show">
                     <div className="bc-price-label">{bcIsKm ? 'Estimation TTC' : 'Tarif fixe TTC'}</div>
                     <div className="bc-price-amount"><sup className="chrome-gold-static">€</sup><span className="chrome-gold-static">{bcPrice}</span></div>
-                    <div className="bc-price-sub">{getVehicle(bcPax).name} · {bcIsKm ? 'Tarif au km · Prix estimé' : 'Tarif fixe · Prix garanti'}</div>
+                    <div className="bc-price-sub">{(bcVeh ? vehiculeParCle(bcVeh)?.nom : null) ?? vehiculeParDefaut(bcPax)?.nom ?? getVehicle(bcPax).name} · {bcIsKm ? 'Tarif au km · Prix estimé' : 'Tarif fixe · Prix garanti'}</div>
                   </div>
                 )}
                 <button className="btn-book" onClick={()=>{
@@ -1370,6 +1458,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   if (bcDate)    p.set('date',    bcDate)
                   if (bcTime)    p.set('time',    bcTime)
                   p.set('pax', String(bcPax))
+                  /* Sans ce report, le client choisissait une Premium sur
+                     l'accueil et arrivait sur /reserver avec une Berline. */
+                  if (bcVeh) p.set('veh', bcVeh)
                   // Reporter gclid/UTM de la page d'atterrissage vers /reserver,
                   // sinon l'origine publicitaire du clic est perdue avant paiement.
                   const current = new URLSearchParams(window.location.search)
