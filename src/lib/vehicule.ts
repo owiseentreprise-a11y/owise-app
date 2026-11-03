@@ -14,9 +14,14 @@
  * aboutissaient, ce qui a masque le defaut pendant des mois.
  *
  * Regle : aucune ecriture de `type_vehicule` en base sans passer par
- * `vehiculePourBase()`. `scripts/test-vehicule.mts` verifie les deux choses —
- * que la traduction est juste, et qu'aucun fichier n'ecrit la colonne sans
- * cette fonction.
+ * `vehiculePourBase()`. Le controle verifie les deux choses — que la
+ * traduction est juste, et qu'aucun fichier n'ecrit la colonne sans cette
+ * fonction. Il vit a la racine du poste, hors du depot, et prend le chemin du
+ * depot a verifier :
+ *
+ *     OW_RACINE=<chemin du depot> npx tsx c:/websitebuilding/test-vehicule.mjs
+ *
+ * (Ce commentaire annoncait `scripts/test-vehicule.mts`, qui n'existe pas.)
  */
 
 import { GAMME, NOM_PAR_BASE } from './gamme'

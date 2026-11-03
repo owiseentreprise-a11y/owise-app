@@ -28,7 +28,11 @@
  *      n'apparaissait qu'à exactement 4 passagers : 8 estimations sur 149
  *      depuis septembre, alors que c'est la meilleure marge (+50 %).
  *
- * `scripts/test-gamme.mts` échoue si une surface diverge.
+ * Deux controles echouent si une surface diverge — `scripts/test-gamme.mts`,
+ * annonce ici, n'a jamais existe :
+ *
+ *     npx tsx scripts/audit-sources-tarifs.mts   (une seule source par reglage)
+ *     npx tsx scripts/audit-vehicules.mts        (prix par vehicule et liaison)
  */
 
 /** La clé que connaissent `calcPrix.ts`, les formulaires et Stripe. */
