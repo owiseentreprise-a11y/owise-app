@@ -214,6 +214,21 @@ const PRESENTATION: Record<string, { feats: string[]; bg: string; badge: string 
   },
 }
 
+/* Les colonnes du tableau de tarifs public.
+   Leurs libelles etaient ecrits DEUX FOIS dans le meme bloc JSX — l'en-tete
+   et, sous 768 px, le libelle porte par chaque montant — avec « Van 7 pl. »
+   et « Premium », deux orthographes qui n'existaient nulle part ailleurs.
+   C'etait la septieme declaration de la gamme ; elle a survecu au premier
+   nettoyage du 2026-11-03 parce qu'on ne cherchait que « 8 pl. ».
+   Le tableau chiffre trois vehicules : ceux dont le prix s'affiche. */
+const EMOJI_VEHICULE: Record<string, string> = {
+  berline: '🚘', berline_premium: '⭐', van: '🚐', grand_van: '🚐',
+}
+const COLONNES_TARIFS = GAMME.filter(v => !v.surDevis).map(v => ({
+  label: v.nom,
+  emoji: EMOJI_VEHICULE[v.cle] ?? '',
+}))
+
 const VEH_DISPLAY = GAMME.map(v => ({
   name: v.nom,
   cle: v.cle,
@@ -1839,11 +1854,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   padding:'14px 24px',
                 }}>
                   <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--t2)' }}>Trajet</div>
-                  {[
-                    { label:'Berline', emoji:'🚘' },
-                    { label:'Premium', emoji:'⭐' },
-                    { label:'Van 7 pl.', emoji:'🚐' },
-                  ].map(v => (
+                  {COLONNES_TARIFS.map(v => (
                     <div key={v.label} style={{ textAlign:'center' }}>
                       <div style={{ fontSize:11, fontWeight:600, color:'var(--t1)' }}>{v.emoji} {v.label}</div>
                     </div>
@@ -1870,7 +1881,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         {/* Sous 768 px l'en-tête du tableau disparaît : chaque
                             montant porte alors son propre libellé de véhicule,
                             sans quoi on ne saurait plus lequel on lit. */}
-                        <div className="tar-lab">{['🚘 Berline','⭐ Premium','🚐 Van 7 pl.'][j]}</div>
+                        <div className="tar-lab">{COLONNES_TARIFS[j] ? `${COLONNES_TARIFS[j].emoji} ${COLONNES_TARIFS[j].label}` : ''}</div>
                         {prix != null ? (
                           <div>
                             <span style={{

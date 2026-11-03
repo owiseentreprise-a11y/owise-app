@@ -168,6 +168,9 @@ for (const v of GAMME) {
    TABLES DE CORRESPONDANCE : quatre objets qui associaient chacun les cles de
    vehicules a des noms, et ne disaient pas la meme chose. Un fichier qui
    declare un tel objet est une deuxieme source. */
+const sansCommentairesSimple = (t: string) => t
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^\s*\/\/.*$/gm, '')
 const CLES = GAMME.map(v => v.cle)
 let tables = 0
 for (const f of tous) {
@@ -178,13 +181,47 @@ for (const f of tous) {
   /* `\\b` et non `\b` : dans un gabarit JavaScript, `\b` est le caractere
      « retour arriere », pas une limite de mot. Ecrit ainsi, ce controle est
      reste aveugle a sa premiere redaction — il ne cherchait rien. */
-  const portees = CLES.filter(c => new RegExp(`\\b${c}:\\s*['"\`]`).test(texte))
+  /* La valeur doit RESSEMBLER a un nom de vehicule : « Berline », « Van »,
+     « Premium », ou un nombre de places. Sans cette condition, le controle
+     signalait aussi une table d'emojis (`berline: '🚘'`) — qui ne decide du
+     nom de rien, et dont la presence est legitime. Ce qu'on traque, c'est une
+     SECONDE source du NOM. */
+  const VALEUR_NOM = "[^'\"`]*(?:Berline|Van|Premium|\\\\d\\\\s*places?)[^'\"`]*"
+  const portees = CLES.filter(c => new RegExp(`\\b${c}:\\s*['"\`]${VALEUR_NOM}['"\`]`).test(texte))
   if (portees.length >= 3) {
     tables++
     ko(`${court(f)} déclare sa propre table de noms (${portees.join(', ')}) — la dériver de gamme.ts`)
   }
 }
 if (tables === 0) ok('une seule table de correspondance clé → nom, dans gamme.ts')
+
+/* 5 bis. Les orthographes ABANDONNEES, ecrites comme chaines.
+ *
+ * Le controle ci-dessus cherche une table `cle: 'Nom'`. Il est passe a cote
+ * d'une SEPTIEME declaration de la gamme : une simple liste de libelles dans
+ * le tableau de tarifs public de l'accueil
+ * (`[{ label:'Van 7 pl.' }, ...]`), ecrite deux fois dans le meme bloc JSX.
+ * Elle a survecu au premier nettoyage parce qu'on ne cherchait que « 8 pl. »,
+ * et elle etait EN LIGNE : « Van 7 pl. » apparaissait quatre fois sur la page
+ * d'accueil de owise.fr.
+ *
+ * On cherche donc les orthographes abandonnees elles-memes. Seules celles qui
+ * ne peuvent designer qu'un vehicule sont retenues — « Van » ou « Premium »
+ * seuls se rencontrent legitimement ailleurs. */
+const ORTHOGRAPHES_ABANDONNEES = ['Van 7 pl.', 'Grand Van 8 pl.', 'Van 7 pl', 'Grand Van 8 pl']
+let abandonnees = 0
+for (const f of tous) {
+  if (court(f) === 'src/lib/gamme.ts') continue
+  const texte = sansCommentairesSimple(lire(f))
+  for (const o of ORTHOGRAPHES_ABANDONNEES) {
+    /* On exige les guillemets FERMANTS, sans quoi « Grand Van 8 pl » ferait
+       mouche sur « Grand Van 8 places », dont il est le prefixe. C'est le
+       piege qui a fait echouer 6 controles de mon essai en ligne a tort. */
+    const cite = [`'${o}'`, `"${o}"`, '`' + o + '`'].some(v => texte.includes(v))
+    if (cite) { abandonnees++; ko(`${court(f)} écrit l'orthographe abandonnée « ${o} » — la prendre dans gamme.ts`) }
+  }
+}
+if (abandonnees === 0) ok(`aucune des ${ORTHOGRAPHES_ABANDONNEES.length} orthographes abandonnées n'est réécrite`)
 ok(`${GAMME.length} véhicules déclarés, chacun rattaché à une ligne de « tarifs »`)
 
 // ── 6. Les libelles DEJA EN BASE sont-ils tous reconnus ? ─────────────────
