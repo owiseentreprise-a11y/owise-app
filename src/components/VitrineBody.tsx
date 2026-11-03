@@ -687,7 +687,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     /* Sortie seche, sans toucher a l'etat : l'affichage du prix est deja
        conditionne a `!exigeUnDevis(bcPax)`, et appeler setState ici
        declencherait un rendu en cascade. */
-    if (exigeUnDevis(bcPax)) return
     if (autoEstTimer.current) clearTimeout(autoEstTimer.current)
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
@@ -699,7 +698,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
          Berline et Premium cote a cote. `resoudreAdresse` court-circuite
          quand l'adresse porte deja ses coordonnees, donc deux chiffrages ne
          font pas deux geocodages. */
-      const compatibles = vehiculesPour(bcPax).filter(v => !v.surDevis)
+      /* On chiffre AUSSI les vehicules « sur devis ». Le prix sert d'ordre
+         de grandeur — « a partir de » — pour que le client sache a quoi
+         s'attendre avant de remplir la demande. Il ne mene jamais a un
+         paiement : `exigeUnDevis` continue de l'interdire. */
+      const compatibles = vehiculesPour(bcPax)
       const avecEtape   = bcEtape && bcEtapeAddr.label.trim().length >= 3
       const parVeh: Record<string, number> = {}
       for (const v of compatibles) {
@@ -968,11 +971,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setSubmitErr('')
     setSubmitting(true)
     const v       = getVehicle(pax)
-    /* Aucun prix sur une demande « sur devis » : la demande TEST8-1944 du
-       2026-11-03 est arrivee en base avec price = 120, l'ancienne valeur
-       erronee. L'exploitant l'aurait lue comme une estimation faite par le
-       site, et aurait pu la reprendre telle quelle. */
-    const price   = exigeUnDevis(pax) ? null : devisPrix
+    /* Le prix accompagne la demande : il est desormais juste — Van 7 places
+       + 20 EUR — et sert de point de depart au devis que l'exploitant
+       prepare. Il valait 120 EUR jusqu'au 2026-11-03, une valeur inventee
+       qu'il aurait pu reprendre telle quelle. */
+    const price   = devisPrix
     const ref     = 'OW-' + Date.now().toString(36).toUpperCase()
     // La table `devis` n'a pas de colonne pour les étapes : l'adresse voyage
     // avec les suppléments, pour que l'admin la voie dans la demande.
@@ -1418,13 +1421,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 )}
                 {exigeUnDevis(bcPax) && (
                   <div style={{padding:'14px 16px',borderRadius:10,background:'rgba(var(--or-rvb),0.06)',border:'1px solid rgba(var(--or-rvb),0.18)'}}>
-                    <div style={{fontSize:12.5,fontWeight:600,color:'var(--gold)',marginBottom:5}}>
-                      {vehiculeParDefaut(bcPax)?.nom ?? 'Grand Van'} · sur devis
+                    <div style={{fontSize:9.5,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--t2)',marginBottom:3}}>À partir de</div>
+                    {bcPrice !== null && (
+                      <div style={{fontSize:30,fontWeight:700,color:'var(--gold)',lineHeight:1.1,marginBottom:4}}>
+                        <span style={{fontSize:18,verticalAlign:'super'}}>€</span>{bcPrice}
+                      </div>
+                    )}
+                    <div style={{fontSize:12,fontWeight:600,color:'var(--t1)',marginBottom:5}}>
+                      {vehiculeParDefaut(bcPax)?.nom ?? 'Grand Van'} · sous réserve de disponibilité
                     </div>
                     <div style={{fontSize:11.5,color:'var(--t2)',lineHeight:1.65}}>
                       Ce transfert dépend de la disponibilité de nos partenaires.
-                      Laissez-nous vos coordonnées, nous revenons vers vous rapidement
-                      avec un tarif ferme.
+                      Laissez-nous vos coordonnées : nous confirmons rapidement avec
+                      un tarif ferme.
                     </div>
                   </div>
                 )}
@@ -2466,9 +2475,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     distance. Constate le 2026-11-03 en parcourant le tunnel. */}
                 {exigeUnDevis(pax) ? (
                   <div className="estimate-display" style={{textAlign:'center'}}>
-                    <div className="est-lbl">Sur devis</div>
-                    <div style={{fontSize:15,fontWeight:600,color:'var(--gold)',margin:'8px 0 6px'}}>
-                      {vehiculeParDefaut(pax)?.nom ?? 'Grand Van 8 places'}
+                    <div className="est-lbl">À partir de</div>
+                    {currentEst != null && (
+                      <div className="est-price"><span className="est-cur">€</span><span>{currentEst}</span></div>
+                    )}
+                    <div style={{fontSize:14,fontWeight:600,color:'var(--gold)',margin:'6px 0 6px'}}>
+                      {vehiculeParDefaut(pax)?.nom ?? 'Grand Van 8 places'} · sous réserve de disponibilité
                     </div>
                     <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.7,maxWidth:420,margin:'0 auto'}}>
                       Ce transfert dépend de la disponibilité de nos partenaires.

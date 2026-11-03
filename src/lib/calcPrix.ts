@@ -12,6 +12,8 @@ export type TarifCalc  = {
 export type ParamsCalc = {
   coef_berline_premium?: number | null
   coef_van?: number | null
+  /** Colonne a creer ; a defaut, SUPPLEMENT_GRAND_VAN. */
+  supplement_grand_van?: number | null
   supplement_nuit?: number | null
   supplement_weekend?: number | null
   supplement_etape?: number | null
@@ -34,6 +36,24 @@ export type ParamsCalc = {
 const DEFAULT_COEF_PREMIUM = 1.25
 const DEFAULT_COEF_VAN     = 1.5
 
+/**
+ * Le Grand Van 8 places : le prix du Van 7 places, plus un supplement fixe.
+ *
+ * Decision de l'exploitant, 2026-11-03 : « le 8 places est plus cher que le
+ * 7 places ; au moins 20 EUR de plus sur le forfait, au moins 10 centimes de
+ * plus du kilometre ».
+ *
+ * Pourquoi un supplement et pas un coefficient : le moteur ne sait faire que
+ * des multiplications, et « +20 EUR » ne s'exprime pas ainsi. Il faudrait
+ * 2,039 sur Chantilly -> CDG et 1,874 sur Compiegne -> CDG.
+ *
+ * Pourquoi en dur ici : ces deux valeurs devraient vivre dans `parametres`,
+ * reglables depuis /admin/tarifs comme les coefficients. La colonne reste a
+ * creer — le code lit deja `params.supplement_grand_van` s'il la trouve.
+ */
+const SUPPLEMENT_GRAND_VAN   = 20
+const SURCOUT_KM_GRAND_VAN   = 0.10
+
 export const AIRPORT_COL: Record<string, keyof TarifCalc> = {
   CDG: 'cdg_fixe',
   ORY: 'orly_fixe',
@@ -44,6 +64,9 @@ export const VEHICULE_NOM: Record<string, string> = {
   berline:         'Berline',
   berline_premium: 'Berline Premium',
   van:             'Van 7 places',
+  /* Aucune ligne dans `tarifs` ne porte ce nom : le grand van se calcule
+     depuis le van. Le nom sert a l'affichage. */
+  grand_van:       'Grand Van 8 places',
 }
 
 export const NOM_VERS_CLE: Record<string, string> = {
@@ -203,9 +226,17 @@ export function calculerPrix(
   )
   if (cell?.prix_berline) {
     let coef = 1
+    let supplement = 0
     if (vehiculeKey === 'berline_premium') coef = params?.coef_berline_premium ?? DEFAULT_COEF_PREMIUM
     if (vehiculeKey === 'van')             coef = params?.coef_van ?? DEFAULT_COEF_VAN
-    let prix = Number(cell.prix_berline) * coef
+    /* Le grand van partait sans coefficient : il retombait a 1, donc au prix
+       d'une berline — 101 liaisons sur 127 ou il coutait moins cher que le
+       van 7 places. Mesure du 2026-11-03. */
+    if (vehiculeKey === 'grand_van') {
+      coef = params?.coef_van ?? DEFAULT_COEF_VAN
+      supplement = Number(params?.supplement_grand_van ?? SUPPLEMENT_GRAND_VAN)
+    }
+    let prix = Number(cell.prix_berline) * coef + supplement
     if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
     return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
   }
@@ -404,10 +435,14 @@ export function calculerPrixKm(
   tarifs: TarifCalc[],
   params?: ParamsCalc | null,
 ): number | null {
-  const vehiculeNom = VEHICULE_NOM[vehiculeKey] ?? vehiculeKey
+  /* Le grand van n'a pas de ligne dans `tarifs`. Sans ce traitement, la
+     recherche echouait et le calcul retombait sur 15 EUR + 2 EUR/km, deux
+     valeurs inventees — moins cher que le van 7 places sur 50 km. */
+  const estGrandVan = vehiculeKey === 'grand_van'
+  const vehiculeNom = estGrandVan ? VEHICULE_NOM.van : (VEHICULE_NOM[vehiculeKey] ?? vehiculeKey)
   const tarif = tarifs.find(t => t.vehicule === vehiculeNom)
   const base  = tarif ? Number(tarif.prise_en_charge) : 15
-  const km    = tarif ? Number(tarif.prix_km)         : 2
+  const km    = (tarif ? Number(tarif.prix_km) : 2) + (estGrandVan ? SURCOUT_KM_GRAND_VAN : 0)
   // Arrondir la distance à l'entier le plus proche pour absorber les
   // écarts de géocodage entre sources (BAN, LIEUX_CONNUS, Google Maps)
   const dist  = Math.round(distanceKm)

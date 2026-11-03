@@ -79,9 +79,13 @@ export const GAMME: Vehicule[] = [
   {
     cle: 'grand_van',
     nom: 'Grand Van 8 places',
-    /* Aucune ligne dans `tarifs`, et c'est voulu : ce vehicule depend de la
-       disponibilite d'un partenaire, son prix se negocie course par course. */
-    nomTarif: null,
+    /* Il n'a pas de ligne a lui dans `tarifs` : son prix DERIVE de celui du
+       Van 7 places — + 20 EUR sur le forfait, + 0,10 EUR du kilometre
+       (decision du 2026-11-03). On pointe donc la ligne du van, sans quoi la
+       recherche de tarif echoue, le moteur de prix est saute en entier, et le
+       code retombe sur une valeur en dur : c'est le 120 EUR forfaitaire,
+       identique sur 52 km et sur 120 km, qu'on vient de corriger. */
+    nomTarif: 'Van 7 places',
     capaciteMin: 8, capaciteMax: 8,
     surDevis: true,
     argument: 'Séminaires et événements, selon disponibilité',
