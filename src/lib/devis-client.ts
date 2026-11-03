@@ -13,6 +13,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { jourParis } from '@/lib/heure'
+import { ANNULATION_MENTION, ATTENTE_MENTION } from '@/lib/conditions'
 import { formaterMontant } from '@/lib/montant'
 
 /** Une prestation du devis. Les champs vides sont permis a la saisie. */
@@ -186,21 +187,23 @@ export async function chargerDevis(id: string): Promise<DevisClient | null> {
  * ecrite une seule fois, pour qu'un devis de janvier et un devis de juin
  * disent exactement la meme chose.
  */
-export function phraseAttente(d: Pick<DevisClient, 'attente_offerte_min' | 'attente_tarif_heure'>): string | null {
-  if (d.attente_tarif_heure == null) return null
-  const offertes = d.attente_offerte_min ?? 0
-  const tarif = formaterMontant(Number(d.attente_tarif_heure))
-  const debut = offertes > 0
-    ? `Les ${offertes} premières minutes d'attente sont offertes sur chaque prise en charge. Au-delà, l'attente`
-    : `L'attente`
-  /* « ci-dessous » a été retiré le 2026-11-02 : la phrase sert maintenant
-     trois mises en page — le document, le PDF (où un devis long renvoie le
-     total en page 2) et la réponse e-mail (où le montant est AU-DESSUS).
-     Une phrase qui désigne une position se trompe dès qu'on la déplace. */
-  return `${debut} est facturée ${tarif} par heure, toute heure commencée étant due. `
-    + `Ces frais ne sont pas compris dans le montant indiqué : ils ne s'appliquent que s'ils sont constatés, `
-    + `et figureront alors sur la facture.`
+/**
+ * La clause d'attente d'un devis — la règle de la maison, pour tous.
+ *
+ * Elle se construisait depuis deux colonnes propres à chaque devis
+ * (`attente_offerte_min`, `attente_tarif_heure`). Ces colonnes portaient un
+ * tarif HORAIRE de 70 €, que j'avais inventé : le cahier des charges §4.6
+ * dit 15 minutes offertes puis 0,50 € la minute. Décision de l'exploitant du
+ * 2026-11-03 — une seule règle, dans `conditions.ts`.
+ *
+ * Les deux colonnes ne sont plus lues, et leurs champs ont quitté le
+ * formulaire : un champ qui ne produit aucun effet est pire qu'un champ
+ * absent. Elles restent en base, à supprimer par une migration ultérieure.
+ */
+export function phraseAttente(): string {
+  return ATTENTE_MENTION
 }
+
 
 /* ────────────────────────────────────────────────────────────────────────
    Ce que le document DIT.
@@ -213,23 +216,6 @@ export function phraseAttente(d: Pick<DevisClient, 'attente_offerte_min' | 'atte
    ──────────────────────────────────────────────────────────────────────── */
 
 export const TITRE_ATTENTE   = "Conditions particulières — temps d'attente"
-
-/**
- * L'annulation, telle qu'elle est annoncée sur un devis.
- *
- * ATTENTION — cette règle n'est PAS celle des CGV publiées sur owise.fr,
- * qui prévoient : gratuit avant attribution du chauffeur, puis 3 € sous dix
- * minutes, 8 € au-delà, et no-show = prise en charge + cinq minutes.
- *
- * Décision de l'exploitant du 2026-11-03, pour les devis : une règle simple
- * et plus protectrice, que le client lit en une phrase. Des conditions
- * PARTICULIÈRES inscrites sur un devis signé priment sur des conditions
- * générales — mais tant que les deux coexistent, un client peut opposer
- * celles du site. Les CGV restent à aligner.
- */
-export const MENTION_ANNULATION =
-  "Annulation — sans frais jusqu'à 24 heures avant la prise en charge. "
-  + "Passé ce délai, la totalité de la course est due."
 export const TITRE_REGLEMENT = "Règlement"
 export const CADRE_SIGNATURE = "Date, signature et mention « bon pour accord »"
 
@@ -243,7 +229,7 @@ export const LIBELLE_NET = "Net à payer"
 
 /** Les lignes de total, au-dessus du net à payer. */
 export function lignesTotaux(
-  d: Pick<DevisClient, 'lignes' | 'total_ht' | 'attente_offerte_min' | 'attente_tarif_heure'>,
+  d: Pick<DevisClient, 'lignes' | 'total_ht'>,
 ): { libelle: string; valeur: string }[] {
   /* Pas de ligne « Frais d'attente » ici : elle attirait l'oeil sur une
      eventualite au milieu du prix ferme. La clause descend en bas de page,
@@ -305,14 +291,12 @@ export function detailLigne(l: LigneDevis): string {
  * client ; l'identite ensuite ; les mentions legales en dernier.
  */
 export function basDePage(
-  d: Pick<DevisClient, 'client_societe' | 'attente_offerte_min' | 'attente_tarif_heure'>,
+  d: Pick<DevisClient, 'client_societe'>,
   p: Prestataire,
 ): string[] {
-  const attente = phraseAttente(d)
   return [
-    MENTION_ANNULATION,
-    ...(attente ? [`Temps d'attente — ${attente}`] : []),
-    [p.nom, ...p.legal].filter(Boolean).join(' · '),
+    ANNULATION_MENTION,
+    ATTENTE_MENTION,
     ...mentionsDevis(d),
   ]
 }

@@ -19,8 +19,6 @@ export type SaisieDevis = {
   client_adresse: string | null
   date_prestation: string | null
   date_validite: string | null
-  attente_offerte_min: number | null
-  attente_tarif_heure: number | null
   notes: string | null
   lignes: LigneDevis[]
 }
@@ -38,9 +36,9 @@ export async function creerDevis(): Promise<string> {
       statut: 'brouillon',
       lignes: [],
       total_ht: 0,
-      /* Les valeurs d'usage d'Owise, modifiables devis par devis. */
-      attente_offerte_min: 15,
-      attente_tarif_heure: 70,
+      /* Les conditions d'attente et d'annulation ne se reglent plus devis
+         par devis : elles sont identiques partout, dans `conditions.ts`.
+         Ces deux colonnes ne sont plus lues — a supprimer par migration. */
     })
     .select('id')
     .single()
@@ -71,8 +69,6 @@ export async function enregistrerDevis(id: string, saisie: SaisieDevis) {
       client_adresse:      saisie.client_adresse?.trim() || null,
       date_prestation:     saisie.date_prestation || null,
       date_validite:       saisie.date_validite || null,
-      attente_offerte_min: saisie.attente_offerte_min,
-      attente_tarif_heure: saisie.attente_tarif_heure,
       notes:               saisie.notes?.trim() || null,
       lignes,
       total_ht:            calculerTotal(lignes),

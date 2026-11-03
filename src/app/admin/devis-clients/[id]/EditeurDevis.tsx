@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formaterMontant } from '@/lib/montant'
 import { calculerTotal, ligneVide, STATUTS, type DevisClient, type LigneDevis } from '@/lib/devis-client'
+import { ANNULATION_MENTION, ATTENTE_MENTION } from '@/lib/conditions'
 import { changerStatutDevis, convertirDevisEnCourses, enregistrerDevis, supprimerDevisClient } from '../actions'
 
 /* Les styles sont en ligne comme sur le reste de l'administration. Les
@@ -39,8 +40,6 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
     date_prestation: devis.date_prestation ?? '',
     date_validite:   devis.date_validite ?? '',
     notes:           devis.notes ?? '',
-    attente_offerte_min: devis.attente_offerte_min ?? 15,
-    attente_tarif_heure: devis.attente_tarif_heure,
   })
   const [lignes, setLignes] = useState<LigneDevis[]>(
     devis.lignes.length ? devis.lignes : [ligneVide()])
@@ -73,8 +72,6 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
       date_prestation: form.date_prestation || null,
       date_validite:   form.date_validite || null,
       notes:           form.notes || null,
-      attente_offerte_min: form.attente_tarif_heure == null ? null : Number(form.attente_offerte_min),
-      attente_tarif_heure: form.attente_tarif_heure == null ? null : Number(form.attente_tarif_heure),
     }
   }
 
@@ -277,28 +274,25 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
         </div>
       </div>
 
-      {/* ── Attente ────────────────────────────────────────── */}
-      <div style={carte}>
-        <div style={{ ...etiquette, marginBottom: 12 }}>Conditions d&apos;attente</div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, color: '#444', cursor: 'pointer', marginBottom: 14 }}>
-          <input type="checkbox" checked={form.attente_tarif_heure != null}
-                 onChange={e => setForm(f => ({ ...f, attente_tarif_heure: e.target.checked ? 70 : null }))} />
-          Faire figurer une clause d&apos;attente sur ce devis
-        </label>
-        {form.attente_tarif_heure != null && (
-          <div className="dv-duo" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <div>
-              <label style={etiquette} htmlFor="dv-off">Minutes offertes</label>
-              <input id="dv-off" style={champ} inputMode="numeric" value={form.attente_offerte_min}
-                     onChange={e => setForm(f => ({ ...f, attente_offerte_min: Number(e.target.value) || 0 }))} />
-            </div>
-            <div>
-              <label style={etiquette} htmlFor="dv-tar">Tarif par heure (€)</label>
-              <input id="dv-tar" style={champ} inputMode="decimal" value={form.attente_tarif_heure}
-                     onChange={e => setForm(f => ({ ...f, attente_tarif_heure: Number(e.target.value.replace(',', '.')) || 0 }))} />
-            </div>
-          </div>
-        )}
+      {/* ── Conditions, pour mémoire ────────────────────────── */}
+      {/* Il y avait ici deux champs — minutes offertes, tarif horaire — qui
+          fixaient la clause d'attente devis par devis. Ils portaient 70 €/h,
+          un chiffre inventé : le cahier des charges dit 15 minutes offertes
+          puis 0,50 € la minute. Depuis le 2026-11-03 la règle est unique et
+          vit dans `conditions.ts`. Les champs sont retirés plutôt que laissés
+          sans effet — un formulaire qui n'agit sur rien est pire qu'un
+          formulaire absent. */}
+      <div style={{ ...carte, background: 'rgba(0,0,0,.02)' }}>
+        <div style={{ ...etiquette, marginBottom: 10 }}>Conditions, identiques sur tous les devis</div>
+        <div style={{ fontSize: 12.5, color: '#666', lineHeight: 1.75 }}>
+          {ANNULATION_MENTION}<br />
+          {ATTENTE_MENTION}
+        </div>
+        <div style={{ fontSize: 11.5, color: '#999', marginTop: 10, lineHeight: 1.6 }}>
+          Elles figurent en bas du devis, en petits caractères. Pour les changer,
+          il faut modifier la règle du projet — elles doivent rester identiques
+          partout : site, devis, fiche Google.
+        </div>
       </div>
 
       {/* ── Barre d'actions ────────────────────────────────── */}

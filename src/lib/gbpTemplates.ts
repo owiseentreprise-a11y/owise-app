@@ -1,3 +1,4 @@
+import { ANNULATION_COURTE } from '@/lib/conditions'
 // Templates de posts Google Business Profile — rotation automatique 2×/semaine
 
 export type GbpTemplate = {
@@ -90,7 +91,8 @@ export const GBP_TEMPLATES: GbpTemplate[] = [
       'Pour ne jamais rater votre vol ou votre train, pensez à réserver votre chauffeur au moins 24h à l\'avance.\n\n' +
       'Avec Owise :\n' +
       '• Confirmation immédiate par email\n' +
-      '• Annulation gratuite avant attribution\n' +
+      `• ${ANNULATION_COURTE}
+` +
       '• Rappel automatique la veille de votre course\n\n' +
       'Serein le jour J. Réservez dès maintenant.',
     cta: 'BOOK',

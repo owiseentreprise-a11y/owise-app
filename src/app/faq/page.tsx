@@ -1,3 +1,4 @@
+import { ANNULATION_PHRASE } from '@/lib/conditions'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 /* La palette « Paris en mouvement » vit dans `vitrine.css`, sous
@@ -53,7 +54,7 @@ const faqs = [
   },
   {
     q: "Puis-je annuler ma réservation ?",
-    a: "Oui, vous pouvez annuler votre réservation. Les conditions d'annulation (gratuité ou frais) dépendent du délai avant la prise en charge. Les détails complets des conditions d'annulation sont disponibles dans les CGV sur owise.fr/mentions-legales.",
+    a: ANNULATION_PHRASE,
   },
   {
     q: "Quelle est la zone de service d'Owise ?",

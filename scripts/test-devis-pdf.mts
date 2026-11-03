@@ -127,7 +127,7 @@ for (const d of devis) {
   }
 
   // La clause d'attente : présente si et seulement si elle est due
-  const attente = phraseAttente(d as never)
+  const attente = phraseAttente()
   verifier(`${ref} · clause d'attente`,
     attente ? contient(texte, attente.slice(0, 40)) : !contient(texte, "d'attente est facturee"),
     attente ? 'attendue, absente' : 'non due, pourtant présente')

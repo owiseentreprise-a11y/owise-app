@@ -1,5 +1,7 @@
 'use client'
 
+import { ANNULATION_COURTE } from '@/lib/conditions'
+
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -1327,7 +1329,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
               {[
                 { icon: '✓', text: 'Tarif fixe garanti' },
-                { icon: '✓', text: 'Annulation gratuite avant attribution' },
+                { icon: '✓', text: ANNULATION_COURTE },
                 { icon: '✓', text: 'Confirmation immédiate' },
               ].map(({ icon, text }) => (
                 <span key={text} style={{ fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 4 }}>

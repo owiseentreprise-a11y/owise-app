@@ -1,4 +1,5 @@
 'use client'
+import { PALIERS_ANNULATION, ATTENTE_PHRASE } from '@/lib/conditions'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -309,13 +310,11 @@ export default function MentionsLegalesClient() {
             </Section>
 
             <Section title="4 — Politique d'annulation">
-              <DefTable rows={[
-                ['Avant attribution', 'Annulation gratuite à tout moment'],
-                ['Après attribution — moins de 3 min', 'Annulation gratuite'],
-                ['Après attribution — 3 à 10 min', 'Frais d\'annulation de 3 €'],
-                ['Après attribution — plus de 10 min', 'Frais d\'annulation de 8 €'],
-                ['No-show (chauffeur arrivé)', 'Frais égaux à la prise en charge + 5 min d\'attente'],
-              ]} />
+              {/* Les paliers viennent de `conditions.ts`, qui transcrit le
+                  cahier des charges §4.7. Les recopier ici les ferait
+                  diverger — c'est ce qui s'est produit jusqu'au 2026-11-03. */}
+              <DefTable rows={PALIERS_ANNULATION.map(p => [p.delai, p.penalite] as [string, string])} />
+              <P>{ATTENTE_PHRASE}</P>
             </Section>
 
             <Section title="5 — Remboursements">

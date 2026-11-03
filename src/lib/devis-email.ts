@@ -46,9 +46,10 @@
  * joint, qui est un document contractuel.
  */
 import { formaterMontant } from '@/lib/montant'
+import { ANNULATION_MENTION } from '@/lib/conditions'
 import { base, echapper, row } from '@/lib/email-gabarit'
 import {
-  MENTION_ANNULATION, dateCourte, dateLongue, detailLigne, phraseAttente,
+  dateCourte, dateLongue, detailLigne, phraseAttente,
   type DevisClient, type Prestataire,
 } from '@/lib/devis-client'
 
@@ -116,7 +117,7 @@ function elements(d: DevisClient, p: Prestataire) {
   const transferts = `${n} transfert${n > 1 ? 's' : ''}`
   const validite = dateCourte(d.date_validite)
 
-  const attente = phraseAttente(d)
+  const attente = phraseAttente()
 
   return {
     jour,
@@ -126,7 +127,7 @@ function elements(d: DevisClient, p: Prestataire) {
        laissait une forme en retard sur les autres : constate le 2026-11-03,
        ou seul l'e-mail d'Owise gardait encore l'ancienne mise en page. */
     mentions: [
-      MENTION_ANNULATION,
+      ANNULATION_MENTION,
       ...(attente ? [`Temps d'attente — ${attente}`] : []),
       MENTION_TVA,
     ],

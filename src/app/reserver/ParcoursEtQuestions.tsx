@@ -36,6 +36,7 @@
  */
 
 import Link from 'next/link'
+import { ANNULATION_PHRASE } from '@/lib/conditions'
 
 export type Question = { q: string; r: string }
 
@@ -70,7 +71,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     q: 'Puis-je annuler ma réservation ?',
-    r: 'L\'annulation est gratuite tant qu\'aucun chauffeur n\'a été attribué. Après attribution : gratuite dans les 3 premières minutes, 3 € de 3 à 10 minutes, 8 € au-delà. Si le chauffeur est déjà arrivé, la prise en charge et 5 minutes d\'attente sont dues. Les conditions complètes figurent dans nos mentions légales.',
+    r: ANNULATION_PHRASE,
   },
   {
     q: 'Combien de passagers puis-je emmener ?',
