@@ -1,4 +1,5 @@
 import { heureMuraleParis } from './heure'
+import { NOM_PAR_CLE, CLE_PAR_NOM, vehiculeParCle } from './gamme'
 export type ZoneCalc   = { id: string; code: string; type: string; prefixes_postaux: string[] }
 export type GrilleCalc = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
 export type TarifCalc  = {
@@ -10,10 +11,13 @@ export type TarifCalc  = {
   beauvais_fixe: number
 }
 export type ParamsCalc = {
+  /* Pas de `coef_berline` ici, et c'est voulu. Voir la note sous les replis. */
   coef_berline_premium?: number | null
   coef_van?: number | null
-  /** Colonne a creer ; a defaut, SUPPLEMENT_GRAND_VAN. */
+  /** Colonne optionnelle ; a defaut, SUPPLEMENT_GRAND_VAN. */
   supplement_grand_van?: number | null
+  /** Colonne optionnelle ; a defaut, SURCOUT_KM_GRAND_VAN. */
+  surcout_km_grand_van?: number | null
   supplement_nuit?: number | null
   supplement_weekend?: number | null
   supplement_etape?: number | null
@@ -32,9 +36,38 @@ export type ParamsCalc = {
   supplement_siege_enfant_prix?: number | null
 }
 
-// Valeurs par défaut si /admin/tarifs n'a jamais été configuré
-const DEFAULT_COEF_PREMIUM = 1.25
-const DEFAULT_COEF_VAN     = 1.5
+/**
+ * Valeurs de repli, si la lecture de `parametres` echoue entierement.
+ *
+ * Elles doivent rester EGALES aux valeurs reellement en base. Elles valaient
+ * 1,25 et 1,5 face a 1,5 et 1,7 en base : une page qui n'aurait pas charge ses
+ * parametres aurait facture une Premium 17 % trop bas sans que rien ne le
+ * signale. `scripts/audit-sources-tarifs.mts` echoue si elles divergent a
+ * nouveau.
+ */
+export const DEFAULT_COEF_PREMIUM = 1.5
+export const DEFAULT_COEF_VAN     = 1.7
+
+/**
+ * Pourquoi la berline n'a PAS de coefficient — et pourquoi il ne faut pas en
+ * ajouter un.
+ *
+ * La colonne de la grille s'appelle `prix_berline` : le montant qui y est
+ * saisi EST le prix de la berline. Le multiplier par un coefficient serait le
+ * compter deux fois. Les coefficients Premium et Van existent precisement
+ * parce que ces deux vehicules n'ont pas de colonne a eux.
+ *
+ * La table `parametres` porte pourtant une colonne `coef_berline`, et
+ * /admin/tarifs en affichait le champ. Personne ne la lisait. Le 2026-11-03,
+ * en branchant les reglages oublies, elle a failli le devenir : elle vaut
+ * 1.5 en production — quelqu'un l'a saisie un jour sans effet. La lire aurait
+ * augmente de 50 % le prix de TOUTES les berlines (Chantilly -> CDG :
+ * 59 EUR devenus 88,50 EUR), sans qu'aucune decision ne soit prise.
+ *
+ * Le champ a donc ete retire d'/admin/tarifs plutot que branche. Un reglage
+ * sans effet est un defaut ; le corriger en le rendant actif sur une valeur
+ * que personne n'a choisie en serait un pire.
+ */
 
 /**
  * Le Grand Van 8 places : le prix du Van 7 places, plus un supplement fixe.
@@ -60,20 +93,31 @@ export const AIRPORT_COL: Record<string, keyof TarifCalc> = {
   BVA: 'beauvais_fixe',
 }
 
-export const VEHICULE_NOM: Record<string, string> = {
-  berline:         'Berline',
-  berline_premium: 'Berline Premium',
-  van:             'Van 7 places',
-  /* Aucune ligne dans `tarifs` ne porte ce nom : le grand van se calcule
-     depuis le van. Le nom sert a l'affichage. */
-  grand_van:       'Grand Van 8 places',
-}
+/**
+ * `berline_premium` → « Berline Premium ». Vient de `gamme.ts`, qui est la
+ * seule declaration de la gamme.
+ */
+export const VEHICULE_NOM: Record<string, string> = NOM_PAR_CLE
 
-export const NOM_VERS_CLE: Record<string, string> = {
-  'Berline':         'berline',
-  'Berline Premium': 'berline_premium',
-  'Van 7 places':    'van',
-  'Grand Van':       'van',
+/**
+ * « Berline Premium » → `berline_premium`. L'inverse exact de `VEHICULE_NOM`.
+ *
+ * Elle etait ecrite a la main et incomplete : elle connaissait « Grand Van »
+ * quand le reste du projet disait « Grand Van 8 places ». Le badge
+ * « des X EUR » du simulateur cherchait donc une cle introuvable et retombait
+ * sur la berline — a 8 passagers, le client lisait un prix de berline.
+ */
+export const NOM_VERS_CLE: Record<string, string> = CLE_PAR_NOM
+
+/**
+ * Le nom de la ligne de `tarifs` qui chiffre ce vehicule.
+ *
+ * Le grand van n'a pas de ligne a lui : il derive de celle du van 7 places.
+ * C'est `gamme.ts` qui le dit, et plus une condition eparpillee dans ce
+ * fichier.
+ */
+function nomTarifPour(vehiculeKey: string): string {
+  return vehiculeParCle(vehiculeKey)?.nomTarif ?? VEHICULE_NOM[vehiculeKey] ?? vehiculeKey
 }
 
 /**
@@ -217,14 +261,14 @@ export function calculerPrix(
   zones: ZoneCalc[],
   params?: ParamsCalc | null,
 ): number | null {
-  const vehiculeNom = VEHICULE_NOM[vehiculeKey] ?? vehiculeKey
-
   // Priorité 1 : matrice zone-à-zone (dans les deux sens)
   const cell = grille.find(g =>
     (g.zone_depart_id === zoneDepId  && g.zone_arrivee_id === zoneArrId) ||
     (g.zone_depart_id === zoneArrId  && g.zone_arrivee_id === zoneDepId)
   )
   if (cell?.prix_berline) {
+    /* 1 pour la berline, par definition : `prix_berline` est deja son prix.
+       Voir la note sur `coef_berline` en tete de fichier. */
     let coef = 1
     let supplement = 0
     if (vehiculeKey === 'berline_premium') coef = params?.coef_berline_premium ?? DEFAULT_COEF_PREMIUM
@@ -415,9 +459,15 @@ export function calculerPrixEtapes(
   const nbEtapes = Math.max(0, distancesTronconsKm.length - 1)
   if (nbEtapes === 0) return Math.round(prixDirect * 100) / 100
 
-  const vehiculeNom = VEHICULE_NOM[vehiculeKey] ?? vehiculeKey
-  const tarif  = tarifs.find(t => t.vehicule === vehiculeNom)
-  const prixKm = tarif ? Number(tarif.prix_km) : 2
+  /* `nomTarifPour` et non `VEHICULE_NOM` : le grand van n'a pas de ligne dans
+     `tarifs`, la recherche echouait, et le detour d'un grand van etait chiffre
+     a 2 EUR/km — une valeur inventee, inferieure a celle du van 7 places
+     (constate le 2026-11-03). */
+  const tarif  = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
+  const prixKm = tarif
+    ? Number(tarif.prix_km) + (vehiculeKey === 'grand_van'
+        ? Number(params?.surcout_km_grand_van ?? SURCOUT_KM_GRAND_VAN) : 0)
+    : 2
   const frais  = params?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT
 
   const totalTroncons = distancesTronconsKm.reduce((t, d) => t + d, 0)
@@ -439,10 +489,12 @@ export function calculerPrixKm(
      recherche echouait et le calcul retombait sur 15 EUR + 2 EUR/km, deux
      valeurs inventees — moins cher que le van 7 places sur 50 km. */
   const estGrandVan = vehiculeKey === 'grand_van'
-  const vehiculeNom = estGrandVan ? VEHICULE_NOM.van : (VEHICULE_NOM[vehiculeKey] ?? vehiculeKey)
-  const tarif = tarifs.find(t => t.vehicule === vehiculeNom)
+  const tarif = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
   const base  = tarif ? Number(tarif.prise_en_charge) : 15
-  const km    = (tarif ? Number(tarif.prix_km) : 2) + (estGrandVan ? SURCOUT_KM_GRAND_VAN : 0)
+  const surcout = estGrandVan
+    ? Number(params?.surcout_km_grand_van ?? SURCOUT_KM_GRAND_VAN)
+    : 0
+  const km    = (tarif ? Number(tarif.prix_km) : 2) + surcout
   // Arrondir la distance à l'entier le plus proche pour absorber les
   // écarts de géocodage entre sources (BAN, LIEUX_CONNUS, Google Maps)
   const dist  = Math.round(distanceKm)

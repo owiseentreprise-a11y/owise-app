@@ -12,6 +12,7 @@ import { calculerPrixEtapes } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
 import { dateCourse, heureCourse, instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
+import { chargerParametres } from '@/lib/tarification'
 
 export async function assignerChauffeur(courseId: string, chauffeurId: string | null): Promise<void> {
   // Vérification admin via JWT (anon key)
@@ -340,7 +341,7 @@ export async function estimerSurcoutEtapesAction(
   const [{ data: course }, { data: tarifs }, { data: params }] = await Promise.all([
     supabase.from('courses').select('adresse_depart,adresse_arrivee,type_vehicule,date_prevue').eq('id', courseId).single(),
     supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-    supabase.from('parametres').select('supplement_nuit,supplement_weekend,supplement_etape').single(),
+    chargerParametres(supabase).then(d => ({ data: d })),
   ])
   if (!course) return { error: 'Course introuvable' }
 

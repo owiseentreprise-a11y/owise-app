@@ -1,7 +1,7 @@
 'use client'
 
 import { ANNULATION_COURTE, ANNULATION_PHRASE } from '@/lib/conditions'
-import { capaciteTexte, exigeUnDevis, vehiculeParCle, vehiculeParDefaut, vehiculesPour } from '@/lib/gamme'
+import { GAMME, capaciteTexte, exigeUnDevis, vehiculeParCle, vehiculeParDefaut, vehiculesPour } from '@/lib/gamme'
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import type { CSSProperties } from 'react'
@@ -50,7 +50,7 @@ import {
 } from '@/lib/consentement'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, NOM_VERS_CLE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 /* `from` a disparu de cette table : le badge « dès … € » de l'étape 2 du devis
@@ -62,13 +62,25 @@ import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPart
    `estimerPrixBase()`, utilisé quand ni la grille ni Google ne donnent de
    distance. Y toucher modifierait un prix de réservation — hors périmètre de
    ce sprint. Voir les risques résiduels du rapport. */
-const VEHICLES = [
-  { min:1,max:3, name:'Berline',         sub:'1–3 passagers · confort premium',   base:65 },
-  { min:4,max:4, name:'Berline Premium', sub:'4 passagers · haut de gamme',       base:65 },
-  { min:5,max:7, name:'Van 7 places',    sub:'5–7 passagers · transfert groupe',  base:75 },
-  { min:8,max:8, name:'Grand Van',       sub:'8 passagers · sur réservation',     base:95 },
-]
-function getVehicle(p:number) { return VEHICLES.find(v=>p>=v.min&&p<=v.max)||VEHICLES[3] }
+/**
+ * La gamme montree par le simulateur — DERIVEE de `gamme.ts`.
+ *
+ * Elle portait jusqu'au 2026-11-03 ses propres prix en dur (65, 65, 75, 95 EUR,
+ * +25 aeroport, +12 gare) et ses propres capacites. C'etait un second moteur
+ * de prix, qui ignorait la grille, les coefficients, les frais de prise en
+ * charge et les majorations de nuit et de week-end. Il repondait des que le
+ * geocodage ou Google echouait, et c'est lui qui annoncait 120 EUR pour un
+ * grand van sur n'importe quelle distance.
+ *
+ * Il n'y a plus de prix ici. Quand le calcul n'aboutit pas, le simulateur
+ * n'affiche pas de prix — il n'en invente pas.
+ */
+const VEHICLES = GAMME.map(v => ({
+  min: v.capaciteMin, max: v.capaciteMax, name: v.nom, sub: `${capaciteTexte(v)} · ${v.argument}`,
+}))
+/* Hors gamme, on rend le dernier vehicule pour l'affichage seul : aucun prix
+   n'en depend plus depuis que la table ci-dessus n'en porte aucun. */
+function getVehicle(p:number) { return VEHICLES.find(v=>p>=v.min&&p<=v.max)||VEHICLES[VEHICLES.length-1] }
 
 /* ── FAQ data ──────────────────────────────────────────── */
 const FAQS = [
@@ -165,18 +177,50 @@ function TrustIcon({ name }: { name: string }) {
   }
 }
 
-/* ── vehicles display ───────────────────────────────
-   Les prix ne figurent plus ici : ils etaient ecrits en dur (65/65/75/95 EUR)
-   et ne correspondaient a aucune ligne de la grille. Ils sont desormais
-   derives de prixAPartirDe(), plus bas. `cle` relie chaque carte au vehicule
-   que le moteur connait — 'Grand Van' est facture comme un van, regle portee
-   par NOM_VERS_CLE dans calcPrix.ts et conservee telle quelle.───── */
-const VEH_DISPLAY = [
-  { name:'Berline', devis:false, cle:'berline',         cap:'1 à 3 passagers', feats:['Berline récente, intérieur soigné','Climatisation bi-zone','WiFi embarqué'], bg:'var(--vignette-ciel)', badge:null,       dark:false, img:'/brand_assets/vehicle-berline.png',          alt:'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume' },
-  { name:'Berline Premium', devis:false, cle:'berline_premium', cap:'1 à 4 passagers', feats:['Berline haut de gamme','Eau minérale offerte','Chargeurs universels, WiFi'], bg:'var(--vignette-nuit)', badge:'4 passagers',dark:true,  img:'/brand_assets/vehicle-berline-premium.png', alt:'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière' },
-  { name:'Van 7 places', devis:false, cle:'van',    cap:'5 à 7 passagers', feats:['Van récent, 7 places assises','Grand coffre, idéal aéroport','Transferts groupes & familles'], bg:'var(--vignette-sable)', badge:null,       dark:false, img:'/brand_assets/vehicle-van7.png',             alt:'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes' },
-  { name:'Grand Van 8 pl.', cle:'van', cap:'8 passagers · sur devis', devis:true, feats:['Grand van, 8 places assises','Séminaires, événements d\'entreprise','Selon la disponibilité de nos partenaires'], bg:'var(--vignette-charbon)', badge:null, dark:true,  img:'/brand_assets/vehicle-grand-van.png',        alt:'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume' },
-]
+/* ── Cartes « Notre flotte » ──────────────────────────────────────────────
+   Le nom, la capacite et le « sur devis » viennent de `gamme.ts` ; il ne reste
+   ici que la presentation (image, fond, arguments).
+
+   Cette liste etait la SIXIEME declaration de la gamme dans le projet. Elle
+   portait ses propres prix en dur (65/65/75/95 EUR), sa propre abreviation
+   (« Grand Van 8 pl. », nulle part ailleurs), et surtout `cle:'van'` pour le
+   Grand Van — sa carte aurait affiche le tarif du van 7 places si elle avait
+   affiche un prix. Mesure du 2026-11-03.
+   ────────────────────────────────────────────────────────────────────────── */
+const PRESENTATION: Record<string, { feats: string[]; bg: string; badge: string | null; dark: boolean; img: string; alt: string }> = {
+  berline: {
+    feats: ['Berline récente, intérieur soigné', 'Climatisation bi-zone', 'WiFi embarqué'],
+    bg: 'var(--vignette-ciel)', badge: null, dark: false,
+    img: '/brand_assets/vehicle-berline.png',
+    alt: 'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume',
+  },
+  berline_premium: {
+    feats: ['Berline haut de gamme', 'Eau minérale offerte', 'Chargeurs universels, WiFi'],
+    bg: 'var(--vignette-nuit)', badge: '4 passagers', dark: true,
+    img: '/brand_assets/vehicle-berline-premium.png',
+    alt: 'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière',
+  },
+  van: {
+    feats: ['Van récent, 7 places assises', 'Grand coffre, idéal aéroport', 'Transferts groupes & familles'],
+    bg: 'var(--vignette-sable)', badge: null, dark: false,
+    img: '/brand_assets/vehicle-van7.png',
+    alt: 'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes',
+  },
+  grand_van: {
+    feats: ['Grand van, 8 places assises', "Séminaires, événements d'entreprise", 'Selon la disponibilité de nos partenaires'],
+    bg: 'var(--vignette-charbon)', badge: null, dark: true,
+    img: '/brand_assets/vehicle-grand-van.png',
+    alt: 'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume',
+  },
+}
+
+const VEH_DISPLAY = GAMME.map(v => ({
+  name: v.nom,
+  cle: v.cle,
+  cap: v.surDevis ? `${capaciteTexte(v)} · sur devis` : capaciteTexte(v),
+  devis: v.surDevis,
+  ...PRESENTATION[v.cle],
+}))
 
 /* ── VtAddressInput — input adresse avec autocomplete landmarks + API ── */
 import type { AddressSuggestion as VtSugg } from '@/lib/addressSearch'
@@ -691,7 +735,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     autoEstTimer.current = setTimeout(async () => {
       setBcLoading(true)
       setBcPrice(null)
-      let prixFinal: number
+      /* `null` est une reponse legitime : « on ne sait pas chiffrer ce
+         trajet ». L'affichage est deja conditionne a `bcPrice !== null`. */
+      let prixFinal: number | null
       let isKmFinal: boolean
 
       /* Un prix par vehicule compatible : c'est ce qui permet de montrer
@@ -709,28 +755,29 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         const r = avecEtape
           ? await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime, v.cle)
           : await bcEstimate(v.cle)
-        parVeh[v.cle] = r.prix
+        if (r) parVeh[v.cle] = r.prix
       }
       setBcPrixVeh(parVeh)
 
       /* Le choix du client tient tant qu'il reste compatible ; sinon on
          retombe sur le moins cher, qui est le premier de la gamme. */
-      const retenu = bcVeh && compatibles.some(v => v.cle === bcVeh)
-        ? bcVeh
-        : (compatibles[0]?.cle ?? 'berline')
+      /* Aucun vehicule compatible : rien a chiffrer, et surtout pas une
+         berline par defaut. */
+      const retenu = bcVeh && compatibles.some(v => v.cle === bcVeh) ? bcVeh : compatibles[0]?.cle
+      if (!retenu) { setBcPrice(null); setBcLoading(false); return }
       if (retenu !== bcVeh) setBcVeh(retenu)
 
       if (avecEtape) {
         const result = await estimerAvecEtapes(bcDepart, [bcEtapeAddr], bcArrivee, bcPax, bcDate, bcTime, retenu)
-        prixFinal = result.prix
-        isKmFinal = result.isKm
+        prixFinal = result?.prix ?? null
+        isKmFinal = result?.isKm ?? false
       } else {
         // Étape ouverte mais adresse pas encore saisie : on ne peut pas mesurer
         // le détour, on n'annonce donc que le trajet direct. Le prix se remet à
         // jour dès que l'adresse de l'étape est renseignée.
         const result = await bcEstimate(retenu)
-        prixFinal = result.prix
-        isKmFinal = result.isKm
+        prixFinal = result?.prix ?? null
+        isKmFinal = result?.isKm ?? false
       }
 
       setBcPrice(prixFinal)
@@ -747,7 +794,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const key = `${dep}|${arr}|${vh}`
       const depResolved = bcDepart.lat != null || !!bcDepart.cp
       const arrResolved = bcArrivee.lat != null || !!bcArrivee.cp
-      if (prixFinal > 0 && depResolved && arrResolved && key !== lastEstimRef.current) {
+      if (prixFinal !== null && prixFinal > 0 && depResolved && arrResolved && key !== lastEstimRef.current) {
         lastEstimRef.current = key
         logFunnel('hero_widget_price_shown', { prix: prixFinal })
         /* Ce qui part en statistique n'est pas l'adresse tapée : seulement la
@@ -788,6 +835,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const result = await estimerAvecEtapes(
         devisOrig, etapeOpen ? [devisEtape] : [], desisDest, pax, form.date, form.time,
       )
+      /* Sans prix de base, pas de prix de devis non plus : les options ne
+         s'ajoutent pas a un montant inconnu. L'ecran 3 du formulaire sait
+         deja se presenter sans prix. */
+      if (!result) { setDevisPrix(null); return }
       const suppTotal = Object.values(suppls).reduce((a, b) => a + b, 0)
       setDevisPrix(Math.round(result.prix + suppTotal))
     }, 600)
@@ -851,10 +902,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
    * le vehicule etait deduit du nombre de passagers, et la Premium n'etait
    * jamais proposee en dessous de 4 personnes.
    */
-  async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string, cleChoisie?: string): Promise<{ prix: number; isKm: boolean }> {
-    const vg    = cleChoisie ? vehiculeParCle(cleChoisie) : vehiculeParDefaut(paxN)
-    const v     = VEHICLES.find(x => x.name === vg?.nomTarif) ?? getVehicle(paxN)
-    const tarif = bcTarifs.find(t => t.vehicule === vg?.nomTarif)
+  async function estimerPrixBase(dep: BcAddr, arr: BcAddr, paxN: number, date: string, time: string, cleChoisie?: string): Promise<{ prix: number; isKm: boolean } | null> {
+    const vg = cleChoisie ? vehiculeParCle(cleChoisie) : vehiculeParDefaut(paxN)
+    /* Hors gamme : on ne chiffre pas. La version precedente passait
+       `vg?.cle ?? 'berline'` au moteur — un groupe hors gamme se voyait
+       annoncer un prix de BERLINE. Le defaut n'etait pas atteignable (la
+       gamme couvre 1 a 8 passagers), mais il attendait son heure. */
+    if (!vg) return null
+    const tarif = bcTarifs.find(t => t.vehicule === vg.nomTarif)
 
     const realDate = date ? `${date}T${time || '09:00'}` : ''
 
@@ -864,30 +919,27 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       const zoneArr = detectZone(arrGc.cp ?? '', zonesProp, arrGc.label)
 
       if (zoneDep && zoneArr) {
-        const cle = vg?.cle ?? 'berline'
-        const px  = calculerPrix(zoneDep.id, zoneArr.id, cle, realDate, grilleProp, tarifsProp, zonesProp, paramsProp)
+        const px  = calculerPrix(zoneDep.id, zoneArr.id, vg.cle, realDate, grilleProp, tarifsProp, zonesProp, paramsProp)
         if (px !== null) return { prix: Math.round(px), isKm: false }
       }
 
       if (depGc.lat && depGc.lng && arrGc.lat && arrGc.lng) {
         const distKm = await fetchGoogleDist(depGc, arrGc)
         if (distKm !== null) {
-          const cle = vg?.cle ?? 'berline'
-          const px = calculerPrixKm(distKm, cle, realDate, tarifsProp, paramsProp)
+          const px = calculerPrixKm(distKm, vg.cle, realDate, tarifsProp, paramsProp)
           if (px !== null) return { prix: Math.round(px), isKm: true }
         }
       }
     }
 
-    const destL = arr.label.toLowerCase()
-    const depL  = dep.label.toLowerCase()
-    let base = v.base
-    if (/aéroport|cdg|orly|roissy|beauvais/i.test(destL) || /aéroport|cdg|orly|roissy|beauvais/i.test(depL)) base += 25
-    else if (/gare|nord|lyon|montparnasse|saint-lazare/i.test(destL)) base += 12
-    return { prix: Math.round(base), isKm: false }
+    /* Ni la grille ni Google n'ont pu chiffrer ce trajet. On ne donne donc
+       pas de prix. La version precedente en inventait un depuis une table
+       en dur, et le client pouvait payer ce montant : c'est l'origine du
+       120 EUR forfaitaire du grand van. */
+    return null
   }
 
-  async function bcEstimate(cle?: string): Promise<{ prix: number; isKm: boolean }> {
+  async function bcEstimate(cle?: string): Promise<{ prix: number; isKm: boolean } | null> {
     return estimerPrixBase(bcDepart, bcArrivee, bcPax, bcDate, bcTime, cle)
   }
 
@@ -901,13 +953,18 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   async function estimerAvecEtapes(
     dep: BcAddr, etapes: BcAddr[], arr: BcAddr, paxN: number, date: string, time: string,
     cleChoisie?: string,
-  ): Promise<{ prix: number; isKm: boolean }> {
+  ): Promise<{ prix: number; isKm: boolean } | null> {
     const retenues = etapes.filter(e => e.label.trim().length >= 3)
     if (retenues.length === 0) return estimerPrixBase(dep, arr, paxN, date, time, cleChoisie)
 
     const direct   = await estimerPrixBase(dep, arr, paxN, date, time, cleChoisie)
+    /* Sans prix de trajet direct, il n'y a rien a majorer : on ne chiffre pas
+       une etape sur un trajet qu'on n'a pas su chiffrer. */
+    if (!direct) return null
     const realDate = date ? `${date}T${time || '09:00'}` : ''
-    const cle      = cleChoisie ?? vehiculeParDefaut(paxN)?.cle ?? 'berline'
+    const vg       = cleChoisie ? vehiculeParCle(cleChoisie) : vehiculeParDefaut(paxN)
+    if (!vg) return null
+    const cle      = vg.cle
 
     const points = await Promise.all([dep, ...retenues, arr].map(resoudreAdresse))
     const troncons = await Promise.all(
@@ -1073,9 +1130,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
   const currentEst = devisPrix
   const currentVeh = getVehicle(pax)
-  /* Même source que les cartes véhicules : NOM_VERS_CLE fait correspondre le
-     nom affiché à la clé tarifaire ('Grand Van' → 'van'). */
-  const currentVehPrix = prixAppel[NOM_VERS_CLE[currentVeh.name] ?? 'berline']
+  /* On passe par la CLE du vehicule, pas par son nom affiche. La version
+     precedente faisait `NOM_VERS_CLE[currentVeh.name]` sur une table qui
+     connaissait « Grand Van » quand le reste du projet disait « Grand Van
+     8 places » : la cle etait introuvable, le `?? 'berline'` s'appliquait, et
+     a 8 passagers le client lisait un prix de BERLINE. */
+  /* Pas de vehicule pour ce nombre de passagers → pas de badge, plutot qu'un
+     prix de berline presente comme celui d'un autre vehicule. */
+  const cleCourante    = vehiculeParDefaut(pax)?.cle
+  const currentVehPrix = cleCourante ? prixAppel[cleCourante] : undefined
 
   /* ── JSX ─────────────────────────────────────────────────── */
   return (
@@ -1428,7 +1491,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                       </div>
                     )}
                     <div style={{fontSize:12,fontWeight:600,color:'var(--t1)',marginBottom:5}}>
-                      {vehiculeParDefaut(bcPax)?.nom ?? 'Grand Van'} · sous réserve de disponibilité
+                      {vehiculeParDefaut(bcPax)?.nom ?? 'Ce véhicule'} · sous réserve de disponibilité
                     </div>
                     <div style={{fontSize:11.5,color:'var(--t2)',lineHeight:1.65}}>
                       Ce transfert dépend de la disponibilité de nos partenaires.
@@ -1500,7 +1563,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                   <button onClick={async()=>{
                     setBcLoading(true);setBcPrice(null);
                     const r = await estimerAvecEtapes(bcDepart, bcEtape ? [bcEtapeAddr] : [], bcArrivee, bcPax, bcDate, bcTime);
-                    setBcPrice(r.prix);setBcIsKm(r.isKm);
+                    setBcPrice(r?.prix ?? null);setBcIsKm(r?.isKm ?? false);
                     setBcLoading(false);
                   }} style={{fontSize:10,color:'var(--t3)',background:'none',border:'none',cursor:'pointer',textAlign:'center',width:'100%',marginTop:2}}>
                     ↺ Recalculer
@@ -1631,14 +1694,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 {v.feats.map((f,j)=><div key={j} className="vc-feat"><div className="vc-feat-dot"/>{f}</div>)}
               </div>
               {/* Le 8 places n'affiche AUCUN prix, et c'est voulu.
-                  Deux raisons, toutes deux verifiees : le moteur tarifaire
-                  ne connait pas le Grand Van — `NOM_VERS_CLE` fait
-                  'Grand Van' → 'van', donc il afficherait le tarif du van
-                  7 places — et la disponibilite depend d'un chauffeur
-                  partenaire, qu'Owise ne peut pas garantir. Un prix affiche
-                  est un engagement ; ecrire « sur demande » a cote d'un
-                  chiffre ferme ne l'annule pas, le client retient le
-                  chiffre. */}
+                  Le moteur sait desormais le chiffrer (van 7 places + 20 EUR
+                  de forfait, + 0,10 EUR du kilometre), mais la disponibilite
+                  depend d'un chauffeur partenaire qu'Owise ne peut pas
+                  garantir. Un prix affiche est un engagement ; ecrire
+                  « sur demande » a cote d'un chiffre ferme ne l'annule pas,
+                  le client retient le chiffre. */}
               {v.devis ? (
                 <div className="vc-price" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
                   <span className="vc-amount" style={{ fontSize: 19, fontWeight: 600 }}>Sur devis</span>

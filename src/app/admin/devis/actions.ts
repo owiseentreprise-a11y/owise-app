@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { vehiculePourBase } from '@/lib/vehicule'
 import { genererNumeroDevis } from '@/lib/devis-client'
+import { cleDepuisLibelle, vehiculeParDefaut } from '@/lib/gamme'
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -15,11 +16,30 @@ export async function supprimerDevis(id: string) {
   revalidatePath('/admin/devis')
 }
 
-const VH_MAP: Record<string, string> = {
-  'Berline':         'berline',
-  'Berline Premium': 'berline_premium',
-  'Van 7 places':    'van',
-  'Grand Van':       'grand_van',
+/**
+ * Quel vehicule, pour ce devis ?
+ *
+ * Trois cas, et aucun qui invente :
+ *   - un libelle connu (actuel ou historique) → sa cle ;
+ *   - aucun libelle → le vehicule que le nombre de passagers impose ;
+ *   - un libelle present mais inconnu → on refuse la conversion.
+ *
+ * La version precedente ecrivait `VH_MAP[devis.vehicle] ?? 'berline'`, et sa
+ * table ne connaissait que « Grand Van ». Depuis que les libelles derivent de
+ * `gamme.ts`, un devis 8 places s'enregistre « Grand Van 8 places » : il se
+ * serait converti en course BERLINE, pour huit personnes, sans un mot.
+ */
+function vehiculeDuDevis(libelle: string | null, pax: number | null): string {
+  const cle = cleDepuisLibelle(libelle)
+  if (cle) return cle
+  if (!String(libelle ?? '').trim()) {
+    const parDefaut = vehiculeParDefaut(pax ?? 1)
+    if (parDefaut) return parDefaut.cle
+  }
+  throw new Error(
+    `Véhicule « ${libelle} » non reconnu : la course n'a pas été créée. `
+    + `Corrigez le véhicule du devis avant de le convertir.`,
+  )
 }
 
 export async function convertirEnCourse(devis: {
@@ -71,7 +91,7 @@ export async function convertirEnCourse(devis: {
     date_prevue,
     statut:           'en_attente',
     prix_estime:      devis.price ?? null,
-    type_vehicule:    vehiculePourBase(VH_MAP[devis.vehicle ?? ''] ?? 'berline'),
+    type_vehicule:    vehiculePourBase(vehiculeDuDevis(devis.vehicle, devis.pax)),
     nb_passagers:     devis.pax ?? null,
     passager_prenom:  prenom,
     passager_nom:     nomFamille,

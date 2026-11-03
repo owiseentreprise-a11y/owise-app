@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import StatsClient from './StatsClient'
 import { lireHeureCourse, jourParis } from '@/lib/heure'
+import { NOM_PAR_CLE, NOM_PAR_BASE } from '@/lib/gamme'
 
 export const dynamic = 'force-dynamic'
 
@@ -96,13 +97,17 @@ export default async function StatsPage() {
   const topClients = Object.values(clStats).sort((a, b) => b.ca - a.ca).slice(0, 6)
 
   // ── Répartition véhicule ──
-  const vehiculeLabels: Record<string, string> = {
-    berline: 'Berline', berline_premium: 'Berline Premium',
-    van: 'Van 7 pl.', van_7: 'Van 7 pl.', grand_van_8: 'Grand Van',
-  }
+  /* Derive de `gamme.ts`. Les courses enregistrees portent les valeurs de
+     l'enum de la base (`van_7`, `grand_van_8`) ; les estimations portent les
+     cles de l'application (`van`, `grand_van`). Les deux jeux sont fusionnes,
+     et aucun libelle n'est reecrit ici. */
+  const vehiculeLabels: Record<string, string> = { ...NOM_PAR_CLE, ...NOM_PAR_BASE, non_renseigne: 'Non renseigné' }
   const vStats: Record<string, { count: number; ca: number }> = {}
   for (const c of terminées) {
-    const k = (c as any).type_vehicule ?? 'berline'
+    /* Une course sans vehicule renseigne etait comptee comme une BERLINE :
+       son chiffre d'affaires venait gonfler la ligne berline. On la montre
+       pour ce qu'elle est. */
+    const k = (c as any).type_vehicule ?? 'non_renseigne'
     if (!vStats[k]) vStats[k] = { count: 0, ca: 0 }
     vStats[k].count++
     vStats[k].ca += c.prix_final ?? c.prix_estime ?? 0

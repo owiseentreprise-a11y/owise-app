@@ -1,3 +1,4 @@
+import { NOM_PAR_CLE } from './gamme'
 // Types générés manuellement depuis le schéma Supabase
 
 // React.CSSProperties n'autorise pas les variables CSS personnalisées (--xxx) —
@@ -247,9 +248,8 @@ export const STATUT_CHAUFFEUR_COLOR: Record<StatutChauffeur, string> = {
   hors_ligne:  'var(--t3)',
 }
 
-export const TYPE_VEHICULE_LABEL: Record<TypeVehicule, string> = {
-  berline:         'Berline',
-  berline_premium: 'Berline Premium',
-  van:             'Van 7 places',
-  grand_van:       'Grand Van 8 pl.',
-}
+/* Derive de `gamme.ts`, jamais reecrite ici. Le projet portait CINQ
+   orthographes du van (« Van », « Van 7 places », « Van 7 pl. ») et QUATRE du
+   grand van, dans autant de tables paralleles — mesure le 2026-11-03. */
+export const TYPE_VEHICULE_LABEL: Record<TypeVehicule, string> =
+  NOM_PAR_CLE as Record<TypeVehicule, string>

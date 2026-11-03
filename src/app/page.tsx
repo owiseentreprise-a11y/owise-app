@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
 import { IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
+import { chargerParametres } from '@/lib/tarification'
 
 const BASE = 'https://www.owise.fr'
 
@@ -171,7 +172,7 @@ export default async function VitrinePage() {
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
-    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec,supplement_bagages_actif,supplement_bagages_prix,supplement_panneau_actif,supplement_panneau_prix,supplement_animaux_actif,supplement_animaux_prix,supplement_siege_enfant_actif,supplement_siege_enfant_prix').single(),
+    chargerParametres(admin).then(d => ({ data: d })),
   ])
   // Le nombre d'avis vient de la base, jamais du code : le site a annonce
   // « 5 avis » alors que la fiche Google en portait 7.

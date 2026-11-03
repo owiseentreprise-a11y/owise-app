@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { supprimerDevis, convertirEnFacture, convertirEnCourse, convertirEnDevisClient } from './actions'
+import { cleDepuisLibelle, NOM_PAR_CLE } from '@/lib/gamme'
 
 function fmtDate(d: string | null) {
   if (!d) return '—'
@@ -17,10 +18,15 @@ function fmtDateCourse(d: string | null) {
   return new Date(d).toLocaleDateString('fr-FR', { timeZone: 'UTC', day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const VEHICULE_LABEL: Record<string, string> = {
-  'Berline': 'Berline', 'Berline Premium': 'Premium',
-  'Van 7 places': 'Van 7', 'Grand Van': 'Grand Van',
+/* Le libelle court du tableau, derive de `gamme.ts` et tolerant aux
+   orthographes historiques : les devis enregistres avant le 2026-11-03
+   portent « Grand Van », pas « Grand Van 8 places ». */
+function libelleVehiculeDevis(brut: string | null | undefined): string {
+  const cle = cleDepuisLibelle(brut)
+  if (!cle) return String(brut ?? '—')
+  return (NOM_PAR_CLE[cle] ?? String(brut)).replace(/^Berline Premium$/, 'Premium')
 }
+
 
 function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   const [pending, startTransition] = useTransition()
@@ -120,7 +126,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       {/* Véhicule */}
       <td style={{ padding: '13px 14px' }}>
         <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, fontWeight: 500, background: 'rgba(201,168,76,.1)', color: '#C9A84C', border: '1px solid rgba(201,168,76,.2)' }}>
-          {VEHICULE_LABEL[d.vehicle] ?? d.vehicle ?? '—'}
+          {libelleVehiculeDevis(d.vehicle)}
         </span>
       </td>
       {/* Prix */}

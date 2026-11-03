@@ -18,6 +18,12 @@ for (const l of readFileSync(join(process.cwd(), '.env.local'), 'utf8').split('\
 
 const { createAdminClient } = await import('../src/lib/supabase/admin')
 const { calculerPrix, calculerPrixKm, VEHICULE_NOM, NOM_VERS_CLE } = await import('../src/lib/calcPrix')
+const { vehiculeParCle } = await import('../src/lib/gamme')
+/* Le nom de la LIGNE DE TARIF, qui n'est pas toujours le nom du vehicule : le
+   grand van derive de la ligne du van 7 places. Sans cette distinction,
+   l'audit annoncait « aucune ligne dans tarifs » et « repli code en dur »
+   pour un vehicule qui est en realite correctement chiffre. */
+const ligneTarif = (cle: string) => vehiculeParCle(cle)?.nomTarif ?? VEHICULE_NOM[cle]
 const { formaterMontant } = await import('../src/lib/montant')
 const { VEHICULES_BASE } = await import('../src/lib/vehicule')
 
@@ -46,11 +52,12 @@ console.log(`${(zones ?? []).length} zones · ${(grille ?? []).length} liaisons 
 // ── 1. La table des tarifs couvre-t-elle la gamme ? ────────────────────────
 console.log('\x1b[1m1. Couverture de la table « tarifs »\x1b[0m')
 for (const v of GAMME) {
-  const nom = VEHICULE_NOM[v.cle]
+  const nom = ligneTarif(v.cle)
   const ligne = (tarifs ?? []).find(t => t.vehicule === nom)
-  const etat = !nom ? '\x1b[31mabsent de VEHICULE_NOM\x1b[0m'
+  const derive = nom !== VEHICULE_NOM[v.cle] ? `  (dérivé de « ${nom} »)` : ''
+  const etat = !nom ? '\x1b[31mabsent de la gamme\x1b[0m'
              : !ligne ? '\x1b[31maucune ligne dans « tarifs »\x1b[0m'
-             : `prise en charge ${formaterMontant(Number(ligne.prise_en_charge))} · ${formaterMontant(Number(ligne.prix_km))}/km`
+             : `prise en charge ${formaterMontant(Number(ligne.prise_en_charge))} · ${formaterMontant(Number(ligne.prix_km))}/km${derive}`
   console.log(`   ${v.libelle.padEnd(20)} ${etat}`)
 }
 
@@ -101,8 +108,7 @@ if (moinsCherQueVan.length > 8) console.log(`     … et ${moinsCherQueVan.lengt
 console.log('\n\x1b[1m4. Prix au kilomètre (hors grille) — 50 km\x1b[0m')
 for (const v of GAMME) {
   const p = calculerPrixKm(50, v.cle, QUAND, tarifs as never, params as never)
-  const nom = VEHICULE_NOM[v.cle]
-  const ligne = (tarifs ?? []).find(t => t.vehicule === nom)
+  const ligne = (tarifs ?? []).find(t => t.vehicule === ligneTarif(v.cle))
   const note = ligne ? '' : '  \x1b[31m← repli codé en dur : 15 € + 2 €/km\x1b[0m'
   console.log(`   ${v.libelle.padEnd(20)} ${p == null ? '—' : formaterMontant(p).padStart(10)}${note}`)
 }

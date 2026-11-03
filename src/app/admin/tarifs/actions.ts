@@ -83,8 +83,10 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
     supplement_etape:       Number(formData.get('supplement_etape')),
     supplement_nuit:        Number(formData.get('supplement_nuit')),
     supplement_weekend:     Number(formData.get('supplement_weekend')),
-    supplement_ferie:       Number(formData.get('supplement_ferie')),
-    coef_berline:           Number(formData.get('coef_berline')),
+    /* Ni `coef_berline` ni `supplement_ferie` : leurs champs ont ete retires
+       du formulaire le 2026-11-03 parce qu'aucune page ne les lisait. Les
+       colonnes restent en base — on ne les ecrit plus, et plus rien ne promet
+       a l'exploitant un effet qui n'arrive pas. */
     coef_berline_premium:   Number(formData.get('coef_berline_premium')),
     coef_van:               Number(formData.get('coef_van')),
     supplement_bagages_actif: formData.get('supplement_bagages_actif') === 'true',

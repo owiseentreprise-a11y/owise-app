@@ -34,6 +34,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix } from '@/lib/calcPrix'
 import { IDENTITE_OWISE, BASE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
+import { chargerParametres } from '@/lib/tarification'
 
 /* Même cadence que les 38 pages villes, la vitrine et le blog : la page est
  * reconstruite au plus une fois par heure. Sans ça elle serait figée au
@@ -100,7 +101,7 @@ async function lirePrix() {
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec,supplement_panneau_actif,supplement_panneau_prix,supplement_siege_enfant_actif,supplement_siege_enfant_prix,supplement_bagages_actif,supplement_bagages_prix,supplement_animaux_actif,supplement_animaux_prix,supplement_etape').single(),
+    chargerParametres(admin).then(d => ({ data: d })),
   ])
   const avis = await lireAvis(admin)
 

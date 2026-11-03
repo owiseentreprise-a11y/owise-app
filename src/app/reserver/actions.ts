@@ -9,12 +9,14 @@ import { nettoyerCleEnv } from '@/lib/stripe'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
 import { verifierReservation } from '@/lib/validationReservation'
+import { chargerParametres } from '@/lib/tarification'
+import { NOM_PAR_CLE } from '@/lib/gamme'
 
-const VEHICULE_LABEL: Record<string, string> = {
-  berline: 'Berline',
-  berline_premium: 'Berline Premium',
-  van: 'Van',
-}
+/* Derive de `gamme.ts`. Cette table n'avait AUCUNE entree pour le grand van :
+   un client qui en aurait reserve un aurait lu « grand_van » sur sa page de
+   paiement Stripe. Non atteignable aujourd'hui (/reserver s'arrete a
+   7 passagers), mais le defaut etait la. */
+const VEHICULE_LABEL: Record<string, string> = NOM_PAR_CLE
 
 async function calculerPrixServeur(
   zoneDepId: string,
@@ -27,7 +29,7 @@ async function calculerPrixServeur(
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
-    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
+    chargerParametres(admin).then(d => ({ data: d })),
   ])
   return calculerPrix(
     zoneDepId,
@@ -58,7 +60,7 @@ async function appliquerEtapes(
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: params }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-    admin.from('parametres').select('supplement_nuit,supplement_weekend,supplement_etape').single(),
+    chargerParametres(admin).then(d => ({ data: d })),
   ])
   const mesure = await detourKm(depart, etapes, arrivee)
   return calculerPrixEtapes(
@@ -140,7 +142,7 @@ export async function createReservationCheckout(data: {
     const admin = createAdminClient()
     const [{ data: tarifs }, { data: params }] = await Promise.all([
       admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
-      admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,tarif_pec_actif,tarif_frais_pec').single(),
+      chargerParametres(admin).then(d => ({ data: d })),
     ])
     const dist = Math.min(Math.max(data.distance_km, 1), 600) // borne 1–600 km
     prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [], params)

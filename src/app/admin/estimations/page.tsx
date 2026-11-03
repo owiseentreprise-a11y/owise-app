@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { NOM_PAR_CLE } from '@/lib/gamme'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,12 +13,10 @@ type Estimation = {
   created_at: string
 }
 
-const VH_LABEL: Record<string, string> = {
-  berline: 'Berline',
-  berline_premium: 'Berline Premium',
-  van: 'Van 7 pl.',
-  grand_van: 'Grand Van',
-}
+/* Derive de `gamme.ts`, jamais reecrite ici. Le projet portait CINQ
+   orthographes du van (« Van », « Van 7 places », « Van 7 pl. ») et QUATRE du
+   grand van, dans autant de tables paralleles — mesure le 2026-11-03. */
+const VH_LABEL: Record<string, string> = NOM_PAR_CLE
 
 function formatDate(iso: string) {
   const d = new Date(iso)

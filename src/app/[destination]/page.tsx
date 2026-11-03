@@ -6,6 +6,7 @@ import { prixEntreZones, lienDevis, telephoneLisible } from '@/lib/devis-et-tari
 import VitrineBody from '@/components/VitrineBody'
 import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import '../vitrine.css'
+import { chargerParametres } from '@/lib/tarification'
 
 // Communes qui ont leur propre page destination → liens cliquables dans la grille zones
 const NOM_VERS_SLUG: Record<string, string> = {
@@ -1418,7 +1419,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
     admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
-    admin.from('parametres').select('coef_berline_premium,coef_van,supplement_nuit,supplement_weekend,supplement_etape,tarif_pec_actif,tarif_frais_pec,supplement_bagages_actif,supplement_bagages_prix,supplement_panneau_actif,supplement_panneau_prix,supplement_animaux_actif,supplement_animaux_prix,supplement_siege_enfant_actif,supplement_siege_enfant_prix').single(),
+    chargerParametres(admin).then(d => ({ data: d })),
   ])
   const avis = await lireAvis(admin)
 

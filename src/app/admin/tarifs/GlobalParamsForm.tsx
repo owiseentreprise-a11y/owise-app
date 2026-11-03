@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateParametresTarifs } from './actions'
-import { SUPPLEMENT_ETAPE_DEFAUT } from '@/lib/calcPrix'
+import { SUPPLEMENT_ETAPE_DEFAUT, DEFAULT_COEF_PREMIUM, DEFAULT_COEF_VAN } from '@/lib/calcPrix'
 
 const inp: React.CSSProperties = {
   background: 'var(--elevated)', border: '1px solid var(--t3)',
@@ -101,10 +101,8 @@ export default function GlobalParamsForm({ p }: { p: any }) {
   const [etape, setEtape]           = useState(Number(p?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT))
   const [nuit, setNuit]             = useState(Number(p?.supplement_nuit ?? 0))
   const [weekend, setWeekend]       = useState(Number(p?.supplement_weekend ?? 0))
-  const [ferie, setFerie]           = useState(Number(p?.supplement_ferie ?? 0))
-  const [coefB, setCoefB]           = useState(Number(p?.coef_berline ?? 1))
-  const [coefBP, setCoefBP]         = useState(Number(p?.coef_berline_premium ?? 1.25))
-  const [coefV, setCoefV]           = useState(Number(p?.coef_van ?? 1.5))
+  const [coefBP, setCoefBP]         = useState(Number(p?.coef_berline_premium ?? DEFAULT_COEF_PREMIUM))
+  const [coefV, setCoefV]           = useState(Number(p?.coef_van ?? DEFAULT_COEF_VAN))
   const [bagagesActif, setBagagesActif] = useState(String(p?.supplement_bagages_actif ?? true))
   const [bagagesPrix,  setBagagesPrix]  = useState(Number(p?.supplement_bagages_prix ?? 10))
   const [panneauActif, setPanneauActif] = useState(String(p?.supplement_panneau_actif ?? true))
@@ -188,16 +186,12 @@ export default function GlobalParamsForm({ p }: { p: any }) {
           isActive={weekend > 0}
           onChange={v => setWeekend(Number(v))}
         />
-        <Row
-          label={`Supplément jours fériés${ferie > 0 ? ` — +${ferie}%` : ' — Inactif'}`}
-          desc="Appliqué sur les courses les jours fériés français. 0 = pas de supplément."
-          name="supplement_ferie"
-          unit="%"
-          value={p?.supplement_ferie ?? 0}
-          isActive={ferie > 0}
-          onChange={v => setFerie(Number(v))}
-        />
-        {nuit === 0 && weekend === 0 && ferie === 0 && (
+        {/* Pas de champ « jours feries » : aucune page ne l'appliquait, et il
+            n'existe nulle part de liste des jours feries francais dans le
+            projet. Le champ promettait une majoration qui n'a jamais eu lieu.
+            Le remettre demande d'abord d'ecrire cette regle dans
+            `appliquerSupplements`. La colonne reste en base, a 0. */}
+        {nuit === 0 && weekend === 0 && (
           <div style={{ fontSize: 11, color: 'var(--t3)', padding: '6px 12px', background: 'rgba(132,132,153,.06)', borderRadius: 8 }}>
             Tous les suppléments sont à 0 — aucune majoration horaire appliquée.
           </div>
@@ -280,19 +274,19 @@ export default function GlobalParamsForm({ p }: { p: any }) {
         <div style={{ fontSize: 11, color: 'var(--t2)', marginBottom: 4, padding: '8px 12px', background: 'rgba(201,168,76,.04)', borderRadius: 8 }}>
           Ces coefficients s'appliquent uniquement sur les entrées de la <strong>matrice tarifaire</strong> (grille zone à zone). Les colonnes "tarif fixe aéroport" de chaque véhicule sont indépendantes.
         </div>
-        <Row
-          label={`Berline — coefficient ${coefB}×`}
-          desc={`Prix Berline = prix grille × ${coefB}. Laisser à 1.0 pour que la Berline suive exactement la grille.`}
-          name="coef_berline"
-          value={p?.coef_berline ?? 1}
-          unit="×"
-          onChange={v => setCoefB(Number(v))}
-        />
+        {/* Pas de coefficient Berline : la colonne de la grille s'appelle
+            `prix_berline`, le montant saisi EST son prix. Le champ a existe
+            ici jusqu'au 2026-11-03 ; il annoncait « Prix Berline = prix
+            grille x 1.5 » alors qu'aucune page ne le lisait, et le brancher
+            aurait augmente de 50 % le prix de toutes les berlines. */}
+        <div style={{ fontSize: 11, color: 'var(--t2)', padding: '8px 12px', background: 'rgba(132,132,153,.06)', borderRadius: 8 }}>
+          La <strong>Berline</strong> suit exactement la grille : le montant saisi dans la matrice <em>est</em> son prix. Les coefficients ci-dessous n&apos;existent que pour les véhicules qui n&apos;ont pas de colonne à eux.
+        </div>
         <Row
           label={`Berline Premium — coefficient ${coefBP}×`}
           desc={`Prix Berline Premium = prix grille × ${coefBP}. Exemple : grille 100€ → ${Math.round(100 * coefBP)}€ en Berline Premium.`}
           name="coef_berline_premium"
-          value={p?.coef_berline_premium ?? 1.25}
+          value={p?.coef_berline_premium ?? DEFAULT_COEF_PREMIUM}
           unit="×"
           onChange={v => setCoefBP(Number(v))}
         />
@@ -300,7 +294,7 @@ export default function GlobalParamsForm({ p }: { p: any }) {
           label={`Van 7 places — coefficient ${coefV}×`}
           desc={`Prix Van = prix grille × ${coefV}. Exemple : grille 100€ → ${Math.round(100 * coefV)}€ en Van.`}
           name="coef_van"
-          value={p?.coef_van ?? 1.5}
+          value={p?.coef_van ?? DEFAULT_COEF_VAN}
           unit="×"
           onChange={v => setCoefV(Number(v))}
         />

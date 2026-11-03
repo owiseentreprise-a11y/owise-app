@@ -40,6 +40,15 @@ export type Vehicule = {
   nom: string
   /** Le nom de la ligne correspondante dans la table `tarifs`, s'il y en a une. */
   nomTarif: string | null
+  /**
+   * La valeur que l'enum `public.type_vehicule` accepte en base.
+   *
+   * Elle differe de `cle` : l'application dit `van`, la base exige `van_7`.
+   * Deux clients ont paye un van le 6 et le 7 octobre 2026 sans qu'aucune
+   * course ne soit creee, parce que les deux vocabulaires ne correspondaient
+   * pas. `vehicule.ts` fait la traduction, et la tient d'ici.
+   */
+  valeurBase: string
   capaciteMin: number
   capaciteMax: number
   /** Vrai quand aucun prix automatique n'est possible : il faut un devis. */
@@ -56,6 +65,7 @@ export const GAMME: Vehicule[] = [
     cle: 'berline',
     nom: 'Berline',
     nomTarif: 'Berline',
+    valeurBase: 'berline',
     capaciteMin: 1, capaciteMax: 3,
     surDevis: false,
     argument: 'Berline récente, intérieur soigné',
@@ -64,6 +74,7 @@ export const GAMME: Vehicule[] = [
     cle: 'berline_premium',
     nom: 'Berline Premium',
     nomTarif: 'Berline Premium',
+    valeurBase: 'berline_premium',
     capaciteMin: 1, capaciteMax: 4,
     surDevis: false,
     argument: 'Haut de gamme, eau offerte, chargeurs',
@@ -72,6 +83,7 @@ export const GAMME: Vehicule[] = [
     cle: 'van',
     nom: 'Van 7 places',
     nomTarif: 'Van 7 places',
+    valeurBase: 'van_7',
     capaciteMin: 5, capaciteMax: 7,
     surDevis: false,
     argument: 'Van récent, grand coffre, idéal aéroport',
@@ -86,6 +98,7 @@ export const GAMME: Vehicule[] = [
        code retombe sur une valeur en dur : c'est le 120 EUR forfaitaire,
        identique sur 52 km et sur 120 km, qu'on vient de corriger. */
     nomTarif: 'Van 7 places',
+    valeurBase: 'grand_van_8',
     capaciteMin: 8, capaciteMax: 8,
     surDevis: true,
     argument: 'Séminaires et événements, selon disponibilité',
@@ -132,4 +145,92 @@ export function capaciteTexte(v: Vehicule): string {
   return v.capaciteMin === v.capaciteMax
     ? `${v.capaciteMax} passagers`
     : `${v.capaciteMin} à ${v.capaciteMax} passagers`
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Les correspondances de noms, DERIVEES de la gamme ci-dessus.
+ *
+ * Elles etaient ecrites a la main dans trois autres fichiers — `calcPrix.ts`
+ * (`VEHICULE_NOM`, `NOM_VERS_CLE`), `vehicule.ts` (`LIBELLES`) et
+ * `VitrineBody.tsx` (`VEHICLES`) — et les quatre copies ne disaient pas la
+ * meme chose. Le Grand Van s'appelait « Grand Van » ici et « Grand Van
+ * 8 places » la : `NOM_VERS_CLE['Grand Van 8 places']` valait donc `undefined`
+ * et le badge « des X EUR » du simulateur affichait le prix de la BERLINE a
+ * 8 passagers (constate le 2026-11-03).
+ *
+ * Desormais on ne declare le nom qu'une fois, dans `GAMME`.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** `berline_premium` → « Berline Premium ». Le libelle montre au client. */
+export const NOM_PAR_CLE: Record<string, string> =
+  Object.fromEntries(GAMME.map(v => [v.cle, v.nom]))
+
+/**
+ * « Berline Premium » → `berline_premium`. L'inverse exact de `NOM_PAR_CLE`.
+ *
+ * Construite par retournement plutot qu'a la main : c'est la seule facon de
+ * garantir qu'aucun libelle ne manque et qu'aucun ne pointe vers la mauvaise
+ * cle.
+ */
+export const CLE_PAR_NOM: Record<string, string> =
+  Object.fromEntries(GAMME.map(v => [v.nom, v.cle]))
+/* Les orthographes historiques y sont ajoutees plus bas, apres la declaration
+   d'ALIAS : une ligne de `devis` enregistree avant le 2026-11-03 porte
+   « Grand Van », et doit rester reconnaissable. */
+
+/** `grand_van` → `grand_van_8`, la valeur que l'enum de la base accepte. */
+export const BASE_PAR_CLE: Record<string, string> =
+  Object.fromEntries(GAMME.map(v => [v.cle, v.valeurBase]))
+
+/** `grand_van_8` → « Grand Van 8 places ». Le libelle depuis la valeur en base. */
+export const NOM_PAR_BASE: Record<string, string> =
+  Object.fromEntries(GAMME.map(v => [v.valeurBase, v.nom]))
+
+/**
+ * Les orthographes historiques, telles qu'elles dorment encore en base.
+ *
+ * Deriver les libelles de `GAMME` change ce que le site ECRIT desormais ; les
+ * lignes deja enregistrees gardent leur ancienne ecriture. La table `devis`
+ * contient par exemple « Grand Van », jamais « Grand Van 8 places ». Toute
+ * relecture d'un libelle doit donc accepter les deux.
+ */
+const ALIAS: Record<string, CleVehicule> = {
+  'Van':              'van',
+  'Van 7':            'van',
+  'Van 7 pl.':        'van',
+  'Van / Minibus':    'van',
+  'Premium':          'berline_premium',
+  'Grand Van':        'grand_van',
+  'Grand Van 8 pl.':  'grand_van',
+}
+
+/**
+ * Retrouve la cle d'un vehicule depuis n'importe quel libelle connu.
+ *
+ * Rend `null` sur un libelle inconnu — JAMAIS la berline. Le code qui
+ * convertissait un devis en course ecrivait
+ * `VH_MAP[devis.vehicle] ?? 'berline'` : un devis pour huit personnes devenait
+ * une course en berline, sans un mot. Mieux vaut refuser la conversion que
+ * d'envoyer la mauvaise voiture.
+ */
+export function cleDepuisLibelle(libelle: string | null | undefined): CleVehicule | null {
+  const t = String(libelle ?? '').trim()
+  if (!t) return null
+  const exact = GAMME.find(v => v.nom === t)
+  if (exact) return exact.cle
+  if (ALIAS[t]) return ALIAS[t]
+  /* Dernier recours : la cle elle-meme, ou la valeur de l'enum de la base. */
+  const parCle = GAMME.find(v => v.cle === t || v.valeurBase === t)
+  return parCle?.cle ?? null
+}
+
+/** Tous les libelles acceptes pour un vehicule — le courant d'abord. */
+export function libellesConnus(cle: CleVehicule): string[] {
+  const nom = GAMME.find(v => v.cle === cle)?.nom
+  const alias = Object.entries(ALIAS).filter(([, c]) => c === cle).map(([a]) => a)
+  return [nom, ...alias].filter((x): x is string => Boolean(x))
+}
+
+for (const [ancien, cle] of Object.entries(ALIAS)) {
+  if (!(ancien in CLE_PAR_NOM)) CLE_PAR_NOM[ancien] = cle
 }
