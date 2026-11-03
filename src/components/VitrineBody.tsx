@@ -968,7 +968,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setSubmitErr('')
     setSubmitting(true)
     const v       = getVehicle(pax)
-    const price   = devisPrix
+    /* Aucun prix sur une demande « sur devis » : la demande TEST8-1944 du
+       2026-11-03 est arrivee en base avec price = 120, l'ancienne valeur
+       erronee. L'exploitant l'aurait lue comme une estimation faite par le
+       site, et aurait pu la reprendre telle quelle. */
+    const price   = exigeUnDevis(pax) ? null : devisPrix
     const ref     = 'OW-' + Date.now().toString(36).toUpperCase()
     // La table `devis` n'a pas de colonne pour les étapes : l'adresse voyage
     // avec les suppléments, pour que l'admin la voie dans la demande.
@@ -2454,6 +2458,25 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             {/* step 3 */}
             {step===3 && !submitted && (
               <div className="step-panel on">
+                {/* 8 passagers : ni prix ni paiement. Cet ecran affichait
+                    « ESTIMATION TTC €120 · Grand Van » et un bouton « Reserver
+                    et payer », alors que la carte flotte annonce « sur devis »
+                    et que la table `tarifs` n'a aucune ligne pour ce vehicule.
+                    Le 120 € venait d'un repli code en dur, sans rapport avec la
+                    distance. Constate le 2026-11-03 en parcourant le tunnel. */}
+                {exigeUnDevis(pax) ? (
+                  <div className="estimate-display" style={{textAlign:'center'}}>
+                    <div className="est-lbl">Sur devis</div>
+                    <div style={{fontSize:15,fontWeight:600,color:'var(--gold)',margin:'8px 0 6px'}}>
+                      {vehiculeParDefaut(pax)?.nom ?? 'Grand Van 8 places'}
+                    </div>
+                    <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.7,maxWidth:420,margin:'0 auto'}}>
+                      Ce transfert dépend de la disponibilité de nos partenaires.
+                      Laissez-nous vos coordonnées : nous revenons vers vous avec un
+                      tarif ferme.
+                    </div>
+                  </div>
+                ) : (
                 <div className="estimate-display">
                   <div className="est-lbl">Estimation TTC</div>
                   <div className="est-price"><span className="est-cur">€</span><span>{currentEst}</span> <span className="est-ttc">TTC</span></div>
@@ -2463,9 +2486,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     </span>
                   </div>
                 </div>
+                )}
                 <p style={{fontSize:11,color:'var(--t2)',textAlign:'center',marginBottom:20,lineHeight:1.6}}>
-                  Prix fixe garanti, confirmation immédiate. Coordonnées utiles pour votre réservation,
-                  ou pour être rappelé(e) si vous préférez en parler avant.
+                  {exigeUnDevis(pax)
+                    ? 'Nous vous répondons avec un tarif ferme, sans engagement de votre part.'
+                    : 'Prix fixe garanti, confirmation immédiate. Coordonnées utiles pour votre réservation, ou pour être rappelé(e) si vous préférez en parler avant.'}
                 </p>
                 <div className="form-grid" style={{marginBottom:20}}>
                   <div className="field"><label>Prénom &amp; Nom</label><input type="text" placeholder="Jean Dupont" value={form.nom} onChange={e=>setForm(f=>({...f,nom:e.target.value}))}/></div>
@@ -2476,15 +2501,25 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                 {submitErr && (
                   <div style={{display:'block',background:'rgba(var(--rouge-doux-rvb),0.08)',border:'1px solid rgba(var(--rouge-doux-rvb),0.2)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--rouge-doux)',marginBottom:12,textAlign:'center'}}>{submitErr}</div>
                 )}
-                <button className="btn-next" onClick={goToReserver} style={{width:'100%',padding:'15px 36px',fontSize:14.5,marginBottom:14}}>
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  Réserver et payer maintenant →
-                </button>
+                {exigeUnDevis(pax) ? (
+                  <button className="btn-next" onClick={submitDevis} disabled={submitting}
+                          style={{width:'100%',padding:'15px 36px',fontSize:14.5,marginBottom:14}}>
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    {submitting ? 'Envoi…' : 'Demander un devis →'}
+                  </button>
+                ) : (
+                  <button className="btn-next" onClick={goToReserver} style={{width:'100%',padding:'15px 36px',fontSize:14.5,marginBottom:14}}>
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Réserver et payer maintenant →
+                  </button>
+                )}
                 <div className="form-nav">
                   <button className="btn-prev" onClick={()=>setStep(2)}>← Retour</button>
-                  <button onClick={submitDevis} disabled={submitting} style={{background:'none',border:'none',color:'var(--t2)',fontSize:12.5,textDecoration:'underline',cursor:'pointer',fontFamily:'inherit',opacity:submitting?.6:1}}>
-                    {submitting ? 'Envoi…' : 'Plutôt être rappelé(e) sous 30 min →'}
-                  </button>
+                  {!exigeUnDevis(pax) && (
+                    <button onClick={submitDevis} disabled={submitting} style={{background:'none',border:'none',color:'var(--t2)',fontSize:12.5,textDecoration:'underline',cursor:'pointer',fontFamily:'inherit',opacity:submitting?.6:1}}>
+                      {submitting ? 'Envoi…' : 'Plutôt être rappelé(e) sous 30 min →'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
