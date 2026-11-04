@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, partRetour } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
@@ -270,6 +270,23 @@ export async function createReservationCheckout(data: {
   if (data.aller_retour && data.date_retour) {
     params.set('metadata[aller_retour]', 'true')
     params.set('metadata[date_retour]', data.date_retour)
+    /* L'adresse d'arrivee du retour, quand le client en veut une autre que son
+       point de depart. Elle manquait a Stripe : le webhook ne pouvait donc pas
+       creer le retour lui-meme. */
+    params.set('metadata[adresse_arrivee_retour]',
+      (data.adresse_arrivee_retour?.trim() || data.adresse_depart).slice(0, 499))
+    /* Le partage du montant entre les deux trajets est decide ICI, une fois,
+       et transmis. Le webhook se contente de soustraire : les deux courses
+       font alors EXACTEMENT la somme encaissee.
+
+       Avant le 2026-11-04, personne ne decidait ce partage. Le formulaire
+       donnait la moitie au retour, et le webhook donnait le TOTAL a l'aller.
+       Course de M. Soter Ranguin, 2026-11-02 : 283 EUR encaisses, 283 + 142 =
+       425 EUR enregistres. 142 EUR de chiffre d'affaires qui n'existaient pas.
+
+       Le surcout des arrets est retire avant de partager : il porte sur
+       l'aller, pas sur le retour. */
+    params.set('metadata[prix_retour]', String(partRetour(prixServeur, surcoutEtapes)))
   }
   if (data.code_parrainage) {
     params.set('metadata[code_parrainage]', data.code_parrainage)
@@ -284,32 +301,18 @@ export async function createReservationCheckout(data: {
     params.set('metadata[ads_consent]', data.ads_consent ?? 'unknown')
   }
 
-  // Créer le retour immédiatement en_attente si aller-retour demandé
-  if (data.aller_retour && data.date_retour) {
-    try {
-      // Heure saisie par le client, donc parisienne.
-      const dateRetourParsed = instantDepuisSaisieParis(data.date_retour)
-      if (!isNaN(dateRetourParsed.getTime())) {
-        const supabaseAdmin = createAdminClient()
-        await supabaseAdmin.from('courses').insert({
-          adresse_depart:  data.adresse_arrivee,
-          adresse_arrivee: data.adresse_arrivee_retour?.trim() || data.adresse_depart,
-          date_prevue:     dateRetourParsed.toISOString(),
-          type_vehicule:   vehiculePourBase(data.type_vehicule),
-          nb_passagers:    data.nb_passagers,
-          // Le surcoût des arrêts est retiré avant de partager en deux : il
-          // porte sur l'aller, pas sur le retour.
-          prix_estime:     Math.round((prixServeur - surcoutEtapes) / 2),
-          notes:           `Retour — ${data.nom} ${data.prenom} (paiement à définir)`,
-          mode_paiement:   'stripe',
-          statut:          'en_attente',
-          passager_prenom: data.prenom || null,
-          passager_nom:    data.nom || null,
-          passager_tel:    telephoneNormalise,
-        })
-      }
-    } catch { /* non-bloquant */ }
-  }
+  /* Le retour n'est plus cree ici.
+   *
+   * Il l'etait avant d'ouvrir Stripe, donc avant tout paiement : un client qui
+   * renoncait a la page de paiement laissait une course fantome dans le
+   * planning, et la regle du projet — aucune ecriture en base avant paiement
+   * confirme — etait enfreinte a cet endroit precis. Il naissait en outre
+   * « paiement en attente » alors que le client venait de le payer, sans
+   * client_id et sans facture.
+   *
+   * Il est desormais cree par le webhook, apres encaissement, a partir de
+   * `metadata[date_retour]`, `metadata[adresse_arrivee_retour]` et
+   * `metadata[prix_retour]` ci-dessus. */
 
   try {
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

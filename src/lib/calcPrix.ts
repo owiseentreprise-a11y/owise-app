@@ -502,3 +502,41 @@ export function calculerPrixKm(
   if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Le partage d'un aller-retour entre ses deux trajets.
+ *
+ * Un aller-retour est encaisse en UNE fois par Stripe. Les deux courses
+ * enregistrees doivent donc se partager ce montant exactement : ni plus, ni
+ * moins. C'est l'invariant que ces deux fonctions garantissent —
+ *
+ *     partAller(total) + partRetour(total) === Math.round(total)
+ *
+ * — et qui n'etait garanti par personne avant le 2026-11-04. Le formulaire
+ * donnait la moitie au retour, le webhook Stripe donnait le TOTAL a l'aller,
+ * et les deux ne se parlaient pas.
+ *
+ * Constate sur la course de M. Soter Ranguin, reservee le 2026-11-02 — le
+ * premier aller-retour jamais paye en ligne : 283 EUR encaisses par Stripe,
+ * 283 EUR sur l'aller et 142 EUR sur le retour, soit 425 EUR enregistres.
+ * 142 EUR de chiffre d'affaires qui n'ont jamais ete encaisses. Les six autres
+ * allers-retours du projet, tous saisis a la main, etaient justes : le defaut
+ * ne touchait que la reservation en ligne, et il a suffi du premier client.
+ *
+ * Le partage est volontairement asymetrique d'un euro quand le total est
+ * impair — 283 donne 141 et 142 — parce que la somme prime sur la symetrie :
+ * mieux vaut deux montants dont l'un differe d'un euro qu'un total faux.
+ *
+ * `surcoutEtapes` est retire avant le partage : un arret demande sur l'aller
+ * ne se facture pas a moitie sur le retour.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** La part du retour dans un aller-retour encaisse en une fois. */
+export function partRetour(total: number, surcoutEtapes = 0): number {
+  return Math.round((total - surcoutEtapes) / 2)
+}
+
+/** La part de l'aller : le reste, pour que la somme tombe juste. */
+export function partAller(total: number, surcoutEtapes = 0): number {
+  return Math.round(total) - partRetour(total, surcoutEtapes)
+}

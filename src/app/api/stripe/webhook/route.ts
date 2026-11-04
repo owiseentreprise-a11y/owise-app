@@ -1,3 +1,4 @@
+import { partRetour } from '@/lib/calcPrix'
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { stripe, nettoyerCleEnv } from '@/lib/stripe'
@@ -300,6 +301,18 @@ export async function handleNewReservation(
   const typeVehicule   = meta.type_vehicule
   const nbPassagers    = parseInt(meta.nb_passagers, 10) || 1
   const prix           = parseFloat(meta.prix) || 0
+  /* Aller-retour : Stripe encaisse UNE fois, et deux courses doivent se
+     partager ce montant exactement. Le partage est decide dans
+     `reserver/actions.ts` (voir `partRetour` de calcPrix.ts) et transmis ici,
+     pour qu'il n'existe qu'un seul endroit qui en decide. */
+  const estAllerRetour = meta.aller_retour === 'true' && Boolean(meta.date_retour)
+  /* `prix_retour` n'existe dans les metadonnees que depuis le 2026-11-04. Une
+     session de paiement ouverte avant ce jour-la et reglee apres ne l'a pas :
+     on recalcule alors la meme part avec la meme regle, plutot que de donner
+     0 EUR au retour et le total a l'aller. */
+  const prixRetour     = !estAllerRetour ? 0
+    : (parseFloat(meta.prix_retour) || partRetour(prix))
+  const prixAller      = Math.round(prix - prixRetour)
   // Arrêts demandés à la réservation et déjà facturés : sans cette reprise, le
   // client paie l'étape et le chauffeur n'en voit aucune trace.
   let etapes: string[] = []
@@ -392,7 +405,10 @@ export async function handleNewReservation(
     date_prevue:     datePrevue,
     type_vehicule:   vehiculePourBase(typeVehicule),
     nb_passagers:    nbPassagers,
-    prix_estime:     prix,
+    /* Sa part, pas le total. Jusqu'au 2026-11-04 cette ligne ecrivait `prix`,
+       le montant encaisse en entier, tandis qu'une seconde course portait
+       deja la moitie : 283 EUR encaisses devenaient 425 EUR enregistres. */
+    prix_estime:     prixAller,
     etapes:          etapes.length > 0 ? etapes : null,
     // Vol ou train d'arrivee, quand le client les a renseignes.
     num_vol_train:     meta.num_vol_train || null,
@@ -433,6 +449,84 @@ export async function handleNewReservation(
 
   const refCourse = course.id.slice(-6).toUpperCase()
 
+  /* Le retour d'un aller-retour — cree ICI, apres encaissement.
+   *
+   * Il etait cree par `reserver/actions.ts` AVANT d'ouvrir la page de
+   * paiement. Trois consequences, toutes constatees sur la course de
+   * M. Soter Ranguin du 2026-11-02 : un client qui renonce au paiement
+   * laissait une course fantome dans le planning ; le retour naissait
+   * « paiement en attente » alors qu'il venait d'etre paye, au risque qu'on
+   * redemande l'argent ; et il n'etait rattache ni au compte du client ni a
+   * la facture.
+   *
+   * Non bloquant : l'aller existe et le client est servi. Mais l'echec est
+   * journalise, jamais avale en silence. */
+  const idsCourses: string[] = [course.id]
+  if (estAllerRetour) {
+    try {
+      const dateRetourParsed = instantDepuisSaisieParis(meta.date_retour)
+      if (isNaN(dateRetourParsed.getTime())) {
+        throw new Error(`date de retour illisible : « ${meta.date_retour} »`)
+      }
+      const dateRetour = dateRetourParsed.toISOString()
+      /* Les sessions ouvertes avant le 2026-11-04 ont deja cree leur retour,
+         avant le paiement, par l'ancien chemin. En creer un second ferait
+         trois courses pour un aller-retour. On regarde donc d'abord. */
+      const { data: dejaLa } = await supabase.from('courses')
+        .select('id')
+        .eq('date_prevue', dateRetour)
+        .eq('adresse_depart', adresseArrivee)
+        .is('stripe_payment_intent_id', null)
+        .maybeSingle()
+      if (dejaLa) {
+        /* Il existe : on le rattrape au lieu de le doubler — sa part, son
+           statut de paiement, son client, et la facture plus bas. */
+        await supabase.from('courses').update({
+          client_id: userId, prix_estime: prixRetour, paiement_statut: 'paye',
+        }).eq('id', dejaLa.id)
+        idsCourses.push(dejaLa.id)
+        console.log(`[webhook] retour deja cree avant paiement (${dejaLa.id}) — repris, pas duplique`)
+        throw { dejaTraite: true }
+      }
+      const { data: retour, error: retourErr } = await supabase.from('courses').insert({
+        client_id:       userId,
+        adresse_depart:  adresseArrivee,
+        adresse_arrivee: meta.adresse_arrivee_retour || adresseDepart,
+        date_prevue:     dateRetour,
+        type_vehicule:   vehiculePourBase(typeVehicule),
+        nb_passagers:    nbPassagers,
+        prix_estime:     prixRetour,
+        notes:           'Retour',
+        statut:          'en_attente',
+        mode_paiement:   'stripe',
+        /* Paye en meme temps que l'aller, par le meme encaissement. */
+        paiement_statut: 'paye',
+        passager_prenom: prenom || null,
+        passager_nom:    nom || null,
+        passager_tel:    telephone,
+        /* Pas de `stripe_payment_intent_id` : l'index unique partiel
+           `courses_stripe_pi_unique` n'accepte qu'une course par paiement, et
+           c'est l'aller qui le porte. */
+      }).select('id').single()
+      if (retourErr || !retour) throw new Error(retourErr?.message ?? 'insertion du retour sans resultat')
+      idsCourses.push(retour.id)
+    } catch (err) {
+      if ((err as { dejaTraite?: boolean })?.dejaTraite) {
+        /* Pas un echec : le retour existait deja et vient d'etre repris. */
+      } else {
+      console.error('[webhook] retour non cree pour', paymentIntentId, String((err as Error)?.message ?? err))
+      await signalerIncident(supabase, {
+        type: 'retour_non_cree', gravite: 'elevee', reference: paymentIntentId,
+        detail: {
+          course_aller: course.id, date_retour: meta.date_retour,
+          prix_retour: prixRetour, prix_encaisse: prix,
+          erreur: String((err as Error)?.message ?? err),
+        },
+      }).catch(() => {})
+      }
+    }
+  }
+
   // 3. Créer la facture liée au paiement
   try {
     const numero   = await genererNumeroFacture(supabase)
@@ -454,7 +548,10 @@ export async function handleNewReservation(
     }).select('id').single()
 
     if (facture) {
-      await supabase.from('courses').update({ facture_id: facture.id }).eq('id', course.id)
+      /* Les deux trajets d'un aller-retour sont rattaches a la meme facture :
+         son total est celui qu'a paye le client, et ses lignes doivent donc
+         le composer. Le retour n'y figurait pas. */
+      await supabase.from('courses').update({ facture_id: facture.id }).in('id', idsCourses)
     } else {
       throw new Error('insertion de la facture sans resultat')
     }
