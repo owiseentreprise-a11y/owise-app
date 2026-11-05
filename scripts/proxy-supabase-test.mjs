@@ -59,6 +59,19 @@ const serveur = createServer(async (req, res) => {
     res.end(typeof charge === 'string' ? charge : JSON.stringify(charge))
   }
 
+  /* Remise a zero des pannes provoquees.
+   *
+   * `pannesTransitoires` vit en memoire dans CE processus, et survit donc a
+   * un rejeu du test : au second passage, « transitoire@exemple.test » avait
+   * deja echoue une fois, la panne ne se reproduisait plus, et deux controles
+   * viraient au rouge sans qu'aucun defaut ne soit en cause. Le test appelle
+   * ce point d'entree avant de commencer. */
+  if (url.pathname === '/__test/remise-a-zero') {
+    for (const k of Object.keys(pannesTransitoires)) delete pannesTransitoires[k]
+    tracer('    PANNES PROVOQUEES REMISES A ZERO')
+    return repondre(200, { remis: true })
+  }
+
   // ── Leurre d'authentification ────────────────────────────────────────────
   if (url.pathname.startsWith('/auth/v1/admin/users')) {
     if (req.method !== 'POST') return repondre(200, { users: [] })

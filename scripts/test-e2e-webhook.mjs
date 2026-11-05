@@ -31,7 +31,9 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createHmac, randomUUID } from 'node:crypto'
 
-const APP = 'http://localhost:3210'
+/* Le port de l'application de test. Surchargeable : une instance deja en
+   cours occupe parfois 3210, et on ne tue pas un processus pour si peu. */
+const APP = process.env.OW_APP ?? 'http://localhost:3210'
 const PG = 'owise-test-pg'
 const DB = 'owise_test'
 const CLIENT_FICTIF = '11111111-1111-1111-1111-111111111111'
@@ -91,7 +93,7 @@ const envoyer = async (charge, decalage = 0, essai = 0) => {
 }
 
 /** Un événement de paiement réussi, avec des données entièrement fictives. */
-const evenement = ({ id = 'evt_test_' + randomUUID().slice(0, 8), pi, vehicule = 'van', prix = 89 } = {}) => ({
+const evenement = ({ id = 'evt_test_' + randomUUID().slice(0, 8), pi, vehicule = 'van', prix = 89, allerRetour = null } = {}) => ({
   id,
   object: 'event',
   type: 'checkout.session.completed',
@@ -115,6 +117,11 @@ const evenement = ({ id = 'evt_test_' + randomUUID().slice(0, 8), pi, vehicule =
         type_vehicule: vehicule,
         nb_passagers: '5',
         prix: String(prix),
+        /* Un aller-retour est encaisse en UNE fois. `prix_retour` dit au
+           webhook quelle part revient au second trajet ; il n'existe dans les
+           metadonnees que depuis le 2026-11-04, d'ou le scenario de
+           transition ou il manque. */
+        ...(allerRetour ?? {}),
       },
     },
   },
@@ -135,8 +142,55 @@ if (!/localhost|127\.0\.0\.1/.test(env.NEXT_PUBLIC_SUPABASE_URL ?? '')) {
   console.error(`ARRÊT : NEXT_PUBLIC_SUPABASE_URL ne pointe pas localhost (${env.NEXT_PUBLIC_SUPABASE_URL})`)
   process.exit(2)
 }
-const remiseAZero = sql('TRUNCATE courses, factures, stripe_events, incidents_paiement;')
+/* Releve de la production AVANT toute ecriture, pour pouvoir affirmer a la fin
+   que rien n'a bouge — en comparant a ce qui etait, et non a un nombre fige
+   dans ce fichier. Lecture seule, par HTTP. */
+const prodEnvInitial = {}
+for (const l of readFileSync(resolve(process.cwd(), '.env.local'), 'utf8').split('\n')) {
+  const i = l.indexOf('=')
+  if (i > 0) prodEnvInitial[l.slice(0, i).trim()] = l.slice(i + 1).trim().replace(/^["'](.*)["']$/, '$1')
+}
+const compterProd = async (t) => {
+  const r = await fetch(`${prodEnvInitial.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${t}?select=id`, {
+    method: 'HEAD',
+    headers: {
+      apikey: prodEnvInitial.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${prodEnvInitial.SUPABASE_SERVICE_ROLE_KEY}`,
+      Prefer: 'count=exact',
+    },
+  })
+  return (r.headers.get('content-range') ?? '/?').split('/')[1]
+}
+const prodAvant = {
+  courses:    await compterProd('courses'),
+  factures:   await compterProd('factures'),
+  evenements: await compterProd('stripe_events'),
+}
+console.log(`production avant le test : ${prodAvant.courses} course(s) · ${prodAvant.factures} facture(s) · ${prodAvant.evenements} evenement(s)`)
+
+/* `utilisateurs_test` est purge AUSSI, sauf le client seme par la pile.
+   Sans cela le test n'est pas rejouable : le scenario de la panne passagere
+   d'Auth attend que le compte « transitoire@exemple.test » n'existe PAS
+   encore — au second passage il existait, aucune creation n'etait tentee, et
+   le scenario echouait sans qu'aucun defaut ne soit en cause. Le fichier
+   annonce pourtant « le test doit etre rejouable ». */
+const remiseAZero = sql(`
+  TRUNCATE courses, factures, stripe_events, incidents_paiement;
+  DELETE FROM utilisateurs_test WHERE id <> '${CLIENT_FICTIF}';
+  DELETE FROM profiles WHERE id <> '${CLIENT_FICTIF}';
+`)
 if (remiseAZero.startsWith('ERREUR')) { console.error('remise à zéro impossible : ' + remiseAZero); process.exit(2) }
+/* Le relais garde en memoire les pannes d'authentification deja provoquees.
+   Sans cette remise a zero, le test n'est rejouable qu'en redemarrant le
+   relais — et deux controles echouent au second passage. */
+try {
+  const base = (process.env.OW_SUPABASE_TEST ?? 'http://localhost:54321').replace(/\/$/, '')
+  const r = await fetch(`${base}/__test/remise-a-zero`, { method: 'POST' })
+  console.log(r.ok ? 'pannes provoquées du relais remises à zéro'
+                   : `relais : remise à zéro refusée (HTTP ${r.status})`)
+} catch (e) {
+  console.log('relais injoignable pour la remise à zéro — le test peut échouer au rejeu')
+}
 console.log('base locale remise à zéro (conteneur jetable)\n')
 
 // ── 0. L'isolement tient-il toujours ? ─────────────────────────────────────
@@ -420,6 +474,102 @@ section('6. Effets de bord : rien n\'est sorti de la machine')
     verifier('les requêtes base sont allées sur localhost:54321', /localhost:54321/.test(log) || !/supabase\.co/.test(log))
   }
 
+// ── Aller-retour : les deux trajets se partagent le montant encaissé ──────
+section('Aller-retour — deux courses qui font exactement la somme encaissée')
+{
+  /* Le defaut corrige le 2026-11-04, sur la course de M. Soter Ranguin : le
+     webhook ecrivait le TOTAL sur l'aller pendant qu'un second trajet portait
+     deja la moitie. 283 EUR encaisses devenaient 425 EUR enregistres. */
+  sql("DELETE FROM courses WHERE notes LIKE 'Retour%';")
+  const PI_AR = 'pi_test_ar_' + randomUUID().slice(0, 8)
+  const r = await envoyer(evenement({
+    id: 'evt_test_aller_retour', pi: PI_AR, prix: 283,
+    allerRetour: {
+      aller_retour: 'true',
+      date_retour: '2026-12-28T15:45',
+      prix_retour: '142',
+      adresse_arrivee_retour: '1 rue de Nulle Part, 60500 Lieu-Fictif',
+    },
+  }))
+  verifier("le webhook accepte l'aller-retour", r.statut === 200, `HTTP ${r.statut} ${r.texte?.slice(0, 120)}`)
+
+  const aller = sql(`SELECT prix_estime||'|'||paiement_statut||'|'||coalesce(facture_id::text,'-') FROM courses WHERE stripe_payment_intent_id='${PI_AR}';`)
+  const [pAller, payeAller, facAller] = aller.split('|')
+  const retour = sql("SELECT prix_estime||'|'||paiement_statut||'|'||coalesce(facture_id::text,'-')||'|'||adresse_depart||'|'||adresse_arrivee||'|'||to_char(date_prevue AT TIME ZONE 'UTC','YYYY-MM-DD HH24:MI')||'|'||coalesce(client_id::text,'-') FROM courses WHERE notes LIKE 'Retour%';")
+  const [pRetour, payeRetour, facRetour, depRetour, arrRetour, dateRetour, clientRetour] = retour.split('|')
+
+  verifier('deux courses, pas une', Boolean(pAller) && Boolean(pRetour), `aller=${aller} retour=${retour}`)
+  verifier("l'aller porte sa PART, pas le total (141 €)", Number(pAller) === 141, pAller)
+  verifier("le retour porte l'autre part (142 €)", Number(pRetour) === 142, pRetour)
+  verifier('les deux font exactement les 283 € encaissés',
+    Number(pAller) + Number(pRetour) === 283, `${pAller} + ${pRetour}`)
+  verifier('le retour naît PAYÉ — le client vient de le payer', payeRetour === 'paye', payeRetour)
+  verifier("l'aller aussi", payeAller === 'paye', payeAller)
+  verifier('les deux trajets sont sur la MÊME facture',
+    facAller !== '-' && facAller === facRetour, `aller=${facAller} retour=${facRetour}`)
+  const ttc = sql(`SELECT montant_ttc FROM factures WHERE id='${facAller}';`)
+  verifier('la facture vaut la somme des deux courses', Number(ttc) === 283, ttc)
+  verifier("le retour part de l'arrivée de l'aller", /Aeroport Fictif/.test(depRetour), depRetour)
+  verifier("et revient à l'adresse demandée", /Nulle Part/.test(arrRetour), arrRetour)
+  /* 15:45 a Paris fin decembre = 14:45 en temps universel. Ecrite sans
+     conversion, l'heure du retour glisserait d'une heure. */
+  verifier("l'heure du retour est une heure de Paris convertie",
+    dateRetour === '2026-12-28 14:45', dateRetour)
+  verifier('le retour est rattaché au compte du client', clientRetour !== '-', clientRetour)
+}
+
+// ── Transition : une session ouverte avant le correctif ────────────────────
+section('Transition — une session de paiement ouverte avant le correctif')
+{
+  /* Une session Stripe reste ouverte 24 h. Celle-ci n'a pas `prix_retour`
+     dans ses metadonnees : le webhook doit recalculer la meme part, et non
+     donner 0 EUR au retour et le total a l'aller. */
+  sql("DELETE FROM courses WHERE notes LIKE 'Retour%';")
+  const PI_T2 = 'pi_test_ar_sans_part_' + randomUUID().slice(0, 8)
+  const r = await envoyer(evenement({
+    id: 'evt_test_ar_sans_part', pi: PI_T2, prix: 283,
+    allerRetour: { aller_retour: 'true', date_retour: '2026-12-29T10:00' },
+  }))
+  verifier('le webhook accepte un événement sans `prix_retour`', r.statut === 200, `HTTP ${r.statut}`)
+  const pA = sql(`SELECT prix_estime FROM courses WHERE stripe_payment_intent_id='${PI_T2}';`)
+  const pR = sql("SELECT prix_estime FROM courses WHERE notes LIKE 'Retour%';")
+  verifier('la part est recalculée, pas abandonnée',
+    Number(pA) === 141 && Number(pR) === 142, `${pA} + ${pR}`)
+  verifier('la somme tombe toujours juste', Number(pA) + Number(pR) === 283, `${pA} + ${pR}`)
+}
+
+// ── Transition : un retour déjà créé par l'ancien chemin ───────────────────
+section('Transition — un retour déjà créé avant paiement, repris et non doublé')
+{
+  /* L'ancien code creait le retour AVANT d'ouvrir Stripe. Si une telle
+     session est reglee maintenant, le webhook doit reprendre ce retour, pas
+     en ajouter un second — sinon trois trajets pour un aller-retour. */
+  sql("DELETE FROM courses WHERE notes LIKE 'Retour%';")
+  const PI_D = 'pi_test_ar_deja_cree_' + randomUUID().slice(0, 8)
+  /* Le retour tel que l'ancien chemin l'ecrivait : pas de client, pas paye. */
+  sql("INSERT INTO courses (adresse_depart, adresse_arrivee, date_prevue, type_vehicule, nb_passagers, prix_estime, notes, statut, mode_paiement) VALUES ('Aeroport Fictif, 95700 Nulle-Part', '1 rue de Nulle Part, 60500 Lieu-Fictif', '2026-12-30T08:00:00+00:00', 'van_7', 5, 142, 'Retour - ancien chemin', 'en_attente', 'stripe');")
+  const avant = sql("SELECT count(*) FROM courses WHERE notes LIKE 'Retour%';")
+  const r = await envoyer(evenement({
+    id: 'evt_test_ar_deja_cree', pi: PI_D, prix: 283,
+    allerRetour: {
+      aller_retour: 'true', date_retour: '2026-12-30T09:00', prix_retour: '142',
+      adresse_arrivee_retour: '1 rue de Nulle Part, 60500 Lieu-Fictif',
+    },
+  }))
+  verifier("le webhook accepte l'événement", r.statut === 200, `HTTP ${r.statut}`)
+  const apres = sql("SELECT count(*) FROM courses WHERE notes LIKE 'Retour%';")
+  verifier('aucun retour en double — il y en avait 1, il y en a toujours 1',
+    avant === '1' && apres === '1', `avant=${avant} après=${apres}`)
+  const repris = sql("SELECT prix_estime||'|'||paiement_statut||'|'||coalesce(client_id::text,'-')||'|'||coalesce(facture_id::text,'-') FROM courses WHERE notes LIKE 'Retour%';")
+  const [pR2, paye, client, facture] = repris.split('|')
+  verifier('le retour existant est repris : marqué payé', paye === 'paye', repris)
+  verifier('rattaché au client', client !== '-', client)
+  verifier('et à la facture', facture !== '-', facture)
+  verifier('sa part est corrigée', Number(pR2) === 142, pR2)
+  const pA2 = sql(`SELECT prix_estime FROM courses WHERE stripe_payment_intent_id='${PI_D}';`)
+  verifier("l'aller ne porte toujours que sa part", Number(pA2) === 141, pA2)
+}
+
   /* Contrôle indépendant du journal : la production n'a pas bougé. */
   const prodEnv = {}
   for (const l of readFileSync(resolve(process.cwd(), '.env.local'), 'utf8').split('\n')) {
@@ -433,9 +583,17 @@ section('6. Effets de bord : rien n\'est sorti de la machine')
   }
   const pc = await compter('courses'), pf = await compter('factures'), pe = await compter('stripe_events')
   console.log(`     production : ${pc} course(s) · ${pf} facture(s) · ${pe} événement(s)`)
-  verifier('la production compte toujours 30 courses', pc === '30', pc)
-  verifier('la production compte toujours 9 factures', pf === '9', pf)
-  verifier('stripe_events de production est restée VIDE — aucune écriture de test n\'a fui', pe === '0', pe)
+  /* On compare a ce qui a ete releve AVANT la premiere ecriture, et non a des
+     nombres figes. Ceux-ci annoncaient « toujours 30 courses » et « toujours
+     9 factures » : la production en comptait 32 et 10 le 2026-11-05, et ce
+     controle serait passe au rouge sans qu'une seule ligne ait fui. Un
+     controle qui vieillit mal finit par etre ignore. */
+  verifier(`la production compte toujours ses ${prodAvant.courses} courses`,
+    pc === prodAvant.courses, `${prodAvant.courses} → ${pc}`)
+  verifier(`la production compte toujours ses ${prodAvant.factures} factures`,
+    pf === prodAvant.factures, `${prodAvant.factures} → ${pf}`)
+  verifier('stripe_events de production n\'a pas bougé — aucune écriture de test n\'a fui',
+    pe === prodAvant.evenements, `${prodAvant.evenements} → ${pe}`)
 }
 
 console.log('\n' + '─'.repeat(72))
