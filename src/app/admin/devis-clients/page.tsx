@@ -66,6 +66,11 @@ export default async function DevisClientsPage() {
               <Link
                 key={d.id}
                 href={`/admin/devis-clients/${d.id}`}
+                /* `dc-ligne` : sous 900 px, ces cinq colonnes deviennent une
+                   carte. Mesuré le 2026-11-05 : la colonne du client tombait
+                   à quelques pixels et le texte se lisait verticalement, une
+                   lettre par ligne — « 1 p r e s t a t i o n ». */
+                className="dc-ligne"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'minmax(130px,auto) minmax(0,1fr) auto auto auto',
@@ -74,11 +79,11 @@ export default async function DevisClientsPage() {
                   textDecoration: 'none', color: 'inherit',
                 }}
               >
-                <span style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#C9A84C', letterSpacing: '.03em' }}>
+                <span className="dc-numero" style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#C9A84C', letterSpacing: '.03em' }}>
                   {d.numero}
                 </span>
 
-                <span style={{ minWidth: 0 }}>
+                <span className="dc-client" style={{ minWidth: 0 }}>
                   <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {d.client_nom || <em style={{ color: '#BBB', fontWeight: 400 }}>Sans nom</em>}
                   </span>
@@ -89,7 +94,7 @@ export default async function DevisClientsPage() {
                   </span>
                 </span>
 
-                <span style={{
+                <span className="dc-statut" style={{
                   fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', fontWeight: 600,
                   background: t.fond, border: `1px solid ${t.trait}`, color: t.encre,
                   borderRadius: 20, padding: '3px 11px', whiteSpace: 'nowrap',
@@ -97,11 +102,11 @@ export default async function DevisClientsPage() {
                   {STATUTS[d.statut] ?? d.statut}
                 </span>
 
-                <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500, color: '#0A0A0A', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                <span className="dc-montant" style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 500, color: '#0A0A0A', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                   {formaterMontant(Number(d.total_ht))}
                 </span>
 
-                <span style={{ fontSize: 12, color: '#C9A84C', whiteSpace: 'nowrap' }}>Ouvrir →</span>
+                <span className="dc-ouvrir" style={{ fontSize: 12, color: '#C9A84C', whiteSpace: 'nowrap' }}>Ouvrir →</span>
               </Link>
             )
           })}

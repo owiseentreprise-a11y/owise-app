@@ -150,6 +150,9 @@
   .adm-contenu a[style*='border'] {
     min-height: 44px;
   }
+  /* Et dans les deux sens : un bouton d'icône seule faisait 23 px de large
+     pour 44 de haut. On vise une cible en largeur comme en hauteur. */
+  .adm-contenu button { min-width: 44px; }
   /* Les champs : 16 px au moins, sinon iOS zoome tout seul à la saisie et ne
      dézoome jamais. C'est le défaut mobile le plus universel. */
   .adm-contenu input, .adm-contenu select, .adm-contenu textarea {
@@ -273,4 +276,185 @@
 
   /* Quatre colonnes dans 390 px coupent « CRÉÉE LE » en trois lignes. */
   .adm-pile-2 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ============================================================================
+   Parcours 2 — le planning : consulter la journée
+   ========================================================================= */
+@media (max-width: 900px) {
+  /* La hauteur était calculée pour le bandeau de bureau. Ici, la barre
+     d'application et la navigation basse encadrent déjà le contenu : le
+     planning prend ce qui reste, et ne crée pas un second défilement. */
+  .adm-planning { height: auto !important; min-height: 60vh; }
+
+  /* La barre de contrôle portait deux groupes aux extrémités : sur un écran
+     étroit ils se chevauchaient. Ils s'empilent, et les flèches de
+     navigation restent sur une ligne avec la date. */
+  .adm-planning-barre {
+    flex-wrap: wrap;
+    padding: 10px 14px !important;
+    gap: 10px !important;
+  }
+  .adm-planning-barre > div { flex-wrap: wrap; }
+  .adm-planning-barre span[style*="min-width"] { min-width: 0 !important; }
+
+  /* 46 px de retrait sous chaque en-tête de jour, c'est un huitième de
+     l'écran perdu sur toute la hauteur. */
+  .adm-planning-jour { margin-left: 0 !important; }
+
+  /* La ligne de six colonnes (566 px) devient une carte. Les zones nommées
+     laissent l'ordre du JSX intact : on lit l'heure et le statut, puis le
+     client, puis le trajet, puis le chauffeur — qu'on change sur place, sans
+     ouvrir la course. C'est le geste que l'exploitant a demandé. */
+  .adm-planning-ligne {
+    grid-template-columns: auto 1fr !important;
+    grid-template-areas:
+      "heure  statut"
+      "client pax"
+      "trajet trajet"
+      "chauffeur chauffeur" !important;
+    gap: 6px 12px !important;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+    align-items: center !important;
+  }
+  .adm-planning-ligne .pl-heure     { grid-area: heure; font-size: 17px !important; }
+  .adm-planning-ligne .pl-statut    { grid-area: statut; text-align: right; }
+  .adm-planning-ligne .pl-client    { grid-area: client; font-size: 13px !important; }
+  .adm-planning-ligne .pl-pax       { grid-area: pax; text-align: right !important; }
+  .adm-planning-ligne .pl-trajet    { grid-area: trajet; }
+  .adm-planning-ligne .pl-trajet div:first-child { font-size: 13px !important; }
+  .adm-planning-ligne .pl-trajet div:last-child  { font-size: 12.5px !important; }
+  .adm-planning-ligne .pl-chauffeur { grid-area: chauffeur; margin-top: 2px; }
+  .adm-planning-ligne .pl-chauffeur button { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 900px) {
+  /* Les flèches « semaine précédente / suivante » faisaient 23 px de large
+     pour 44 de haut : la seule cible encore trop petite après le premier
+     lot. Une cible se vise dans les deux sens. */
+  .adm-planning-barre button { min-width: 44px; }
+}
+
+/* ============================================================================
+   Parcours 3 — la liste des courses : trouver, puis permuter
+   ========================================================================= */
+@media (max-width: 900px) {
+  /* Six colonnes (1.4fr 1fr 130 110 150 90) deviennent une carte. L'ordre de
+     lecture est celui d'un coup d'œil : quand et combien, puis où, puis qui,
+     puis les deux gestes — changer le chauffeur, changer le statut. */
+  .course-row {
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "date      prix"
+      "trajet    trajet"
+      "client    client"
+      "chauffeur statut" !important;
+    gap: 8px 12px !important;
+    padding: 14px !important;
+    align-items: center !important;
+  }
+  .course-row .co-date      { grid-area: date; font-size: 12.5px !important; }
+  .course-row .co-prix      { grid-area: prix; font-size: 16px !important; }
+  .course-row .co-trajet    { grid-area: trajet; padding-right: 0 !important; }
+  /* Les adresses étaient coupées par des points de suspension pour tenir dans
+     une colonne. Sur une carte, la place existe : on les lit en entier. */
+  .course-row .co-trajet span {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-size: 13px !important;
+  }
+  .course-row .co-client    { grid-area: client; font-size: 13px !important; }
+  .course-row .co-chauffeur { grid-area: chauffeur; }
+  .course-row .co-statut    { grid-area: statut; justify-self: end; }
+
+  /* Les filtres (« Toutes 32 · En attente · En cours… ») débordaient : le
+     dernier, « Annulées », était hors de l'écran. Ils défilent. */
+  .adm-contenu nav[role="tablist"], .adm-onglets {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .adm-contenu nav[role="tablist"]::-webkit-scrollbar, .adm-onglets::-webkit-scrollbar { display: none; }
+}
+
+@media (max-width: 900px) {
+  /* Le bandeau de titre de chaque page : `height: 60px` avec un titre à
+     gauche et des boutons à droite. Sur 390 px, les deux groupes se
+     chevauchaient — « Courses 32 » passait sous « Export CSV ». Le motif est
+     le même sur une dizaine de pages : on le traite une fois.
+
+     Ciblé par le style EN LIGNE, faute de classe commune. C'est fragile par
+     nature ; si un jour ces bandeaux reçoivent une classe, cette règle doit
+     la viser à la place.
+
+     PIÈGE : React écrit l'attribut `style` SANS espace après le deux-points
+     — `height:60px`, pas `height: 60px`. Un sélecteur écrit avec l'espace ne
+     correspond à rien, en silence. Vérifié dans le DOM servi, pas supposé. */
+  .adm-contenu div[style*="height:60px"],
+  .adm-contenu div[style*="height: 60px"] {
+    height: auto !important;
+    min-height: 60px;
+    flex-wrap: wrap;
+    padding: 10px 14px !important;
+    gap: 8px;
+  }
+  /* Et le rembourrage horizontal de 32 px, qui mange un sixième de l'écran. */
+  .adm-contenu div[style*="padding:20px 32px"],
+  .adm-contenu div[style*="padding:24px 32px"],
+  .adm-contenu div[style*="padding:0 32px"],
+  .adm-contenu div[style*="padding:32px"] {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/* ============================================================================
+   Parcours 3 — les devis clients : répondre depuis la route
+   ========================================================================= */
+@media (max-width: 900px) {
+  /* Cinq colonnes dont un `minmax(0,1fr)` : à 390 px, ce `1fr` tombait à
+     quelques pixels et le nom du client se lisait VERTICALEMENT, une lettre
+     par ligne. Le contrôle automatique ne l'avait pas vu — rien n'était
+     coupé, aucune cible n'était trop petite, et la page était pourtant
+     illisible. Une mesure de « colonne étranglée » a été ajoutée depuis. */
+  .dc-ligne {
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "numero  statut"
+      "client  client"
+      "montant ouvrir" !important;
+    gap: 8px 12px !important;
+    padding: 14px !important;
+  }
+  .dc-ligne .dc-numero  { grid-area: numero; font-size: 13px !important; }
+  .dc-ligne .dc-statut  { grid-area: statut; justify-self: end; }
+  .dc-ligne .dc-client  { grid-area: client; }
+  /* Le nom tenait sur une ligne avec des points de suspension pour entrer
+     dans sa colonne. Sur une carte, il a la largeur : on le lit en entier. */
+  .dc-ligne .dc-client > span:first-child {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-size: 15px !important;
+  }
+  .dc-ligne .dc-client > span:last-child { font-size: 13px !important; }
+  .dc-ligne .dc-montant { grid-area: montant; font-size: 16px !important; }
+  .dc-ligne .dc-ouvrir  { grid-area: ouvrir; justify-self: end; font-size: 13px !important; }
+}
+
+@media (max-width: 900px) {
+  /* Les listes NON converties (clients, facturation, chauffeurs…) gardent
+     leurs colonnes, et le cadre défile. Mais sans largeur minimale, une
+     colonne peut tomber à 29 px : « Silva Hugo » s'y lisait verticalement.
+     `max-content` rend à la ligne la largeur dont elle a besoin ; c'est le
+     cadre qui défile, pas le texte qui s'étrangle.
+
+     Les lignes déjà transformées en cartes sont exclues : leur mise en page
+     est voulue, et `max-content` la casserait. */
+  .adm-contenu [style*="overflow:hidden"] > [style*="display:grid"]:not(.course-row):not(.dc-ligne):not(.adm-cartes-entete),
+  .adm-contenu [style*="overflow: hidden"] > [style*="display:grid"]:not(.course-row):not(.dc-ligne):not(.adm-cartes-entete) {
+    min-width: max-content;
+  }
 }

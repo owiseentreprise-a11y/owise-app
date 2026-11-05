@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import DispatchRapideButton from '../courses/DispatchRapideButton'
 import { STATUT_COURSE_COLOR, STATUT_COURSE_LABEL } from '@/lib/types'
@@ -529,32 +529,37 @@ function VueListe({ courses, chauffeurs, today }: {
               </div>
             </div>
 
-            <div style={{ marginLeft:46, display:'flex', flexDirection:'column', gap:4 }}>
+            <div className="adm-planning-jour" style={{ marginLeft:46, display:'flex', flexDirection:'column', gap:4 }}>
               {dayCourses.map((c:any) => {
                 const date = lireHeureCourse(c.date_prevue)
                 const color = STATUT_COURSE_COLOR[c.statut as keyof typeof STATUT_COURSE_COLOR]
                 const chNom = chauffeurNom(c)
                 return (
-                  <div key={c.id} style={{
+                  /* `adm-planning-ligne` : sous 900 px, cette ligne de six
+                     colonnes (566 px) devient une carte où l'on lit, dans
+                     l'ordre, l'heure et le statut, puis le client, puis le
+                     trajet, puis le chauffeur — qu'on peut changer sur
+                     place. */
+                  <div key={c.id} className="adm-planning-ligne" style={{
                     display:'grid', gridTemplateColumns:'56px 1fr 180px 80px 170px 80px',
                     padding:'10px 14px', background:'var(--surface)',
                     border:`1px solid ${isToday?'rgba(201,168,76,.1)':'var(--gb)'}`,
                     borderRadius:9, alignItems:'center', gap:14,
                   }}>
-                    <div style={{ fontFamily:'var(--font-jetbrains), monospace', fontSize:15, fontWeight:600, color:isToday?'var(--gold)':'var(--t1)' }}>
+                    <div className="pl-heure" style={{ fontFamily:'var(--font-jetbrains), monospace', fontSize:15, fontWeight:600, color:isToday?'var(--gold)':'var(--t1)' }}>
                       {date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
                     </div>
-                    <a href={`/admin/courses/${c.id}`} style={{ textDecoration:'none' }}>
+                    <a className="pl-trajet" href={`/admin/courses/${c.id}`} style={{ textDecoration:'none' }}>
                       <div style={{ fontSize:12, fontWeight:500, color:'var(--t1)', marginBottom:2 }}>{c.adresse_depart}</div>
                       <div style={{ fontSize:11, color:'var(--t2)' }}>→ {c.adresse_arrivee}</div>
                     </a>
-                    <div style={{ fontSize:11, fontWeight:700, color:'var(--gold)' }}>{clientNom(c)}</div>
-                    <div style={{ fontSize:11, color:'var(--t2)', textAlign:'center' }}>
+                    <div className="pl-client" style={{ fontSize:11, fontWeight:700, color:'var(--gold)' }}>{clientNom(c)}</div>
+                    <div className="pl-pax" style={{ fontSize:11, color:'var(--t2)', textAlign:'center' }}>
                       {c.nb_passagers && c.nb_passagers > 0
                         ? <span style={{ padding:'2px 6px', borderRadius:4, background:'rgba(201,168,76,.1)', color:'var(--gold)', fontWeight:600, fontSize:10 }}>{c.nb_passagers} pax</span>
                         : <span style={{color:'var(--t3)'}}>—</span>}
                     </div>
-                    <div onClick={e=>e.stopPropagation()}>
+                    <div className="pl-chauffeur" onClick={e=>e.stopPropagation()}>
                       {['terminee','annulee'].includes(c.statut) ? (
                         <span style={{fontSize:11,color:'var(--t2)'}}>{chNom??'—'}</span>
                       ) : (
@@ -566,7 +571,7 @@ function VueListe({ courses, chauffeurs, today }: {
                         />
                       )}
                     </div>
-                    <div style={{ textAlign:'right' }}>
+                    <div className="pl-statut" style={{ textAlign:'right' }}>
                       <span style={{ fontSize:9, padding:'3px 7px', borderRadius:4, fontWeight:500, color, background:`${color}18`, border:`1px solid ${color}30` }}>
                         {STATUT_COURSE_LABEL[c.statut as keyof typeof STATUT_COURSE_LABEL]}
                       </span>
@@ -582,6 +587,32 @@ function VueListe({ courses, chauffeurs, today }: {
   )
 }
 
+/**
+ * L'écran est-il étroit ?
+ *
+ * `useSyncExternalStore` plutôt qu'un `useEffect` qui appellerait `setState` :
+ * c'est la façon prévue par React de lire une valeur extérieure au rendu, et
+ * elle évite le rendu en cascade que signale `react-hooks/set-state-in-effect`.
+ *
+ * Le troisième argument est la valeur rendue au SERVEUR — `false`, puisqu'il
+ * ne connaît pas la largeur de l'écran. React l'utilise aussi au premier
+ * rendu client, le temps de l'hydratation : serveur et client disent donc la
+ * même chose, puis la vraie valeur arrive. Pas d'incohérence d'hydratation.
+ *
+ * Avantage accessoire : la vue suit la rotation du téléphone.
+ */
+function useEstTelephone(): boolean {
+  return useSyncExternalStore(
+    (prevenir) => {
+      const mq = window.matchMedia('(max-width: 900px)')
+      mq.addEventListener('change', prevenir)
+      return () => mq.removeEventListener('change', prevenir)
+    },
+    () => window.matchMedia('(max-width: 900px)').matches,
+    () => false,
+  )
+}
+
 // ── PlanningCalendar (main) ───────────────────────────────────────────────────
 export default function PlanningCalendar({
   courses, chauffeurs, initialCourses, todayISO,
@@ -592,7 +623,19 @@ export default function PlanningCalendar({
   todayISO: string
 }) {
   const today = new Date(todayISO)
-  const [view, setView]       = useState<View>('semaine')
+  /* Sur un téléphone, la vue « semaine » est une grille de 7 colonnes dans
+     390 px : mesurée le 2026-11-05, elle affichait « Wil… », « 23 R… »,
+     « Hass » — ni le client, ni l'adresse, ni le chauffeur n'étaient
+     lisibles. Aucune taille de police ne sauve sept colonnes à cette
+     largeur. La liste, qui groupe par jour, devient donc la vue de départ.
+
+     `null` tant que l'exploitant n'a rien choisi : la vue est alors DÉDUITE
+     de la largeur. Dès qu'il clique sur « Semaine » ou « Mois », son choix
+     l'emporte, y compris sur téléphone — c'est un défaut de départ, pas une
+     interdiction. */
+  const [vueChoisie, setView] = useState<View | null>(null)
+  const estTelephone = useEstTelephone()
+  const view: View = vueChoisie ?? (estTelephone ? 'liste' : 'semaine')
   const [current, setCurrent] = useState(() => new Date(todayISO))
 
   function prev() {
@@ -659,10 +702,10 @@ export default function PlanningCalendar({
   })
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'calc(100vh - 60px)' }}>
+    <div className="adm-planning" style={{ display:'flex', flexDirection:'column', height:'calc(100vh - 60px)' }}>
 
       {/* Barre de contrôle */}
-      <div style={{
+      <div className="adm-planning-barre" style={{
         display:'flex', alignItems:'center', justifyContent:'space-between',
         padding:'12px 24px', borderBottom:'1px solid rgba(201,168,76,.08)',
         flexShrink: 0, gap: 12,

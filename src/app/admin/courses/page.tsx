@@ -153,7 +153,9 @@ export default async function CoursesPage({
         height: 44,
       }}>
         {/* Onglets statut */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
+        {/* `adm-onglets` : sur 390 px, ces filtres font 404 px — « Annulées »
+            restait hors de l'écran. Ils défilent, sans barre visible. */}
+        <div className="adm-onglets" style={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
           {tabs.map(tab => {
             const isActive = filterStatut === tab.key
             const href = tab.key
@@ -295,7 +297,10 @@ export default async function CoursesPage({
           borderRadius: 14, overflow: 'hidden',
         }}>
           {/* Header */}
-          <div style={{
+          {/* `adm-cartes-entete` : sous 900 px il n'y a plus de colonnes à
+              intituler, et les six libellés se télescopaient en un seul mot
+              — « TRAJETCLIENTCHAUFFEUR », mesuré le 2026-11-05. */}
+          <div className="adm-cartes-entete" style={{
             display: 'grid',
             gridTemplateColumns: '1.4fr 1fr 130px 110px 150px 90px',
             padding: '11px 20px',
@@ -362,7 +367,7 @@ export default async function CoursesPage({
                   />
 
                   {/* Trajet */}
-                  <div style={{ position: 'relative', zIndex: 2, paddingRight: 12 }}>
+                  <div className="co-trajet" style={{ position: 'relative', zIndex: 2, paddingRight: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{
                         width: 8, height: 8, borderRadius: '50%', background: 'var(--green)',
@@ -390,7 +395,7 @@ export default async function CoursesPage({
                   </div>
 
                   {/* Client */}
-                  <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div className="co-client" style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       {clientIsLibre && (
                         <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: 'rgba(77,142,212,.12)', border: '1px solid rgba(77,142,212,.25)', color: 'var(--blue)', fontWeight: 600, flexShrink: 0 }}>
@@ -413,7 +418,7 @@ export default async function CoursesPage({
                   </div>
 
                   {/* Chauffeur / Sous-traitant */}
-                  <div style={{ position: 'relative', zIndex: 3 }}>
+                  <div className="co-chauffeur" style={{ position: 'relative', zIndex: 3 }}>
                     {(course as any).sous_traitants?.nom
                       ? <span style={{ fontSize: 11, color: 'var(--blu)', fontWeight: 500 }}>↗ {(course as any).sous_traitants.nom}</span>
                       : <DispatchRapideButton
@@ -426,7 +431,7 @@ export default async function CoursesPage({
                   </div>
 
                   {/* Date */}
-                  <div style={{
+                  <div className="co-date" style={{
                     fontFamily: 'var(--font-jetbrains), monospace',
                     fontSize: 11, color: 'var(--t2)',
                     position: 'relative', zIndex: 2,
@@ -437,12 +442,12 @@ export default async function CoursesPage({
                   </div>
 
                   {/* Statut */}
-                  <div style={{ position: 'relative', zIndex: 3 }}>
+                  <div className="co-statut" style={{ position: 'relative', zIndex: 3 }}>
                     <UpdateStatutButton courseId={course.id} statut={course.statut} chauffeurId={course.chauffeur_id ?? null} />
                   </div>
 
                   {/* Prix */}
-                  <div style={{
+                  <div className="co-prix" style={{
                     textAlign: 'right',
                     fontFamily: 'var(--font-jetbrains), monospace',
                     fontSize: 13.5, fontWeight: 600, color: 'var(--gold)',
