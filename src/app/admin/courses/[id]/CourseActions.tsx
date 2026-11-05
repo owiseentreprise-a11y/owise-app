@@ -31,6 +31,7 @@ export default function CourseActions({
   chauffeurs,
   sousTraitants,
   infosCourseTexte,
+  className,
 }: {
   course: {
     id: string
@@ -74,6 +75,9 @@ export default function CourseActions({
   chauffeurs: Array<{ id: string; nom: string; prenom: string; vehicule: string; statut: string; sous_traitant_id: string | null; sous_traitant_nom: string | null }>
   sousTraitants: Array<{ id: string; nom: string; telephone: string | null; email: string | null }>
   infosCourseTexte: string
+  /* Posée par la fiche de course : sous 900 px, cette colonne d'actions passe
+     avant le reste. Voir `admin/mobile.css`. */
+  className?: string
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -197,7 +201,7 @@ export default function CourseActions({
   const canReset = transitions.includes('en_attente') && course.statut !== 'en_attente'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* === STATUT === */}
       <div style={{

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { logoutAction } from '@/app/login/actions'
+import { basculerMenu, fermerMenu, useMenuOuvert } from './adminMenu'
 
 const navItems = [
   {
@@ -107,8 +108,19 @@ export default function Sidebar() {
      contenu tombait à un ou deux mots par ligne. Mesuré le 2026-11-02 sur
      l'écran d'envoi d'un devis : inutilisable. Elle devient donc un tiroir
      en dessous de 900 px, refermé à chaque changement de page. */
-  const [ouvert, setOuvert] = useState(false)
-  useEffect(() => { setOuvert(false) }, [pathname])
+  /* L'état vit dans `adminMenu.ts` : la navigation basse doit pouvoir ouvrir
+     ce même tiroir, et elle n'est pas un enfant de ce composant. */
+  const ouvert = useMenuOuvert()
+  useEffect(() => { fermerMenu() }, [pathname])
+
+  /* Échap referme — un tiroir qu'on ne sait pas fermer au clavier est un
+     piège pour qui navigue sans souris. */
+  useEffect(() => {
+    if (!ouvert) return
+    const surTouche = (e: KeyboardEvent) => { if (e.key === 'Escape') fermerMenu() }
+    window.addEventListener('keydown', surTouche)
+    return () => window.removeEventListener('keydown', surTouche)
+  }, [ouvert])
 
   // Masque le sidebar le temps de deux frames après le montage : sur certaines
   // machines/navigateurs, le tout premier paint après une connexion peut
@@ -130,11 +142,14 @@ export default function Sidebar() {
       {/* Les règles n'existent qu'en dessous de 900 px : au-dessus, la barre
           reste exactement ce qu'elle était. `!important` est nécessaire —
           les styles de ce composant sont en ligne, et l'emportent sinon. */}
+      {/* Seul le comportement du tiroir reste ici : il est propre à ce
+          composant. Tout le reste de la mise en page mobile — barre du haut,
+          navigation basse, cibles tactiles — vit dans `admin/mobile.css`. */}
       <style>{`
         .adm-ouvrir, .adm-voile { display: none; }
         @media (max-width: 900px) {
           .adm-barre {
-            position: fixed !important; top: 0; left: 0; z-index: 70;
+            position: fixed !important; top: 0; left: 0; z-index: 85;
             transform: translateX(-100%);
             transition: transform .22s ease, opacity .1s;
             box-shadow: 0 0 44px rgba(10,10,10,.22);
@@ -142,42 +157,49 @@ export default function Sidebar() {
           .adm-barre[data-ouvert="oui"] { transform: translateX(0); }
           .adm-ouvrir { display: flex !important; }
           .adm-voile  { display: block; }
-          /* Laisse la place au bouton : sans cela il recouvre le premier
-             lien de chaque page. */
-          .adm-contenu { padding-top: 54px !important; }
         }
         @media (prefers-reduced-motion: reduce) {
           .adm-barre { transition: none !important; }
         }
       `}</style>
 
-      <button
-        type="button"
-        className="adm-ouvrir"
-        onClick={() => setOuvert(o => !o)}
-        aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
-        aria-expanded={ouvert}
-        style={{
-          position: 'fixed', top: 9, left: 9, zIndex: 80,
-          width: 40, height: 40, borderRadius: 10,
-          alignItems: 'center', justifyContent: 'center',
-          background: '#FFFFFF', border: '1px solid rgba(0,0,0,.12)',
-          boxShadow: '0 2px 10px rgba(10,10,10,.10)',
-          cursor: 'pointer', color: '#0A0A0A', padding: 0,
-        }}
-      >
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          {ouvert
-            ? <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
-            : <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />}
-        </svg>
-      </button>
+      {/* La barre d'application. Le bouton de menu flottait par-dessus le
+          titre de chaque page : il a maintenant sa bande, et le contenu
+          commence dessous. Le nom rappelle où l'on se trouve — un tiroir
+          fermé ne le dit plus. */}
+      <div className="adm-barre-haut">
+        <button
+          type="button"
+          className="adm-ouvrir"
+          onClick={basculerMenu}
+          aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
+          aria-expanded={ouvert}
+          style={{
+            alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: '#0A0A0A', padding: 0,
+          }}
+        >
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            {ouvert
+              ? <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+              : <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
+        </button>
+        <span style={{
+          fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 500,
+          letterSpacing: '.12em', color: '#0A0A0A',
+        }}>OWISE</span>
+        <span style={{
+          fontSize: 8.5, letterSpacing: '.2em', textTransform: 'uppercase',
+          color: '#BBBBBB', marginLeft: -4, alignSelf: 'center', paddingTop: 3,
+        }}>Administration</span>
+      </div>
 
       {ouvert && (
         <div
           className="adm-voile"
-          onClick={() => setOuvert(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(10,10,10,.45)' }}
+          onClick={fermerMenu}
+          style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(10,10,10,.45)' }}
         />
       )}
 

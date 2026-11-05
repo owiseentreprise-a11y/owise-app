@@ -233,7 +233,13 @@ export default async function CourseDetailPage({
       </div>
 
       {/* Body */}
-      <div style={{
+      {/* `adm-fiche` : sous 900 px les deux colonnes s'empilent, et celle des
+          actions passe EN PREMIER. Mesuré le 2026-11-05 : elle était
+          entièrement hors de l'écran, donc permuter un chauffeur depuis un
+          téléphone était impossible. L'en-tête de la page porte déjà la
+          référence et le statut, on sait donc quelle course on regarde avant
+          d'agir dessus. */}
+      <div className="adm-fiche" style={{
         display: 'grid', gridTemplateColumns: '1fr 320px',
         gap: 20, padding: '24px 32px',
         alignItems: 'start',
@@ -610,7 +616,9 @@ export default async function CourseDetailPage({
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 14 }}>
               Chronologie
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+            {/* Quatre colonnes dans 390 px donnent « CRÉÉE LE » sur trois
+                lignes. Deux par deux se lisent. */}
+            <div className="adm-pile-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
               {[
                 { label: 'Créée le', value: fmt(course.created_at, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) },
                 { label: 'Prévue', value: fmt(course.date_prevue, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) },
@@ -635,6 +643,7 @@ export default async function CourseDetailPage({
 
         {/* ── Colonne droite (actions) ── */}
         <CourseActions
+          className="adm-fiche-actions"
           course={courseForActions}
           chauffeurs={chauffeursForActions}
           sousTraitants={sousTraitants as any}

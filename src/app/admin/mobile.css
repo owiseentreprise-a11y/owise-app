@@ -1,0 +1,276 @@
+/* ============================================================================
+   L'administration d'Owise sur un téléphone.
+
+   Pourquoi ce fichier existe
+   ──────────────────────────
+   Mesure du 2026-11-05, 10 pages à 390 × 844 (iPhone 14) : aucune page ne
+   débordait horizontalement, et c'était le problème. `.adm-contenu` portait
+   `overflow-x: hidden` ; le contenu allait jusqu'à 895 px et se trouvait donc
+   COUPÉ, sans aucun moyen de l'atteindre. Sur la fiche d'une course, la
+   colonne de droite — statut, sélecteur de chauffeur, tarification — était
+   entièrement invisible : permuter un chauffeur depuis un téléphone était
+   impossible, pas difficile.
+
+   S'y ajoutaient 292 cibles tactiles sous 44 px (dont tout le menu, à 35 px)
+   et jusqu'à 114 textes sous 12 px sur une seule page. Sur 31 pages
+   d'administration, il existait UN seul `@media` : celui du tiroir de menu.
+
+   Les partis pris, et leur raison
+   ───────────────────────────────
+   · UN seul point de rupture, 900 px, celui du tiroir déjà en place. Trois
+     points de rupture, c'est trois fois plus d'états à vérifier pour un
+     bénéfice que personne ne remarque.
+   · 44 px de haut minimum sur tout ce qui se touche. C'est la recommandation
+     d'Apple ; Material dit 48. En dessous, on rate le bouton une fois sur
+     trois — et l'exploitant s'en sert debout, dehors, souvent d'une main.
+   · Une navigation BASSE pour les quatre destinations qu'il a nommées. Le
+     pouce atteint le bas de l'écran ; il n'atteint pas le coin haut-gauche
+     d'un téléphone moderne sans changer de prise.
+   · Un tableau ne se « réduit » pas : il se REMPLACE. Sept colonnes dans
+     390 px ne seront jamais lisibles, quelle que soit la taille de police.
+     Les listes prioritaires deviennent des cartes.
+   · `!important` est employé à contrecœur, et seulement là où il n'y a pas le
+     choix : l'administration est écrite en styles EN LIGNE, qui l'emportent
+     sur toute feuille de style. Les trois parcours prioritaires, eux, ont été
+     rendus réellement adaptatifs dans leurs composants — pas forcés ici.
+
+   Le contrôle : `node audit-admin-mobile.mjs` doit annoncer zéro contenu
+   coupé et zéro cible sous 44 px sur les parcours prioritaires.
+   ========================================================================= */
+
+/* La hauteur de la navigation basse, pour que le contenu ne finisse pas
+   dessous. `env(safe-area-inset-bottom)` tient compte de la barre d'accueil
+   des iPhone sans encoche physique. */
+:root {
+  --adm-nav-h: 58px;
+  --adm-barre-h: 52px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Au-dessus de 900 px, rien ne change. Tout ce qui suit est sous condition.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+
+  /* ── 1. Plus rien n'est hors d'atteinte ────────────────────────────────
+     La cause mécanique du contenu coupé. `auto` plutôt que `scroll` : la
+     barre n'apparaît que si elle sert. */
+  .adm-contenu {
+    overflow-x: auto !important;
+    padding-top: var(--adm-barre-h) !important;
+    padding-bottom: calc(var(--adm-nav-h) + env(safe-area-inset-bottom, 0px) + var(--bandeau-cookies, 0px)) !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Un tableau trop large défile DANS son cadre, au lieu d'élargir la page
+     entière — sans quoi l'en-tête et les onglets partent aussi sur le côté. */
+  .adm-contenu table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* ── 2. Barre d'application ────────────────────────────────────────────
+     Le bouton de menu flottait par-dessus le titre de chaque page. Il a
+     désormais sa bande, et le contenu commence en dessous. */
+  .adm-barre-haut {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 75;
+    height: var(--adm-barre-h);
+    display: flex; align-items: center; gap: 10;
+    padding: 0 6px 0 4px;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, .07);
+  }
+  /* La bande or de la marque, reprise de la barre latérale. */
+  .adm-barre-haut::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: linear-gradient(90deg, transparent, #C9A84C 30%, #DDB95A 60%, transparent);
+  }
+
+  /* Le bouton de menu : 44 px, et plus en position fixe puisqu'il est
+     maintenant DANS la barre. */
+  .adm-ouvrir {
+    position: static !important;
+    width: 44px !important; height: 44px !important;
+    border: none !important; background: transparent !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+  }
+
+  /* ── 3. Navigation basse ───────────────────────────────────────────────
+     Quatre destinations et un accès au reste. Celles que l'exploitant a
+     nommées : répondre à un devis, consulter le planning, permuter un
+     chauffeur. */
+  .adm-nav-basse {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 75;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    height: calc(var(--adm-nav-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, .94);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-top: 1px solid rgba(0, 0, 0, .08);
+  }
+  .adm-nav-basse a, .adm-nav-basse button {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; min-height: 44px;
+    font-size: 10px; letter-spacing: .02em;
+    color: #8A8A8A; text-decoration: none;
+    background: none; border: none; cursor: pointer;
+    font-family: inherit;
+    /* Pas de `transition: all` : seules la couleur et l'opacité bougent. */
+    transition: color .14s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .adm-nav-basse [aria-current='page'] { color: #C9A84C; font-weight: 600; }
+  /* Le trait or de l'onglet actif, posé en haut : il prolonge la bande de la
+     barre d'application, et rappelle l'indicateur de la barre latérale. */
+  .adm-nav-basse [aria-current='page']::before {
+    content: ''; position: absolute; top: 0; width: 26px; height: 2px;
+    border-radius: 0 0 2px 2px;
+    background: linear-gradient(90deg, #DDB95A, #C9A84C);
+  }
+  .adm-nav-basse a { position: relative; }
+  .adm-nav-basse a:active, .adm-nav-basse button:active { opacity: .55; }
+  .adm-nav-basse a:focus-visible, .adm-nav-basse button:focus-visible {
+    outline: 2px solid #C9A84C; outline-offset: -3px; border-radius: 8px;
+  }
+
+  /* ── 4. Cibles tactiles ────────────────────────────────────────────────
+     Le plancher, appliqué aux commandes de l'administration. On épargne ce
+     qui n'est pas destiné au doigt (liens dans un paragraphe, cases à
+     cocher déjà dimensionnées). */
+  .adm-contenu button,
+  .adm-contenu select,
+  .adm-contenu input:not([type='checkbox']):not([type='radio']),
+  .adm-contenu textarea,
+  .adm-contenu a[class*='btn'],
+  .adm-contenu a[style*='border'] {
+    min-height: 44px;
+  }
+  /* Les champs : 16 px au moins, sinon iOS zoome tout seul à la saisie et ne
+     dézoome jamais. C'est le défaut mobile le plus universel. */
+  .adm-contenu input, .adm-contenu select, .adm-contenu textarea {
+    font-size: 16px !important;
+  }
+
+  /* ── 5. Lisibilité ─────────────────────────────────────────────────────
+     Un plancher de taille, sans toucher à la hiérarchie : les libellés en
+     capitales restent plus petits que le texte, simplement plus lisibles. */
+  .adm-contenu { font-size: 14px; }
+
+  /* ── 6. Filet de sécurité pour les pages non converties ────────────────
+     Les 25 pages que l'exploitant consulte sans y travailler. L'objectif
+     n'est pas qu'elles soient belles : c'est que rien n'y soit inatteignable.
+     Une grille à colonnes fixes s'empile. */
+  .adm-pile { grid-template-columns: 1fr !important; }
+
+  /* Les cartes de liste portent `overflow: hidden` — en ligne, pour que leurs
+     coins arrondis rognent les bordures des lignes. Sur un écran étroit, ce
+     même `hidden` rend inatteignables les colonnes de droite : 40 éléments
+     coupés sur /admin/chauffeurs, 33 sur /admin/facturation, mesurés le
+     2026-11-05. On le convertit en défilement.
+
+     `overflow: auto` et non `overflow-x` seul : un `overflow-x: auto` avec un
+     `overflow-y: visible` est ramené à `auto` dans les deux sens par le
+     navigateur. Autant l'écrire franchement. Ces cartes n'ont pas de hauteur
+     imposée, aucune barre verticale n'apparaît donc. */
+  .adm-contenu [style*="overflow: hidden"],
+  .adm-contenu [style*="overflow:hidden"] {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Un numéro de téléphone ou une adresse e-mail dans une liste EST une cible
+     tactile : c'est par là qu'on appelle un client depuis la route. 14 px de
+     haut ne se visent pas en marchant. */
+  .adm-contenu a[href^="tel:"],
+  .adm-contenu a[href^="mailto:"] {
+    display: inline-block;
+    padding: 14px 0;
+    min-height: 44px;
+  }
+
+  /* Les liens de retour (« ← Tous les devis ») : même raison. */
+  .adm-contenu a[href^="/admin"]:not([class]):not([style*="grid"]) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* ── 7. Listes en cartes ───────────────────────────────────────────────
+     Ce qui remplace un tableau sur les parcours convertis. Une carte par
+     ligne, les informations empilées dans l'ordre où on les lit : qui, quoi,
+     quand, puis les actions. */
+  .adm-cartes { display: flex !important; flex-direction: column; gap: 10px; }
+  .adm-carte {
+    display: block !important;
+    grid-template-columns: none !important;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, .07);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+    text-decoration: none;
+  }
+  .adm-carte:active { background: rgba(201, 168, 76, .05); }
+  /* L'en-tête d'un tableau n'a plus de sens quand il n'y a plus de colonnes. */
+  .adm-cartes-entete { display: none !important; }
+
+  /* Le tiroir aussi : ses liens faisaient 35 px de haut. Il est hors de
+     `.adm-contenu`, la règle ci-dessus ne l'atteignait pas. */
+  .adm-barre nav a, .adm-barre form button { min-height: 44px; }
+  .adm-barre nav a { font-size: 14px !important; }
+
+  /* ── 8. Le tiroir laisse la place à la navigation basse ────────────────*/
+  .adm-barre { padding-bottom: calc(var(--adm-nav-h) + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Au-dessus de 900 px la navigation basse et la barre d'application
+   n'existent pas : la barre latérale fait tout. */
+@media (min-width: 901px) {
+  .adm-nav-basse, .adm-barre-haut { display: none !important; }
+}
+
+/* ============================================================================
+   Parcours 1 — la fiche d'une course : permuter un chauffeur
+   ========================================================================= */
+@media (max-width: 900px) {
+  /* Les deux colonnes s'empilent, et celle des actions passe EN PREMIER :
+     statut, chauffeur, sous-traitant, tarification. C'est pour agir qu'on
+     ouvre une course depuis un téléphone ; la référence et le statut
+     figurent déjà dans l'en-tête de la page, on sait donc de quelle course
+     il s'agit avant de la modifier. */
+  .adm-fiche {
+    grid-template-columns: 1fr !important;
+    padding: 16px 14px !important;
+    gap: 14px !important;
+  }
+  .adm-fiche-actions { order: -1; }
+
+  /* Un élément de grille ou de flex ne descend PAS, par défaut, sous la
+     largeur intrinsèque de son contenu : c'est `min-width: auto`. Mesuré le
+     2026-11-05 : la colonne d'actions faisait 589 px dans un écran de 390,
+     parce que la liste déroulante des chauffeurs se cale sur sa plus longue
+     option — « Hassan H — LEXUS RX450H · Owise ✓ ». Le contenu débordait donc
+     à droite, et il fallait balayer de côté pour atteindre le bouton
+     « Client à bord ».
+
+     `min-width: 0` autorise la colonne à rétrécir ; `max-width: 100%` sur les
+     commandes les empêche de la forcer de l'intérieur. Les deux sont
+     nécessaires : l'un sans l'autre ne suffit pas. */
+  .adm-fiche > *,
+  .adm-fiche-actions > *,
+  .adm-fiche-actions > * > * { min-width: 0; }
+  .adm-contenu select,
+  .adm-contenu input,
+  .adm-contenu textarea,
+  .adm-contenu button { max-width: 100%; }
+  /* Une adresse ou un e-mail sans espace ne se coupe pas tout seul. */
+  .adm-contenu { overflow-wrap: break-word; }
+
+  /* Quatre colonnes dans 390 px coupent « CRÉÉE LE » en trois lignes. */
+  .adm-pile-2 { grid-template-columns: repeat(2, 1fr) !important; }
+}
