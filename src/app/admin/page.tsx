@@ -545,7 +545,11 @@ export default async function AdminDashboard() {
               </div>
 
               {/* Header */}
-              <div style={{
+              {/* `adm-cartes-entete` : sous 900 px la ligne s'empile, et cet
+                  en-tête nomme des colonnes qui n'existent plus — il se
+                  repliait en escalier, « TRAJET / CHAUFFEUR » sur deux
+                  lignes. */}
+              <div className="adm-cartes-entete" style={{
                 display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
                 padding: '8px 20px', fontSize: 9.5, letterSpacing: '.1em',
                 textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 500,
