@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { dateCourse } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -288,7 +289,7 @@ export default async function ClientsPage({
                   fontFamily: 'var(--font-jetbrains), monospace',
                   fontSize: 11, color: 'var(--t3)',
                 }}>
-                  {new Date(client.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                  {dateCourse(client.created_at, { day: '2-digit', month: '2-digit', year: '2-digit' })}
                 </div>
               </a>
             )

@@ -3,10 +3,24 @@
 import { useState, useTransition } from 'react'
 import { supprimerDevis, convertirEnFacture, convertirEnCourse, convertirEnDevisClient } from './actions'
 import { cleDepuisLibelle, NOM_PAR_CLE } from '@/lib/gamme'
+import { formaterAParis } from '@/lib/heure'
 
+/**
+ * La date d'arrivée d'une demande — un INSTANT, donc lu à Paris.
+ *
+ * Elle était formatée sans fuseau : `new Date(d).toLocaleDateString('fr-FR',
+ * { … hour, minute })` rend l'heure de la MACHINE. Le serveur Vercel tourne
+ * en temps universel et le navigateur à Paris : le même devis s'affichait
+ * donc « 17:45 » dans le HTML envoyé et « 18:45 » après hydratation. React
+ * signalait l'écart (erreur #418), et l'exploitant lisait une heure fausse
+ * d'une heure — deux en été.
+ *
+ * Trouvé le 2026-11-05 en parcourant l'administration au téléphone : c'était
+ * la seule erreur JavaScript de tout le parcours. `formaterAParis` est la
+ * porte de sortie prévue par `heure.ts`.
+ */
 function fmtDate(d: string | null) {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return formaterAParis(d, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 /**
  * `date_course` est une date seule, que JavaScript lit a minuit en temps

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TriggerButton } from './TriggerButton'
+import { formaterAParis } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +11,11 @@ function fmtBytes(n: number) {
 }
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString('fr-FR', {
+  /* `formaterAParis` et non `new Date(...).toLocaleString` : ce dernier rend
+     l'heure de la MACHINE. Le serveur Vercel tourne en temps universel, le
+     navigateur à Paris — la même sauvegarde s'affichait avec une heure
+     d'écart selon l'endroit où le HTML avait été rendu. */
+  return formaterAParis(iso, {
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })

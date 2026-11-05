@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { dateCourse } from '@/lib/heure'
 
 type Credit = { montant: number; statut: string; created_at: string }
 
@@ -150,7 +151,7 @@ export default function ParrainageWidget({
                   fontSize: 12,
                 }}>
                   <div style={{ color: 'var(--t2)' }}>
-                    Parrainage · {new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    Parrainage · {dateCourse(c.created_at, { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{

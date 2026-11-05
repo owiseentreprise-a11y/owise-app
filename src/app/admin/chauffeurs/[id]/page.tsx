@@ -12,7 +12,7 @@ import {
   type TypeDocument,
 } from '@/lib/types'
 import ChauffeurEditActions from './ChauffeurEditActions'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, dateCourse} from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -162,7 +162,7 @@ export default async function ChauffeurDetailPage({
                 { label: 'Véhicule', value: [c.vehicule_marque, c.vehicule_modele].filter(Boolean).join(' ') || '—' },
                 { label: 'Type', value: TYPE_VEHICULE_LABEL[c.type_vehicule as TypeVehicule] ?? '—' },
                 { label: 'Contrat', value: c.type_contrat === 'salarie' ? 'Salarié' : 'Sous-traitant' },
-                { label: 'Inscrit le', value: new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) },
+                { label: 'Inscrit le', value: dateCourse(c.created_at, { day: '2-digit', month: 'short', year: 'numeric' }) },
               ].map(item => (
                 <div key={item.label}>
                   <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 4 }}>

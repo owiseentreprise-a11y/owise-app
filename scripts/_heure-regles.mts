@@ -12,7 +12,30 @@ import path from 'node:path'
 
 export type Anomalie = { fichier: string; ligne: number; quoi: string; code: string }
 
-const CHAMPS = '(date_prevue|date_debut|date_fin|date_course|datePrevue)'
+/* `created_at` ajoute le 2026-11-05. Une demande de devis s'affichait
+   « 17:45 » dans le HTML du serveur et « 18:45 » apres hydratation — React
+   signalait l'ecart (erreur #418) et l'exploitant lisait une heure fausse.
+   Le motif etait exactement celui que cette regle cherche ; seul le NOM du
+   champ manquait a la liste. */
+/**
+ * Le code d'un fichier, ses COMMENTAIRES neutralisés.
+ *
+ * Ajouté le 2026-11-05 après que la règle a signalé... sa propre
+ * documentation : le commentaire qui explique le défaut en cite le motif
+ * (« new Date(...).toLocaleString »), et la recherche tombait dessus. Un
+ * contrôle qui accuse le texte censé l'expliquer finit par être désactivé.
+ *
+ * Les caractères sont remplacés par des espaces plutôt que supprimés : les
+ * numéros de ligne et de colonne restent ceux du fichier réel, pour que le
+ * rapport désigne le bon endroit.
+ */
+function sansCommentaires(texte: string): string {
+  return texte
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, avant) => avant + ' '.repeat(m.length - avant.length))
+}
+
+const CHAMPS = '(date_prevue|date_debut|date_fin|date_course|datePrevue|created_at)'
 const aUnChamp = (s: string) => new RegExp('\\b' + CHAMPS + '\\b').test(s)
 const passeParLeModule = (s: string) =>
   /lireHeureCourse|heureCourse|dateCourse|heureMuraleParis|formaterAParis|pourChampSaisie/.test(s)
@@ -43,7 +66,7 @@ export function affichagesSansFuseau(fichiers: string[]): Anomalie[] {
 
   for (const f of fichiers) {
     if (f.endsWith(path.join('lib', 'heure.ts'))) continue
-    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+    const lignes = sansCommentaires(fs.readFileSync(f, 'utf8')).split('\n')
 
     const variables = new Map<string, number>()
     const fonctions = new Map<string, number>()
@@ -123,7 +146,7 @@ export function ecrituresNonConverties(fichiers: string[]): Anomalie[] {
 
   for (const f of fichiers) {
     if (f.includes(path.join('api', 'test'))) continue      // routes de test
-    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+    const lignes = sansCommentaires(fs.readFileSync(f, 'utf8')).split('\n')
 
     for (let i = 0; i < lignes.length; i++) {
       if (!/\.(insert|update|upsert)\s*\(/.test(lignes[i])) continue
@@ -179,7 +202,7 @@ export function regroupementsParJourUniversel(fichiers: string[]): Anomalie[] {
 
   for (const f of fichiers) {
     if (f.endsWith(path.join('lib', 'heure.ts'))) continue
-    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+    const lignes = sansCommentaires(fs.readFileSync(f, 'utf8')).split('\n')
 
     lignes.forEach((l, i) => {
       const n = i + 1
@@ -228,7 +251,7 @@ export function saisiesConstruitesEnDate(fichiers: string[]): Anomalie[] {
 
   for (const f of fichiers) {
     if (f.endsWith(path.join('lib', 'heure.ts'))) continue
-    const lignes = fs.readFileSync(f, 'utf8').split('\n')
+    const lignes = sansCommentaires(fs.readFileSync(f, 'utf8')).split('\n')
     lignes.forEach((l, i) => {
       if (NUE.test(l) && !/instantDepuisSaisieParis|pourLaBase/.test(l)) {
         trouve.push({

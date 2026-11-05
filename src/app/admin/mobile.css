@@ -458,3 +458,54 @@
     min-width: max-content;
   }
 }
+
+@media (max-width: 900px) {
+  /* Tableau de bord — les deux lignes de liste qui dépassaient. Mesurées le
+     2026-11-05 : 644 px dans 390, soit 550 px de défilement horizontal pour
+     la page entière. Elles passent à deux colonnes, et leurs cellules
+     suivantes se placent d'elles-mêmes sur les lignes suivantes : on lit des
+     paires libellé / valeur au lieu de balayer.
+
+     Relevés dans le DOM servi — React écrit `grid-template-columns:1fr 120px`
+     sans espace après le deux-points. Un sélecteur avec l'espace ne
+     correspondrait à rien. */
+  /* UNIQUEMENT les deux motifs MESURÉS comme débordants. J'en avais ajouté
+     trois autres par anticipation, sans les mesurer : l'un d'eux écrasait la
+     colonne des montants de /admin/facturation à 57 px, et « 2 324 € » s'y
+     lisait verticalement. Mesurer, pas prévoir. */
+  .adm-contenu [style*="grid-template-columns:1fr 120px 90px 70px"],
+  .adm-contenu [style*="grid-template-columns:1fr 110px 110px 90px 70px"] {
+    grid-template-columns: 1fr auto !important;
+    gap: 4px 10px !important;
+  }
+
+  /* Et les deux-colonnes « contenu + encart » du tableau de bord. */
+  .adm-contenu [style*="grid-template-columns:1fr 260px"],
+  .adm-contenu [style*="grid-template-columns:1fr 320px"],
+  .adm-contenu [style*="grid-template-columns:1fr 160px"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Les cinq tuiles d'indicateurs du tableau de bord. Cinq colonnes dans
+     390 px donneraient 70 px chacune — mais `min-width: auto` empêche un
+     élément de grille de descendre sous son contenu, et la grille débordait
+     donc à 634 px. Deux colonnes, et des tuiles autorisées à rétrécir. */
+  .adm-contenu [style*="grid-template-columns:repeat(5,1fr)"],
+  .adm-contenu [style*="grid-template-columns:repeat(4,1fr)"],
+  .adm-contenu [style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .adm-contenu [style*="grid-template-columns:repeat(5,1fr)"] > *,
+  .adm-contenu [style*="grid-template-columns:repeat(4,1fr)"] > *,
+  .adm-contenu [style*="grid-template-columns:repeat(3,1fr)"] > * { min-width: 0; }
+}
+
+/* Une règle générale `[style*="display:grid"] > * { min-width: 0 }` a été
+   essayée le 2026-11-05 puis RETIRÉE. Mesure : elle supprimait bien les
+   64 à 137 px de défilement restants sur /admin/clients, /admin/tarifs et
+   /admin/parametres — mais elle étranglait un texte ailleurs, qui se lisait
+   alors verticalement. Défiler sur une page de réglages est acceptable ;
+   illisible ne l'est pas. L'échange est perdant, et il est noté ici pour
+   qu'on ne le refasse pas. */

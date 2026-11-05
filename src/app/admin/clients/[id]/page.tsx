@@ -8,7 +8,7 @@ import CollaborateursSection from './CollaborateursSection'
 import GenererFactureButton from './GenererFactureButton'
 import { togglePayerAbord, toggleAfficherPrix } from './actions'
 import { afficherPrixPourClient } from '@/lib/affichagePrix'
-import { lireHeureCourse } from '@/lib/heure'
+import { lireHeureCourse, dateCourse} from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -212,7 +212,7 @@ export default async function ClientDetailPage({
                 { label: 'Courses', value: courses.length.toString(), mono: true },
                 { label: 'Terminées', value: coursesTerminees.length.toString(), mono: true },
                 { label: 'CA total', value: `${caTotal.toFixed(0)} €`, mono: true, color: 'var(--gold)' },
-                { label: 'Client depuis', value: new Date(client.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) },
+                { label: 'Client depuis', value: dateCourse(client.created_at, { month: 'short', year: 'numeric' }) },
               ].map(item => (
                 <div key={item.label}>
                   <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 4 }}>
