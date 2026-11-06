@@ -56,10 +56,71 @@ type ClientLecture = {
 }
 
 /**
- * Les parametres tarifaires, en entier.
+ * Les cles de `ParamsCalc`, A L'EXECUTION.
+ *
+ * Un type TypeScript n'existe pas a l'execution : `ParamsCalc` decrit bien
+ * les seules colonnes tarifaires, mais `select('*')` rend la LIGNE ENTIERE,
+ * et rien n'empechait cette ligne de traverser jusqu'au navigateur.
+ *
+ * Cette liste doit rester en phase avec `ParamsCalc`. Le controle
+ * `scripts/test-parametres-prives.mts` echoue si une colonne tarifaire de la
+ * base manque ici, ET si une colonne privee s'y glisse.
+ */
+export const CLES_PARAMS_CALC = [
+  'coef_berline_premium', 'coef_van',
+  'supplement_grand_van', 'surcout_km_grand_van',
+  'supplement_nuit', 'supplement_weekend', 'supplement_etape',
+  'tarif_pec_actif', 'tarif_frais_pec',
+  'supplement_bagages_actif', 'supplement_bagages_prix',
+  'supplement_panneau_actif', 'supplement_panneau_prix',
+  'supplement_animaux_actif', 'supplement_animaux_prix',
+  'supplement_siege_enfant_actif', 'supplement_siege_enfant_prix',
+] as const
+
+/**
+ * Ce qu'on accepte d'envoyer AU NAVIGATEUR : les tarifs, et rien d'autre.
+ *
+ * POURQUOI CETTE FONCTION EXISTE — incident du 2026-11-03, trouve le
+ * 2026-11-06.
+ *
+ * La table `parametres` ne contient pas que des tarifs : elle porte aussi
+ * l'identite de l'entreprise et ses coordonnees bancaires. Le 3 novembre,
+ * `chargerParametres` est passee d'une liste de sept colonnes nommees a
+ * `select('*')` — pour la bonne raison qu'une colonne oubliee faisait
+ * silencieusement retomber un prix sur sa valeur de repli.
+ *
+ * Mais ces parametres sont passes en `props` a des composants CLIENT
+ * (`ReserverClient`, `VitrineBody`). Or tout prop d'un composant client est
+ * serialise dans le HTML pour l'hydratation. Resultat, publie sur 41 pages
+ * pendant trois jours : l'adresse du domicile de l'exploitant, son IBAN, son
+ * BIC et le nom de sa banque.
+ *
+ * Les deux proprietes sont donc separees :
+ *   · le SERVEUR lit tout (`chargerParametres`), et aucun tarif ne manque ;
+ *   · le NAVIGATEUR ne recoit que `CLES_PARAMS_CALC`.
+ *
+ * Toute page qui passe des parametres a un composant client passe par ici.
+ */
+export function paramsPourNavigateur(params: ParamsCalc | null): ParamsCalc | null {
+  if (!params) return null
+  const sortie: Record<string, unknown> = {}
+  for (const cle of CLES_PARAMS_CALC) {
+    if (cle in (params as Record<string, unknown>)) {
+      sortie[cle] = (params as Record<string, unknown>)[cle]
+    }
+  }
+  return sortie as ParamsCalc
+}
+
+/**
+ * Les parametres tarifaires, en entier — POUR LE SERVEUR.
  *
  * Ne jamais remplacer `'*'` par une liste de colonnes : c'est precisement la
  * faute que ce fichier existe pour empecher.
+ *
+ * En revanche, ne JAMAIS passer ce resultat tel quel a un composant client :
+ * il porte l'identite de l'entreprise et son IBAN. Utiliser
+ * `paramsPourNavigateur()`.
  */
 export async function chargerParametres(client: ClientLecture): Promise<ParamsCalc | null> {
   const { data } = await client.from('parametres').select('*').eq('id', true).single()

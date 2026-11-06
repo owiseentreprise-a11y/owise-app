@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
 import { IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
-import { chargerParametres } from '@/lib/tarification'
+import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
 
 const BASE = 'https://www.owise.fr'
 
@@ -195,7 +195,7 @@ export default async function VitrinePage() {
       />
       {/* `palette="a"` : la palette A, sur l'accueil et nulle part ailleurs.
           Les 38 pages villes ne passent pas cette prop — voir VitrineBody. */}
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={params} palette="a" />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(params)} palette="a" />
 
       {/* Section maillage interne — server-rendered, visible par Google */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-clair)', padding: '64px 24px 48px' }}>

@@ -21,7 +21,10 @@ const CREME = 'var(--elevated)'
 const ENCRE = 'var(--t1)'
 const ENCRE_2 = 'var(--t2)'
 
-export default function TarifsReference({ forfaits }: { forfaits: ForfaitReference[] }) {
+import { textes, type Langue } from '@/lib/langue'
+
+export default function TarifsReference({ forfaits, langue = 'fr' }: { forfaits: ForfaitReference[]; langue?: Langue }) {
+  const L = textes(langue)
   if (forfaits.length === 0) return null
 
   return (
@@ -38,7 +41,7 @@ export default function TarifsReference({ forfaits }: { forfaits: ForfaitReferen
           fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
           color: OR, fontWeight: 600, marginBottom: 10,
         }}>
-          Tarifs fixes garantis
+          {L.tarifs_surtitre}
         </div>
 
         <h2
@@ -49,14 +52,11 @@ export default function TarifsReference({ forfaits }: { forfaits: ForfaitReferen
             fontWeight: 500, margin: '0 0 10px',
           }}
         >
-          Nos forfaits les plus demandés
+          {L.tarifs_titre}
         </h2>
 
         <p style={{ fontSize: 14, lineHeight: 1.65, color: ENCRE_2, margin: '0 0 28px', maxWidth: 620 }}>
-          Prix TTC par véhicule, pour une berline, péages et accueil compris. Le montant
-          est fixé à la réservation et ne bouge pas, quels que soient le trafic ou
-          l&apos;attente à l&apos;aéroport. Saisissez vos adresses ci-dessus pour le tarif exact
-          de votre trajet.
+          {L.tarifs_texte}
         </p>
 
         <ul style={{
@@ -91,10 +91,7 @@ export default function TarifsReference({ forfaits }: { forfaits: ForfaitReferen
         </ul>
 
         <p style={{ fontSize: 12, lineHeight: 1.6, color: ENCRE_2, margin: '22px 0 0' }}>
-          Un arrêt en chemin ajoute les kilomètres du détour et des frais fixes. Les
-          trajets hors forfait sont calculés à la distance réelle, annoncée avant
-          paiement.
-        </p>
+          {L.note_arrets}</p>
       </div>
     </section>
   )

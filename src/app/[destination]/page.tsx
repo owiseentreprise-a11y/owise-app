@@ -6,7 +6,7 @@ import { prixEntreZones, lienDevis, telephoneLisible } from '@/lib/devis-et-tari
 import VitrineBody from '@/components/VitrineBody'
 import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import '../vitrine.css'
-import { chargerParametres } from '@/lib/tarification'
+import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
 
 // Communes qui ont leur propre page destination → liens cliquables dans la grille zones
 const NOM_VERS_SLUG: Record<string, string> = {
@@ -1351,9 +1351,17 @@ export const DESTINATIONS: Record<string, {
    logique vit desormais dans un module pur, testable sans Next. */
 export { lienDevis, EMAIL_DEVIS, prixEntreZones } from '@/lib/devis-et-tarifs'
 
+/* Les clés sont des CHEMINS français (sans le « / » de tête). Pour les pages
+   villes c'est leur slug, et `generateMetadata` ci-dessous s'en sert pour
+   poser les hreflang. « reserver » n'est pas une page ville : sa clé ne sera
+   donc jamais lue là — elle est ici parce que cet objet est, et doit rester,
+   la SEULE liste des pages anglaises du site. Le sitemap en dérive : une
+   liste recopiée à la main a déjà laissé une page hors du sitemap pendant
+   des jours (vtc-goussainville, le 2026-09-21). */
 export const JUMEAUX_EN: Record<string, string> = {
   'vtc-chantilly-cdg': '/en/chantilly-to-charles-de-gaulle-airport',
   'vtc-paris': '/en/private-chauffeur-paris',
+  'reserver': '/en/book',
 }
 
 
@@ -1497,7 +1505,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
 
       {/* Section intro SEO */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-editorial)', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>

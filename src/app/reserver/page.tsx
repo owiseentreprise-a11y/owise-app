@@ -1,15 +1,11 @@
 import type { Metadata } from 'next'
-/* La palette « Paris en mouvement » vit dans `vitrine.css`, sous
-   `.vt.vt-palette-a`. On l'importe plutôt que d'en recopier les valeurs :
-   une seule définition pour l'accueil, le blog, la FAQ et cette page. */
-import '../vitrine.css'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient }      from '@/lib/supabase/server'
-import ReserverClient from './ReserverClient'
-import TarifsReference from './TarifsReference'
-import ParcoursEtQuestions, { QUESTIONS } from './ParcoursEtQuestions'
-import { lireAvis } from '@/lib/identite-owise'
-import { chargerParametres } from '@/lib/tarification'
+import PageReservation from './PageReservation'
+
+/* Cette route ne fait plus que deux choses : déclarer ses métadonnées
+   françaises, et monter la page de réservation en français. Tout le reste —
+   chargement des zones, de la grille, des paramètres, et le formulaire — vit
+   dans `PageReservation`, partagé avec `/en/book`. Voir l'en-tête de ce
+   fichier-là pour la raison. */
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +13,16 @@ export const metadata: Metadata = {
   title: 'Réserver un VTC — Tarif Instantané en Ligne | Owise',
   description: 'Calculez et réservez votre VTC en 30 secondes. Tarif fixe garanti, chauffeur professionnel, disponible 24h/24. Paris, Île-de-France, Oise. CDG, Orly, Beauvais.',
   keywords: ['réserver vtc', 'vtc en ligne', 'tarif vtc', 'chauffeur privé réservation', 'vtc paris réservation', 'prix vtc cdg', 'réservation vtc immédiate'],
-  alternates: { canonical: 'https://www.owise.fr/reserver' },
+  alternates: {
+    canonical: 'https://www.owise.fr/reserver',
+    /* hreflang dans les DEUX sens : /en/book renvoie ici, cette page renvoie
+       là-bas. Un hreflang unilatéral est ignoré par Google. */
+    languages: {
+      'fr-FR':     'https://www.owise.fr/reserver',
+      'en':        'https://www.owise.fr/en/book',
+      'x-default': 'https://www.owise.fr/reserver',
+    },
+  },
   openGraph: {
     title: 'Réserver votre VTC | Owise — Tarif Fixe Garanti',
     description: 'Réservez votre chauffeur privé en ligne. Tarif calculé à l\'avance, confirmation immédiate. Paris, IDF & Oise.',
@@ -29,148 +34,6 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default async function ReserverPage() {
-  const admin    = createAdminClient()
-  const avis = await lireAvis(admin)
-  const supabase = await createClient()
-
-  const [{ data: { user } }, zonesRes, grilleRes, tarifsRes, paramsRes] = await Promise.all([
-    supabase.auth.getUser(),
-    admin.from('zones').select('*').eq('active', true).order('ordre'),
-    admin.from('grilles_tarifaires').select('*'),
-    admin.from('tarifs').select('*'),
-    chargerParametres(admin).then(d => ({ data: d })),
-  ])
-
-  let profil: { prenom: string; nom: string; email: string; telephone: string } | null = null
-  if (user) {
-    const { data: p } = await admin
-      .from('profiles')
-      .select('prenom, nom, telephone')
-      .eq('id', user.id)
-      .single()
-    if (p) {
-      profil = {
-        prenom:    p.prenom    ?? '',
-        nom:       p.nom       ?? '',
-        email:     user.email  ?? '',
-        telephone: p.telephone ?? '',
-      }
-    }
-  }
-
-  // Forfaits de référence affichés sous le formulaire.
-  //
-  // Les couples de zones sont un choix éditorial ; les montants, jamais :
-  // ils sont lus dans `grilles_tarifaires`. Un couple sans prix en base est
-  // retiré de la liste au lieu d'afficher une valeur de repli — sans quoi la
-  // page annoncerait un tarif que l'application ne facture pas.
-  const COUPLES: [string, string][] = [
-    ['CHA', 'CDG'], ['CRL', 'CDG'], ['SEN', 'CDG'], ['RPF', 'CDG'],
-    ['Z1', 'CDG'],  ['COM', 'CDG'], ['BEA', 'CDG'], ['ORY', 'CDG'],
-    ['Z1', 'ORY'],  ['CHA', 'ORY'], ['CRL', 'ORY'], ['COM', 'ORY'],
-    ['CHA', 'BVA'], ['CRL', 'BVA'], ['Z1', 'BVA'],
-  ]
-  const parCode = new Map((zonesRes.data ?? []).map(z => [z.code, z]))
-  const forfaits = COUPLES.flatMap(([cd, ca]) => {
-    const zd = parCode.get(cd), za = parCode.get(ca)
-    if (!zd || !za) return []
-    const ligne = (grilleRes.data ?? []).find(
-      g => g.zone_depart_id === zd.id && g.zone_arrivee_id === za.id,
-    )
-    const prix = Number(ligne?.prix_berline ?? 0)
-    if (!prix) return []
-    return [{ depart: zd.nom as string, arrivee: za.nom as string, prix }]
-  })
-
-  const ficheService = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: 'Réservation de VTC en ligne',
-    serviceType: 'Transport avec chauffeur',
-    provider: {
-      '@type': ['LocalBusiness', 'TaxiService'],
-      name: 'Owise',
-      url: 'https://www.owise.fr',
-      areaServed: ['Paris', 'Île-de-France', 'Oise'],
-    },
-    areaServed: ['Paris', 'Île-de-France', 'Oise'],
-    availableChannel: {
-      '@type': 'ServiceChannel',
-      serviceUrl: 'https://www.owise.fr/reserver',
-      availableLanguage: 'fr',
-    },
-    hasOfferCatalog: {
-      '@type': 'OfferCatalog',
-      name: 'Forfaits aéroport',
-      // Le véhicule est nommé dans chaque offre : ces montants sont ceux de la
-      // berline. Sans cette mention, un assistant pourrait citer 59 € pour un
-      // van, qui coûte moitié plus cher.
-      itemListElement: forfaits.map(f => ({
-        '@type': 'Offer',
-        name: `${f.depart} → ${f.arrivee} — berline`,
-        description: `Trajet ${f.depart} → ${f.arrivee} en berline, prix fixe TTC, péages et accueil compris.`,
-        priceCurrency: 'EUR',
-        price: String(f.prix),
-        priceSpecification: {
-          '@type': 'PriceSpecification',
-          price: String(f.prix),
-          priceCurrency: 'EUR',
-          valueAddedTaxIncluded: true,
-        },
-      })),
-    },
-  }
-
-  /* Les questions ne sont pas recopiées ici : elles sont lues dans le même
-     tableau que celui affiché par ParcoursEtQuestions. Une fiche FAQPage qui
-     dit autre chose que la page qu'elle décrit est une fiche fausse — et
-     c'est exactement ainsi que cinq politiques d'annulation ont coexisté. */
-  const ficheQuestions = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: QUESTIONS.map(({ q, r }) => ({
-      '@type': 'Question',
-      name: q,
-      acceptedAnswer: { '@type': 'Answer', text: r },
-    })),
-  }
-
-  const ficheFilAriane = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://www.owise.fr' },
-      { '@type': 'ListItem', position: 2, name: 'Réserver', item: 'https://www.owise.fr/reserver' },
-    ],
-  }
-
-  return (
-    /* La classe de palette est posée ICI, et non dans `ReserverClient` :
-       `TarifsReference` et `ParcoursEtQuestions` en sont des frères, pas des
-       descendants. Placée plus bas, elle les laissait retomber sur les jetons
-       de `globals.css` — mesuré le 2026-11-01 : 11 échecs de contraste, tous
-       dans ces deux blocs, avec un gris #7A7A96 sur un bleu #161630 qui
-       n'appartiennent à aucune des deux palettes du site. */
-    <div className="vt vt-palette-a">
-      {/* Ces deux fiches décrivent la page à Google et aux assistants IA.
-          Elles étaient absentes : /reserver ne déclarait rien du tout. */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheService) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheQuestions) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
-
-      <ReserverClient
-        avis={avis}
-        zones={zonesRes.data ?? []}
-        grille={grilleRes.data ?? []}
-        tarifs={tarifsRes.data ?? []}
-        params={paramsRes.data}
-        profil={profil}
-      />
-
-      <TarifsReference forfaits={forfaits} />
-
-      <ParcoursEtQuestions />
-    </div>
-  )
+export default function ReserverPage() {
+  return <PageReservation langue="fr" />
 }

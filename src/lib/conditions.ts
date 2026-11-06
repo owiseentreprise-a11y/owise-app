@@ -44,6 +44,18 @@ export const PALIERS_ANNULATION: { delai: string; penalite: string }[] = [
 /** Une ligne, pour un bouton ou une accroche. */
 export const ANNULATION_COURTE = 'Annulation gratuite jusqu à 24 h avant la course'
 
+/**
+ * La ligne courte en anglais, pour /en/book.
+ *
+ * Elle vit ICI et non dans `langue.ts`, parce que ce fichier est la seule
+ * autorité sur les conditions d'annulation — lues par huit surfaces.
+ * Ailleurs, elle créerait une deuxième écriture de la règle : le délai
+ * pourrait passer à 48 h en français et rester à 24 h en anglais sans que
+ * rien ne le signale. Le nombre d'heures ne doit avoir qu'UN endroit où
+ * changer.
+ */
+export const ANNULATION_COURTE_EN = 'Free cancellation up to 24 h before pick-up'
+
 /** La phrase complète, pour une FAQ. */
 export const ANNULATION_PHRASE =
   "L'annulation est gratuite jusqu'à 24 heures avant la course. "

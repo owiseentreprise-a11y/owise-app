@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { textes } from '@/lib/langue'
 import { initFbPixel } from '@/lib/pixel'
 import { initGA } from '@/lib/ga'
 import {
@@ -42,6 +43,10 @@ function hasOwnCookieBanner(pathname: string): boolean {
 
 export default function CookieBanner() {
   const pathname = usePathname()
+  /* La langue du bandeau suit celle de la PAGE, déduite du chemin : les
+     pages anglaises vivent sous /en/. Sans ça, un anglophone se voyait
+     demander son consentement avec « Refuser / Accepter ». */
+  const L = textes(pathname?.startsWith('/en/') ? 'en' : 'fr')
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -137,11 +142,9 @@ export default function CookieBanner() {
             pratique plus — et ne pratiquait d'ailleurs plus correctement
             l'inverse non plus. Le texte décrit désormais ce qui se passe
             vraiment, outil par outil. */}
-        Les cookies nécessaires au fonctionnement du site sont toujours actifs. Les cookies de mesure
-        d&apos;audience (Google Analytics, PostHog, Meta Pixel) ne sont déposés qu&apos;après votre
-        acceptation : tant que vous n&apos;avez pas répondu, aucune mesure n&apos;est effectuée.{' '}
+        {L.cookies_texte}{' '}
         <a href="/mentions-legales" style={{ color: 'var(--gold, #C9A84C)', textDecoration: 'none' }}>
-          En savoir plus
+          {L.cookies_en_savoir}
         </a>
       </p>
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
@@ -150,14 +153,14 @@ export default function CookieBanner() {
           background: 'transparent', color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.6)',
           fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
         }}>
-          Refuser
+          {L.cookies_refuser}
         </button>
         <button onClick={accept} style={{
           padding: '9px 18px', borderRadius: 8, border: 'none',
           background: 'var(--gold, #C9A84C)', color: 'var(--sur-or, #09091A)',
           fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
         }}>
-          Accepter
+          {L.cookies_accepter}
         </button>
       </div>
     </div>
