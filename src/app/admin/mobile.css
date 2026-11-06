@@ -257,9 +257,11 @@
      largeur intrinsèque de son contenu : c'est `min-width: auto`. Mesuré le
      2026-11-05 : la colonne d'actions faisait 589 px dans un écran de 390,
      parce que la liste déroulante des chauffeurs se cale sur sa plus longue
-     option — « Hassan H — LEXUS RX450H · Owise ✓ ». Le contenu débordait donc
-     à droite, et il fallait balayer de côté pour atteindre le bouton
-     « Client à bord ».
+     option — de la forme « Prénom N — MODÈLE DU VÉHICULE · Owise ✓ ». Le
+     contenu débordait donc à droite, et il fallait balayer de côté pour
+     atteindre le bouton « Client à bord ».
+     (Le nom réel d'un chauffeur a été retiré de ce commentaire le
+     2026-11-06 : cette feuille de style est servie au navigateur.)
 
      `min-width: 0` autorise la colonne à rétrécir ; `max-width: 100%` sur les
      commandes les empêche de la forcer de l'intérieur. Les deux sont

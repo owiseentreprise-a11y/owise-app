@@ -35,6 +35,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix } from '@/lib/calcPrix'
 import { IDENTITE_OWISE, BASE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import { chargerParametres } from '@/lib/tarification'
+/* Source unique de la route anglaise — voir `langue.ts`. Cette page envoyait
+   son visiteur anglophone sur le formulaire FRANÇAIS, et annonçait dans sa
+   fiche structurée que c'était la seule possibilité. */
+import { JUMEAU_RESERVATION } from '@/lib/langue'
 
 /* Même cadence que les 38 pages villes, la vitrine et le blog : la page est
  * reconstruite au plus une fois par heure. Sans ça elle serait figée au
@@ -165,7 +169,7 @@ const FAQ = (base: string | null) => [
   },
   {
     q: 'Can I book in English?',
-    a: 'Yes. The online booking form is in French for now, so if you would rather deal in English, send us an email or a WhatsApp message and we will confirm everything in English.',
+    a: `Yes. The booking form is available in English at ${BASE_OWISE}${JUMEAU_RESERVATION.en}: you enter your addresses, see the price and confirm online. If you would rather deal with a person, send us an e-mail or a WhatsApp message and we will confirm everything in English.`,
   },
 ]
 
@@ -324,7 +328,7 @@ export default async function ChantillyCdgEnPage() {
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <Link href="/reserver" style={{
+            <Link href={JUMEAU_RESERVATION.en} style={{
               display: 'inline-flex', alignItems: 'center', padding: '14px 28px',
               background: '#C9A84C', color: '#09091A', borderRadius: 9,
               fontSize: 14, fontWeight: 600, textDecoration: 'none', letterSpacing: '.01em',
@@ -341,8 +345,8 @@ export default async function ChantillyCdgEnPage() {
             </a>
           </div>
           <p style={{ fontSize: 12.5, color: '#848499', marginTop: 16, lineHeight: 1.65, maxWidth: 560 }}>
-            The online form is in French for the moment. If you would rather book
-            in English, call or write to{' '}
+            The booking form is in English. If you would rather deal with a
+            person, call or write to{' '}
             <a href={`mailto:${IDENTITE_OWISE.email}`} style={{ color: '#C9A84C' }}>{IDENTITE_OWISE.email}</a>{' '}
             and we will confirm everything in English.
           </p>

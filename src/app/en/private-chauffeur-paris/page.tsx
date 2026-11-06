@@ -32,6 +32,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix } from '@/lib/calcPrix'
 import { IDENTITE_OWISE, BASE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import { lienDevis, EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
+/* La route anglaise de la réservation ne se recopie pas : elle vit dans
+   `langue.ts`, avec son jumeau français. Cette page a dit pendant trois
+   semaines que le formulaire n'existait qu'en français, et son bouton
+   « Book now » menait au formulaire FRANÇAIS — y compris dans sa fiche
+   structurée, c'est-à-dire dans la phrase qu'un assistant recopie. */
+import { JUMEAU_RESERVATION } from '@/lib/langue'
 import { chargerParametres } from '@/lib/tarification'
 
 /* Même cadence que le reste du site : reconstruite au plus une fois par
@@ -169,7 +175,7 @@ const FAQ = (cdg: number | null) => [
   },
   {
     q: 'Can I book in English?',
-    a: `The online booking form is currently in French. Write to ${EMAIL_DEVIS} and we will arrange your journey by e-mail.`,
+    a: `Yes. The booking form is available in English at ${BASE_OWISE}${JUMEAU_RESERVATION.en} — you enter your addresses, see the price and confirm online. Hourly hire and private tours are not booked online: write to ${EMAIL_DEVIS} and we will quote your programme.`,
   },
 ]
 
@@ -305,7 +311,7 @@ export default async function Page() {
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
-            <Link href="/reserver" style={{
+            <Link href={JUMEAU_RESERVATION.en} style={{
               display: 'inline-block', background: or, color: '#09091A', textDecoration: 'none',
               padding: '13px 26px', borderRadius: 9, fontSize: 14.5, fontWeight: 600,
             }}>
@@ -316,16 +322,22 @@ export default async function Page() {
             </a>
           </div>
 
-          {/* ---- l'avertissement honnête ----------------------------- */}
+          {/* ---- ce qui se réserve en ligne, et ce qui se devise ------
+                 Cet encadré disait l'inverse jusqu'au 2026-11-06 : « notre
+                 formulaire est en français, écrivez-nous ». C'était vrai
+                 quand la page a été écrite. Ce qui reste vrai, et qui est le
+                 seul avertissement encore utile : la mise à disposition et
+                 les circuits ne se réservent pas en ligne. */}
           <p style={{
             marginTop: 20, padding: '14px 18px', borderRadius: 10,
             background: 'rgba(232,160,48,.08)', border: '1px solid rgba(232,160,48,.22)',
             fontSize: 13.5, lineHeight: 1.7, color: 'rgba(237,232,223,.8)', maxWidth: 640,
           }}>
-            Our online booking form is currently in French. If you would rather book in
-            English, write to{' '}
+            The booking form is available in English: you enter your addresses, see
+            the price and confirm online. Hourly hire, private tours and business
+            travel are not booked online — write to{' '}
             <a href={`mailto:${EMAIL_DEVIS}`} style={{ color: or, textDecoration: 'none', fontWeight: 600 }}>{EMAIL_DEVIS}</a>
-            {' '}and we will arrange your journey by e-mail.
+            {' '}and we will quote your programme.
           </p>
         </section>
 
