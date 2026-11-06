@@ -182,6 +182,23 @@ const TEXTES = {
   adresse_arret_exemple:  { fr: 'Adresse de l’arrêt',                   en: 'Stop address' },
   prefere_pas_repondre:   { fr: 'Je préfère ne pas répondre',          en: 'I’d rather not say' },
 
+  // ── Bloc « parcours et questions » ───────────────────────────────
+  /* Les questions elles-mêmes ne sont PAS ici : elles vivent dans
+     `ParcoursEtQuestions.tsx`, avec leur réponse, dans une seule liste à
+     deux colonnes. Seuls les titres du bloc sont ici. */
+  parcours_surtitre:      { fr: 'Réservation en ligne',                en: 'Online booking' },
+  parcours_titre:         { fr: 'Comment se passe votre réservation',  en: 'How your booking works' },
+  parcours_sous_titre:    { fr: 'Trois étapes, et le prix connu dès la première.',
+                            en: 'Three steps, and the price known from the first.' },
+  questions_surtitre:     { fr: 'Avant de réserver',                   en: 'Before you book' },
+  questions_titre:        { fr: 'Les questions qu’on nous pose',       en: 'The questions we are asked' },
+  /* Le lien pointe vers les mentions légales FRANÇAISES, et c'est voulu :
+     c'est le texte qui fait foi. On traduit la phrase qui y mène, pas le
+     document. */
+  conditions_phrase:      { fr: 'Les conditions de transport, d’annulation et de remboursement figurent dans nos',
+                            en: 'Our terms of carriage, cancellation and refund are set out in our' },
+  mentions_legales:       { fr: 'mentions légales',                     en: 'legal notice' },
+
   // ── Bloc des forfaits de référence ───────────────────────────────────
   /* Les MONTANTS ne sont pas ici : ils sont lus dans `grilles_tarifaires`
      par la page serveur. Ce bloc ne porte que la phrase autour. */

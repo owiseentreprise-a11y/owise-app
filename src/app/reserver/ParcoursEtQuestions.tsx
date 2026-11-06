@@ -36,9 +36,19 @@
  */
 
 import Link from 'next/link'
-import { ANNULATION_PHRASE } from '@/lib/conditions'
+import { ANNULATION_PHRASE, ANNULATION_PHRASE_EN } from '@/lib/conditions'
+import { textes, type Langue } from '@/lib/langue'
 
-export type Question = { q: string; r: string }
+/**
+ * Une question, dans les DEUX langues.
+ *
+ * Les deux colonnes vivent dans la même entrée, et non dans deux tableaux
+ * parallèles : une question ajoutée en français montre alors tout de suite
+ * qu'il lui manque sa version anglaise, et `tsc` le refuse. Deux listes
+ * séparées auraient fini par diverger en silence — c'est déjà arrivé sur
+ * les politiques d'annulation, où cinq versions coexistaient.
+ */
+export type Question = { q: string; r: string; qEn: string; rEn: string }
 
 const OR = 'var(--gold)'
 const CREME = 'var(--elevated)'
@@ -48,42 +58,61 @@ const ENCRE_2 = 'var(--t2)'
 const ETAPES = [
   {
     titre: 'Votre trajet et votre heure',
+    titreEn: 'Your journey and your time',
     texte: 'Vous indiquez le départ, la destination, la date et l\'heure. Le prix s\'affiche avant que vous ayez donné la moindre coordonnée : il est calculé à partir de notre grille tarifaire, pas estimé à la louche.',
+    texteEn: 'You enter the pick-up point, the destination, the date and the time. The price appears before you have given a single contact detail: it is calculated from our fare table, not guessed at.',
   },
   {
     titre: 'Votre véhicule et vos coordonnées',
+    titreEn: 'Your vehicle and your details',
     texte: 'Vous choisissez le véhicule et le nombre de passagers, puis vous renseignez vos coordonnées. Si vous partez d\'un aéroport ou d\'une gare, votre numéro de vol ou de train vous est demandé.',
+    texteEn: 'You choose the vehicle and the number of passengers, then enter your contact details. If you are leaving from an airport or a station, we ask for your flight or train number.',
   },
   {
     titre: 'Le paiement',
+    titreEn: 'Payment',
     texte: 'Le règlement se fait par carte bancaire, sur une page hébergée par Stripe. La course n\'est enregistrée qu\'une fois le paiement confirmé, et vous recevez alors un e-mail de confirmation.',
+    texteEn: 'Payment is by card, on a page hosted by Stripe. The booking is only recorded once payment is confirmed, and you then receive a confirmation email.',
   },
 ]
 
 export const QUESTIONS: Question[] = [
   {
     q: 'Le prix affiché est-il celui que je paierai ?',
+    qEn: 'Is the price shown the price I will pay?',
     r: 'Oui. Le montant affiché avant le paiement est celui qui est débité. Il est calculé à partir de notre grille tarifaire et comprend déjà les éventuels suppléments de nuit, de week-end ou d\'étape intermédiaire. Il n\'y a pas de compteur, et aucune majoration n\'est appliquée en fonction du trafic.',
+    rEn: 'Yes. The amount shown before payment is the amount charged. It is calculated from our fare table and already includes any night, weekend or stop-over supplement. There is no meter, and no surcharge is applied for traffic.',
   },
   {
     q: 'Quels moyens de paiement acceptez-vous ?',
+    qEn: 'Which payment methods do you accept?',
     r: 'Le paiement se fait par carte bancaire, sur une page hébergée par Stripe. Owise ne voit ni ne conserve vos données de carte. Les entreprises disposant d\'un compte peuvent être facturées mensuellement, sur accord préalable.',
+    rEn: 'Payment is by card, on a page hosted by Stripe. Owise neither sees nor stores your card details. Companies holding an account can be invoiced monthly, by prior arrangement.',
   },
   {
     q: 'Puis-je annuler ma réservation ?',
+    qEn: 'Can I cancel my booking?',
     r: ANNULATION_PHRASE,
+    /* La version anglaise vient de la MÊME source : voir conditions.ts. */
+    rEn: ANNULATION_PHRASE_EN,
   },
   {
     q: 'Combien de passagers puis-je emmener ?',
+    qEn: 'How many passengers can I bring?',
     r: 'Le nombre de passagers se choisit à la deuxième étape, après avoir renseigné le trajet : chaque véhicule indique sa capacité sur sa fiche. Au-delà de 7 passagers, le véhicule dépend de la disponibilité de nos chauffeurs partenaires — nous établissons alors un devis avant toute réservation.',
+    rEn: 'The number of passengers is chosen at the second step, once the journey is entered: each vehicle shows its capacity on its card. Above 7 passengers the vehicle depends on our partner chauffeurs’ availability — we then issue a quote before any booking.',
   },
   {
     q: 'Que se passe-t-il après le paiement ?',
+    qEn: 'What happens after payment?',
     r: 'Vous recevez un e-mail de confirmation reprenant le trajet, la date et le montant, et votre course apparaît dans votre espace client. Toute demande de remboursement doit être signalée dans les 48 heures suivant la course ; les remboursements validés sont versés sous 5 à 10 jours ouvrés.',
+    rEn: 'You receive a confirmation email repeating the journey, the date and the amount, and your booking appears in your client area. Any refund request must be raised within 48 hours of the journey; approved refunds are paid within 5 to 10 working days.',
   },
 ]
 
-export default function ParcoursEtQuestions() {
+export default function ParcoursEtQuestions({ langue = 'fr' }: { langue?: Langue } = {}) {
+  const L = textes(langue)
+  const en = langue === 'en'
   return (
     <section
       aria-labelledby="titre-parcours"
@@ -100,7 +129,7 @@ export default function ParcoursEtQuestions() {
           fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
           color: OR, fontWeight: 600, marginBottom: 10,
         }}>
-          Réservation en ligne
+          {L.parcours_surtitre}
         </div>
 
         <h2
@@ -111,11 +140,11 @@ export default function ParcoursEtQuestions() {
             fontWeight: 500, margin: '0 0 10px',
           }}
         >
-          Comment se passe votre réservation
+          {L.parcours_titre}
         </h2>
 
         <p style={{ fontSize: 14, lineHeight: 1.65, color: ENCRE_2, margin: '0 0 32px', maxWidth: 620 }}>
-          Trois étapes, et le prix connu dès la première.
+          {L.parcours_sous_titre}
         </p>
 
         {/* La numérotation porte une information : ces étapes se suivent
@@ -144,10 +173,10 @@ export default function ParcoursEtQuestions() {
                 fontSize: 15, fontWeight: 600, color: ENCRE,
                 margin: '0 0 8px', lineHeight: 1.3,
               }}>
-                {e.titre}
+                {en ? e.titreEn : e.titre}
               </h3>
               <p style={{ fontSize: 13.5, lineHeight: 1.65, color: ENCRE_2, margin: 0 }}>
-                {e.texte}
+                {en ? e.texteEn : e.texte}
               </p>
             </li>
           ))}
@@ -158,7 +187,7 @@ export default function ParcoursEtQuestions() {
           fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase',
           color: OR, fontWeight: 600, marginBottom: 10,
         }}>
-          Avant de réserver
+          {L.questions_surtitre}
         </div>
 
         <h2
@@ -169,11 +198,11 @@ export default function ParcoursEtQuestions() {
             fontWeight: 500, margin: '0 0 28px',
           }}
         >
-          Les questions qu&apos;on nous pose
+          {L.questions_titre}
         </h2>
 
         <div style={{ display: 'grid', gap: 2, maxWidth: 820 }}>
-          {QUESTIONS.map(({ q, r }) => (
+          {QUESTIONS.map(({ q, r, qEn, rEn }) => (
             <details
               key={q}
               name="questions-reserver"
@@ -188,7 +217,7 @@ export default function ParcoursEtQuestions() {
                 padding: '16px 28px 16px 0', position: 'relative',
                 lineHeight: 1.4,
               }}>
-                {q}
+                {en ? qEn : q}
                 <span aria-hidden="true" className="q-chevron" style={{
                   position: 'absolute', right: 2, top: '50%',
                   marginTop: -5, width: 9, height: 9,
@@ -201,20 +230,20 @@ export default function ParcoursEtQuestions() {
                 fontSize: 13.5, lineHeight: 1.7, color: ENCRE_2,
                 margin: '0 0 18px', maxWidth: 680,
               }}>
-                {r}
+                {en ? rEn : r}
               </p>
             </details>
           ))}
         </div>
 
         <p style={{ fontSize: 12.5, lineHeight: 1.7, color: ENCRE_2, margin: '26px 0 0' }}>
-          Les conditions de transport, d&apos;annulation et de remboursement figurent dans nos{' '}
+          {L.conditions_phrase}{' '}
           <Link
             href="/mentions-legales"
             className="lien-conditions"
             style={{ color: OR, textDecoration: 'none', fontWeight: 600 }}
           >
-            mentions légales
+            {L.mentions_legales}
           </Link>.
         </p>
       </div>

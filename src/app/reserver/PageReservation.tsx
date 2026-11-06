@@ -135,18 +135,19 @@ export default async function PageReservation({ langue }: { langue: Langue }) {
      dit autre chose que la page qu'elle décrit est une fiche fausse — et
      c'est exactement ainsi que cinq politiques d'annulation ont coexisté.
 
-     Elle n'est émise QUE sur la page française, parce que `QUESTIONS` n'est
-     écrit qu'en français. Émettre une FAQPage française sur la page anglaise
-     donnerait à un assistant des réponses dans la mauvaise langue pour un
-     lecteur anglophone — soit le contraire du but. La traduction de ces
-     questions est le lot suivant. */
+     Elle suit désormais la LANGUE de la page. C'est le point qui compte pour
+     le seul canal qui convertisse aujourd'hui : un assistant ne cite qu'une
+     réponse précise, et une réponse française sur une page anglaise ne sert
+     personne. La réponse sur l'annulation vient de `conditions.ts`, dans les
+     deux langues — jamais retapée ici. */
   const ficheQuestions = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: QUESTIONS.map(({ q, r }) => ({
+    inLanguage: langue,
+    mainEntity: QUESTIONS.map(({ q, r, qEn, rEn }) => ({
       '@type': 'Question',
-      name: q,
-      acceptedAnswer: { '@type': 'Answer', text: r },
+      name: en ? qEn : q,
+      acceptedAnswer: { '@type': 'Answer', text: en ? rEn : r },
     })),
   }
 
@@ -170,7 +171,7 @@ export default async function PageReservation({ langue }: { langue: Langue }) {
       {/* Ces fiches décrivent la page à Google et aux assistants IA.
           Elles étaient absentes : /reserver ne déclarait rien du tout. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheService) }} />
-      {!en && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheQuestions) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheQuestions) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheFilAriane) }} />
 
       <ReserverClient
@@ -185,10 +186,7 @@ export default async function PageReservation({ langue }: { langue: Langue }) {
 
       <TarifsReference forfaits={forfaits} langue={langue} />
 
-      {/* Le parcours et les questions ne sont qu'en français pour l'instant.
-          Mieux vaut une page anglaise plus courte qu'une page anglaise qui
-          bascule en français à mi-hauteur. */}
-      {!en && <ParcoursEtQuestions />}
+      <ParcoursEtQuestions langue={langue} />
     </div>
   )
 }

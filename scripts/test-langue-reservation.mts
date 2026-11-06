@@ -153,6 +153,41 @@ for (const f of FICHIERS_TUNNEL) {
   enDurTunnel += suspects.length
 }
 
+// ── 2 ter. La FAQ a-t-elle ses deux colonnes ? ──────────────────────────
+/* Le bloc « parcours et questions » porte ses deux langues dans UNE liste.
+   C'est ce qui alimente la fiche FAQPage — et donc le seul canal qui
+   convertisse aujourd'hui. Une question ajoutée en français sans sa version
+   anglaise donnerait à un assistant une réponse française sur une page
+   anglaise : pire que pas de réponse. */
+console.log(`
+${B}2 ter. le parcours et la FAQ, dans les deux langues${Z}`)
+const { QUESTIONS } = await import('../src/app/reserver/ParcoursEtQuestions')
+const { ANNULATION_PHRASE, ANNULATION_PHRASE_EN } = await import('../src/lib/conditions')
+
+dire(QUESTIONS.length >= 5, `${QUESTIONS.length} questions déclarées`)
+const sansEn = QUESTIONS.filter(q => !q.qEn?.trim() || !q.rEn?.trim())
+dire(sansEn.length === 0, 'chaque question a sa version anglaise',
+     sansEn.map(q => q.q.slice(0, 40)).join(' · '))
+const pareilles = QUESTIONS.filter(q => q.q === q.qEn || q.r === q.rEn)
+dire(pareilles.length === 0, 'aucune question laissée en français côté anglais',
+     pareilles.map(q => q.q.slice(0, 40)).join(' · '))
+const accentuees = QUESTIONS.filter(q => /[éèêàçù]/i.test(q.qEn + ' ' + q.rEn))
+dire(accentuees.length === 0, 'aucun accent français dans les textes anglais',
+     accentuees.map(q => q.qEn.slice(0, 40)).join(' · '))
+
+/* La réponse sur l'annulation doit VENIR de conditions.ts, pas être retapée :
+   sinon le délai passerait à 48 h en français et resterait à 24 h en
+   anglais, sans que rien ne le signale. */
+const annulation = QUESTIONS.find(q => /annuler|cancel/i.test(q.q + q.qEn))
+dire(Boolean(annulation), 'la question sur l’annulation existe')
+if (annulation) {
+  dire(annulation.r === ANNULATION_PHRASE, 'sa réponse française vient de conditions.ts')
+  dire(annulation.rEn === ANNULATION_PHRASE_EN, 'sa réponse anglaise vient de conditions.ts aussi')
+  dire(/24 hours/.test(ANNULATION_PHRASE_EN) && /24 heures/.test(ANNULATION_PHRASE),
+       'les deux versions annoncent le MÊME délai de 24 h',
+       `fr: ${ANNULATION_PHRASE.slice(0, 48)} / en: ${ANNULATION_PHRASE_EN.slice(0, 48)}`)
+}
+
 // ── 3 bis. La langue survit-elle jusqu'à l'e-mail ? ─────────────────────
 /* Quatre fichiers séparent le formulaire de l'e-mail de confirmation :
    le formulaire, l'action qui crée la session Stripe, le webhook qui la

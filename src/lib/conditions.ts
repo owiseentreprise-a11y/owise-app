@@ -64,6 +64,22 @@ export const ANNULATION_PHRASE =
   + "chauffeur s'est présenté, la totalité est due. "
   + "Le détail figure dans nos mentions légales."
 
+/**
+ * La phrase complète en anglais, pour la FAQ de /en/book.
+ *
+ * Elle vit ICI pour la même raison que `ANNULATION_COURTE_EN` : ce fichier
+ * est la seule autorité sur les conditions d'annulation, lues par huit
+ * surfaces. Les délais (24 h, 4 h) et les taux (50 %, 100 %) ne doivent
+ * avoir qu'UN endroit où changer — sinon le français passerait à 48 h et
+ * l'anglais resterait à 24 h sans que rien ne le signale.
+ */
+export const ANNULATION_PHRASE_EN =
+  'Cancellation is free up to 24 hours before pick-up. '
+  + 'Between 24 and 4 hours before, 50 % of the fare remains due. '
+  + 'Less than 4 hours before, or if the passenger is absent once the '
+  + 'chauffeur has arrived, the full fare is due. '
+  + 'The details are in our legal notice.'
+
 /** Une seule ligne, pour le bas d'un devis. */
 export const ANNULATION_MENTION =
   "Annulation — gratuite jusqu'à 24 h avant la course ; "
