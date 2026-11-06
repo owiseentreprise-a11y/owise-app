@@ -29,7 +29,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix } from '@/lib/calcPrix'
+import { calculerPrix, COLONNES_GRILLE } from '@/lib/calcPrix'
 import { IDENTITE_OWISE, BASE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import { lienDevis, EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
 /* La route anglaise de la réservation ne se recopie pas : elle vit dans
@@ -116,7 +116,7 @@ async function lireDonnees() {
   const admin = createAdminClient()
   const [{ data: zones }, { data: grille }, { data: tarifs }, { data: params }] = await Promise.all([
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
-    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
+    admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     chargerParametres(admin).then(d => ({ data: d })),
   ])

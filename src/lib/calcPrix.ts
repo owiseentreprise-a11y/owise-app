@@ -2,6 +2,28 @@ import { heureMuraleParis } from './heure'
 import { NOM_PAR_CLE, CLE_PAR_NOM, vehiculeParCle } from './gamme'
 export type ZoneCalc   = { id: string; code: string; type: string; prefixes_postaux: string[] }
 export type GrilleCalc = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
+
+/**
+ * Les colonnes de `grilles_tarifaires` que toute page doit lire.
+ *
+ * Pourquoi une liste, et pourquoi ici. Mesuré le 2026-11-07 : neuf endroits
+ * lisent cette table, et CINQ d'entre eux nommaient trois colonnes à la main
+ * — dont la page d'accueil, les 38 pages villes, les deux pages anglaises et
+ * `reserver/actions.ts`. Les quatre autres lisent `*`.
+ *
+ * Tant que la table n'a qu'une colonne de prix, les deux formes donnent le
+ * même résultat et la divergence est invisible. Le jour où une colonne de
+ * prix s'ajoute, les cinq `select` nommés ne la voient pas : /reserver
+ * afficherait le prix fixé et l'accueil le prix calculé, pour le même
+ * trajet, sans qu'aucune erreur ne se produise nulle part.
+ *
+ * C'est exactement le défaut que `supplement_etape` a laissé courir des mois
+ * — « une colonne oubliée fait silencieusement retomber le code sur sa
+ * valeur de repli ». On ne le reproduit pas : une seule liste, et le
+ * contrôle `scripts/test-colonnes-grille.mts` refuse tout `select` qui ne
+ * l'emploie pas.
+ */
+export const COLONNES_GRILLE = 'zone_depart_id,zone_arrivee_id,prix_berline'
 export type TarifCalc  = {
   vehicule: string
   prise_en_charge: number

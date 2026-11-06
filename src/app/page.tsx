@@ -5,6 +5,7 @@ import VitrineBody from '@/components/VitrineBody'
 import './vitrine.css'
 import { IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
+import { COLONNES_GRILLE } from '@/lib/calcPrix'
 
 const BASE = 'https://www.owise.fr'
 
@@ -171,7 +172,7 @@ export default async function VitrinePage() {
   const [{ data: tarifs }, { data: zones }, { data: grille }, { data: params }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
-    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
+    admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     chargerParametres(admin).then(d => ({ data: d })),
   ])
   // Le nombre d'avis vient de la base, jamais du code : le site a annonce

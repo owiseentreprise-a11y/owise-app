@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { COLONNES_GRILLE } from '@/lib/calcPrix'
 import { SUJETS, genererContenu } from '@/lib/blogGenerator'
 import { Resend } from 'resend'
 
@@ -85,7 +86,7 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
             // sens de chaque paire, et maybeSingle() échoue sur deux lignes.
             const { data: grille } = await supabase
               .from('grilles_tarifaires')
-              .select('prix_berline')
+              .select(COLONNES_GRILLE)
               .or(`and(zone_depart_id.eq.${depZone.id},zone_arrivee_id.eq.${arrZone.id}),and(zone_depart_id.eq.${arrZone.id},zone_arrivee_id.eq.${depZone.id})`)
               .limit(1)
               .maybeSingle()

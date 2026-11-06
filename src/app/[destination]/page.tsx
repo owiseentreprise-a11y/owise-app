@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { COLONNES_GRILLE } from '@/lib/calcPrix'
 import { prixEntreZones, lienDevis, telephoneLisible } from '@/lib/devis-et-tarifs'
 import VitrineBody from '@/components/VitrineBody'
 import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
@@ -1426,7 +1427,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
   const [{ data: tarifs }, { data: zones }, { data: grille }, { data: tarifParams }] = await Promise.all([
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
-    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
+    admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     chargerParametres(admin).then(d => ({ data: d })),
   ])
   const avis = await lireAvis(admin)

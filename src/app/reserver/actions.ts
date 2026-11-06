@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, partRetour } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, partRetour, COLONNES_GRILLE } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
@@ -26,7 +26,7 @@ async function calculerPrixServeur(
 ): Promise<number | null> {
   const admin = createAdminClient()
   const [grilleRes, tarifsRes, zonesRes, paramsRes] = await Promise.all([
-    admin.from('grilles_tarifaires').select('zone_depart_id,zone_arrivee_id,prix_berline'),
+    admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
     chargerParametres(admin).then(d => ({ data: d })),
