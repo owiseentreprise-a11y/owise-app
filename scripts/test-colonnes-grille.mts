@@ -58,7 +58,12 @@ console.log(`${G}${fichiers.length} fichiers de src/ examinés${Z}\n`)
 
 /* La liste unique, lue dans sa source — jamais recopiée ici. */
 const calcPrix = readFileSync(resolve(SRC, 'lib/calcPrix.ts'), 'utf8')
-const LISTE = calcPrix.match(/export const COLONNES_GRILLE = '([^']+)'/)?.[1]
+/* `[\s\S]*?` et pas un simple espace : la déclaration a débordé sur deux
+   lignes dès qu'on y a ajouté les trois colonnes de prix par véhicule, et ce
+   contrôle a cessé de la trouver — il annonçait « COLONNES_GRILLE n'est pas
+   déclarée » alors qu'elle l'était. Il a signalé son propre angle mort, ce
+   qui est le comportement voulu, mais la lecture devait suivre. */
+const LISTE = calcPrix.match(/export const COLONNES_GRILLE =[\s\S]*?'([^']+)'/)?.[1]
 dire(Boolean(LISTE), 'COLONNES_GRILLE est déclarée dans calcPrix.ts', `lue : ${LISTE ?? '(introuvable)'}`)
 if (LISTE) console.log(`      ${G}${LISTE}${Z}`)
 

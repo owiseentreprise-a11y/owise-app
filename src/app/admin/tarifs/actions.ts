@@ -38,23 +38,46 @@ export async function updateTarifVehicule(
  *
  * Pas d'upsert : la table n'a pas de contrainte d'unicité sur la paire de zones.
  */
+/**
+ * La colonne que chaque véhicule écrit dans la grille.
+ *
+ * La berline n'a pas de colonne « fixe » : `prix_berline` EST le prix de
+ * référence du trajet, obligatoire, et tout le reste en découle quand aucun
+ * prix n'est fixé. Les trois autres colonnes sont facultatives.
+ */
+const COLONNE_PRIX = {
+  berline: 'prix_berline',
+  berline_premium: 'prix_berline_premium',
+  van: 'prix_van',
+  grand_van: 'prix_grand_van',
+} as const
+export type VehiculeGrille = keyof typeof COLONNE_PRIX
+
 export async function updatePrixGrille(
   zoneDepart: string,
   zoneArrivee: string,
-  prix: number
+  prix: number,
+  vehicule: VehiculeGrille = 'berline',
 ): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
 
   if (!Number.isFinite(prix) || prix < 0) return { error: 'Prix invalide.' }
   if (zoneDepart === zoneArrivee) return { error: 'Départ et arrivée identiques.' }
+  const colonne = COLONNE_PRIX[vehicule]
+  if (!colonne) return { error: `Véhicule inconnu : ${vehicule}` }
 
   const maintenant = new Date().toISOString()
+  /* Vider une case d'un véhicule autre que la berline, c'est écrire `null` —
+     « reviens au coefficient » — et non `0`, qui se lirait comme un tarif de
+     zéro euro. Pour la berline, 0 garde son sens historique : « pas de
+     forfait sur ce trajet, on passe au kilomètre ». */
+  const valeur = vehicule === 'berline' ? prix : (prix > 0 ? prix : null)
 
   for (const [dep, arr] of [[zoneDepart, zoneArrivee], [zoneArrivee, zoneDepart]]) {
     const { data: majs, error: errMaj } = await supabase
       .from('grilles_tarifaires')
-      .update({ prix_berline: prix, updated_at: maintenant })
+      .update({ [colonne]: valeur, updated_at: maintenant })
       .eq('zone_depart_id', dep)
       .eq('zone_arrivee_id', arr)
       .select('id')
@@ -62,6 +85,13 @@ export async function updatePrixGrille(
     if (errMaj) return { error: `Enregistrement impossible : ${errMaj.message}` }
 
     if (!majs || majs.length === 0) {
+      /* Créer la ligne n'a de sens que pour la berline : `prix_berline` est
+         obligatoire en base, et inventer un prix de référence pour pouvoir
+         enregistrer un prix de van écrirait un tarif que personne n'a
+         décidé. On le dit à l'exploitant plutôt que de deviner. */
+      if (vehicule !== 'berline') {
+        return { error: 'Fixez d’abord le prix berline de ce trajet : c’est lui qui crée la ligne.' }
+      }
       const { error: errIns } = await supabase
         .from('grilles_tarifaires')
         .insert({ zone_depart_id: dep, zone_arrivee_id: arr, prix_berline: prix, updated_at: maintenant })

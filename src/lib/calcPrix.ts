@@ -1,7 +1,27 @@
 import { heureMuraleParis } from './heure'
 import { NOM_PAR_CLE, CLE_PAR_NOM, vehiculeParCle } from './gamme'
 export type ZoneCalc   = { id: string; code: string; type: string; prefixes_postaux: string[] }
-export type GrilleCalc = { zone_depart_id: string; zone_arrivee_id: string; prix_berline: number }
+/**
+ * Une ligne de la grille : un trajet, et ses prix.
+ *
+ * `prix_berline` est obligatoire — c'est le prix de référence du trajet.
+ * Les trois autres sont FACULTATIFS, et c'est tout le principe :
+ *   · `null`     → le prix découle du prix berline par coefficient, comme
+ *                  depuis toujours ;
+ *   · un montant → sur CE trajet, ce véhicule coûte exactement ce prix.
+ *
+ * L'exploitant ne remplit donc que ce qui compte pour lui. Remplir 3 × 127
+ * cases à la main ne serait jamais fait, et une grille à moitié saisie
+ * serait pire qu'un coefficient appliqué partout.
+ */
+export type GrilleCalc = {
+  zone_depart_id: string
+  zone_arrivee_id: string
+  prix_berline: number
+  prix_berline_premium?: number | null
+  prix_van?: number | null
+  prix_grand_van?: number | null
+}
 
 /**
  * Les colonnes de `grilles_tarifaires` que toute page doit lire.
@@ -23,7 +43,8 @@ export type GrilleCalc = { zone_depart_id: string; zone_arrivee_id: string; prix
  * contrôle `scripts/test-colonnes-grille.mts` refuse tout `select` qui ne
  * l'emploie pas.
  */
-export const COLONNES_GRILLE = 'zone_depart_id,zone_arrivee_id,prix_berline'
+export const COLONNES_GRILLE =
+  'zone_depart_id,zone_arrivee_id,prix_berline,prix_berline_premium,prix_van,prix_grand_van'
 export type TarifCalc  = {
   vehicule: string
   prise_en_charge: number
@@ -106,7 +127,7 @@ export const DEFAULT_COEF_VAN     = 1.7
  * reglables depuis /admin/tarifs comme les coefficients. La colonne reste a
  * creer — le code lit deja `params.supplement_grand_van` s'il la trouve.
  */
-const SUPPLEMENT_GRAND_VAN   = 20
+export const SUPPLEMENT_GRAND_VAN   = 20
 const SURCOUT_KM_GRAND_VAN   = 0.10
 
 export const AIRPORT_COL: Record<string, keyof TarifCalc> = {
@@ -289,6 +310,30 @@ export function calculerPrix(
     (g.zone_depart_id === zoneArrId  && g.zone_arrivee_id === zoneDepId)
   )
   if (cell?.prix_berline) {
+    /* ── Un prix fixé pour CE véhicule sur CE trajet l'emporte ───────────
+       Depuis le 2026-11-07, l'exploitant peut écrire un montant par
+       véhicule dans la grille. Quand il l'a fait, ce montant EST le prix :
+       aucun coefficient, aucun supplément de gamme.
+       Ce qui s'applique encore par-dessus, et c'est voulu : les frais de
+       prise en charge et les majorations nuit/week-end. Ce sont des règles
+       de la course, pas du véhicule, et elles s'appliquent déjà de la même
+       façon au prix berline — les soustraire ici créerait deux façons de
+       calculer une majoration, donc deux vérités. (Au 2026-11-07 les trois
+       valent 0 ou sont inactives : la question ne se pose pas encore en
+       pratique, mais la règle est posée avant qu'elle se pose.) */
+    const CLE_PRIX_FIXE = {
+      berline_premium: 'prix_berline_premium',
+      van: 'prix_van',
+      grand_van: 'prix_grand_van',
+    } as const
+    const colonneFixe = CLE_PRIX_FIXE[vehiculeKey as keyof typeof CLE_PRIX_FIXE]
+    const prixFixe = colonneFixe ? cell[colonneFixe] : null
+    if (prixFixe != null && Number(prixFixe) > 0) {
+      let prix = Number(prixFixe)
+      if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
+      return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
+    }
+
     /* 1 pour la berline, par definition : `prix_berline` est deja son prix.
        Voir la note sur `coef_berline` en tete de fichier. */
     let coef = 1

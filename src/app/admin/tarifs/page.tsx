@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SUPPLEMENT_GRAND_VAN } from '@/lib/calcPrix'
 import { requireAdminClient } from '@/lib/supabase/server'
 import TarifsMatrix from './TarifsMatrix'
 import TarifsVehicules from './TarifsVehicules'
@@ -83,6 +84,10 @@ export default async function TarifsPage() {
             coefVan={coefVan}
             pecBerline={pecBerline}
             kmBerline={kmBerline}
+            /* Lu dans `calcPrix.ts`, jamais recopié : c'est le moteur de prix
+               qui décide du supplément Grand Van, et la matrice doit montrer
+               le même calcul que celui qui sera facturé. */
+            supplementGrandVan={SUPPLEMENT_GRAND_VAN}
           />
         </div>
 
