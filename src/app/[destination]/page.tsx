@@ -198,7 +198,7 @@ export const DESTINATIONS: Record<string, {
       'vtc verneuil-en-halatte','vtc liancourt','vtc rantigny',
     ],
     h1: 'VTC Creil, Senlis, Gouvieux & Oise Sud',
-    intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers CDG, Orly, Beauvais-Tillé et Paris. Disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Creil et toutes les communes de l\'Oise Sud dans un rayon de 10 km : Senlis, Gouvieux, Saint-Maximin, Lamorlaye, Chantilly, Nogent-sur-Oise, Montataire, Saint-Leu-d\'Esserent, Verneuil-en-Halatte, Liancourt et bien d\'autres. Tarif fixe garanti vers Charles de Gaulle (CDG), Orly, Beauvais-Tillé et Paris. Disponible 24h/24.',
     prix: 'dès 59€ vers CDG',
     duree: '30–35 min vers CDG',
     zones: [
@@ -253,7 +253,7 @@ export const DESTINATIONS: Record<string, {
       'chauffeur privé oise nord cdg','vtc compiègne paris',
     ],
     h1: 'VTC Compiègne & Oise Nord',
-    intro: 'Votre chauffeur VTC depuis Compiègne et les communes de l\'Oise Nord : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Lacroix-Saint-Ouen, Choisy-au-Bac et toutes les localités dans un rayon de 10 km. Tarif fixe garanti vers CDG et Orly ; vers Paris, prix calculé à votre adresse exacte. Disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Compiègne et les communes de l\'Oise Nord : Margny-lès-Compiègne, Venette, Clairoix, Thourotte, Lacroix-Saint-Ouen, Choisy-au-Bac et toutes les localités dans un rayon de 10 km. Tarif fixe garanti vers Charles de Gaulle (CDG) et Orly ; vers Paris, prix calculé à votre adresse exacte. Disponible 24h/24.',
     prix: '115€ vers CDG',
     duree: '45–55 min vers CDG',
     zones: [
@@ -294,7 +294,7 @@ export const DESTINATIONS: Record<string, {
       'vtc avilly-saint-léonard','vtc pontarmé',
     ],
     h1: 'VTC Senlis & Environs',
-    intro: 'Chauffeur VTC depuis Senlis et ses communes voisines : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant, Courteuil et toutes les localités dans un rayon de 10 km. Tarif fixe vers CDG, Orly et Paris.',
+    intro: 'Chauffeur VTC depuis Senlis et ses communes voisines : Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Avilly-Saint-Léonard, Pontarmé, Chamant, Courteuil et toutes les localités dans un rayon de 10 km. Tarif fixe vers Charles de Gaulle (CDG), Orly et Paris.',
     prix: 'dès 59€ vers CDG',
     duree: '25–30 min vers CDG',
     zones: [
@@ -340,7 +340,7 @@ export const DESTINATIONS: Record<string, {
       'vtc précy-sur-oise','chauffeur privé lamorlaye',
     ],
     h1: 'VTC Gouvieux, Lamorlaye & Chantilly Sud',
-    intro: 'Votre chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Saint-Leu-d\'Esserent, Précy-sur-Oise et toutes les communes du secteur Chantilly Sud. Tarif fixe garanti vers CDG, Orly et Paris. Disponible 24h/24, 7j/7.',
+    intro: 'Votre chauffeur VTC depuis Gouvieux, Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Saint-Leu-d\'Esserent, Précy-sur-Oise et toutes les communes du secteur Chantilly Sud. Tarif fixe garanti vers Charles de Gaulle (CDG), Orly et Paris. Disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
     duree: '30–40 min vers CDG',
     zones: [
@@ -383,7 +383,7 @@ export const DESTINATIONS: Record<string, {
       'taxi saint-maximin paris',
     ],
     h1: 'VTC Saint-Maximin & Environs',
-    intro: 'Votre chauffeur VTC depuis Saint-Maximin et les communes voisines : Villers-Saint-Paul, Thiverny, Montataire, Creil, Gouvieux et tout le secteur entre Creil et Chantilly. Tarif fixe garanti vers CDG, Orly, Beauvais-Tillé et Paris. Disponible 24h/24, 7j/7.',
+    intro: 'Votre chauffeur VTC depuis Saint-Maximin et les communes voisines : Villers-Saint-Paul, Thiverny, Montataire, Creil, Gouvieux et tout le secteur entre Creil et Chantilly. Tarif fixe garanti vers Charles de Gaulle (CDG), Orly, Beauvais-Tillé et Paris. Disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
     duree: '35–40 min vers CDG',
     zones: [
@@ -413,7 +413,7 @@ export const DESTINATIONS: Record<string, {
     metaDesc: 'Chauffeur VTC depuis Chantilly. Forfaits CDG 59€, Paris 119€, Orly 139€. Véhicule premium, 24h/24. Château de Chantilly, hippodrome, événements.',
     keywords: ['vtc chantilly','chauffeur privé chantilly','vtc chantilly cdg','taxi chantilly aéroport','vtc chantilly paris'],
     h1: 'VTC Chantilly — Chauffeur Privé',
-    intro: 'Chauffeur VTC depuis Chantilly et ses environs vers CDG, Orly, Paris et toute l\'Île-de-France. Idéal pour le Château de Chantilly, l\'hippodrome, les hôtels de luxe et les événements.',
+    intro: 'Chauffeur VTC depuis Chantilly et ses environs vers Charles de Gaulle (CDG), Orly, Paris et toute l\'Île-de-France. Idéal pour le Château de Chantilly, l\'hippodrome, les hôtels de luxe et les événements.',
     prix: 'dès 59€ vers CDG',
     duree: '25–40 min vers CDG',
     faq: [
@@ -482,7 +482,7 @@ export const DESTINATIONS: Record<string, {
       'vtc beauvais chantilly','vtc beauvais creil',
     ],
     h1: 'VTC Beauvais — Chauffeur Privé',
-    intro: 'Votre chauffeur VTC depuis Beauvais (60000) et son agglomération. Tarif fixe garanti vers CDG et Orly ; vers Paris et toute l\'Île-de-France, prix calculé à votre adresse exacte. Chauffeur professionnel, véhicule haut de gamme. Disponible 24h/24, 7j/7 — pour vos déplacements professionnels, familiaux ou vos correspondances aéroport.',
+    intro: 'Votre chauffeur VTC depuis Beauvais (60000) et son agglomération. Tarif fixe garanti vers Charles de Gaulle (CDG) et Orly ; vers Paris et toute l\'Île-de-France, prix calculé à votre adresse exacte. Chauffeur professionnel, véhicule haut de gamme. Disponible 24h/24, 7j/7 — pour vos déplacements professionnels, familiaux ou vos correspondances aéroport.',
     prix: '125€ vers CDG, 169€ vers Orly',
     duree: '50–65 min vers CDG selon trafic',
     faq: [
@@ -506,7 +506,7 @@ export const DESTINATIONS: Record<string, {
       'vtc 60260 cdg','vtc lamorlaye chantilly','taxi lamorlaye cdg',
     ],
     h1: 'VTC Lamorlaye, Coye-la-Forêt & Forêt de Chantilly',
-    intro: 'Votre chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Luzarches et toutes les communes de la forêt de Chantilly. Tarif fixe garanti vers CDG, Orly, Paris et Beauvais-Tillé. Service premium, prise en charge à domicile, disponible 24h/24, 7j/7.',
+    intro: 'Votre chauffeur VTC depuis Lamorlaye, Coye-la-Forêt, Orry-la-Ville, Luzarches et toutes les communes de la forêt de Chantilly. Tarif fixe garanti vers Charles de Gaulle (CDG), Orly, Paris et Beauvais-Tillé. Service premium, prise en charge à domicile, disponible 24h/24, 7j/7.',
     prix: 'dès 59€ vers CDG',
     duree: '25–35 min vers CDG',
     zones: [
@@ -542,7 +542,7 @@ export const DESTINATIONS: Record<string, {
       'vtc osny','vtc auvers-sur-oise','taxi cergy cdg',
     ],
     h1: 'VTC Pontoise, Cergy & Val-d\'Oise',
-    intro: 'Votre chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône, Osny, Éragny et toutes les communes du Val-d\'Oise (95). Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Le prix dépend de votre adresse exacte : il est calculé avant la réservation et confirmé avant le départ. Prise en charge à domicile, 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Pontoise, Cergy, Saint-Ouen-l\'Aumône, Osny, Éragny et toutes les communes du Val-d\'Oise (95). Transferts vers Charles de Gaulle (CDG), Orly, Paris et toute l\'Île-de-France. Le prix dépend de votre adresse exacte : il est calculé avant la réservation et confirmé avant le départ. Prise en charge à domicile, 24h/24.',
     prix: 'Prix calculé selon votre adresse',
     duree: '30–50 min vers CDG',
     zones: [
@@ -578,7 +578,7 @@ export const DESTINATIONS: Record<string, {
       'chauffeur privé yvelines','vtc versailles entreprise','taxi versailles cdg',
     ],
     h1: 'VTC Versailles & Yvelines',
-    intro: 'Votre chauffeur VTC depuis Versailles, Le Chesnay-Rocquencourt, Viroflay, Saint-Cyr-l\'École et les communes des Yvelines (78). Transferts vers CDG, Orly et Paris. Service premium pour les visiteurs du Château de Versailles, les séminaires d\'entreprise et les déplacements professionnels.',
+    intro: 'Votre chauffeur VTC depuis Versailles, Le Chesnay-Rocquencourt, Viroflay, Saint-Cyr-l\'École et les communes des Yvelines (78). Transferts vers Charles de Gaulle (CDG), Orly et Paris. Service premium pour les visiteurs du Château de Versailles, les séminaires d\'entreprise et les déplacements professionnels.',
     prix: 'Prix calculé selon votre adresse',
     duree: '40–70 min vers CDG',
     zones: [
@@ -612,7 +612,7 @@ export const DESTINATIONS: Record<string, {
       'vtc coye lamorlaye','taxi coye-la-forêt orly','chauffeur 60580',
     ],
     h1: 'VTC Coye-la-Forêt & Forêt de Chantilly',
-    intro: 'Votre chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard et toute la Forêt de Chantilly. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Coye-la-Forêt, Lamorlaye, Orry-la-Ville, Avilly-Saint-Léonard et toute la Forêt de Chantilly. Transferts vers Charles de Gaulle (CDG), Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, prise en charge à domicile, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '25–30 min vers CDG',
     zones: [
@@ -646,7 +646,7 @@ export const DESTINATIONS: Record<string, {
       'taxi orry-la-ville orly','vtc orry la chapelle serval','chauffeur 60560',
     ],
     h1: 'VTC Orry-la-Ville & Environs',
-    intro: 'Votre chauffeur VTC depuis Orry-la-Ville, La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt et les communes situées entre Chantilly et l\'aéroport CDG. Tarif fixe garanti vers CDG et Orly ; vers Paris, prix calculé à votre adresse exacte. Disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Orry-la-Ville, La Chapelle-en-Serval, Mortefontaine, Coye-la-Forêt et les communes situées entre Chantilly et l\'aéroport Charles de Gaulle (CDG). Tarif fixe garanti vers CDG et Orly ; vers Paris, prix calculé à votre adresse exacte. Disponible 24h/24.',
     prix: 'dès 59€ vers CDG',
     duree: '20–25 min vers CDG',
     zones: [
@@ -680,7 +680,7 @@ export const DESTINATIONS: Record<string, {
       'vtc chapelle serval paris','taxi la chapelle en serval','chauffeur 60520 orly',
     ],
     h1: 'VTC La Chapelle-en-Serval & Mortefontaine',
-    intro: 'Votre chauffeur VTC depuis La Chapelle-en-Serval, Mortefontaine, Plailly, Orry-la-Ville et les communes proches de l\'A1 entre Chantilly et CDG. Accès direct à l\'autoroute A1 — l\'un des trajets les plus rapides vers Roissy depuis l\'Oise. Tarif fixe garanti, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis La Chapelle-en-Serval, Mortefontaine, Plailly, Orry-la-Ville et les communes proches de l\'A1 entre Chantilly et Charles de Gaulle (CDG). Accès direct à l\'autoroute A1 — l\'un des trajets les plus rapides vers Roissy depuis l\'Oise. Tarif fixe garanti, disponible 24h/24.',
     prix: 'dès 59€ vers CDG',
     duree: '20–25 min vers CDG',
     zones: [
@@ -714,7 +714,7 @@ export const DESTINATIONS: Record<string, {
       'chauffeur privé boran oise paris','taxi boran sur oise orly','vtc gouvieux boran',
     ],
     h1: 'VTC Boran-sur-Oise & Vallée de l\'Oise',
-    intro: 'Votre chauffeur VTC depuis Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle, Chambly et toutes les communes de la Vallée de l\'Oise entre Creil et Pontoise. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Boran-sur-Oise, Précy-sur-Oise, Le Mesnil-en-Thelle, Chambly et toutes les communes de la Vallée de l\'Oise entre Creil et Pontoise. Transferts vers Charles de Gaulle (CDG), Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '30–40 min vers CDG',
     zones: [
@@ -751,7 +751,7 @@ export const DESTINATIONS: Record<string, {
       'taxi précy-sur-oise orly','vtc boran precy oise','chauffeur 60460',
     ],
     h1: 'VTC Précy-sur-Oise & Oise Nord',
-    intro: 'Votre chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie, Le Mesnil-en-Thelle et les communes de l\'Oise Nord entre Creil et la Vallée de l\'Oise. Transferts vers CDG, Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Précy-sur-Oise, Boran-sur-Oise, Villeneuve-sur-Verberie, Le Mesnil-en-Thelle et les communes de l\'Oise Nord entre Creil et la Vallée de l\'Oise. Transferts vers Charles de Gaulle (CDG), Orly, Paris et toute l\'Île-de-France. Tarif fixe garanti, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '35–50 min vers CDG',
     zones: [
@@ -787,7 +787,7 @@ export const DESTINATIONS: Record<string, {
       'vtc asnieres-sur-oise','taxi luzarches orly','vtc val-d\'oise chantilly cdg',
     ],
     h1: 'VTC Luzarches & Pays de France',
-    intro: 'Votre chauffeur VTC depuis Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine et les communes du Pays de France (Val-d\'Oise 95). Idéalement situé entre Chantilly et l\'aéroport CDG. Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Luzarches, Asnières-sur-Oise, Chaumontel, Bellefontaine et les communes du Pays de France (Val-d\'Oise 95). Idéalement situé entre Chantilly et l\'aéroport Charles de Gaulle (CDG). Transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '20–30 min vers CDG',
     zones: [
@@ -882,7 +882,7 @@ export const DESTINATIONS: Record<string, {
       'chauffeur privé agnetz breuil','vtc clermont paris','vtc oise nord cdg',
     ],
     h1: 'VTC Clermont-de-l\'Oise & Clermontois',
-    intro: 'Votre chauffeur VTC depuis Clermont-de-l\'Oise et les communes du Clermontois (Oise 60) : Agnetz, Lamécourt, Breuil-le-Vert, Breuil-le-Sec, Étouy et les villages voisins. Transferts vers CDG, Orly et Paris. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Clermont-de-l\'Oise et les communes du Clermontois (Oise 60) : Agnetz, Lamécourt, Breuil-le-Vert, Breuil-le-Sec, Étouy et les villages voisins. Transferts vers Charles de Gaulle (CDG), Orly et Paris. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
     prix: 'Prix calculé selon votre adresse',
     duree: '45–60 min vers CDG',
     zones: [
@@ -917,7 +917,7 @@ export const DESTINATIONS: Record<string, {
       'vtc cauffry rantigny cdg',
     ],
     h1: 'VTC Liancourt, Rantigny & Cauffry',
-    intro: 'Votre chauffeur VTC depuis Liancourt et les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Entre Creil et Clermont, transferts vers CDG, Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Liancourt et les communes voisines : Rantigny, Cauffry, Laigneville, Monchy-Saint-Éloi, Cires-lès-Mello et Mello. Entre Creil et Clermont, transferts vers Charles de Gaulle (CDG), Orly et Paris. Tarif fixe garanti, disponible 24h/24.',
     prix: '59€ vers CDG',
     duree: '40–50 min vers CDG',
     zones: [
@@ -1035,7 +1035,7 @@ export const DESTINATIONS: Record<string, {
     metaDesc: 'VTC de Chantilly à l\'aéroport d\'Orly. Tarif fixe garanti, prise en charge à domicile depuis Chantilly et Gouvieux. Chauffeur professionnel disponible 24h/24.',
     keywords: ['vtc chantilly orly','taxi chantilly aéroport orly','chauffeur chantilly orly','chantilly orly prix','vtc gouvieux orly','chauffeur privé chantilly orly','transfert chantilly orly'],
     h1: 'VTC Chantilly → Orly — Tarif Fixe Garanti',
-    intro: 'Votre transfert VTC depuis Chantilly et Gouvieux jusqu\'à l\'aéroport d\'Orly (ORY). Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Trajet plus long qu\'à CDG mais entièrement sécurisé — prise en charge à domicile, disponible 24h/24.',
+    intro: 'Votre transfert VTC depuis Chantilly et Gouvieux jusqu\'à l\'aéroport d\'Orly (ORY). Tarif fixe garanti, chauffeur professionnel, suivi de vol en temps réel. Trajet plus long qu\'à Charles de Gaulle (CDG) mais entièrement sécurisé — prise en charge à domicile, disponible 24h/24.',
     prix: 'dès 139€ vers Orly',
     duree: '60–80 min',
     faq: [
@@ -1077,7 +1077,7 @@ export const DESTINATIONS: Record<string, {
     prix: 'dès 139€ vers Orly',
     duree: '50–85 min',
     faq: [
-      { q: 'Quel est le prix d\'un VTC de Senlis à Orly ?', a: 'Depuis Senlis, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet traverse ou contourne Paris, ce qui explique le tarif plus élevé que vers CDG. Estimez votre course sur owise.fr.' },
+      { q: 'Quel est le prix d\'un VTC de Senlis à Orly ?', a: 'Depuis Senlis, le tarif vers Orly est calculé à l\'avance et garanti. Orly est situé au sud de Paris — le trajet traverse ou contourne Paris, ce qui explique le tarif plus élevé que vers Charles de Gaulle (CDG). Estimez votre course sur owise.fr.' },
       { q: 'Combien de temps prend le trajet Senlis → Orly ?', a: '51 à 74 minutes selon l\'heure, via la Francilienne ou l\'A86. C\'est le trajet le plus sensible au trafic que nous desservions : 51 minutes avant 6h, jusqu\'à 74 aux heures de pointe. Votre chauffeur choisit l\'itinéraire selon les conditions du moment.' },
       { q: 'Quel aéroport choisir depuis Senlis : CDG ou Orly ?', a: 'Si votre vol vous laisse le choix, CDG est nettement plus avantageux depuis Senlis — il est situé directement sur l\'axe Senlis-Paris, à 22-24 minutes, contre 51-74 minutes pour Orly, et un tarif plus bas. Owise dessert les deux aéroports 24h/24.' },
       { q: 'Le tarif couvre-t-il Aumont-en-Halatte et Fleurines ?', a: 'Oui. Aumont-en-Halatte, Fleurines, Vineuil-Saint-Firmin, Courteuil et toutes les communes proches de Senlis sont couvertes. Le tarif varie légèrement selon votre adresse précise — estimez en 30 secondes sur owise.fr.' },
@@ -1135,7 +1135,7 @@ export const DESTINATIONS: Record<string, {
       'vtc chambly orly','transfert chambly aéroport',
     ],
     h1: 'VTC Chambly, Bornel & Oise Sud-Ouest',
-    intro: 'Votre chauffeur VTC depuis Chambly et les communes voisines : Bornel, Balagny-sur-Thérain, Neuilly-en-Thelle, Hénonville, Monneville. Chambly se trouve à environ 40 km de CDG — l\'un des accès les plus directs de l\'Oise vers l\'aéroport. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Chambly et les communes voisines : Bornel, Balagny-sur-Thérain, Neuilly-en-Thelle, Hénonville, Monneville. Chambly se trouve à environ 40 km de Charles de Gaulle (CDG) — l\'un des accès les plus directs de l\'Oise vers l\'aéroport. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
     prix: 'Prix calculé selon votre adresse',
     duree: '30–45 min vers CDG',
     zones: [
@@ -1219,7 +1219,7 @@ export const DESTINATIONS: Record<string, {
       { nom: 'Compiègne', cp: '60200', km: 20.0 },
     ],
     faq: [
-      { q: 'Quel est le tarif depuis Verberie vers CDG ?', a: 'Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte et confirmé avant le départ. Verberie est à environ 44 km de CDG via l\'A1 ou la Francilienne — la distance varie selon l\'adresse. Le tarif exact depuis votre adresse s\'obtient sur owise.fr en quelques secondes.' },
+      { q: 'Quel est le tarif depuis Verberie vers CDG ?', a: 'Ce trajet n\'a pas de tarif forfaitaire : le prix est calculé à partir de votre adresse exacte et confirmé avant le départ. Verberie est à environ 44 km de Charles de Gaulle (CDG) via l\'A1 ou la Francilienne — la distance varie selon l\'adresse. Le tarif exact depuis votre adresse s\'obtient sur owise.fr en quelques secondes.' },
       { q: 'Combien de temps pour aller de Verberie à CDG ?', a: '42 km, soit 34 à 37 minutes via la D130 puis l\'A1. Trois minutes d\'écart entre le départ de 5h et celui de 8h : la portion autoroutière évite entièrement les bouchons parisiens.' },
       { q: 'Desservez-vous Longueil-Sainte-Marie et Pont-Sainte-Maxence ?', a: 'Oui. Longueil-Sainte-Marie, Saint-Vaast-de-Longmont, Roberval, Rhuis, Bétisy-Saint-Pierre et Pont-Sainte-Maxence sont dans notre zone de desserte. Prise en charge directement à votre adresse, 24h/24.' },
       { q: 'Proposez-vous des courses vers Paris depuis Verberie ?', a: 'Oui. Le prix du trajet Verberie → Paris dépend de votre adresse exacte et s\'obtient sur owise.fr. Nous déposons à votre adresse exacte à Paris, que ce soit gare, hôtel ou domicile.' },
@@ -1239,7 +1239,7 @@ export const DESTINATIONS: Record<string, {
       'vtc 60400 aéroport cdg',
     ],
     h1: 'VTC Noyon & Oise Nord — Transferts Aéroport',
-    intro: 'Votre chauffeur VTC depuis Noyon et les communes du nord de l\'Oise : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Guiscard, Salency. Noyon, ancienne cité épiscopale, est à environ 87 km de CDG — un trajet long en transports en commun, mais confortable et direct en VTC. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
+    intro: 'Votre chauffeur VTC depuis Noyon et les communes du nord de l\'Oise : Ribécourt-Dreslincourt, Sempigny, Pont-l\'Évêque, Guiscard, Salency. Noyon, ancienne cité épiscopale, est à environ 87 km de Charles de Gaulle (CDG) — un trajet long en transports en commun, mais confortable et direct en VTC. Le prix dépend de votre adresse exacte, et il est confirmé avant le départ. 24h/24.',
     prix: 'Prix calculé selon votre adresse',
     duree: '55–70 min vers CDG',
     zones: [
@@ -1292,7 +1292,7 @@ export const DESTINATIONS: Record<string, {
       'vtc compiègne charleroi','vtc senlis charleroi','vtc beauvais charleroi',
     ],
     h1: 'VTC vers l\'Aéroport de Charleroi (Bruxelles Sud)',
-    intro: 'Votre chauffeur privé depuis Compiègne, Senlis, Chantilly, Creil, Beauvais, Gouvieux, Lamorlaye et toute l\'Oise vers l\'aéroport de Charleroi (Bruxelles Sud), le hub belge de Ryanair. De nombreux habitants de l\'Oise y trouvent des vols moins chers que depuis CDG ou Orly pour l\'Europe du Sud et de l\'Est. Tarif fixe garanti, chauffeur professionnel, prise en charge à domicile. Disponible 24h/24, 7j/7.',
+    intro: 'Votre chauffeur privé depuis Compiègne, Senlis, Chantilly, Creil, Beauvais, Gouvieux, Lamorlaye et toute l\'Oise vers l\'aéroport de Charleroi (Bruxelles Sud), le hub belge de Ryanair. De nombreux habitants de l\'Oise y trouvent des vols moins chers que depuis Charles de Gaulle (CDG) ou Orly pour l\'Europe du Sud et de l\'Est. Tarif fixe garanti, chauffeur professionnel, prise en charge à domicile. Disponible 24h/24, 7j/7.',
     prix: 'dès 459€',
     duree: '2h05–2h50 selon votre départ',
     faq: [
