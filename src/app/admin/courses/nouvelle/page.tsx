@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
 import NouvelleCourseForm from './NouvelleCourseForm'
-import { chargerParametres } from '@/lib/tarification'
+import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +72,7 @@ export default async function NouvelleCourse() {
           zones={zonesRes.data as any ?? []}
           grille={grilleRes.data as any ?? []}
           tarifs={tarifsRes.data as any ?? []}
-          params={paramsRes.data}
+          params={paramsPourNavigateur(paramsRes.data)}
           defaultDatetime={defaultDatetime}
           coursesAssignees={coursesAssigneesRes.data as any ?? []}
         />

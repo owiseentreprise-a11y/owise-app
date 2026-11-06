@@ -6,7 +6,7 @@ import { prixEntreZones, lienDevis, telephoneLisible } from '@/lib/devis-et-tari
 import VitrineBody from '@/components/VitrineBody'
 import { IDENTITE_OWISE, communeDepuisTitre, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import '../vitrine.css'
-import { chargerParametres } from '@/lib/tarification'
+import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
 
 // Communes qui ont leur propre page destination → liens cliquables dans la grille zones
 const NOM_VERS_SLUG: Record<string, string> = {
@@ -1497,7 +1497,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={tarifParams} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
 
       {/* Section intro SEO */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-editorial)', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>

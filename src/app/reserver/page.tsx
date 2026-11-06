@@ -9,7 +9,7 @@ import ReserverClient from './ReserverClient'
 import TarifsReference from './TarifsReference'
 import ParcoursEtQuestions, { QUESTIONS } from './ParcoursEtQuestions'
 import { lireAvis } from '@/lib/identite-owise'
-import { chargerParametres } from '@/lib/tarification'
+import { chargerParametres, paramsPourNavigateur } from '@/lib/tarification'
 
 export const dynamic = 'force-dynamic'
 
@@ -164,7 +164,7 @@ export default async function ReserverPage() {
         zones={zonesRes.data ?? []}
         grille={grilleRes.data ?? []}
         tarifs={tarifsRes.data ?? []}
-        params={paramsRes.data}
+        params={paramsPourNavigateur(paramsRes.data)}
         profil={profil}
       />
 
