@@ -213,6 +213,14 @@ const TEXTES = {
   mail_sujet_et:          { fr: 'et',                                  en: 'and' },
   reference:              { fr: 'Référence',                           en: 'Reference' },
   tarif_estime:           { fr: 'Tarif estimé',                        en: 'Estimated fare' },
+  /* Capitalisé, parce que c'est un LIBELLÉ de tableau, à côté de
+     « Reference », « Vehicle », « Pick-up ». La clé `passagers`, elle, sert
+     au milieu d'une phrase (« 2 passengers ») et reste en minuscule. */
+  passagers_libelle:      { fr: 'Passagers',                           en: 'Passengers' },
+  /* Le pied de page des e-mails. « VTC » est un terme réglementaire
+     français qu'un lecteur anglophone ne comprend pas. */
+  pied_email:             { fr: 'OWISE · Service VTC · Paris &amp; Île-de-France',
+                            en: 'OWISE · Private chauffeur service · Paris &amp; Île-de-France' },
   arret:                  { fr: 'Arrêt',                               en: 'Stop' },
   trajet_aller:           { fr: 'Trajet aller',                        en: 'Outbound journey' },
   trajet_retour:          { fr: 'Trajet retour',                       en: 'Return journey' },

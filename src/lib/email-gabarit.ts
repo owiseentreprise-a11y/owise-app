@@ -7,8 +7,20 @@
  * enverrait un autre. Le gabarit vit donc ici, sans aucune dépendance.
  */
 
-export function base(content: string) {
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OWISE</title></head>
+/**
+ * `langue` ne change que DEUX choses : l'attribut `lang` de la page et le
+ * pied de page. Elle vaut « fr » par défaut, donc les 25 appelants
+ * existants ne bougent pas d'un pixel.
+ *
+ * Pourquoi le pied de page : il annonçait « Service VTC » dans l'e-mail
+ * anglais. « VTC » est un terme réglementaire français qu'un lecteur
+ * anglophone ne comprend pas.
+ */
+export function base(content: string, langue: 'fr' | 'en' = 'fr') {
+  const pied = langue === 'en'
+    ? 'OWISE · Private chauffeur service · Paris &amp; Île-de-France'
+    : 'OWISE · Service VTC · Paris &amp; Île-de-France'
+  return `<!DOCTYPE html><html lang="${langue}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OWISE</title></head>
 <body style="margin:0;padding:0;background:#F4F2EE;font-family:'Helvetica Neue',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px;">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
@@ -23,7 +35,7 @@ export function base(content: string) {
   </td></tr>
   <!-- Footer -->
   <tr><td style="background:#F4F2EE;border-radius:0 0 12px 12px;padding:16px 32px;text-align:center;border-top:1px solid #E8E4DC;">
-    <p style="margin:0;font-size:11px;color:#848499;">OWISE · Service VTC · Paris &amp; Île-de-France<br>
+    <p style="margin:0;font-size:11px;color:#848499;">${pied}<br>
     <a href="https://owise.fr" style="color:#C9A84C;text-decoration:none;">owise.fr</a></p>
   </td></tr>
 </table>

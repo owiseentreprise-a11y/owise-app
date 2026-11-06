@@ -232,7 +232,7 @@ export async function envoyerConfirmationClient(params: {
         <table width="100%" cellpadding="0" cellspacing="0">
           ${row(L.reference, `#${refCourse}`)}
           ${row(L.vehicule, typeVehicule)}
-          ${row(L.passagers, String(nbPassagers))}
+          ${row(L.passagers_libelle, String(nbPassagers))}
         </table>
       </div>
       ${bloc(L.trajet_aller, datePrevue, adresseDepart, adresseArrivee, lignesArrets)}
@@ -254,7 +254,7 @@ export async function envoyerConfirmationClient(params: {
           ${lignesArrets}
           ${row(L.arrivee, adresseArrivee)}
           ${row(L.vehicule, typeVehicule)}
-          ${row(L.passagers, String(nbPassagers))}
+          ${row(L.passagers_libelle, String(nbPassagers))}
           ${prixEstime ? row(L.tarif_estime, `${formaterMontant(prixEstime)}`) : ''}
         </table>
       </div>`
@@ -266,7 +266,7 @@ export async function envoyerConfirmationClient(params: {
     ${corps}
     <p style="margin:0 0 8px;font-size:13px;color:#555;">${L.mail_chauffeur_a_venir}</p>
     <p style="margin:0;font-size:12px;color:#848499;">${L.mail_question} <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
-  `)
+  `, lg)
 
   const sujet = retour
     ? `${L.mail_sujet_ar} – ${fmtDate(datePrevue, lg)} ${L.mail_sujet_et} ${fmtDate(retour.datePrevue, lg)}`
