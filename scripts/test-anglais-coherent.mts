@@ -182,6 +182,27 @@ dire(/\bSMS\b/i.test(PHRASE_FAUTIVE_HISTORIQUE) && !DENIE_SMS.test(PHRASE_FAUTIV
      'il ne la voit plus — ce contrôle ne protège plus rien')
 dire(llms.includes(ROUTE_EN ?? '/en/book'), `llms.txt dirige l'anglophone vers ${ROUTE_EN}`)
 
+/* ── 2 quater. llms-full.txt, le fichier DÉRIVÉ ─────────────────────────
+   Il est fabriqué en relisant les pages de la PRODUCTION. Corriger les
+   pages ne le corrige donc pas : il faut le régénérer après le
+   déploiement, et rien ne le rappelait. Le 2026-11-06, les pages servies
+   étaient justes depuis une heure et ce fichier répétait encore, deux
+   fois, « Our online booking form is currently in French » — c'est-à-dire
+   que le fichier le PLUS lu par les assistants portait seul le mensonge.
+   Régénérer : node generer-llms-full.mjs ecrire --sortie=<ici>/public/llms-full.txt */
+console.log(`\n${B}2 quater. llms-full.txt, fabriqué depuis les pages servies${Z}`)
+let full = ''
+try { full = readFileSync(resolve(RACINE, 'public/llms-full.txt'), 'utf8') } catch { /* absent */ }
+dire(full.length > 400000, `llms-full.txt est présent (${Math.round(full.length / 1000)} k caractères)`)
+if (full) {
+  const restes = full.match(PRETEND_FR_SEUL)
+  dire(!restes, 'llms-full.txt ne dit plus que le formulaire est en français — sinon : à régénérer depuis la PROD',
+       restes ? `« ${restes[0]} » — le fichier date d'avant la correction des pages` : '')
+  for (const u of URLS_EN) {
+    dire(full.includes(u), `llms-full.txt contient le contenu de ${u}`)
+  }
+}
+
 // ── 3. Les pages SERVIES ─────────────────────────────────────────────────
 if (BASE) {
   console.log(`\n${B}3. ce qui est réellement servi par ${BASE}${Z}`)
