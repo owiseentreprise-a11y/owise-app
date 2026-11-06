@@ -1505,7 +1505,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         </Link>
       </div>
 
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} />
+      {/* La porte anglaise la plus précise que cette page puisse offrir : son
+          jumeau quand il existe, la réservation anglaise sinon. `JUMEAUX_EN`
+          est déjà la source dont dérivent le `hreflang` plus haut et le
+          sitemap — on ne recopie pas une deuxième liste. Jusqu'au 2026-11-06
+          ce jumeau n'était déclaré qu'à Google, jamais montré au visiteur. */}
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} lienAnglais={JUMEAUX_EN[dest.slug] ?? '/en/book'} />
 
       {/* Section intro SEO */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-editorial)', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>

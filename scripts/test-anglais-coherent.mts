@@ -229,6 +229,34 @@ if (BASE) {
          `${u} : un lien servi mène vers ${ROUTE_EN}`)
   }
 
+  /* ── 3 bis. La porte anglaise est-elle VISIBLE ? ────────────────────────
+     Un `hreflang` parle à Google ; il ne montre rien à un humain. Mesuré le
+     2026-11-06 : /vtc-paris et /vtc-chantilly-cdg déclaraient leur jumeau
+     anglais sans qu'aucun lien n'y mène, et la page d'ACCUEIL n'avait ni
+     l'un ni l'autre. Un anglophone venu de ChatGPT arrive sur l'accueil :
+     c'est la seule page dont l'absence de porte coûte vraiment. */
+  console.log(`\n${B}3 bis. la porte anglaise est-elle visible pour un humain ?${Z}`)
+  const PAIRES = Object.fromEntries(
+    [...bloc.matchAll(/'([a-z0-9-]+)':\s*'(\/en\/[a-z0-9-]+)'/g)].map(m => [m[1], m[2]]),
+  )
+  /* L'accueil, une page à jumeau, une page sans jumeau. */
+  const A_EPROUVER: [string, string][] = [
+    ['/', ROUTE_EN ?? '/en/book'],
+    ['/vtc-paris', PAIRES['vtc-paris'] ?? '/en/book'],
+    ['/vtc-chantilly-cdg', PAIRES['vtc-chantilly-cdg'] ?? '/en/book'],
+    ['/vtc-chantilly', '/en/book'],
+  ]
+  for (const [chemin, attendu] of A_EPROUVER) {
+    const { statut, corps } = await lire(chemin)
+    if (statut !== 200) { dire(false, `${chemin} répond 200`, `HTTP ${statut}`); continue }
+    const liens = [...corps.matchAll(/<a\b[^>]*href="(\/en\/[a-z0-9/-]*)"[^>]*>([\s\S]{0,40}?)<\/a>/g)]
+    dire(liens.length > 0, `${chemin} montre au moins un lien vers une page anglaise`,
+         'aucun — un hreflang ne se voit pas, seul un lien se clique')
+    if (!liens.length) continue
+    const cibles = [...new Set(liens.map(l => l[1].replace(/\/$/, '')))]
+    dire(cibles.includes(attendu), `${chemin} mène vers ${attendu}`, `mène vers : ${cibles.join(' · ')}`)
+  }
+
   const servi = await lire('/llms.txt')
   dire(servi.statut === 200, '/llms.txt répond 200', `HTTP ${servi.statut}`)
   for (const u of URLS_EN) {

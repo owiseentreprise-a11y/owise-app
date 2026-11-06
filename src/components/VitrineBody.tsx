@@ -407,7 +407,22 @@ function adresseDepuisFiche(label?: string): BcAddr {
  * `palette` y vaut `undefined`, la classe n'est pas ajoutée, et pas une
  * couleur ne change chez elles. C'est le seul interrupteur : il n'y a
  * aucune détection de chemin, rien qui puisse se déclencher tout seul. */
-export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination, palette }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string; palette?: 'a' }) {
+/* `lienAnglais` — la porte anglaise de CETTE page.
+ *
+ * Mesuré le 2026-11-06 : la page d'accueil n'offrait à un visiteur anglophone
+ * NI lien visible NI `hreflang`. Rien ne menait nulle part. Et /vtc-paris et
+ * /vtc-chantilly-cdg déclaraient bien un jumeau anglais à Google, sans jamais
+ * le montrer à un humain — un visiteur ne pouvait pas le trouver.
+ *
+ * C'est la dernière marche du travail du jour : /en/book existe, fonctionne, et
+ * affiche les mêmes prix au centime. Un anglophone venu de ChatGPT arrive sur
+ * l'accueil, pas sur /en/book, et repartait sans savoir que l'anglais existe.
+ *
+ * Une seule cible par page, et c'est la page qui la donne : la plus précise
+ * quand un jumeau existe, /en/book sinon. Deux liens côte à côte — un vers le
+ * jumeau, un vers la réservation — n'apprendraient rien de plus au visiteur et
+ * donneraient deux endroits à maintenir. */
+export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp = [], grille: grilleProp = [], params: paramsProp = null, heroTitle, lieuDestination, palette, lienAnglais = '/en/book' }: { tarifs?: TarifRow[]; zones?: ZoneMin[]; grille?: GrilleMin[]; params?: ParamsCalc | null; heroTitle?: string; lieuDestination?: string; palette?: 'a'; lienAnglais?: string }) {
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -1267,6 +1282,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             </a>
           ))}
         </div>
+        {/* Le menu mobile porte le MÊME lien : Search Console mesure plus
+            d'impressions sur téléphone que sur ordinateur sur les requêtes
+            villes, et un lien posé seulement dans la barre de bureau serait
+            invisible pour la majorité des visiteurs. */}
+        <Link href={lienAnglais} className="mm-link" lang="en" hrefLang="en" prefetch={false} onClick={()=>setMenuOpen(false)}>English</Link>
         <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
         <div className="mm-sub">Chauffeur privé VTC · Paris & Oise</div>
         <div style={{display:'flex',gap:12,marginTop:28}}>
@@ -1338,6 +1358,10 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <Link href="/blog" className="nav-link">Blog</Link>
         </div>
         <div className="nav-r">
+          {/* `lang` et `hrefLang` sur « English » : sans eux, un lecteur d'écran
+              prononce le mot à la française, et Google ne sait pas que la cible
+              change de langue. `prefetch={false}` — lien rarement cliqué. */}
+          <Link href={lienAnglais} className="nav-ghost" lang="en" hrefLang="en" prefetch={false}>English</Link>
           <Link href="/espace-client" className="nav-ghost">Espace client</Link>
           <button className="nav-cta" onClick={()=>scrollTo('#devis')}>Obtenir un devis</button>
         </div>
