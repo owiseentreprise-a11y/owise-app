@@ -5,6 +5,7 @@ import { formaterMontant } from './montant'
 import type { InfosCourseParams } from './courseMessage'
 import { dateCourse, heureCourse } from '@/lib/heure'
 import { base, row } from '@/lib/email-gabarit'
+import { textes, type Langue } from '@/lib/langue'
 import { trouRestant, type EmailDevis } from '@/lib/devis-email'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -26,11 +27,13 @@ async function send(to: string, subject: string, html: string, attachments?: Pie
 // L'heure d'une course passe par @/lib/heure : sans cela, le meme e-mail
 // annonce 04:15 s'il part du serveur Vercel et 06:15 s'il part d'un poste
 // regle a l'heure de Paris. C'est exactement ce qui est arrive le 2026-09-19.
-function fmtDate(iso: string) {
-  return dateCourse(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+/* La langue ne change que l'ÉCRITURE : `dateCourse` et `heureCourse` gardent
+   le fuseau de Paris dans les deux cas. Voir `src/lib/heure.ts`. */
+function fmtDate(iso: string, langue: Langue = 'fr') {
+  return dateCourse(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, langue)
 }
-function fmtTime(iso: string) {
-  return heureCourse(iso)
+function fmtTime(iso: string, langue: Langue = 'fr') {
+  return heureCourse(iso, langue)
 }
 
 // ── 0a. Bienvenue — nouveau client ───────────────────────────────────────────
@@ -187,10 +190,24 @@ export async function envoyerConfirmationClient(params: {
   afficherPrix?: boolean
   /** Arrêts en chemin, à l'aller — le client doit pouvoir vérifier l'adresse. */
   etapes?: string[] | null
+  /**
+   * La langue du CLIENT, celle dans laquelle il a réservé.
+   *
+   * Elle voyage depuis /en/book jusqu'ici par les métadonnées Stripe. Sans
+   * elle, un client qui réservait en anglais recevait une confirmation
+   * entièrement française : il ne pouvait vérifier ni l'heure, ni l'adresse,
+   * ni le prix de ce qu'il venait de payer.
+   *
+   * Les e-mails de l'EXPLOITANT et du CHAUFFEUR ne prennent pas ce
+   * paramètre : ils restent en français, qui est leur langue.
+   */
+  langue?: Langue
 }) {
+  const L = textes(params.langue ?? 'fr')
+  const lg: Langue = params.langue ?? 'fr'
   const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, typeVehicule, nbPassagers, refCourse, retour, note, etapes } = params
   const arrets = (etapes ?? []).filter(e => e?.trim())
-  const lignesArrets = arrets.map((e, i) => row(`Arrêt ${arrets.length > 1 ? i + 1 : ''}`.trim(), e)).join('')
+  const lignesArrets = arrets.map((e, i) => row(`${L.arret} ${arrets.length > 1 ? i + 1 : ''}`.trim(), e)).join('')
   // Prix masqué : on neutralise la valeur au lieu de la tester partout, pour
   // qu'aucun futur ajout de ligne tarifaire ne la laisse filtrer par oubli.
   const prixEstime = params.afficherPrix === false ? null : params.prixEstime
@@ -200,12 +217,12 @@ export async function envoyerConfirmationClient(params: {
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:14px;">
       ${titre ? `<div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-bottom:12px;">${titre}</div>` : ''}
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${row('Date', fmtDate(date))}
-        ${row('Heure', fmtTime(date))}
-        ${row('Départ', depart)}
+        ${row(L.date, fmtDate(date, lg))}
+        ${row(L.heure, fmtTime(date, lg))}
+        ${row(L.depart, depart)}
         ${arretsBloc}
-        ${row('Arrivée', arrivee)}
-        ${prixEstime ? row('Tarif estimé', `${formaterMontant(prixEstime)}`) : ''}
+        ${row(L.arrivee, arrivee)}
+        ${prixEstime ? row(L.tarif_estime, `${formaterMontant(prixEstime)}`) : ''}
       </table>
     </div>`
 
@@ -213,47 +230,47 @@ export async function envoyerConfirmationClient(params: {
     ? `
       <div style="background:#F8F6F1;border-radius:10px;padding:16px 24px;margin-bottom:14px;">
         <table width="100%" cellpadding="0" cellspacing="0">
-          ${row('Référence', `#${refCourse}`)}
-          ${row('Véhicule', typeVehicule)}
-          ${row('Passagers', String(nbPassagers))}
+          ${row(L.reference, `#${refCourse}`)}
+          ${row(L.vehicule, typeVehicule)}
+          ${row(L.passagers, String(nbPassagers))}
         </table>
       </div>
-      ${bloc('Trajet aller', datePrevue, adresseDepart, adresseArrivee, lignesArrets)}
-      ${bloc('Trajet retour', retour.datePrevue, adresseArrivee, retour.adresseArrivee || adresseDepart)}
+      ${bloc(L.trajet_aller, datePrevue, adresseDepart, adresseArrivee, lignesArrets)}
+      ${bloc(L.trajet_retour, retour.datePrevue, adresseArrivee, retour.adresseArrivee || adresseDepart)}
       ${prixEstime ? `
       <div style="background:#09091A;border-radius:10px;padding:16px 24px;margin-bottom:24px;">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="font-size:13px;color:#EDE8DF;">Total aller-retour</td>
+          <td style="font-size:13px;color:#EDE8DF;">${L.total_aller_retour}</td>
           <td align="right" style="font-size:18px;color:#C9A84C;font-weight:600;">${formaterMontant((prixEstime * 2))}</td>
         </tr></table>
       </div>` : ''}`
     : `
       <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
         <table width="100%" cellpadding="0" cellspacing="0">
-          ${row('Référence', `#${refCourse}`)}
-          ${row('Date', fmtDate(datePrevue))}
-          ${row('Heure', fmtTime(datePrevue))}
-          ${row('Départ', adresseDepart)}
+          ${row(L.reference, `#${refCourse}`)}
+          ${row(L.date, fmtDate(datePrevue, lg))}
+          ${row(L.heure, fmtTime(datePrevue, lg))}
+          ${row(L.depart, adresseDepart)}
           ${lignesArrets}
-          ${row('Arrivée', adresseArrivee)}
-          ${row('Véhicule', typeVehicule)}
-          ${row('Passagers', String(nbPassagers))}
-          ${prixEstime ? row('Tarif estimé', `${formaterMontant(prixEstime)}`) : ''}
+          ${row(L.arrivee, adresseArrivee)}
+          ${row(L.vehicule, typeVehicule)}
+          ${row(L.passagers, String(nbPassagers))}
+          ${prixEstime ? row(L.tarif_estime, `${formaterMontant(prixEstime)}`) : ''}
         </table>
       </div>`
 
   const html = base(`
-    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">${retour ? 'Votre aller-retour est confirmé' : 'Votre course est confirmée'}</h2>
-    <p style="margin:0 0 ${note ? '16' : '24'}px;font-size:14px;color:#848499;">Bonjour ${clientPrenom}, voici le récapitulatif de votre réservation.</p>
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">${retour ? L.mail_titre_ar : L.mail_titre_simple}</h2>
+    <p style="margin:0 0 ${note ? '16' : '24'}px;font-size:14px;color:#848499;">${L.mail_salutation} ${clientPrenom}, ${L.mail_bonjour}</p>
     ${note ? `<div style="margin:0 0 24px;padding:12px 16px;border-radius:8px;background:#FDF6E3;border:1px solid rgba(201,168,76,.35);font-size:13px;color:#6B5518;line-height:1.55;">${note}</div>` : ''}
     ${corps}
-    <p style="margin:0 0 8px;font-size:13px;color:#555;">Votre chauffeur vous sera communiqué avant la prise en charge.</p>
-    <p style="margin:0;font-size:12px;color:#848499;">Pour toute question : <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
+    <p style="margin:0 0 8px;font-size:13px;color:#555;">${L.mail_chauffeur_a_venir}</p>
+    <p style="margin:0;font-size:12px;color:#848499;">${L.mail_question} <a href="mailto:${ADMIN_EMAIL}" style="color:#C9A84C;">${ADMIN_EMAIL}</a></p>
   `)
 
   const sujet = retour
-    ? `Confirmation aller-retour – ${fmtDate(datePrevue)} et ${fmtDate(retour.datePrevue)}`
-    : `Confirmation de course – ${fmtDate(datePrevue)} à ${fmtTime(datePrevue)}`
+    ? `${L.mail_sujet_ar} – ${fmtDate(datePrevue, lg)} ${L.mail_sujet_et} ${fmtDate(retour.datePrevue, lg)}`
+    : `${L.mail_sujet_simple} – ${fmtDate(datePrevue, lg)} ${L.mail_sujet_a} ${fmtTime(datePrevue, lg)}`
 
   await send(clientEmail, sujet, html)
 }

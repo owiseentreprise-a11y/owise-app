@@ -617,6 +617,12 @@ export async function handleNewReservation(
 
   await Promise.all([
     envoyerConfirmationClient({
+      /* La langue de la RÉSERVATION, relue dans les métadonnées Stripe. Un
+         client venu de /en/book recevait sinon une confirmation en français
+         pour une course qu'il venait de payer en anglais. Les e-mails de
+         l'exploitant et du chauffeur, juste en dessous, restent français :
+         c'est leur langue. */
+      langue: meta.langue === 'en' ? 'en' : 'fr',
       clientEmail: email,
       clientPrenom: prenom,
       adresseDepart,

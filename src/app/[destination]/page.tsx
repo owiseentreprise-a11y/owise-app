@@ -1351,9 +1351,17 @@ export const DESTINATIONS: Record<string, {
    logique vit desormais dans un module pur, testable sans Next. */
 export { lienDevis, EMAIL_DEVIS, prixEntreZones } from '@/lib/devis-et-tarifs'
 
+/* Les clés sont des CHEMINS français (sans le « / » de tête). Pour les pages
+   villes c'est leur slug, et `generateMetadata` ci-dessous s'en sert pour
+   poser les hreflang. « reserver » n'est pas une page ville : sa clé ne sera
+   donc jamais lue là — elle est ici parce que cet objet est, et doit rester,
+   la SEULE liste des pages anglaises du site. Le sitemap en dérive : une
+   liste recopiée à la main a déjà laissé une page hors du sitemap pendant
+   des jours (vtc-goussainville, le 2026-09-21). */
 export const JUMEAUX_EN: Record<string, string> = {
   'vtc-chantilly-cdg': '/en/chantilly-to-charles-de-gaulle-airport',
   'vtc-paris': '/en/private-chauffeur-paris',
+  'reserver': '/en/book',
 }
 
 

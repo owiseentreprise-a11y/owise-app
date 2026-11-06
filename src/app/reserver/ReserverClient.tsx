@@ -1,6 +1,6 @@
 'use client'
 
-import { ANNULATION_COURTE } from '@/lib/conditions'
+import { ANNULATION_COURTE, ANNULATION_COURTE_EN } from '@/lib/conditions'
 
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
@@ -16,6 +16,7 @@ import { codeErreur } from '@/lib/funnel-confidentialite'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import ReservationSummary from './ReservationSummary'
 import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
+import { textes, messageDansLaLangue, JUMEAU_RESERVATION, type Langue } from '@/lib/langue'
 import {
   calculerPrix,
   calculerPrixKm,
@@ -226,24 +227,24 @@ const VEHICULES = [
   {
     value: 'berline',
     label: 'Berline',
-    places: '1–3 passagers',
-    models: 'Berline récente, intérieur soigné',
+    places: '1–3',
+    descCle: 'veh_berline_desc' as const,
     image: '/brand_assets/vehicle-berline.png',
     badge: null,
   },
   {
     value: 'berline_premium',
     label: 'Berline Premium',
-    places: '1–4 passagers',
-    models: 'Berline haut de gamme',
+    places: '1–4',
+    descCle: 'veh_premium_desc' as const,
     image: '/brand_assets/vehicle-berline-premium.png',
-    badge: 'Populaire',
+    badgeCle: 'populaire' as const,
   },
   {
     value: 'van',
     label: 'Van 7 places',
-    places: '1–7 passagers',
-    models: 'Van récent, 7 places assises',
+    places: '1–7',
+    descCle: 'veh_van_desc' as const,
     image: '/brand_assets/vehicle-van7.png',
     badge: null,
   },
@@ -274,7 +275,7 @@ const DATE_MAX = new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10
 
 type Profil = { prenom: string; nom: string; email: string; telephone: string }
 
-export default function ReserverClient({ avis, zones, grille, tarifs, params, profil }: {
+export default function ReserverClient({ avis, zones, grille, tarifs, params, profil, langue = 'fr' }: {
   /** Note et nombre d'avis, lus en base par la page serveur — jamais écrits ici. */
   avis: { nombre: number; note: number }
   zones: Zone[]
@@ -282,7 +283,21 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   tarifs: TarifVehicule[]
   params?: ParamsCalc | null
   profil?: Profil | null
+  /**
+   * La langue d'affichage. `fr` par défaut : /reserver ne passe rien et se
+   * comporte exactement comme avant. /en/book monte le MÊME composant avec
+   * `en` — le calcul de prix, la validation et le paiement sont partagés, et
+   * c'est tout l'intérêt. Voir l'en-tête de `src/lib/langue.ts`.
+   */
+  langue?: Langue
 }) {
+  /* `L.cle` est typé : une clé mal orthographiée est refusée par `tsc`, pas
+     découverte par un visiteur devant un libellé vide. */
+  const L = textes(langue)
+  /* `FR` sert aux messages d'erreur AVANT journalisation — voir le
+     commentaire de `fail`. Ce n'est pas un doublon de `L` : `L` est ce que
+     le visiteur lit, `FR` est ce que le journal enregistre. */
+  const FR = textes('fr')
   const searchParams = useSearchParams()
   const [step, setStep] = useState<1 | 2>(1)
   const [pending, startTransition] = useTransition()
@@ -572,7 +587,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     setCodeLoading(true)
     const { valid } = await validerCodeParrainage(c)
     setCodeValide(valid)
-    setCodeMsg(valid ? '✓ Code valide — -10% appliqué !' : 'Code invalide ou expiré')
+    setCodeMsg(valid ? L.code_valide : L.code_invalide)
     setCodeLoading(false)
   }
 
@@ -582,17 +597,26 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
        danger — mais rien n'empêcherait d'y glisser demain une valeur saisie
        par le client. Le code est un contrat ; le message reste affiché au
        visiteur, inchangé. */
-    const fail = (msg: string) => { logFunnel('reserver_step1_error', { code: codeErreur(msg) }); setStep1Error(msg) }
-    if (!depart.label.trim())  return fail('Adresse de départ requise.')
-    if (!arrivee.label.trim()) return fail('Adresse d\'arrivée requise.')
-    if (!date)                                                                     return fail('Date et heure requises.')
-    if (isNaN(new Date(date).getTime()))                                           return fail('Date invalide.')
-    if (new Date(date) < new Date())                                               return fail('La date de prise en charge doit être dans le futur.')
-    if (new Date(date) > new Date(Date.now() + 730 * 86400000))                   return fail('Date trop lointaine (max 2 ans).')
+    /* `fail` reçoit TOUJOURS le message français, et c'est volontaire :
+       `codeErreur` reconnaît des motifs français (« adresse de départ
+       requise », « trop lointaine »…). Lui donner un message anglais ne
+       ferait correspondre aucune règle, et /admin/funnel compterait des
+       erreurs « autre » sans savoir lesquelles. On journalise donc la
+       version canonique, et on ne traduit qu'à l'affichage. */
+    const fail = (msgFr: string) => {
+      logFunnel('reserver_step1_error', { code: codeErreur(msgFr) })
+      setStep1Error(messageDansLaLangue(msgFr, langue))
+    }
+    if (!depart.label.trim())  return fail(FR.err_depart_requis)
+    if (!arrivee.label.trim()) return fail(FR.err_arrivee_requise)
+    if (!date)                                                                     return fail(FR.err_date_requise)
+    if (isNaN(new Date(date).getTime()))                                           return fail(FR.err_date_courte)
+    if (new Date(date) < new Date())                                               return fail(FR.err_date_futur)
+    if (new Date(date) > new Date(Date.now() + 730 * 86400000))                   return fail(FR.err_date_lointaine)
     // Accepter si le lieu est reconnu par zone (landmark) même sans code postal
-    if (!depart.codePostal && !zoneDepart && !depart.lat)    return fail('Sélectionnez une adresse de départ dans la liste.')
-    if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return fail('Sélectionnez une adresse d\'arrivée dans la liste.')
-    if (prix === null && !loadingRoute) return fail('Prix non calculé — vérifiez les adresses.')
+    if (!depart.codePostal && !zoneDepart && !depart.lat)    return fail(FR.err_depart_liste)
+    if (!arrivee.codePostal && !zoneArrivee && !arrivee.lat)  return fail(FR.err_arrivee_liste)
+    if (prix === null && !loadingRoute) return fail(FR.err_prix)
 
     /* Le vol se verifie ICI, pas au paiement : son champ est sur cet ecran.
      * Le 2026-10-08, la regle s'exprimait a l'etape suivante et le client
@@ -615,7 +639,10 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
   function handlePayer() {
     logFunnel('reserver_payer_click', { prix: prixFinal })
-    const fail = (msg: string) => { logFunnel('reserver_step2_error', { code: codeErreur(msg) }); setStep2Error(msg) }
+    const fail = (msgFr: string) => {
+      logFunnel('reserver_step2_error', { code: codeErreur(msgFr) })
+      setStep2Error(messageDansLaLangue(msgFr, langue))
+    }
     /* La meme verification que le serveur, pour prevenir ici plutot qu'au
      * moment de payer. Le serveur reste la vraie barriere. */
     const verdict = verifierReservation({
@@ -628,7 +655,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
       heure_arrivee_vol: heureArrivee,
     })
     if (!verdict.ok) return fail(verdict.erreur)
-    if (prixFinal === null) return fail('Erreur de tarification.')
+    if (prixFinal === null) return fail(FR.err_tarification)
     setStep2Error(null)
     fbLead({ value: prixFinal, currency: 'EUR', content_name: `${depart.label} → ${arrivee.label}`, content_category: 'VTC' })
     let adsConsent: 'accepted' | 'refused' | 'unknown' = 'unknown'
@@ -638,6 +665,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     } catch {}
     startTransition(async () => {
       const result = await createReservationCheckout({
+        langue,
         adresse_depart:  depart.label,
         adresse_arrivee: arrivee.label,
         date_prevue:     date,
@@ -666,7 +694,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
            maîtrisé et peut citer une valeur soumise. On n'enregistre que la
            catégorie ; le message complet reste affiché au visiteur. */
         logFunnel('reserver_checkout_error', { code: codeErreur(result.error) })
-        setStep2Error(`Erreur de paiement : ${result.error}`)
+        setStep2Error(`${L.err_paiement} : ${result.error}`)
       } else if (result?.checkoutUrl) {
         logFunnel('reserver_checkout_created', { prix: prixFinal })
         window.location.href = result.checkoutUrl
@@ -695,12 +723,11 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   const isGareArrivee = zoneArrivee?.type === 'gare'     || reGare.test(arrivee.label)
   const showVolInfo   = isAeroDepart || isAeroArrivee || isGareDepart || isGareArrivee
   const isAero        = isAeroDepart || isAeroArrivee
-  const typeVol       = isAero ? 'vol' : 'train'
 
   // Badge de tarification
   const pricingBadge = useForfait
-    ? { label: 'Forfait zone', color: 'var(--blue)' }
-    : { label: 'Tarif au km', color: 'var(--gold)' }
+    ? { label: L.forfait_zone, color: 'var(--blue)' }
+    : { label: L.tarif_au_km, color: 'var(--gold)' }
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif', color: 'var(--t1)' }}>
@@ -749,7 +776,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
           <div className="confirm-seal-ring">
             <img src="/brand_assets/icon.svg" alt="" style={{ height: 26 }} />
           </div>
-          <div className="confirm-seal-label">Votre réservation se scelle…</div>
+          <div className="confirm-seal-label">{L.sceau}</div>
         </div>
       )}
 
@@ -765,11 +792,31 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
           <img src="/brand_assets/icon.svg" alt="Owise" style={{ height: 28 }} onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           <div>
             <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, letterSpacing: '.12em', color: 'var(--t1)', lineHeight: 1 }}>OWISE</div>
-            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 400 }}>Chauffeur privé VTC</div>
+            <div style={{ fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--t2)', fontWeight: 400 }}>{L.marque_sous_titre}</div>
           </div>
         </Link>
         {/* Étapes */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Le passage à l'autre langue. Sans ce lien, un anglophone qui
+              atterrit sur /reserver n'a aucun moyen de savoir que /en/book
+              existe — et c'est précisément le visiteur que la page anglaise
+              existe pour retenir. `prefetch={false}` : la page est en
+              `force-dynamic`, la précharger coûterait une requête de base
+              de données à chaque affichage pour un lien rarement cliqué. */}
+          <Link
+            href={JUMEAU_RESERVATION[langue === 'fr' ? 'en' : 'fr']}
+            prefetch={false}
+            hrefLang={langue === 'fr' ? 'en' : 'fr'}
+            style={{
+              fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase',
+              color: 'var(--t2)', textDecoration: 'none', fontWeight: 500,
+              border: '1px solid rgba(var(--contraste-rvb),.14)',
+              borderRadius: 20, padding: '4px 10px', marginRight: 6,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {L.autre_langue}
+          </Link>
           {[1, 2].map(s => (
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
@@ -784,12 +831,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 {s < step ? '✓' : s}
               </div>
               <span style={{ fontSize: 10, color: s <= step ? 'var(--t1)' : 'var(--t2)', display: s === 2 ? 'none' : undefined }}>
-                {s === 1 ? 'Trajet' : ''}
+                {s === 1 ? L.etape_trajet : ''}
               </span>
               {s === 1 && <div style={{ width: 20, height: 1, background: 'rgba(var(--contraste-rvb),.1)' }} />}
             </div>
           ))}
-          <div style={{ fontSize: 10, color: step === 2 ? 'var(--t1)' : 'var(--t2)', marginLeft: 2 }}>Paiement</div>
+          <div style={{ fontSize: 10, color: step === 2 ? 'var(--t1)' : 'var(--t2)', marginLeft: 2 }}>{L.etape_paiement}</div>
         </div>
       </div>
 
@@ -797,9 +844,9 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
         <div style={{ background: 'rgba(var(--ambre-vif-rvb),.12)', borderBottom: '1px solid var(--amber)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--t2)' }}>
           <span style={{ fontSize: 18 }}>⚠️</span>
           <span>
-            <strong>Navigateur intégré détecté.</strong> Pour finaliser votre paiement en sécurité, ouvrez cette page dans votre navigateur.{' '}
+            <strong>{L.navigateur_titre}</strong> {L.navigateur_texte}{' '}
             <a href={typeof window !== 'undefined' ? window.location.href : ''} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold)', fontWeight: 600, textDecoration: 'underline' }}>
-              Ouvrir dans Chrome / Safari
+              {L.navigateur_lien}
             </a>
           </span>
         </div>
@@ -814,17 +861,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             {/* Titre */}
             <div style={{ marginBottom: 32, textAlign: 'center' }}>
               <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 500, marginBottom: 10 }}>
-                Réservation en ligne
+                {L.surtitre}
               </div>
               <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 38, fontWeight: 500, color: 'var(--t1)', margin: '0 0 8px', lineHeight: 1.15 }}>
-                Réservez votre course
+                {L.titre}
               </h1>
-              <p style={{ fontSize: 13, color: 'var(--t2)', margin: 0 }}>Service VTC premium · Paris & Île-de-France</p>
+              <p style={{ fontSize: 13, color: 'var(--t2)', margin: 0 }}>{L.sous_titre}</p>
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <span style={{ fontSize: 13, color: 'var(--gold)', letterSpacing: 1 }}>★★★★★</span>
                 <span style={{ fontSize: 12, color: 'var(--t2)' }}>
                   <span style={{ color: 'var(--t1)', fontWeight: 600 }}>{avis.note} / 5</span>
-                  {` · ${avis.nombre} avis Google vérifiés`}
+                  {` · ${avis.nombre} ${L.avis_suffixe}`}
                 </span>
               </div>
             </div>
@@ -837,14 +884,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               padding: '20px', marginBottom: 16,
             }}>
               <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16, fontWeight: 500 }}>
-                Itinéraire
+                {L.itineraire}
               </div>
               {/* Adresses */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
               {/* Départ */}
               <div>
-                <FieldLabel>Adresse de départ</FieldLabel>
-                <AddressInput value={depart} placeholder="15 Rue de la Paix, 75001 Paris" icon={
+                <FieldLabel>{L.adresse_depart}</FieldLabel>
+                <AddressInput value={depart} placeholder={L.adresse_depart_exemple} icon={
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <circle cx="8" cy="8" r="7" stroke="var(--green)" strokeWidth="1.5" fill="rgba(var(--vert-rvb),.12)"/>
                     <circle cx="8" cy="8" r="3.5" fill="var(--green)"/>
@@ -855,8 +902,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     {zoneDepart
                       ? <span style={{ color: 'var(--green)' }}>✓ Zone : {zoneDepart.nom}</span>
                       : (depart.codePostal || depart.lat)
-                        ? <span style={{ color: 'var(--t2)' }}>Tarif calculé au km</span>
-                        : <span style={{ color: 'var(--t2)' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: 'var(--t2)' }}>{L.tarif_calcule_km}</span>
+                        : <span style={{ color: 'var(--t2)' }}>{L.selectionnez_liste}</span>
                     }
                   </div>
                 )}
@@ -868,14 +915,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   <FieldLabel>Étape {etapes.length > 1 ? i + 1 : ''} — arrêt en chemin</FieldLabel>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <AddressInput value={etape} placeholder="Adresse de l'arrêt" icon={
+                      <AddressInput value={etape} placeholder={L.adresse_arret_exemple} icon={
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7" stroke="var(--amber)" strokeWidth="1.5" fill="rgba(var(--ambre-vif-rvb),.12)"/>
                           <circle cx="8" cy="8" r="3" fill="var(--amber)"/>
                         </svg>
                       } onSelect={v => setEtapes(prev => prev.map((old, j) => j === i ? v : old))} />
                     </div>
-                    <button type="button" aria-label="Retirer cet arrêt"
+                    <button type="button" aria-label={L.retirer_arret}
                       onClick={() => setEtapes(prev => prev.filter((_, j) => j !== i))}
                       style={{
                         width: 38, height: 38, flexShrink: 0, borderRadius: 8, cursor: 'pointer',
@@ -893,14 +940,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     background: 'transparent', border: '1px dashed rgba(var(--or-rvb),.35)',
                     color: 'var(--gold)', fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
                   }}>
-                  + Ajouter un arrêt en chemin
+                  {L.ajouter_arret}
                 </button>
               )}
 
               {/* Arrivée */}
               <div>
-                <FieldLabel>Adresse d&apos;arrivée</FieldLabel>
-                <AddressInput value={arrivee} placeholder="Aéroport CDG, Terminal 2, 95700 Roissy" icon={
+                <FieldLabel>{L.adresse_arrivee}</FieldLabel>
+                <AddressInput value={arrivee} placeholder={L.adresse_arrivee_exemple} icon={
                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
                     <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="var(--gold)"/>
                     <circle cx="8" cy="6" r="2.2" fill="var(--papier)"/>
@@ -911,8 +958,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     {zoneArrivee
                       ? <span style={{ color: 'var(--green)' }}>✓ Zone : {zoneArrivee.nom}</span>
                       : (arrivee.codePostal || arrivee.lat)
-                        ? <span style={{ color: 'var(--t2)' }}>Tarif calculé au km</span>
-                        : <span style={{ color: 'var(--t2)' }}>Sélectionnez dans la liste</span>
+                        ? <span style={{ color: 'var(--t2)' }}>{L.tarif_calcule_km}</span>
+                        : <span style={{ color: 'var(--t2)' }}>{L.selectionnez_liste}</span>
                     }
                   </div>
                 )}
@@ -962,7 +1009,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 <div className="res-dt" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10 }}>
                   {/* Date */}
                   <div>
-                    <FieldLabel>Date de prise en charge</FieldLabel>
+                    <FieldLabel>{L.date_prise_en_charge}</FieldLabel>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--t2)' }}>
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -982,7 +1029,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   </div>
                   {/* Heure */}
                   <div>
-                    <FieldLabel>Heure</FieldLabel>
+                    <FieldLabel>{L.heure}</FieldLabel>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--gold)" strokeWidth={2}>
@@ -1037,10 +1084,10 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     </div>
                     <div style={{ textAlign: 'left' }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: allerRetour ? 'var(--gold)' : 'var(--t1)' }}>
-                        Ajouter un retour
+                        {L.ajouter_retour}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--t2)', marginTop: 1 }}>
-                        {allerRetour ? 'Prix aller × 2 — même tarif garanti' : 'Économisez avec un trajet retour inclus'}
+                        {allerRetour ? L.aller_retour_detail : L.aller_retour_titre}
                       </div>
                     </div>
                   </div>
@@ -1068,7 +1115,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                         principale. */}
                     <div className="res-dt" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 10, marginBottom: 10 }}>
                       <div>
-                        <FieldLabel>Date du retour</FieldLabel>
+                        <FieldLabel>{L.date_retour}</FieldLabel>
                         <input className="res-input" type="date"
                           style={{ ...baseInput, background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.12)', color: 'var(--t1)' }}
                           value={dateRetourOnly}
@@ -1076,7 +1123,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                           onChange={e => handleDateRetourChange(e.target.value)} />
                       </div>
                       <div>
-                        <FieldLabel>Heure</FieldLabel>
+                        <FieldLabel>{L.heure}</FieldLabel>
                         <input className="res-input res-time" type="time"
                           style={{ ...baseInput, background: 'var(--papier)', fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 17, fontWeight: 700, border: '1px solid rgba(var(--or-rvb),.35)' }}
                           value={timeRetourOnly}
@@ -1098,8 +1145,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                         </button>
                       ) : (
                         <div>
-                          <FieldLabel>Adresse d&apos;arrivée du retour</FieldLabel>
-                          <AddressInput value={arriveeRetour} placeholder={depart.label || 'Votre adresse de retour'} icon={
+                          <FieldLabel>{L.adresse_retour}</FieldLabel>
+                          <AddressInput value={arriveeRetour} placeholder={depart.label || L.adresse_retour_exemple} icon={
                             <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
                               <path d="M8 0C4.686 0 2 2.686 2 6c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6z" fill="var(--green)"/>
                               <circle cx="8" cy="6" r="2.2" fill="var(--papier)"/>
@@ -1126,7 +1173,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                           {arriveeRetour.label || depart.label || '…'}
                         </span>
                         <span style={{ fontSize: 10, opacity: .6 }}>
-                          {arriveeRetour.label ? '(adresse de retour différente)' : '(adresses inversées)'}
+                          {arriveeRetour.label ? L.adresse_retour_autre : L.adresses_inversees}
                         </span>
                       </div>
                     )}
@@ -1144,27 +1191,29 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 padding: '20px', marginBottom: 16,
               }}>
                 <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, color: isAero ? 'var(--blue)' : 'var(--green)' }}>
-                  {isAero ? '✈ Informations de vol' : '🚄 Informations train'}
+                  {isAero ? L.infos_vol : L.infos_train}
                   {(isAeroDepart || isGareDepart) && <span style={{ color: 'var(--red)', marginLeft: 6 }}>— requis</span>}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                   <div>
-                    <FieldLabel>N° de {typeVol}{(isAeroDepart || isGareDepart) ? ' ou provenance' : ''}</FieldLabel>
+                    <FieldLabel>{isAero ? L.numero_vol : L.numero_train}{(isAeroDepart || isGareDepart) ? ` ${L.ou_provenance}` : ''}</FieldLabel>
                     <input className="res-input" value={numVolTrain}
-                      placeholder={isAero ? 'AF1234, ou Reykjavik' : 'TGV 6423, ou Lyon'}
+                      placeholder={isAero ? L.vol_exemple : L.train_exemple}
                       onChange={e => setNumVolTrain(e.target.value)}
                       style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains, monospace)', letterSpacing: '.08em' }} />
                   </div>
                   <div>
-                    <FieldLabel>{isAero ? 'Terminal' : 'Voie / Quai'}</FieldLabel>
+                    <FieldLabel>{isAero ? L.terminal : L.voie_quai}</FieldLabel>
                     <input className="res-input" value={terminal}
-                      placeholder={isAero ? '2E, T1…' : 'Voie 6…'}
+                      placeholder={isAero ? L.terminal_exemple : L.voie_exemple}
                       onChange={e => setTerminal(e.target.value)}
                       style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)' }} />
                   </div>
                 </div>
                 <div>
-                  <FieldLabel>Heure {(isAeroDepart || isGareDepart) ? "d'arrivée" : "de départ"} du {typeVol}</FieldLabel>
+                  <FieldLabel>{(isAeroDepart || isGareDepart)
+                    ? (isAero ? L.heure_arrivee_vol : L.heure_arrivee_train)
+                    : (isAero ? L.heure_depart_vol : L.heure_depart_train)}</FieldLabel>
                   <input className="res-input" type="time" value={heureArrivee}
                     onChange={e => setHeureArrivee(e.target.value)}
                     style={{ ...baseInput, background: 'var(--papier)', border: `1px solid ${isAero ? 'rgba(var(--bleu-info-rvb),.3)' : 'rgba(var(--vert-rvb),.3)'}`, color: 'var(--t1)', width: '50%' }} />
@@ -1179,7 +1228,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               boxShadow: '0 2px 12px rgba(var(--ombre-rvb),.06)',
               padding: '20px', marginBottom: 16,
             }}>
-              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16, fontWeight: 500 }}>Véhicule & passagers</div>
+              <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 16, fontWeight: 500 }}>{L.vehicule_passagers}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {VEHICULES.map(v => {
                   const active = vehicule === v.value
@@ -1230,16 +1279,18 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                       <div style={{ flex: 1, minWidth: 0, padding: '10px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>{v.label}</div>
-                          {v.badge && (
+                          {'badgeCle' in v && v.badgeCle && (
                             <span style={{
                               fontSize: 8.5, fontWeight: 600, letterSpacing: '.08em',
                               textTransform: 'uppercase', padding: '2px 7px', borderRadius: 20,
                               background: 'var(--gold)', color: 'var(--sur-or)',
-                            }}>{v.badge}</span>
+                            }}>{L[v.badgeCle]}</span>
                           )}
                         </div>
-                        <div style={{ fontSize: 10.5, color: 'var(--t2)', marginBottom: 2 }}>{v.models}</div>
-                        <div style={{ fontSize: 10, color: 'var(--sur-voile-or)', fontWeight: 500 }}>{v.places}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--t2)', marginBottom: 2 }}>{L[v.descCle]}</div>
+                        {/* « 1–3 » vient de la liste, « passagers » du dictionnaire : le
+                            nombre de places est une donnée, pas une traduction. */}
+                        <div style={{ fontSize: 10, color: 'var(--sur-voile-or)', fontWeight: 500 }}>{v.places} {L.passagers_suffixe}</div>
                       </div>
                       {/* Check */}
                       <div style={{ paddingRight: 14 }}>
@@ -1270,13 +1321,13 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   textDecoration: 'none', background: 'rgba(var(--contraste-rvb),.015)',
                 }}
               >
-                Plus de 7 passagers ?{' '}
-                <strong style={{ color: 'var(--gold)' }}>Demandez un devis</strong>
-                {' '}— nous verifions la disponibilite avant toute reservation.
+                {L.plus_de_7_avant}{' '}
+                <strong style={{ color: 'var(--gold)' }}>{L.demandez_devis}</strong>
+                {' '}{L.plus_de_7_apres}
               </Link>
 
               <div style={{ borderTop: '1px solid rgba(var(--or-rvb),.08)', paddingTop: 16 }}>
-                <FieldLabel>Nombre de passagers</FieldLabel>
+                <FieldLabel>{L.nombre_passagers}</FieldLabel>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
                     style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--or-rvb),.1)', border: '1px solid rgba(var(--or-rvb),.25)', color: 'var(--sur-voile-or)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
@@ -1298,14 +1349,14 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               }}>
                 <div>
                   <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)' }}>
-                    {allerRetour ? 'Prix aller-retour' : 'Prix estimé'}
+                    {allerRetour ? L.prix_aller_retour : L.prix_estime}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 3 }}>
                     {useForfait && zoneDepart && zoneArrivee
                       ? `${zoneDepart.nom} → ${zoneArrivee.nom} · ${labelVehicule}${allerRetour ? ' · ×2' : ''}`
                       : distanceKm !== null
                         ? `${distanceKm} km · ${labelVehicule}${allerRetour ? ' · ×2' : ''}`
-                        : 'Calcul de l\'itinéraire…'
+                        : L.calcul_itineraire
                     }
                   </div>
                 </div>
@@ -1334,9 +1385,9 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
               {[
-                { icon: '✓', text: 'Tarif fixe garanti' },
-                { icon: '✓', text: ANNULATION_COURTE },
-                { icon: '✓', text: 'Confirmation immédiate' },
+                { icon: '✓', text: L.tarif_fixe_garanti },
+                { icon: '✓', text: langue === 'en' ? ANNULATION_COURTE_EN : ANNULATION_COURTE },
+                { icon: '✓', text: L.confirmation_immediate },
               ].map(({ icon, text }) => (
                 <span key={text} style={{ fontSize: 11, color: 'var(--t2)', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ color: 'var(--green)', fontWeight: 700 }}>{icon}</span> {text}
@@ -1345,7 +1396,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             </div>
             <button type="button" onClick={handleStep1} className="pay-btn"
               style={{ width: '100%', padding: '14px', borderRadius: 10, background: 'var(--encre)', color: 'var(--sur-encre)', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-              <span>Continuer</span>
+              <span>{L.continuer}</span>
               {prixTotal !== null && (
                 <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 16, fontWeight: 700, color: 'var(--gold)' }}>
                   — {Math.round(prixTotal)} €
@@ -1367,12 +1418,12 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 Aucune promesse d'horaire n'est faite — la disponibilité
                 téléphonique n'est pas établie. */}
             <div style={{ marginTop: 16, textAlign: 'center', lineHeight: 1.6 }}>
-              <span style={{ fontSize: 12, color: 'var(--t2)' }}>Une question avant de réserver ?{' '}</span>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{L.question_avant}{' '}</span>
               <a href="tel:+33619106356"
                  style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
                 06 19 10 63 56
               </a>
-              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{' '}ou sur{' '}</span>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{' '}{L.ou_sur}{' '}</span>
               <a href="https://wa.me/33619106356" target="_blank" rel="noopener"
                  style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600, display: 'inline-block', padding: '4px 2px' }}>
                 WhatsApp
@@ -1389,42 +1440,42 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
               </svg>
-              Modifier le trajet
+              {L.modifier_trajet}
             </button>
 
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 500, color: 'var(--t1)', margin: '0 0 6px' }}>
-              Vos informations
+              {L.vos_informations}
             </h1>
-            <p style={{ fontSize: 13, color: 'var(--t2)', margin: '0 0 28px' }}>Un email de confirmation vous sera envoyé après le paiement.</p>
+            <p style={{ fontSize: 13, color: 'var(--t2)', margin: '0 0 28px' }}>{L.email_confirmation}</p>
 
             {/* Récap */}
             <div style={{ background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)', borderRadius: 10, padding: '14px 18px', marginBottom: 28 }}>
-              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 10 }}>Récapitulatif</div>
+              <div style={{ fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 10 }}>{L.recapitulatif}</div>
               <div style={{ fontSize: 13, color: 'var(--t1)', marginBottom: 4 }}>
-                <span style={{ color: 'var(--t2)', fontSize: 11 }}>Départ · </span>{depart.label}
+                <span style={{ color: 'var(--t2)', fontSize: 11 }}>{L.depart} · </span>{depart.label}
               </div>
               <div style={{ fontSize: 13, color: 'var(--t1)', marginBottom: 10 }}>
-                <span style={{ color: 'var(--t2)', fontSize: 11 }}>Arrivée · </span>{arrivee.label}
+                <span style={{ color: 'var(--t2)', fontSize: 11 }}>{L.arrivee} · </span>{arrivee.label}
               </div>
               <div style={{ display: 'flex', gap: 20, paddingTop: 10, borderTop: '1px solid rgba(var(--or-rvb),.06)', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Date</div>
+                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>{L.date}</div>
                   <div style={{ fontSize: 12, color: 'var(--t1)' }}>{fmtDate(date)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Véhicule</div>
+                  <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>{L.vehicule}</div>
                   <div style={{ fontSize: 12, color: 'var(--t1)' }}>{labelVehicule}</div>
                 </div>
                 {!useForfait && distanceKm && (
                   <div>
-                    <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Distance</div>
+                    <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>{L.distance}</div>
                     <div style={{ fontSize: 12, color: 'var(--t1)' }}>{distanceKm} km</div>
                   </div>
                 )}
                 {prixTotal !== null && (
                   <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                     <div style={{ fontSize: 9, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
-                      {allerRetour ? 'Total aller-retour' : 'Total'}
+                      {allerRetour ? L.total_aller_retour : L.total}
                     </div>
                     {allerRetour && prix !== null && (
                       <div style={{ fontSize: 10, color: 'var(--t2)' }}>{Math.round(prix)} € × 2</div>
@@ -1438,8 +1489,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             {/* Identité */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
               {[
-                { label: 'Prénom', val: prenom, set: setPrenom, ph: 'Jean' },
-                { label: 'Nom',    val: nom,    set: setNom,    ph: 'Dupont' },
+                { label: L.prenom, val: prenom, set: setPrenom, ph: 'Jean' },
+                { label: L.nom, val: nom, set: setNom, ph: 'Dupont' },
               ].map(f => (
                 <div key={f.label}>
                   <FieldLabel>{f.label}</FieldLabel>
@@ -1448,8 +1499,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               ))}
             </div>
             {[
-              { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'jean.dupont@email.com' },
-              { label: 'Téléphone', val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 12 34 56 78' },
+              { label: L.email, val: email, set: setEmail, type: 'email', ph: 'jean.dupont@email.com' },
+              { label: L.telephone, val: telephone, set: setTelephone, type: 'tel', ph: '+33 6 12 34 56 78' },
             ].map(f => (
               <div key={f.label} style={{ marginBottom: 14 }}>
                 <FieldLabel>{f.label}</FieldLabel>
@@ -1460,7 +1511,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             {/* Comment nous avez-vous connus ? */}
             <div style={{ marginBottom: 14 }}>
               <label htmlFor="res-origine" style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
-                Comment nous avez-vous connus&nbsp;? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel)</span>
+                {L.comment_connus} <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{L.optionnel}</span>
               </label>
               <select
                 id="res-origine"
@@ -1469,21 +1520,21 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 value={origine}
                 onChange={e => setOrigine(e.target.value)}
               >
-                <option value="">Je préfère ne pas répondre</option>
-                <option value="Recherche Google">Recherche Google</option>
-                <option value="ChatGPT ou autre assistant">ChatGPT ou un autre assistant</option>
-                <option value="Recommandation d’un hôtel">Recommandation d&apos;un hôtel ou d&apos;un château</option>
-                <option value="Bouche-à-oreille">Bouche-à-oreille</option>
-                <option value="Réseaux sociaux">Réseaux sociaux</option>
-                <option value="Déjà client">Je suis déjà client</option>
-                <option value="Autre">Autre</option>
+                <option value="">{L.prefere_pas_repondre}</option>
+                <option value="Recherche Google">{L.src_google}</option>
+                <option value="ChatGPT ou autre assistant">{L.src_assistant}</option>
+                <option value="Recommandation d’un hôtel">{L.src_hotel}</option>
+                <option value="Bouche-à-oreille">{L.src_bouche}</option>
+                <option value="Réseaux sociaux">{L.src_reseaux}</option>
+                <option value="Déjà client">{L.src_deja_client}</option>
+                <option value="Autre">{L.src_autre}</option>
               </select>
             </div>
 
             {/* Code parrainage */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', letterSpacing: '.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
-                Code parrain <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optionnel — -10%)</span>
+                {L.code_parrain} <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>{L.code_parrain_option}</span>
               </label>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
@@ -1501,7 +1552,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   disabled={codeLoading}
                   style={{ padding: '0 16px', borderRadius: 8, border: '1px solid rgba(var(--contraste-rvb),.12)', background: 'var(--elevated)', fontSize: 12, color: 'var(--t1)', cursor: 'pointer', flexShrink: 0 }}
                 >
-                  {codeLoading ? '…' : 'Vérifier'}
+                  {codeLoading ? '…' : L.verifier}
                 </button>
               </div>
               {codeMsg && (
@@ -1537,16 +1588,16 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
-                  Payer {prixFinal !== null ? `${Math.round(prixFinal)} €` : ''} — Paiement sécurisé
+                  {L.payer} {prixFinal !== null ? `${Math.round(prixFinal)} €` : ''} — {L.paiement_securise_court}
                 </>
               )}
             </button>
 
             <div style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: 'var(--t2)' }}>
-              Paiement sécurisé par Stripe · SSL/TLS · Aucune donnée bancaire stockée
+              {L.paiement_securise}
             </div>
             <div style={{ marginTop: 16, textAlign: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--t2)' }}>Vous préférez réserver par téléphone ?{' '}</span>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{L.preferez_telephone}{' '}</span>
               <a href="tel:+33619106356" style={{ fontSize: 12, color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>
                 +33 6 19 10 63 56
               </a>
@@ -1565,6 +1616,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
             passagers={passagers}
             prix={prixFinal}
             allerRetour={allerRetour}
+            langue={langue}
           />
         </div>
       </div>

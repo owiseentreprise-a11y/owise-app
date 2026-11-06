@@ -93,6 +93,15 @@ export async function createReservationCheckout(data: {
   heure_arrivee_vol?: string
   code_parrainage?: string
   distance_km?: number
+  /**
+   * La langue dans laquelle le client a réservé — `en` depuis /en/book.
+   *
+   * Elle ne sert qu'à choisir la langue de la confirmation. Elle n'entre dans
+   * AUCUN calcul : le prix, la validation et l'enregistrement sont les mêmes
+   * dans les deux langues, et c'est ce qui garantit qu'un étranger paie le
+   * même tarif qu'un francophone sur le même trajet.
+   */
+  langue?: 'fr' | 'en'
   /** Arrêts intermédiaires demandés par le client (2 au plus). */
   etapes?: string[]
   gclid?: string
@@ -237,6 +246,7 @@ export async function createReservationCheckout(data: {
   params.set('success_url', `${siteUrl}/paiement/merci?session_id={CHECKOUT_SESSION_ID}&reservation=1`)
   params.set('cancel_url', `${siteUrl}/reserver`)
   params.set('metadata[type]', 'reservation')
+  params.set('metadata[langue]', data.langue ?? 'fr')
   params.set('metadata[adresse_depart]', data.adresse_depart.slice(0, 499))
   params.set('metadata[adresse_arrivee]', data.adresse_arrivee.slice(0, 499))
   params.set('metadata[date_prevue]', data.date_prevue)

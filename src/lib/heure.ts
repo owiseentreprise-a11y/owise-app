@@ -89,8 +89,17 @@ function instantReel(valeur: string | Date): Date {
 }
 
 /** « 04:15 » — toujours en heure de Paris, quelle que soit la machine. */
-export function heureCourse(valeur: string | Date): string {
-  return instantReel(valeur).toLocaleTimeString('fr-FR', {
+/**
+ * « 09:30 » — toujours en heure de Paris, quelle que soit la machine.
+ *
+ * `langue` ne change QUE l'écriture, jamais l'instant : le fuseau reste
+ * Paris dans les deux cas. Elle est ici, et non chez l'appelant, parce que
+ * ce fichier est la seule porte de lecture d'une heure de course — un
+ * `toLocaleTimeString` écrit ailleurs rendrait l'heure de la machine, et le
+ * serveur Vercel tourne en temps universel.
+ */
+export function heureCourse(valeur: string | Date, langue: 'fr' | 'en' = 'fr'): string {
+  return instantReel(valeur).toLocaleTimeString(langue === 'en' ? 'en-GB' : 'fr-FR', {
     timeZone: FUSEAU, hour: '2-digit', minute: '2-digit',
   })
 }
@@ -99,8 +108,9 @@ export function heureCourse(valeur: string | Date): string {
 export function dateCourse(
   valeur: string | Date,
   options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+  langue: 'fr' | 'en' = 'fr',
 ): string {
-  return instantReel(valeur).toLocaleDateString('fr-FR', { timeZone: FUSEAU, ...options })
+  return instantReel(valeur).toLocaleDateString(langue === 'en' ? 'en-GB' : 'fr-FR', { timeZone: FUSEAU, ...options })
 }
 
 /**
