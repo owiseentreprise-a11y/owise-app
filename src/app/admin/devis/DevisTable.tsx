@@ -85,8 +85,14 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   function handleConvertirCourse() {
     startTransition(async () => {
       try {
-        const ref = await convertirEnCourse(devisData)
-        setSuccess(`Course ${ref} créée`)
+        const r = await convertirEnCourse(devisData)
+        /* On dit à l'exploitant si le client a VRAIMENT été prévenu. Un
+           simple « course créée » le laisserait croire que c'est fait alors
+           que l'e-mail a pu échouer, et il n'aurait aucune raison de
+           reprendre contact. */
+        setSuccess(r.courrielEnvoye
+          ? `Course ${r.ref} créée — client prévenu par e-mail`
+          : `Course ${r.ref} créée — ⚠ CLIENT NON PRÉVENU (${r.motifCourriel}) : contactez-le`)
         setConfirm(null)
       } catch (e: any) { alert(e.message) }
     })

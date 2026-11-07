@@ -7,7 +7,13 @@ import { revalidatePath } from 'next/cache'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { vehiculePourBase } from '@/lib/vehicule'
 import { genererNumeroDevis } from '@/lib/devis-client'
-import { cleDepuisLibelle, vehiculeParDefaut } from '@/lib/gamme'
+import { cleDepuisLibelle, vehiculeParDefaut, NOM_PAR_BASE } from '@/lib/gamme'
+/* La confirmation passe par le module d'e-mail du projet, jamais par un
+   message écrit à la main : c'est la règle depuis qu'un numéro de téléphone
+   inventé est parti à une vraie cliente. Ce module porte les libellés, le
+   format des montants et l'heure de Paris — trois choses qu'une rédaction
+   improvisée se trompe une fois sur deux. */
+import { envoyerConfirmationClient } from '@/lib/email'
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -105,11 +111,48 @@ export async function convertirEnCourse(devis: {
 
   if (error) throw new Error(error.message)
 
+  /* ── Prévenir le client ────────────────────────────────────────────────
+     Jusqu'au 2026-11-07, ce bouton créait la course et n'envoyait RIEN :
+     l'adresse du client était seulement recopiée dans une note interne.
+     L'exploitant cliquait « accepter », la course existait chez lui, et le
+     client n'en savait rien — il attendait une réponse qui ne venait pas.
+     C'est tout l'intérêt du bouton : accepter, c'est le dire.
+
+     L'envoi ne peut PAS annuler la course. Si l'e-mail échoue, la course
+     reste — on rend l'information à l'exploitant pour qu'il reprenne
+     contact lui-même, plutôt que de perdre une réservation acceptée. */
+  let courrielEnvoye = false
+  let motifCourriel = ''
+  if (!devis.email) {
+    motifCourriel = 'le devis ne porte aucune adresse e-mail'
+  } else {
+    try {
+      await envoyerConfirmationClient({
+        clientEmail:     devis.email,
+        clientPrenom:    prenom || 'Madame, Monsieur',
+        adresseDepart:   devis.origin,
+        adresseArrivee:  devis.destination,
+        /* L'instant déjà converti, pas la saisie : `date_prevue` est passé
+           par `instantDepuisSaisieParis` plus haut. Donner la chaîne brute
+           ferait réapparaître le décalage de deux heures qui a fait
+           annoncer 11:30 pour une course de 09:30. */
+        datePrevue:      date_prevue,
+        typeVehicule:    NOM_PAR_BASE[vehiculePourBase(vehiculeDuDevis(devis.vehicle, devis.pax))] ?? 'Berline',
+        nbPassagers:     devis.pax ?? 1,
+        prixEstime:      devis.price ?? null,
+        refCourse:       ref,
+      })
+      courrielEnvoye = true
+    } catch (e) {
+      motifCourriel = e instanceof Error ? e.message : String(e)
+    }
+  }
+
   await supabase.from('devis').delete().eq('id', devis.id)
   revalidatePath('/admin/devis')
   revalidatePath('/admin/courses')
 
-  return ref
+  return { ref, courrielEnvoye, motifCourriel }
 }
 
 export async function convertirEnFacture(devis: {

@@ -45,6 +45,41 @@ export type GrilleCalc = {
  */
 export const COLONNES_GRILLE =
   'zone_depart_id,zone_arrivee_id,prix_berline,prix_berline_premium,prix_van,prix_grand_van'
+
+/**
+ * Le prix que l'exploitant a FIXÉ à la main pour ce véhicule sur ce trajet,
+ * ou `null` s'il n'en a pas fixé.
+ *
+ * Exportée parce que deux endroits ont besoin de la même réponse, et qu'ils
+ * doivent l'obtenir au même endroit :
+ *   · le moteur de prix, pour appliquer le montant ;
+ *   · la page du client, pour savoir si elle annonce un prix FERME ou une
+ *     simple estimation. Dire « prix ferme » sur un montant calculé serait
+ *     une promesse qu'Owise n'a pas faite.
+ *
+ * Zéro n'est pas un prix : une case vidée revient au calcul. La règle est
+ * ici, une seule fois, plutôt que répétée à chaque appel.
+ */
+const COLONNE_FIXE = {
+  berline_premium: 'prix_berline_premium',
+  van: 'prix_van',
+  grand_van: 'prix_grand_van',
+} as const
+
+export function prixFixePour(
+  zoneDepId: string,
+  zoneArrId: string,
+  vehiculeKey: string,
+  grille: GrilleCalc[],
+): number | null {
+  const colonne = COLONNE_FIXE[vehiculeKey as keyof typeof COLONNE_FIXE]
+  if (!colonne) return null
+  const cell = grille.find(g =>
+    (g.zone_depart_id === zoneDepId && g.zone_arrivee_id === zoneArrId) ||
+    (g.zone_depart_id === zoneArrId && g.zone_arrivee_id === zoneDepId))
+  const v = cell?.[colonne]
+  return v != null && Number(v) > 0 ? Number(v) : null
+}
 export type TarifCalc  = {
   vehicule: string
   prise_en_charge: number
@@ -321,14 +356,8 @@ export function calculerPrix(
        calculer une majoration, donc deux vérités. (Au 2026-11-07 les trois
        valent 0 ou sont inactives : la question ne se pose pas encore en
        pratique, mais la règle est posée avant qu'elle se pose.) */
-    const CLE_PRIX_FIXE = {
-      berline_premium: 'prix_berline_premium',
-      van: 'prix_van',
-      grand_van: 'prix_grand_van',
-    } as const
-    const colonneFixe = CLE_PRIX_FIXE[vehiculeKey as keyof typeof CLE_PRIX_FIXE]
-    const prixFixe = colonneFixe ? cell[colonneFixe] : null
-    if (prixFixe != null && Number(prixFixe) > 0) {
+    const prixFixe = prixFixePour(zoneDepId, zoneArrId, vehiculeKey, grille)
+    if (prixFixe != null) {
       let prix = Number(prixFixe)
       if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
       return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100

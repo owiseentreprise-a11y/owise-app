@@ -50,7 +50,7 @@ import {
 } from '@/lib/consentement'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixFixePour, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 /* `from` a disparu de cette table : le badge « dès … € » de l'étape 2 du devis
@@ -1159,6 +1159,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   }
 
   const currentEst = devisPrix
+
+  /* Le prix du 8 places montré au client : estimation, ou prix que
+     l'exploitant a fixé lui-même sur ce trajet ?
+     La différence n'est pas cosmétique. « À partir de » annonce qu'on peut
+     revenir avec un autre chiffre ; « prix ferme » engage. Dire « ferme »
+     sur un montant calculé serait une promesse qu'Owise n'a pas faite.
+     Le calcul se fait ici, dans le rendu, à partir des zones reconnues sans
+     appel réseau : on ne touche pas au chemin asynchrone qui établit le prix,
+     et une erreur ici ne peut donc pas fausser un montant. */
+  const grandVanFerme = (() => {
+    const zD = detectZone(devisOrig.cp ?? '', zonesProp, devisOrig.label)
+    const zA = detectZone(desisDest.cp ?? '', zonesProp, desisDest.label)
+    if (!zD || !zA) return false
+    return prixFixePour(zD.id, zA.id, 'grand_van', grilleProp) != null
+  })()
+
   const currentVeh = getVehicle(pax)
   /* On passe par la CLE du vehicule, pas par son nom affiche. La version
      precedente faisait `NOM_VERS_CLE[currentVeh.name]` sur une table qui
@@ -2571,7 +2587,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                     distance. Constate le 2026-11-03 en parcourant le tunnel. */}
                 {exigeUnDevis(pax) ? (
                   <div className="estimate-display" style={{textAlign:'center'}}>
-                    <div className="est-lbl">À partir de</div>
+                    <div className="est-lbl">{grandVanFerme ? 'Prix ferme' : 'À partir de'}</div>
                     {currentEst != null && (
                       <div className="est-price"><span className="est-cur">€</span><span>{currentEst}</span></div>
                     )}
@@ -2579,9 +2595,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                       {vehiculeParDefaut(pax)?.nom ?? 'Grand Van 8 places'} · sous réserve de disponibilité
                     </div>
                     <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.7,maxWidth:420,margin:'0 auto'}}>
-                      Ce transfert dépend de la disponibilité de nos partenaires.
-                      Laissez-nous vos coordonnées : nous revenons vers vous avec un
-                      tarif ferme.
+                      {grandVanFerme ? (
+                        <>
+                          Ce prix est ferme : il ne changera pas. Il reste à confirmer
+                          qu’un véhicule 8 places est disponible à cette date — laissez-nous
+                          vos coordonnées, nous vous confirmons la réservation.
+                        </>
+                      ) : (
+                        <>
+                          Ce transfert dépend de la disponibilité de nos partenaires.
+                          Laissez-nous vos coordonnées : nous revenons vers vous avec un
+                          tarif ferme.
+                        </>
+                      )}
                     </div>
                   </div>
                 ) : (
