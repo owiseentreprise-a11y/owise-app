@@ -495,12 +495,20 @@ export async function envoyerNotificationAdmin(params: {
   clientNom: string
   typeVehicule: string
   refCourse: string
+  /** Carte bloquee, en attente de la validation de l'exploitant. */
+  aValider?: boolean
 }) {
-  const { adresseDepart, adresseArrivee, datePrevue, clientNom, typeVehicule, refCourse } = params
+  const { adresseDepart, adresseArrivee, datePrevue, clientNom, typeVehicule, refCourse, aValider } = params
 
+  /* Une reservation bloquee ATTEND une decision. Si elle se presentait comme
+     les autres, elle se noierait parmi les courses acquises — et au bout de
+     7 jours Stripe libere la somme sans prevenir personne. Le titre et le
+     sujet le disent donc d'emblee. */
   const html = base(`
-    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Nouvelle course créée</h2>
-    <p style="margin:0 0 24px;font-size:14px;color:#848499;">Une nouvelle course vient d'être enregistrée.</p>
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">${aValider ? 'À VALIDER — disponibilité à vérifier' : 'Nouvelle course créée'}</h2>
+    <p style="margin:0 0 24px;font-size:14px;color:${aValider ? '#B87A14' : '#848499'};">${aValider
+      ? "La carte du client est <strong>bloquée, pas débitée</strong>. Vérifiez la disponibilité, puis validez (la somme est encaissée) ou refusez (la retenue est levée). <strong>Sans décision de votre part, la retenue tombe au bout de 7 jours et la réservation est perdue.</strong>"
+      : "Une nouvelle course vient d'être enregistrée."}</p>
 
     <div style="background:#F8F6F1;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
       <table width="100%" cellpadding="0" cellspacing="0">
@@ -520,7 +528,9 @@ export async function envoyerNotificationAdmin(params: {
     </a>
   `)
 
-  await send(ADMIN_EMAIL, `[OWISE] Nouvelle course #${refCourse} – ${clientNom}`, html)
+  await send(ADMIN_EMAIL, aValider
+    ? `[OWISE] A VALIDER sous 7 j — #${refCourse} · ${clientNom}`
+    : `[OWISE] Nouvelle course #${refCourse} – ${clientNom}`, html)
 }
 
 // ── 4. Reçu de fin de course ─────────────────────────────────────────────────
@@ -1358,4 +1368,74 @@ export async function envoyerRefusDevis(params: {
     </p>
   `)
   return await send(clientEmail, 'Votre demande de transfert — Owise', html)
+}
+
+// ── Réservation bloquée, en attente de validation ────────────────────────────
+
+/**
+ * Dire au client que sa carte est BLOQUÉE, pas débitée.
+ *
+ * Ce message est le seul qu'il recevra avant la réponse de l'exploitant, et
+ * c'est lui qui décide s'il passe un bon ou un mauvais moment. Trois choses
+ * doivent y être, sans détour :
+ *   · sa carte n'est PAS débitée — la somme est seulement retenue ;
+ *   · sous combien de temps il aura une réponse ;
+ *   · que s'il n'y a pas de véhicule, il ne paiera rien.
+ *
+ * Il ne doit SURTOUT pas lire « votre course est confirmée » : elle ne l'est
+ * pas. Un client qui croit sa course réservée ne cherche pas d'autre
+ * solution, et découvre trop tard qu'il n'en avait pas.
+ */
+export async function envoyerDemandeBloquee(params: {
+  clientEmail: string
+  clientPrenom: string
+  adresseDepart: string
+  adresseArrivee: string
+  datePrevue: string
+  typeVehicule: string
+  nbPassagers: number
+  montantBloque: number
+  refCourse: string
+  /** Délai de réponse annoncé, en heures. */
+  delaiHeures?: number
+}): Promise<boolean> {
+  const {
+    clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue,
+    typeVehicule, nbPassagers, montantBloque, refCourse, delaiHeures = 48,
+  } = params
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre demande est enregistrée</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#09091A;line-height:1.7;">
+      Bonjour ${clientPrenom},<br><br>
+      Nous avons bien reçu votre demande. Un véhicule ${nbPassagers} places dépend
+      de la disponibilité de nos partenaires : nous la vérifions et nous vous
+      répondons <strong>sous ${delaiHeures} heures</strong>.
+    </p>
+    <div style="background:#FFF8E8;border:1px solid rgba(201,168,76,.45);border-radius:10px;padding:18px 22px;margin-bottom:22px;">
+      <p style="margin:0;font-size:14px;color:#09091A;line-height:1.75;">
+        <strong>Votre carte n'a pas été débitée.</strong><br>
+        La somme de ${formaterMontant(montantBloque)} est simplement retenue par votre banque.
+        Elle ne sera prélevée que si nous vous confirmons la course.<br>
+        <strong>Si nous ne pouvons pas assurer ce trajet, vous ne paierez rien</strong>
+        et la retenue sera levée.
+      </p>
+    </div>
+    <div style="background:#F8F6F1;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:18px 22px;margin-bottom:22px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Référence', `#${refCourse}`)}
+        ${row('Date', fmtDate(datePrevue))}
+        ${row('Heure', fmtTime(datePrevue))}
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+        ${row('Véhicule', typeVehicule)}
+        ${row('Passagers', String(nbPassagers))}
+        ${row('Montant retenu', formaterMontant(montantBloque))}
+      </table>
+    </div>
+    <p style="margin:0;font-size:13px;color:#848499;line-height:1.7;">
+      Une question d'ici là ? Appelez-nous au
+      <a href="tel:+33619106356" style="color:#C9A84C;text-decoration:none;font-weight:600;">+33 6 19 10 63 56</a>.
+    </p>
+  `)
+  return await send(clientEmail, `Demande reçue — nous confirmons sous ${delaiHeures} h · #${refCourse}`, html)
 }

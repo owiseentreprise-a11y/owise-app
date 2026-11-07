@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction, estimerSurcoutEtapesAction } from './actions'
+import { assignerChauffeur, changerStatut, setPrixFinal, modifierNotes, assignerSousTraitant, supprimerCourse, modifierCourseDetails, rembourserCourseAction, togglePaiementABord, setPrixChauffeur, genererLienPaiementAction, envoyerLienPaiementEmailAction, envoyerInfosCourseEmailAction, estimerSurcoutEtapesAction, validerReservationAction, refuserReservationAction } from './actions'
 import { STATUT_COURSE_LABEL, STATUT_TRANSITIONS, TYPE_VEHICULE_LABEL, type StatutCourse, type TypeVehicule } from '@/lib/types'
 import { pourChampSaisie } from '@/lib/heure'
 import { formaterMontant } from '@/lib/montant'
@@ -32,7 +32,10 @@ export default function CourseActions({
   sousTraitants,
   infosCourseTexte,
   className,
+  limiteValidation,
 }: {
+  /** Terme d'encaissement lu chez Stripe, quand la carte est bloquee. */
+  limiteValidation?: string | null
   course: {
     id: string
     statut: StatutCourse
@@ -113,6 +116,44 @@ export default function CourseActions({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [refundOpen, setRefundOpen] = useState(false)
+
+  /* ── Grand Van : valider ou refuser une reservation bloquee ───────────── */
+  const [refusOuvert, setRefusOuvert]           = useState(false)
+  const [motifRefus, setMotifRefus]             = useState('')
+  const [messageValidation, setMessageValidation] = useState<string | null>(null)
+
+  /* Le montant REELLEMENT bloque : le prix final s'il existe, sinon
+     l'estimation. C'est celui qui sera encaisse, donc celui qu'on annonce. */
+  const montantBloque = course.prix_final ?? course.prix_estime ?? null
+
+  /* Jours restants avant que Stripe libere la somme tout seul. Arrondi vers
+     le BAS : annoncer « 2 jours » quand il en reste 1,8 ferait rater le
+     terme. */
+  const joursRestants = limiteValidation
+    ? Math.floor((new Date(limiteValidation).getTime() - Date.now()) / 86400000)
+    : null
+
+  function handleValiderReservation() {
+    startTransition(async () => {
+      const r = await validerReservationAction(course.id)
+      if (r.error) { setMessageValidation(`⚠ ${r.error}`); return }
+      setMessageValidation(r.courrielEnvoye
+        ? `✓ Encaisse${r.montant != null ? ` ${formaterMontant(r.montant)}` : ''} — le client a recu sa confirmation.`
+        : `✓ Encaisse${r.montant != null ? ` ${formaterMontant(r.montant)}` : ''}, mais ⚠ LE CLIENT N'A PAS ETE PREVENU : contactez-le.`)
+    })
+  }
+
+  function handleRefuserReservation() {
+    startTransition(async () => {
+      const r = await refuserReservationAction(course.id, motifRefus)
+      if (r.error) { setMessageValidation(`⚠ ${r.error}`); return }
+      setRefusOuvert(false)
+      setMotifRefus('')
+      setMessageValidation(r.courrielEnvoye
+        ? '✓ Somme liberee — le client a ete prevenu, il ne sera pas debite.'
+        : '✓ Somme liberee, mais ⚠ LE CLIENT N’A PAS ETE PREVENU : contactez-le.')
+    })
+  }
   const [refundError, setRefundError] = useState<string | null>(null)
   const [refundDone, setRefundDone] = useState<number | null>(null)
   const [payLink, setPayLink] = useState<string | null>(course.stripe_payment_link)
@@ -1288,6 +1329,73 @@ export default function CourseActions({
           <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 8 }}>{sendEmailError}</div>
         )}
       </div>
+
+      {/* ── GRAND VAN : carte bloquee, en attente de votre decision ──────
+          Ce bloc ne s'affiche QUE sur une course dont la carte est retenue
+          sans avoir ete debitee. Il porte la date limite lue chez Stripe :
+          passe ce terme, la somme est liberee toute seule et la reservation
+          est perdue sans que personne n'en soit averti. */}
+      {course.paiement_statut === 'autorise' && (
+        <div style={{
+          background: 'rgba(232,160,48,.07)', border: '1px solid rgba(232,160,48,.45)',
+          borderRadius: 12, padding: '18px 20px',
+        }}>
+          <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--amb)', marginBottom: 10, fontWeight: 700 }}>
+            A valider — disponibilite a verifier
+          </div>
+          <div style={{ fontSize: 12.5, color: 'var(--t1)', lineHeight: 1.65, marginBottom: 12 }}>
+            La carte du client est <strong>bloquee, pas debitee</strong>
+            {montantBloque != null ? <> — {formaterMontant(montantBloque)}</> : null}.
+            Verifiez qu'un vehicule est disponible, puis tranchez.
+          </div>
+          {limiteValidation && (
+            <div style={{
+              fontSize: 12, fontWeight: 600, marginBottom: 14, padding: '8px 12px', borderRadius: 8,
+              background: joursRestants != null && joursRestants <= 2 ? 'rgba(217,84,84,.12)' : 'rgba(0,0,0,.04)',
+              color: joursRestants != null && joursRestants <= 2 ? 'var(--red)' : 'var(--t2)',
+            }}>
+              {joursRestants != null && joursRestants <= 0
+                ? 'La retenue a expire : la somme est deja liberee.'
+                : <>A decider avant le <strong>{new Date(limiteValidation).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</strong>
+                   {joursRestants != null && <> — {joursRestants <= 1 ? 'moins d’un jour' : `${joursRestants} jours`} restants</>}.
+                   Passe ce terme, la somme est liberee et la reservation perdue.</>}
+            </div>
+          )}
+          {messageValidation ? (
+            <div style={{ fontSize: 12.5, color: 'var(--t1)', lineHeight: 1.6 }}>{messageValidation}</div>
+          ) : refusOuvert ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              <input
+                value={motifRefus}
+                onChange={e => setMotifRefus(e.target.value)}
+                placeholder="motif communique au client (facultatif)"
+                style={{ padding: '8px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.15)', fontSize: 12, fontFamily: 'inherit' }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={handleRefuserReservation} disabled={pending}
+                  style={{ flex: 1, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'var(--red)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>
+                  Liberer et prevenir le client
+                </button>
+                <button onClick={() => { setRefusOuvert(false); setMotifRefus('') }}
+                  style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(0,0,0,.06)', color: 'var(--t2)', border: 'none', fontSize: 12, fontFamily: 'inherit' }}>
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={handleValiderReservation} disabled={pending}
+                style={{ flex: 1, minWidth: 150, padding: '10px 16px', borderRadius: 8, cursor: 'pointer', background: 'var(--gold)', color: '#09091A', border: 'none', fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit' }}>
+                Valider — encaisser{montantBloque != null ? ` ${formaterMontant(montantBloque)}` : ''}
+              </button>
+              <button onClick={() => setRefusOuvert(true)} disabled={pending}
+                style={{ flex: 1, minWidth: 150, padding: '10px 16px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: 'var(--red)', border: '1px solid rgba(217,84,84,.4)', fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit' }}>
+                Refuser — liberer la somme
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {course.mode_paiement === 'stripe' && course.stripe_payment_intent_id && (
         <div style={{

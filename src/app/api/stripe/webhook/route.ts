@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { stripe, nettoyerCleEnv } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerBienvenueClient } from '@/lib/email'
+import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerBienvenueClient, envoyerDemandeBloquee } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
 import { uploadGoogleAdsConversion, type AdsConsent } from '@/lib/googleAdsConversion'
@@ -62,7 +62,25 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
 
-    if (session.payment_status !== 'paid') {
+    /* Une réservation « à valider » est BLOQUÉE, pas payée.
+     *
+     * Mesuré chez Stripe le 2026-11-07, en mode test : une session créée avec
+     * `capture_method: manual` et réglée par le client rend
+     * `status: complete` mais `payment_status: UNPAID`, son PaymentIntent
+     * étant en `requires_capture` — 201 € autorisés, 0 € encaissé.
+     *
+     * Sans cette exception, la condition ci-dessous l'écartait en silence :
+     * la carte du client restait bloquée et AUCUNE course n'était créée.
+     * C'est exactement l'incident des réservations perdues du 2026-10-07, où
+     * deux clients ont payé sans que leur course existe.
+     *
+     * Le drapeau `a_valider` vient de nous (`reserver/actions.ts`) : on
+     * n'accepte pas n'importe quelle session non payée, seulement celles
+     * qu'on a nous-mêmes créées en blocage. */
+    const estBlocageAValider =
+      session.payment_status === 'unpaid' && session.metadata?.a_valider === '1'
+
+    if (session.payment_status !== 'paid' && !estBlocageAValider) {
       await marquerEvenementTraite(journal, event.id)
       return NextResponse.json({ received: true })
     }
@@ -426,7 +444,13 @@ export async function handleNewReservation(
      * jamais écrite, et les quatre courses encaissées d'octobre affichaient
      * « en attente » — ce qui désarmait le garde-fou de la facturation
      * mensuelle contre le double débit. */
-    paiement_statut: 'paye',
+    /* « autorise » quand la carte est seulement BLOQUÉE — Grand Van 8
+       places, dont la disponibilité doit être validée à la main. La somme
+       n'est pas encore chez Owise : l'annoncer « payée » ferait croire à une
+       recette qui n'existe pas, et désarmerait le garde-fou de la
+       facturation mensuelle dans l'autre sens. Elle deviendra « paye » au
+       moment où l'exploitant encaisse. */
+    paiement_statut: meta.a_valider === '1' ? 'autorise' : 'paye',
     stripe_payment_intent_id: paymentIntentId,
   }).select('id').single()
 
@@ -613,6 +637,39 @@ export async function handleNewReservation(
       orderId           : course.id,
       consent           : (meta.ads_consent as AdsConsent) ?? 'unknown',
     }).catch(() => {})
+  }
+
+  /* Une réservation bloquée n'est PAS confirmée : le client reçoit un
+     message qui le dit, avec le montant retenu et le délai de réponse.
+     Lui envoyer la confirmation habituelle lui ferait croire sa course
+     réservée — il cesserait de chercher une autre solution et le
+     découvrirait trop tard. */
+  if (meta.a_valider === '1') {
+    await Promise.all([
+      envoyerDemandeBloquee({
+        clientEmail: email,
+        clientPrenom: prenom,
+        adresseDepart,
+        adresseArrivee,
+        datePrevue,
+        typeVehicule,
+        nbPassagers,
+        montantBloque: prix,
+        refCourse,
+      }),
+      envoyerNotificationAdmin({
+        adresseDepart,
+        adresseArrivee,
+        datePrevue,
+        clientNom: `${prenom} ${nom}`.trim(),
+        typeVehicule,
+        refCourse,
+        /* L'exploitant doit voir du premier coup d'œil que celle-ci attend
+           une décision de sa part, et non qu'elle est acquise. */
+        aValider: true,
+      }),
+    ])
+    return course.id
   }
 
   await Promise.all([

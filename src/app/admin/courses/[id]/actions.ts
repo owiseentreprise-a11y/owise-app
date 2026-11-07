@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutCourse } from '@/lib/types'
-import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement, envoyerInfosCourseEmail } from '@/lib/email'
+import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement, envoyerInfosCourseEmail, envoyerConfirmationClient, envoyerRefusDevis } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
 import { stripe } from '@/lib/stripe'
@@ -615,4 +615,160 @@ export async function envoyerInfosCourseEmailAction(
   })
 
   return {}
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   GRAND VAN : VALIDER OU REFUSER UNE RÉSERVATION BLOQUÉE
+   ════════════════════════════════════════════════════════════════════════
+   Une réservation 8 places arrive avec la carte du client BLOQUÉE et non
+   débitée (`paiement_statut: 'autorise'`). L'exploitant vérifie auprès de
+   son partenaire qu'un véhicule est disponible à la date demandée — ce que
+   rien ne sait faire automatiquement, puisque cela dépend des enchaînements
+   de la journée — puis il tranche :
+
+     · VALIDER → la somme est encaissée, le client reçoit sa confirmation ;
+     · REFUSER → la retenue est levée, le client reçoit un message disant
+       qu'il n'a pas été débité.
+
+   LE DÉLAI N'EST PAS INFINI. Mesuré chez Stripe le 2026-11-07 : 7,0 jours.
+   Passé ce terme, Stripe libère la somme tout seul, la réservation est
+   perdue et personne n'en est averti. D'où la date limite affichée dans la
+   fiche de la course.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * L'adresse du client d'une course, qu'il ait un compte ou non.
+ *
+ * Deux cas, et ils existent tous les deux en base : une reservation en ligne
+ * porte un `client_id` (l'adresse vit dans le compte), une course saisie a la
+ * main porte `passager_email`. Chercher dans un seul des deux laisserait la
+ * moitie des clients sans message.
+ */
+async function emailDuPassager(
+  supabase: ReturnType<typeof createAdminClient>,
+  course: { client_id?: string | null; passager_email?: string | null },
+): Promise<string | null> {
+  if (course.client_id) {
+    const email = await getUserEmail(course.client_id)
+    if (email) return email
+  }
+  return course.passager_email ?? null
+}
+
+async function lireCourseAValider(courseId: string) {
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('courses')
+    .select('id, ref, stripe_payment_intent_id, paiement_statut, prix_estime, prix_final, adresse_depart, adresse_arrivee, date_prevue, type_vehicule, nb_passagers, passager_prenom, passager_nom, passager_email, client_id')
+    .eq('id', courseId)
+    .single()
+  return { supabase, course: data }
+}
+
+export async function validerReservationAction(
+  courseId: string,
+): Promise<{ error?: string; montant?: number; courrielEnvoye?: boolean }> {
+  await requireAdminClient()
+  const { supabase, course } = await lireCourseAValider(courseId)
+
+  if (!course) return { error: 'Course introuvable.' }
+  if (course.paiement_statut !== 'autorise') {
+    return { error: `Cette course n'attend pas de validation (paiement : ${course.paiement_statut ?? 'inconnu'}).` }
+  }
+  if (!course.stripe_payment_intent_id) {
+    return { error: 'Aucun paiement Stripe associé : impossible d’encaisser.' }
+  }
+
+  let montant: number
+  try {
+    /* `capture()` encaisse la somme autorisée. Si la retenue a déjà expiré,
+       Stripe refuse ici — et c'est tant mieux : mieux vaut un refus clair
+       qu'une course qu'on croit payée. */
+    const pi = await stripe.paymentIntents.capture(course.stripe_payment_intent_id)
+    montant = (pi.amount_received ?? 0) / 100
+  } catch (err) {
+    const m = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Encaissement impossible : ${m}. La retenue a peut-être expiré (7 jours).` }
+  }
+
+  /* L'encaissement a réussi : on l'écrit AVANT d'envoyer quoi que ce soit.
+     Un e-mail raté ne doit pas laisser croire que l'argent n'est pas pris. */
+  const { error: erreurMaj } = await supabase
+    .from('courses')
+    .update({ paiement_statut: 'paye' })
+    .eq('id', courseId)
+  if (erreurMaj) {
+    return { error: `Encaissé chez Stripe (${montant} €) mais la course n'a pas pu être mise à jour : ${erreurMaj.message}. À corriger à la main.` }
+  }
+
+  let courrielEnvoye = false
+  const email = await emailDuPassager(supabase, course)
+  if (email) {
+    courrielEnvoye = await envoyerConfirmationClient({
+      clientEmail: email,
+      clientPrenom: course.passager_prenom ?? 'Madame, Monsieur',
+      adresseDepart: course.adresse_depart,
+      adresseArrivee: course.adresse_arrivee,
+      datePrevue: course.date_prevue,
+      typeVehicule: course.type_vehicule,
+      nbPassagers: course.nb_passagers ?? 8,
+      prixEstime: montant,
+      refCourse: course.ref ?? courseId.slice(0, 8),
+    })
+  }
+
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+  return { montant, courrielEnvoye }
+}
+
+export async function refuserReservationAction(
+  courseId: string,
+  motif?: string | null,
+): Promise<{ error?: string; courrielEnvoye?: boolean }> {
+  await requireAdminClient()
+  const { supabase, course } = await lireCourseAValider(courseId)
+
+  if (!course) return { error: 'Course introuvable.' }
+  if (course.paiement_statut !== 'autorise') {
+    return { error: `Cette course n'attend pas de validation (paiement : ${course.paiement_statut ?? 'inconnu'}).` }
+  }
+  if (!course.stripe_payment_intent_id) {
+    return { error: 'Aucun paiement Stripe associé : rien à libérer.' }
+  }
+
+  try {
+    /* `cancel()` libère la retenue. Le client n'est jamais débité. */
+    await stripe.paymentIntents.cancel(course.stripe_payment_intent_id, {
+      cancellation_reason: 'abandoned',
+    })
+  } catch (err) {
+    const m = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Libération impossible : ${m}` }
+  }
+
+  const { error: erreurMaj } = await supabase
+    .from('courses')
+    .update({ paiement_statut: 'libere', statut: 'annulee' })
+    .eq('id', courseId)
+  if (erreurMaj) {
+    return { error: `Retenue levée chez Stripe mais la course n'a pas pu être mise à jour : ${erreurMaj.message}. À corriger à la main.` }
+  }
+
+  let courrielEnvoye = false
+  const email = await emailDuPassager(supabase, course)
+  if (email) {
+    courrielEnvoye = await envoyerRefusDevis({
+      clientEmail: email,
+      clientPrenom: course.passager_prenom ?? 'Madame, Monsieur',
+      adresseDepart: course.adresse_depart,
+      adresseArrivee: course.adresse_arrivee,
+      datePrevue: course.date_prevue,
+      motif: motif?.trim() || null,
+    })
+  }
+
+  revalidatePath(`/admin/courses/${courseId}`)
+  revalidatePath('/admin/courses')
+  return { courrielEnvoye }
 }

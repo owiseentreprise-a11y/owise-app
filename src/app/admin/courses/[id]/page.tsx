@@ -5,6 +5,7 @@ import { STATUT_COURSE_LABEL, TYPE_VEHICULE_LABEL, type StatutCourse } from '@/l
 import { buildInfosCourseTexte } from '@/lib/courseMessage'
 import { formaterAParis } from '@/lib/heure'
 import CourseActions from './CourseActions'
+import { stripe } from '@/lib/stripe'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,6 +122,34 @@ export default async function CourseDetailPage({
     .filter(Boolean).join(' ') || '—'
 
   // Données normalisées pour le composant client
+  /* La date limite d'encaissement, lue CHEZ STRIPE et non estimee.
+   *
+   * Quand la carte d'un client est bloquee sans etre debitee, Stripe fixe un
+   * terme : passe ce terme, il libere la somme tout seul, la reservation est
+   * perdue et personne n'est averti. Mesure le 2026-11-07 en mode test :
+   * 7,0 jours. Mais ce n'est pas une constante — Visa descend a 5 jours sur
+   * certaines transactions, et une autorisation etendue peut aller a 30.
+   * Calculer « creation + 7 jours » afficherait donc une date fausse a
+   * l'exploitant, sur la seule chose qui lui coute une reservation s'il la
+   * rate. On interroge Stripe, qui porte la vraie valeur (`capture_before`).
+   *
+   * Un seul appel, sur une page qu'on ouvre rarement, et seulement quand une
+   * carte est effectivement bloquee. Si Stripe ne repond pas, on n'affiche
+   * pas de date plutot qu'une date inventee. */
+  let limiteValidation: string | null = null
+  if ((course as any).paiement_statut === 'autorise' && (course as any).stripe_payment_intent_id) {
+    try {
+      const pi = await stripe.paymentIntents.retrieve((course as any).stripe_payment_intent_id, {
+        expand: ['latest_charge'],
+      })
+      const ch = pi.latest_charge as { payment_method_details?: { card?: { capture_before?: number } } } | null
+      const terme = ch?.payment_method_details?.card?.capture_before
+      if (terme) limiteValidation = new Date(terme * 1000).toISOString()
+    } catch {
+      /* Pas de date plutot qu'une date fausse. */
+    }
+  }
+
   const courseForActions = {
     id: course.id,
     statut,
@@ -645,6 +674,7 @@ export default async function CourseDetailPage({
         <CourseActions
           className="adm-fiche-actions"
           course={courseForActions}
+          limiteValidation={limiteValidation}
           chauffeurs={chauffeursForActions}
           sousTraitants={sousTraitants as any}
           infosCourseTexte={infosCourseTexte}

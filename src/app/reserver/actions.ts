@@ -232,8 +232,36 @@ export async function createReservationCheckout(data: {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://owise.fr'
   const label = VEHICULE_LABEL[data.type_vehicule] ?? data.type_vehicule
 
+  /* ── Le Grand Van 8 places se BLOQUE, il ne s'encaisse pas ──────────────
+     Sa disponibilité dépend d'un partenaire, et l'exploitant ne peut pas la
+     vérifier automatiquement : elle dépend des enchaînements de la journée.
+     On autorise donc la carte sans la débiter, l'exploitant valide sous 24 à
+     48 h, et c'est seulement alors que la somme est encaissée. S'il ne peut
+     pas assurer, il libère : le client n'est jamais débité.
+
+     MESURÉ chez Stripe le 2026-11-07, en mode test, parce que la
+     documentation ne le disait pas : une session ainsi bloquée rend
+     `status: complete` mais `payment_status: UNPAID`, et son PaymentIntent
+     est en `requires_capture`. Le webhook écartait jusqu'ici toute session
+     non « paid » — il aurait donc ignoré celle-ci en silence, laissant la
+     carte du client bloquée SANS créer de course. C'est mot pour mot
+     l'incident des réservations perdues du 2026-10-07. Le webhook a été
+     adapté dans le même lot ; les deux ne se séparent pas.
+
+     Le délai mesuré est de 7,0 jours. L'exploitant annonce 24 à 48 h : il
+     est large, mais passé 7 jours Stripe libère tout seul et la réservation
+     est perdue sans que personne ne s'en aperçoive. D'où la date limite
+     affichée dans l'administration. */
+  const aValider = data.type_vehicule === 'grand_van'
+
   const params = new URLSearchParams()
   params.set('mode', 'payment')
+  if (aValider) {
+    params.set('payment_intent_data[capture_method]', 'manual')
+    /* Lu par le webhook : c'est ce drapeau qui lui dit qu'une session
+       « unpaid » est légitime, et non une session à écarter. */
+    params.set('metadata[a_valider]', '1')
+  }
   params.set('payment_method_types[]', 'card')
   params.set('customer_email', data.email)
   params.set('line_items[0][price_data][currency]', 'eur')
