@@ -15,12 +15,40 @@ const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL ?? 'https://g.page/r/CY0
 
 type PieceJointe = { filename: string; content: Buffer }
 
-async function send(to: string, subject: string, html: string, attachments?: PieceJointe[]) {
-  if (!resend) return
+/**
+ * Rend `true` si le message est bien parti, `false` sinon.
+ *
+ * Cette fonction n'a jamais levé d'exception, et c'est voulu : un e-mail raté
+ * ne doit pas faire échouer l'action qui l'a déclenché — on ne perd pas une
+ * course parce qu'un serveur de courrier a hoqueté.
+ *
+ * Mais tant qu'elle ne rendait RIEN, l'appelant ne pouvait pas distinguer un
+ * envoi réussi d'un envoi avalé. Conséquence mesurée le 2026-11-07 :
+ * l'écran des devis annonçait « client prévenu par e-mail » même quand rien
+ * n'était parti, et même quand `RESEND_API_KEY` est absente et que la
+ * fonction sort à la première ligne. Un faux vert est pire qu'une erreur :
+ * l'exploitant n'a aucune raison de reprendre contact.
+ *
+ * Les appelants qui ne lisent pas la réponse gardent exactement le même
+ * comportement qu'avant.
+ */
+async function send(to: string, subject: string, html: string, attachments?: PieceJointe[]): Promise<boolean> {
+  if (!resend) {
+    console.warn('[EMAIL] RESEND_API_KEY absente — aucun message envoyé à', to)
+    return false
+  }
   try {
-    await resend.emails.send({ from: FROM, to, subject, html, ...(attachments?.length ? { attachments } : {}) })
-  } catch {
-    // Ne pas faire planter l'action si l'email échoue
+    const r = await resend.emails.send({ from: FROM, to, subject, html, ...(attachments?.length ? { attachments } : {}) })
+    /* Le SDK Resend ne lève pas sur une erreur d'API : il rend `{ error }`.
+       Sans cette lecture, une adresse refusée passait pour un envoi réussi. */
+    if (r?.error) {
+      console.error('[EMAIL] refus de Resend pour', to, ':', r.error.message ?? r.error)
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('[EMAIL] envoi impossible vers', to, ':', e instanceof Error ? e.message : e)
+    return false
   }
 }
 
@@ -272,7 +300,9 @@ export async function envoyerConfirmationClient(params: {
     ? `${L.mail_sujet_ar} – ${fmtDate(datePrevue, lg)} ${L.mail_sujet_et} ${fmtDate(retour.datePrevue, lg)}`
     : `${L.mail_sujet_simple} – ${fmtDate(datePrevue, lg)} ${L.mail_sujet_a} ${fmtTime(datePrevue, lg)}`
 
-  await send(clientEmail, sujet, html)
+  /* Rendue, et non avalée : l'écran des devis affiche « client prévenu » ou
+     « CLIENT NON PRÉVENU » selon cette réponse. */
+  return await send(clientEmail, sujet, html)
 }
 
 // ── 1b. Lien de paiement — réservation prise par téléphone/WhatsApp ──────────
@@ -1274,4 +1304,58 @@ export async function envoyerDevisClient(params: {
   })
 
   if (error) throw new Error(`L'envoi a échoué : ${error.message}`)
+}
+
+// ── Refus d'une demande de devis ─────────────────────────────────────────────
+
+/**
+ * Dire à un client qu'on ne peut pas assurer son trajet.
+ *
+ * Pourquoi cet e-mail existe. Jusqu'au 2026-11-07, refuser une demande se
+ * faisait avec le bouton « supprimer » : la ligne disparaissait de l'écran et
+ * le client n'était prévenu de RIEN. Il attendait une réponse qui ne viendrait
+ * jamais — et une demande de transfert se prépare des semaines à l'avance,
+ * donc ce silence lui coûtait un vrai rendez-vous manqué.
+ *
+ * Le `motif` est écrit par l'exploitant, et c'est volontaire : lui seul sait
+ * pourquoi il refuse. Sans motif, le message reste sobre et n'invente rien —
+ * la règle du projet interdit d'écrire au client une raison qu'on ne connaît
+ * pas. On donne toujours le téléphone : un refus par courrier doit laisser
+ * une porte ouverte vers quelqu'un.
+ */
+export async function envoyerRefusDevis(params: {
+  clientEmail: string
+  clientPrenom: string
+  adresseDepart: string
+  adresseArrivee: string
+  /** Date du trajet demandé. Facultative : un devis peut ne pas en porter. */
+  datePrevue?: string | null
+  /** Raison écrite par l'exploitant. Rien n'est inventé si elle est absente. */
+  motif?: string | null
+}): Promise<boolean> {
+  const { clientEmail, clientPrenom, adresseDepart, adresseArrivee, datePrevue, motif } = params
+  const tel = '+33 6 19 10 63 56'
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Votre demande de transfert</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#09091A;line-height:1.7;">
+      Bonjour ${clientPrenom},<br><br>
+      Merci de votre demande. Nous ne sommes malheureusement pas en mesure
+      d'assurer ce trajet${motif ? ` : ${motif}` : '.'}
+    </p>
+    <div style="background:#F8F6F1;border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:18px 22px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${row('Départ', adresseDepart)}
+        ${row('Arrivée', adresseArrivee)}
+        ${datePrevue ? row('Date', fmtDate(datePrevue)) : ''}
+      </table>
+    </div>
+    <p style="margin:0 0 8px;font-size:14px;color:#09091A;line-height:1.7;">
+      Si vos dates ou votre trajet peuvent bouger, appelez-nous : nous trouverons
+      peut-être une solution ensemble.
+    </p>
+    <p style="margin:0;font-size:15px;color:#09091A;font-weight:600;">
+      <a href="tel:+33619106356" style="color:#C9A84C;text-decoration:none;">${tel}</a>
+    </p>
+  `)
+  return await send(clientEmail, 'Votre demande de transfert — Owise', html)
 }

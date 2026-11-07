@@ -13,7 +13,67 @@ import { cleDepuisLibelle, vehiculeParDefaut, NOM_PAR_BASE } from '@/lib/gamme'
    inventé est parti à une vraie cliente. Ce module porte les libellés, le
    format des montants et l'heure de Paris — trois choses qu'une rédaction
    improvisée se trompe une fois sur deux. */
-import { envoyerConfirmationClient } from '@/lib/email'
+import { envoyerConfirmationClient, envoyerRefusDevis } from '@/lib/email'
+
+/**
+ * Refuser une demande, et le DIRE au client.
+ *
+ * `supprimerDevis` existe toujours à côté, et garde son rôle : faire
+ * disparaître une ligne sans écrire à personne — un essai, un doublon, un
+ * robot. Les deux boutons ne font pas la même chose, et l'écran le dit.
+ *
+ * Jusqu'au 2026-11-07, « supprimer » était le SEUL moyen de refuser : la
+ * ligne disparaissait et le client n'était prévenu de rien. Il attendait une
+ * réponse qui ne viendrait jamais.
+ */
+export async function refuserDevis(devis: {
+  id: string
+  nom: string | null
+  email: string | null
+  origin: string | null
+  destination: string | null
+  date_course: string | null
+  heure: string | null
+}, motif?: string | null): Promise<{ courrielEnvoye: boolean; motifCourriel: string }> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+
+  let courrielEnvoye = false
+  let motifCourriel = ''
+  if (!devis.email) {
+    motifCourriel = 'le devis ne porte aucune adresse e-mail'
+  } else {
+    try {
+      /* Même conversion que pour une acceptation : la date du devis est une
+         date de Paris, pas un instant. Sans `instantDepuisSaisieParis`, le
+         client lirait une date décalée dans le message qui le refuse. */
+      const quand = devis.date_course
+        ? instantDepuisSaisieParis(`${devis.date_course}T${devis.heure ?? '00:00'}:00`).toISOString()
+        : null
+      courrielEnvoye = await envoyerRefusDevis({
+        clientEmail:    devis.email,
+        clientPrenom:   (devis.nom ?? '').trim().split(/\s+/)[0] || 'Madame, Monsieur',
+        adresseDepart:  devis.origin ?? '—',
+        adresseArrivee: devis.destination ?? '—',
+        datePrevue:     quand,
+        motif:          motif?.trim() || null,
+      })
+      if (!courrielEnvoye) motifCourriel = 'le serveur de courrier a refusé l’envoi — voir les journaux'
+    } catch (e) {
+      motifCourriel = e instanceof Error ? e.message : String(e)
+    }
+  }
+
+  /* La demande n'est retirée qu'APRÈS la tentative d'envoi : si le courrier
+     échoue, l'exploitant garde sous les yeux la ligne et les coordonnées
+     pour rappeler lui-même. Une demande refusée et effacée sans prévenir
+     personne est exactement ce qu'on vient de corriger. */
+  if (courrielEnvoye || !devis.email) {
+    await supabase.from('devis').delete().eq('id', devis.id)
+  }
+  revalidatePath('/admin/devis')
+  return { courrielEnvoye, motifCourriel }
+}
 
 export async function supprimerDevis(id: string) {
   await requireAdminClient()
@@ -127,7 +187,12 @@ export async function convertirEnCourse(devis: {
     motifCourriel = 'le devis ne porte aucune adresse e-mail'
   } else {
     try {
-      await envoyerConfirmationClient({
+      /* On LIT la réponse. `send()` n'a jamais levé d'exception — un e-mail
+         raté ne doit pas faire perdre une course — donc ce `try` seul ne
+         prouvait rien : il affichait « client prévenu » même quand rien
+         n'était parti. Défaut constaté le 2026-11-07, le lendemain de sa
+         propre mise en ligne. */
+      const parti = await envoyerConfirmationClient({
         clientEmail:     devis.email,
         clientPrenom:    prenom || 'Madame, Monsieur',
         adresseDepart:   devis.origin,
@@ -142,7 +207,8 @@ export async function convertirEnCourse(devis: {
         prixEstime:      devis.price ?? null,
         refCourse:       ref,
       })
-      courrielEnvoye = true
+      courrielEnvoye = parti
+      if (!parti) motifCourriel = 'le serveur de courrier a refusé l’envoi — voir les journaux'
     } catch (e) {
       motifCourriel = e instanceof Error ? e.message : String(e)
     }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { supprimerDevis, convertirEnFacture, convertirEnCourse, convertirEnDevisClient } from './actions'
+import { supprimerDevis, refuserDevis, convertirEnFacture, convertirEnCourse, convertirEnDevisClient } from './actions'
 import { cleDepuisLibelle, NOM_PAR_CLE } from '@/lib/gamme'
 import { formaterAParis } from '@/lib/heure'
 
@@ -44,7 +44,8 @@ function libelleVehiculeDevis(brut: string | null | undefined): string {
 
 function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   const [pending, startTransition] = useTransition()
-  const [confirm, setConfirm]      = useState<'delete' | 'facture' | 'course' | null>(null)
+  const [confirm, setConfirm]      = useState<'delete' | 'facture' | 'course' | 'refus' | null>(null)
+  const [motifRefus, setMotifRefus] = useState('')
   const [success, setSuccess]      = useState<string | null>(null)
 
   function handleSupprimer() {
@@ -78,6 +79,26 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       try {
         const id = await convertirEnDevisClient(devisData)
         window.location.href = `/admin/devis-clients/${id}`
+      } catch (e: any) { alert(e.message) }
+    })
+  }
+
+  function handleRefuser() {
+    startTransition(async () => {
+      try {
+        const r = await refuserDevis({
+          id: d.id, nom: d.nom, email: d.email,
+          origin: d.origin, destination: d.destination,
+          date_course: d.date_course, heure: d.heure,
+        }, motifRefus)
+        /* Si le courrier n'est pas parti, la demande reste à l'écran : c'est
+           voulu, l'exploitant garde les coordonnées sous les yeux pour
+           rappeler. On ne masque pas un refus que personne n'a reçu. */
+        setSuccess(r.courrielEnvoye
+          ? 'Refus envoyé au client — demande retirée'
+          : `⚠ REFUS NON ENVOYÉ (${r.motifCourriel}) : la demande reste ici, contactez le client`)
+        setConfirm(null)
+        setMotifRefus('')
       } catch (e: any) { alert(e.message) }
     })
   }
@@ -161,9 +182,22 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
         {d.heure && <span style={{ color: '#999', marginLeft: 4 }}>{d.heure}</span>}
       </td>
       {/* Actions */}
-      <td style={{ padding: '13px 14px', whiteSpace: 'nowrap' }}>
+      {/* `whiteSpace: nowrap` retiré : il empêchait les boutons de passer à
+          la ligne, et la cellule s'élargissait sans fin. Mesuré le
+          2026-11-07, après l'ajout du bouton « Refuser » : son bord droit
+          tombait à 1536 px sur un écran de 1280 — une largeur de portable
+          très courante — et la zone ne défilait PAS à cette taille-là. Le
+          bouton existait, s'affichait dans le DOM, et restait
+          matériellement inatteignable. Un bouton qu'on ne peut pas
+          atteindre n'existe pas. */}
+      <td style={{ padding: '13px 14px' }}>
         {confirm === null && (
-          <div style={{ display: 'flex', gap: 6 }}>
+          /* 180 px : les quatre actions tiennent alors sur deux lignes, et la
+             colonne cesse de pousser le tableau au-delà de l'écran. Mesuré à
+             1280 px — avec 280 px, le tableau faisait 1080 px pour 994 px de
+             zone visible, et il fallait faire défiler pour atteindre le
+             dernier bouton. */
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', maxWidth: 180 }}>
             {/* Repondre par un devis — l'action qui manquait. Une demande de
                 groupe appelle d'abord un devis, pas une course ni une facture. */}
             <button onClick={handleConvertirDevis} disabled={pending}
@@ -202,8 +236,22 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
               <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Facture
             </button>
-            {/* Supprimer */}
+            {/* Refuser — prévient le client. À ne pas confondre avec
+                « supprimer », juste à côté, qui n'écrit à personne. */}
+            <button onClick={() => setConfirm('refus')} disabled={pending || !d.email}
+              title={d.email ? 'Prévenir le client que vous ne pouvez pas assurer ce trajet' : 'Aucune adresse e-mail sur ce devis'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '5px 8px', borderRadius: 6, border: '1px solid rgba(232,160,48,.3)',
+                background: 'rgba(232,160,48,.07)', color: '#B87A14',
+                fontSize: 11, cursor: d.email ? 'pointer' : 'not-allowed',
+                opacity: d.email ? 1 : .4, fontFamily: 'inherit',
+              }}>
+              Refuser
+            </button>
+            {/* Supprimer — SANS prévenir le client (essai, doublon, robot) */}
             <button onClick={() => setConfirm('delete')} disabled={pending}
+              title="Retirer la ligne sans écrire au client"
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '5px 8px', borderRadius: 6, border: '1px solid rgba(217,84,84,.2)',
@@ -230,10 +278,32 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
           </div>
         )}
 
+        {/* Confirmation refus — avec un motif facultatif, écrit par
+            l'exploitant. Rien n'est inventé s'il le laisse vide. */}
+        {confirm === 'refus' && (
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, color: '#B87A14', fontWeight: 600 }}>Refuser et prévenir&nbsp;?</span>
+            <input
+              value={motifRefus}
+              onChange={e => setMotifRefus(e.target.value)}
+              placeholder="motif (facultatif)"
+              style={{ width: 170, padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(0,0,0,.15)', fontSize: 10, fontFamily: 'inherit' }}
+            />
+            <button onClick={handleRefuser} disabled={pending}
+              style={{ padding: '4px 8px', borderRadius: 5, background: '#B87A14', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Envoyer le refus
+            </button>
+            <button onClick={() => { setConfirm(null); setMotifRefus('') }}
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Annuler
+            </button>
+          </div>
+        )}
+
         {/* Confirmation supprimer */}
         {confirm === 'delete' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            <span style={{ fontSize: 10, color: '#D95454', fontWeight: 600 }}>Supprimer ?</span>
+            <span style={{ fontSize: 10, color: '#D95454', fontWeight: 600 }}>Supprimer sans prévenir&nbsp;?</span>
             <button onClick={handleSupprimer} disabled={pending}
               style={{ padding: '4px 8px', borderRadius: 5, background: '#D95454', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Oui
@@ -264,9 +334,24 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   )
 }
 
+/* `overflowX: auto` et non `overflow: hidden`.
+ *
+ * Mesuré le 2026-11-07 sur le site EN LIGNE, avant toute modification de ma
+ * part : à 1280 px — une largeur de portable très courante — les boutons
+ * « Devis », « Course » et « Facture » tombaient à 1308, 1390 et 1474 px.
+ * `overflow: hidden` les coupait net, sans barre de défilement : ils étaient
+ * matériellement inatteignables.
+ *
+ * Le défaut ne se voyait ni sur grand écran (tout tient) ni sur téléphone
+ * (mobile.css impose `overflow-x: auto` en dessous de 900 px) — seulement
+ * entre les deux, c'est-à-dire sur la plupart des portables.
+ *
+ * `overflow: hidden` était là pour que les coins arrondis rognent le
+ * contenu ; `overflowX: auto` le fait aussi, et laisse défiler.
+ */
 export default function DevisTable({ devis }: { devis: any[] }) {
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,.07)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 8px rgba(0,0,0,.04)' }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,.07)', borderRadius: 12, overflowX: 'auto', boxShadow: '0 1px 8px rgba(0,0,0,.04)' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#F8F6F1', borderBottom: '1px solid rgba(0,0,0,.07)' }}>

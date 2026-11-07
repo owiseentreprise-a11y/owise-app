@@ -87,6 +87,50 @@ dire(/NON PRÉVENU|non prévenu/i.test(table),
      'l’écran le dit clairement quand le client n’a PAS été prévenu',
      'sans ça, « course créée » laisse croire que c’est fait')
 
+/* ── 5. « Prévenu » doit vouloir dire prévenu ──────────────────────────
+   Défaut trouvé le 2026-11-07, le LENDEMAIN de la mise en ligne de la
+   section 1 : `send()` avalait toutes les erreurs et ne rendait rien. Le
+   `try/catch` de `convertirEnCourse` ne pouvait donc rien attraper, et
+   l'écran affichait « client prévenu par e-mail » même quand rien n'était
+   parti — y compris quand la clé Resend est absente et que la fonction sort
+   à la première ligne. Un faux vert est pire qu'une erreur : l'exploitant
+   n'a aucune raison de reprendre contact. */
+console.log(`\n${B}5. « prévenu » veut bien dire prévenu${Z}`)
+const email = readFileSync(resolve(RACINE, 'src/lib/email.ts'), 'utf8')
+dire(/async function send\([^)]*\)\s*:\s*Promise<boolean>/.test(email),
+     'send() rend un booléen : l’appelant peut savoir si le message est parti',
+     'sans retour, tout échec passe pour un succès')
+dire(/if \(r\?\.error\)/.test(email),
+     'la réponse de Resend est lue — le SDK ne lève pas, il rend { error }',
+     'une adresse refusée passerait pour un envoi réussi')
+const confirmation = email.slice(email.indexOf('export async function envoyerConfirmationClient'))
+dire(/return await send\(clientEmail/.test(confirmation.slice(0, 12000)),
+     'envoyerConfirmationClient rend cette réponse')
+dire(/courrielEnvoye = parti/.test(corps),
+     'l’écran des devis se fie à la réponse réelle, pas à l’absence d’exception')
+
+/* ── 6. Refuser, c'est le dire ─────────────────────────────────────────
+   Jusqu'au 2026-11-07, refuser une demande se faisait avec « supprimer » :
+   la ligne disparaissait et le client n'était prévenu de rien. Une demande
+   de transfert se prépare des semaines à l'avance — ce silence lui coûtait
+   un vrai rendez-vous. */
+console.log(`\n${B}6. refuser une demande prévient le client${Z}`)
+const refus = actions.slice(actions.indexOf('export async function refuserDevis'),
+                            actions.indexOf('export async function supprimerDevis'))
+dire(refus.length > 100, 'la fonction refuserDevis existe')
+dire(/envoyerRefusDevis\s*\(/.test(refus), 'elle envoie un refus au client')
+dire(/instantDepuisSaisieParis/.test(refus),
+     'la date du refus est convertie comme celle d’une acceptation',
+     'sans conversion, le client lirait une date décalée de deux heures')
+dire(/if \(courrielEnvoye \|\| !devis\.email\)/.test(refus),
+     'la demande n’est retirée que si le client a pu être prévenu',
+     'sinon une demande refusée disparaîtrait sans que personne ne le sache')
+dire(/motif/.test(refus) && /envoyerRefusDevis/.test(email),
+     'le motif est écrit par l’exploitant, jamais inventé')
+dire(/sans prévenir/i.test(table) && /Refuser/.test(table),
+     'l’écran distingue « refuser » (prévient) de « supprimer » (ne prévient pas)',
+     'deux boutons qui se ressemblent et ne font pas la même chose, c’est un piège')
+
 console.log('\n' + '─'.repeat(72))
 if (soucis.length) {
   console.log(`${R}${B}${ok} au vert, ${soucis.length} échec(s) :${Z}`)

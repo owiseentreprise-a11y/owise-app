@@ -57,7 +57,10 @@ export async function GET(req: Request) {
         : `${client?.prenom ?? ''} ${client?.nom ?? ''}`.trim() || ''
       const clientTel = client?.tel ?? null
 
-      const sends: Promise<void>[] = []
+      /* `Promise<unknown>` : depuis le 2026-11-07, `envoyerConfirmationClient`
+         rend un booléen disant si le message est parti. Ce cron ne s'en sert
+         pas — il envoie en lot — mais le type doit l'accepter. */
+      const sends: Promise<unknown>[] = []
 
       if (clientEmail) {
         sends.push(envoyerConfirmationClient({
