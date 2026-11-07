@@ -115,7 +115,10 @@ const TEXTES = {
   vehicule_passagers:     { fr: 'Véhicule & passagers',                en: 'Vehicle & passengers' },
   nombre_passagers:       { fr: 'Nombre de passagers',                 en: 'Number of passengers' },
   demandez_devis:         { fr: 'Demandez un devis',                   en: 'Request a quote' },
-  plus_de_7_avant:        { fr: 'Plus de 7 passagers ?',               en: 'More than 7 passengers?' },
+  /* 8 et non 7 depuis le 2026-11-07 : le Grand Van 8 places est devenu
+     reservable. Laisser « plus de 7 » enverrait vers un devis un client
+     qui peut desormais reserver en deux clics. */
+  plus_de_7_avant:        { fr: 'Plus de 8 passagers ?',               en: 'More than 8 passengers?' },
   plus_de_7_apres:        { fr: '— nous verifions la disponibilite avant toute reservation.',
                             en: '— we confirm availability before any booking.' },
   tarif_fixe_garanti:     { fr: 'Tarif fixe garanti',                  en: 'Fixed price guaranteed' },
@@ -126,6 +129,7 @@ const TEXTES = {
   calcul_itineraire:      { fr: 'Calcul de l’itinéraire…',             en: 'Calculating the route…' },
   forfait_zone:           { fr: 'Forfait zone',                        en: 'Fixed zone rate' },
   populaire:              { fr: 'Populaire',                           en: 'Popular' },
+  a_valider:              { fr: 'À valider',                           en: 'To confirm' },
   /* « 1–3 passagers » : le nombre vient de la gamme, jamais d'ici. */
   passagers_suffixe:      { fr: 'passagers',                           en: 'passengers' },
 
@@ -246,6 +250,11 @@ const TEXTES = {
   veh_berline_desc:       { fr: 'Berline récente, intérieur soigné',   en: 'Recent sedan, immaculate interior' },
   veh_premium_desc:       { fr: 'Berline haut de gamme',               en: 'Top-of-the-range sedan' },
   veh_van_desc:           { fr: 'Van récent, 7 places assises',        en: 'Recent van, 7 seats' },
+  veh_grand_van_desc:     { fr: 'Van 8 places — sous réserve de disponibilité', en: 'Van, 8 seats — subject to availability' },
+  /* Dit au client, AVANT qu'il saisisse sa carte, ce qui va se passer.
+     Sans cette phrase, il croirait avoir payé une course confirmée. */
+  veh_grand_van_note:     { fr: 'Votre carte sera retenue, pas débitée : nous confirmons la disponibilité sous 48 h, et vous ne payez rien si nous ne pouvons pas assurer le trajet.',
+                            en: 'Your card will be held, not charged: we confirm availability within 48 h, and you pay nothing if we cannot cover the journey.' },
 
   // ── Bandeau cookies ─────────────────────────────────────────────────
   /* Le bandeau est global : il s'affiche sur toutes les pages, donc aussi

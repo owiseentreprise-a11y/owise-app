@@ -248,6 +248,27 @@ const VEHICULES = [
     image: '/brand_assets/vehicle-van7.png',
     badge: null,
   },
+  /* Le Grand Van 8 places, ouvert a la reservation le 2026-11-07.
+   *
+   * Il est le SEUL vehicule dont la carte est retenue sans etre debitee :
+   * sa disponibilite depend d'un partenaire, et rien ne sait la verifier
+   * automatiquement — elle depend des enchainements de la journee. Le client
+   * reserve, l'exploitant valide sous 24 a 48 h, et c'est alors seulement que
+   * la somme est encaissee. S'il ne peut pas assurer, il libere : le client
+   * n'est jamais debite.
+   *
+   * `reserver/actions.ts` reconnait ce vehicule par sa cle `grand_van` et
+   * cree un blocage au lieu d'un paiement. Changer cette valeur ici sans la
+   * changer la-bas ferait encaisser immediatement une course que personne
+   * n'a validee. */
+  {
+    value: 'grand_van',
+    label: 'Grand Van 8 places',
+    places: '8',
+    descCle: 'veh_grand_van_desc' as const,
+    image: '/brand_assets/vehicle-grand-van-real.webp',
+    badgeCle: 'a_valider' as const,
+  },
 ]
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -1307,6 +1328,22 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 })}
               </div>
 
+              {/* L'avertissement du Grand Van, AVANT la carte bancaire.
+                  Le client doit savoir qu'il ne paie pas tout de suite et
+                  qu'une disponibilite reste a confirmer. Le lui apprendre
+                  apres le paiement serait un marche de dupes : il croirait
+                  sa course reservee et cesserait de chercher ailleurs. */}
+              {vehicule === 'grand_van' && (
+                <div style={{
+                  marginTop: 10, padding: '12px 14px', borderRadius: 10,
+                  background: 'rgba(232,160,48,.09)',
+                  border: '1px solid rgba(232,160,48,.4)',
+                  fontSize: 12, lineHeight: 1.65, color: 'var(--t1)',
+                }}>
+                  {L.veh_grand_van_note}
+                </div>
+              )}
+
               {/* Au-dela de 7 passagers, cette page n'offrait RIEN : les trois
                   cartes s'arretent au van, et le client repartait sans rien
                   demander. Ce lien ne promet aucun vehicule — il mene a la
@@ -1332,7 +1369,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                   <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.max(1, p - 1))}
                     style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--or-rvb),.1)', border: '1px solid rgba(var(--or-rvb),.25)', color: 'var(--sur-voile-or)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>−</button>
                   <span style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 22, fontWeight: 700, color: 'var(--t1)', minWidth: 24, textAlign: 'center' }}>{passagers}</span>
-                  <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'van' ? 7 : 4, p + 1))}
+                  <button className="pas-btn" type="button" onClick={() => setPassagers(p => Math.min(vehicule === 'grand_van' ? 8 : vehicule === 'van' ? 7 : 4, p + 1))}
                     style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--or-rvb),.1)', border: '1px solid rgba(var(--or-rvb),.25)', color: 'var(--sur-voile-or)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>+</button>
                 </div>
               </div>
