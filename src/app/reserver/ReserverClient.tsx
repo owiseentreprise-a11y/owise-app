@@ -14,6 +14,7 @@ import { fbInitCheckout, fbLead, fbViewContent, COOKIE_KEY } from '@/lib/pixel'
 import { logFunnel } from '@/lib/funnel'
 import { codeErreur } from '@/lib/funnel-confidentialite'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
+import { lireOrigine } from '@/lib/origine-visite'
 import ReservationSummary from './ReservationSummary'
 import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
 import { textes, messageDansLaLangue, JUMEAU_RESERVATION, type Langue } from '@/lib/langue'
@@ -590,6 +591,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
       /* Statistique, pas réservation : seulement la zone tarifaire reconnue
          et la commune. Les adresses complètes dont la course a réellement
          besoin partent au moment de la réservation, par un autre chemin. */
+      const org = lireOrigine()
       fetch('/api/estimations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -599,6 +601,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
           vehicule,
           prix:            montant,
           source:          'reservation',
+          /* Le détail demandé par l'exploitant le 2026-11-09, dans des champs
+             distincts : les deux lignes ci-dessus restent généralisées. */
+          adresse_depart_saisie:  depart.label.trim(),
+          adresse_arrivee_saisie: arrivee.label.trim(),
+          page:         typeof window !== 'undefined' ? window.location.pathname : null,
+          referent:     org.referent,
+          utm_source:   org.utm_source,
+          utm_campaign: org.utm_campaign,
+          gclid:        org.gclid,
         }),
       }).catch(() => {})
     }, 1200)

@@ -352,6 +352,7 @@ export default function MentionsLegalesClient() {
                 ['Paiement', 'Token de paiement Stripe (jamais les données de carte)'],
                 ['Courses', 'Historique des trajets, montants, évaluations'],
                 ['Navigation', 'Adresse IP, type de navigateur (si cookies analytiques acceptés)'],
+                ['Simulations de prix', 'Adresses de départ et de destination saisies dans le simulateur, prix affiché, véhicule, page consultée et site d’origine de la visite — sans nom ni coordonnées, et sans lien avec un compte'],
               ]} />
             </Section>
 
@@ -360,7 +361,7 @@ export default function MentionsLegalesClient() {
                 <><Strong>Exécution du service</Strong> — fourniture des courses, suivi en temps réel, paiement</>,
                 <><Strong>Gestion du compte</Strong> — création, authentification, historique</>,
                 <><Strong>Obligation légale</Strong> — facturation, archivage comptable, lutte contre la fraude</>,
-                <><Strong>Amélioration du service</Strong> — analyse statistique anonymisée (avec consentement)</>,
+                <><Strong>Amélioration du service</Strong> — analyse statistique des trajets recherchés et des prix affichés, afin de vérifier nos tarifs et d’adapter notre couverture. Ces mesures ne sont jamais rattachées à un nom, un e-mail ou un compte</>,
                 <><Strong>Communication</Strong> — notifications de course, e-mails transactionnels</>,
               ]} />
             </Section>
@@ -371,6 +372,7 @@ export default function MentionsLegalesClient() {
                 ['Historique courses', '5 ans (obligation comptable)'],
                 ['Données de connexion', '12 mois (logs de sécurité)'],
                 ['Cookies analytiques', '13 mois maximum'],
+                ['Simulations de prix', '12 mois, puis effacement automatique des adresses saisies (la statistique anonyme — commune, véhicule, prix — est conservée)'],
                 ['Après suppression', 'Anonymisation immédiate des données non légalement archivées'],
               ]} />
             </Section>

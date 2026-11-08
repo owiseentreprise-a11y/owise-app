@@ -11,7 +11,26 @@ type Estimation = {
   prix: number | null
   source: string
   created_at: string
+  /* Ajoutés le 2026-11-09. Nuls sur toutes les lignes antérieures : l'écran
+     doit donc rester lisible sans eux, et ne jamais afficher « null ». */
+  adresse_depart_saisie: string | null
+  adresse_arrivee_saisie: string | null
+  page: string | null
+  canal: string | null
+  referent: string | null
+  utm_source: string | null
+  utm_campaign: string | null
 }
+
+/** Le canal d'arrivée, écrit pour un humain. */
+const CANAL_LABEL: Record<string, string> = {
+  direct: 'Direct', google: 'Google', google_ads: 'Google Ads', recherche: 'Autre moteur',
+  chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini',
+  copilot: 'Copilot', reseaux: 'Réseaux sociaux', message: 'Messagerie',
+  fiche_google: 'Fiche Google', interne: 'Navigation interne',
+}
+/* Les assistants ressortent en or : c'est le canal qui amène des clients. */
+const CANAUX_ASSISTANTS = new Set(['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'])
 
 /* Derive de `gamme.ts`, jamais reecrite ici. Le projet portait CINQ
    orthographes du van (« Van », « Van 7 places », « Van 7 pl. ») et QUATRE du
@@ -131,6 +150,27 @@ export default async function EstimationsPage() {
     vhMap[k] = (vhMap[k] ?? 0) + 1
   }
 
+  /* Répartition par canal d'arrivée. Les lignes d'avant le 2026-11-09 n'ont
+     pas de canal : on les compte à part plutôt que de les ranger en « direct »,
+     ce qui gonflerait le direct d'un trafic dont on ne sait simplement rien. */
+  const canalMap: Record<string, number> = {}
+  let sansCanal = 0
+  for (const e of estimations) {
+    if (!e.canal) { sansCanal++; continue }
+    canalMap[e.canal] = (canalMap[e.canal] ?? 0) + 1
+  }
+  const topCanaux = Object.entries(canalMap).sort((a, b) => b[1] - a[1]).slice(0, 8)
+  const totalCanaux = Object.values(canalMap).reduce((s, n) => s + n, 0)
+
+  /* Pages qui déclenchent une simulation. Sans canal connu, c'est déjà un
+     indice de ce qui fait travailler le site. */
+  const pageMap: Record<string, number> = {}
+  for (const e of estimations) {
+    if (!e.page) continue
+    pageMap[e.page] = (pageMap[e.page] ?? 0) + 1
+  }
+  const topPages = Object.entries(pageMap).sort((a, b) => b[1] - a[1]).slice(0, 6)
+
   // ── Render ──────────────────────────────────────────────
   const card = {
     background: '#FFFFFF',
@@ -234,6 +274,60 @@ export default async function EstimationsPage() {
         </div>
       </div>
 
+      {/* Canal d'arrivée + pages qui déclenchent une simulation */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
+
+        <div style={card}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+            Par où ils sont arrivés
+          </div>
+          {topCanaux.length === 0 ? (
+            <div style={{ fontSize: 12, color: '#bbb' }}>
+              Aucune donnée encore — le canal est relevé depuis le 9 novembre 2026.
+            </div>
+          ) : topCanaux.map(([canal, count]) => {
+            const pct = totalCanaux > 0 ? Math.round((count / totalCanaux) * 100) : 0
+            return (
+              <div key={canal} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 7 }}>
+                <span style={{
+                  flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  color: CANAUX_ASSISTANTS.has(canal) ? '#C9A84C' : '#555',
+                  fontWeight: CANAUX_ASSISTANTS.has(canal) ? 600 : 400,
+                }}>
+                  {CANAL_LABEL[canal] ?? canal}
+                </span>
+                <span style={{ fontFamily: 'monospace', color: '#666', flexShrink: 0 }}>
+                  {count}× <span style={{ color: '#bbb' }}>({pct}%)</span>
+                </span>
+              </div>
+            )
+          })}
+          {/* Dit explicitement ce qu'on ne sait pas, au lieu de le ranger en
+              « direct » : un chiffre muet est pire qu'un chiffre absent. */}
+          {sansCanal > 0 && (
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,.06)', fontSize: 10, color: '#bbb' }}>
+              {sansCanal} estimation{sansCanal > 1 ? 's' : ''} sans canal connu — antérieure{sansCanal > 1 ? 's' : ''} au relevé.
+            </div>
+          )}
+        </div>
+
+        <div style={card}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+            Pages qui déclenchent une simulation
+          </div>
+          {topPages.length === 0 ? (
+            <div style={{ fontSize: 12, color: '#bbb' }}>
+              Aucune donnée encore — la page est relevée depuis le 9 novembre 2026.
+            </div>
+          ) : topPages.map(([p, count]) => (
+            <div key={p} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 7 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#555', flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</span>
+              <span style={{ fontFamily: 'monospace', color: '#666', flexShrink: 0 }}>{count}×</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Table des estimations récentes */}
       <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
         <div style={{
@@ -248,13 +342,14 @@ export default async function EstimationsPage() {
 
         {/* Thead */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '130px 1fr 1fr 100px 80px 80px',
+          display: 'grid', gridTemplateColumns: '115px 1fr 1fr 110px 95px 68px 70px',
           padding: '7px 22px', fontSize: 9, letterSpacing: '.15em', textTransform: 'uppercase',
           color: '#ccc', fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,.05)',
         }}>
           <div>Date</div>
           <div>Départ</div>
           <div>Arrivée</div>
+          <div>Canal &amp; page</div>
           <div>Véhicule</div>
           <div>Prix</div>
           <div>Source</div>
@@ -266,7 +361,7 @@ export default async function EstimationsPage() {
           </div>
         ) : estimations.slice(0, 100).map((e, i) => (
           <div key={e.id} style={{
-            display: 'grid', gridTemplateColumns: '130px 1fr 1fr 100px 80px 80px',
+            display: 'grid', gridTemplateColumns: '115px 1fr 1fr 110px 95px 68px 70px',
             padding: '10px 22px', alignItems: 'center',
             borderBottom: i < 99 ? '1px solid rgba(0,0,0,.04)' : 'none',
             fontSize: 11,
@@ -281,9 +376,53 @@ export default async function EstimationsPage() {
                   {extractCity(e.adresse_depart)}
                 </div>
               )}
+              {/* L'adresse telle que le visiteur l'a tapée. Nulle avant le
+                  2026-11-09 : la ligne disparaît au lieu d'afficher « null ». */}
+              {e.adresse_depart_saisie && (
+                <div title={e.adresse_depart_saisie} style={{
+                  color: '#999', fontSize: 9, marginTop: 2,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {e.adresse_depart_saisie}
+                </div>
+              )}
             </div>
-            <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 12, fontSize: 11 }}>
-              {shortAddr(e.adresse_arrivee)}
+            <div style={{ paddingRight: 12, overflow: 'hidden' }}>
+              <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
+                {shortAddr(e.adresse_arrivee)}
+              </div>
+              {e.adresse_arrivee_saisie && (
+                <div title={e.adresse_arrivee_saisie} style={{
+                  color: '#999', fontSize: 9, marginTop: 2,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {e.adresse_arrivee_saisie}
+                </div>
+              )}
+            </div>
+            <div style={{ paddingRight: 10, overflow: 'hidden' }}>
+              {e.canal ? (
+                <div
+                  title={e.referent || undefined}
+                  style={{
+                    fontSize: 10, fontWeight: 600,
+                    color: CANAUX_ASSISTANTS.has(e.canal) ? '#C9A84C' : '#555',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}
+                >
+                  {CANAL_LABEL[e.canal] ?? e.canal}
+                </div>
+              ) : (
+                <div style={{ fontSize: 10, color: '#ccc' }}>—</div>
+              )}
+              {e.page && (
+                <div title={e.page} style={{
+                  fontFamily: 'monospace', fontSize: 9, color: '#999', marginTop: 2,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {e.page}
+                </div>
+              )}
             </div>
             <div style={{ color: '#666' }}>{e.vehicule ? (VH_LABEL[e.vehicule] ?? e.vehicule) : '—'}</div>
             <div style={{ fontFamily: 'monospace', fontWeight: 600, color: e.prix ? '#C9A84C' : '#ccc' }}>

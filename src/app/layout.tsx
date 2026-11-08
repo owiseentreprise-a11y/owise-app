@@ -5,6 +5,7 @@ import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import GAPageView from '@/components/GAPageView'
+import OrigineVisite from '@/components/OrigineVisite'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -51,6 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </PHProvider>
         <GoogleAnalytics />
         <GAPageView />
+        {/* Relève le canal d'arrivée à l'ouverture de l'onglet. Doit être sur
+            TOUTES les pages : le référent n'est juste qu'à la première, et une
+            page d'arrivée manquante ferait passer du trafic Google ou ChatGPT
+            pour du trafic direct. */}
+        <OrigineVisite />
         <CookieBanner />
         {/* Étape 90 : les deux mesures Vercel passent par un composant qui
             attend le consentement. Voir MesureVercel.tsx pour le détail des

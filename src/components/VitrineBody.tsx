@@ -49,6 +49,7 @@ import {
   lireConsentement, ecrireConsentement, EVENEMENT_OUVRIR_PANNEAU,
 } from '@/lib/consentement'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
+import { lireOrigine } from '@/lib/origine-visite'
 import { logFunnel } from '@/lib/funnel'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixFixePour, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
@@ -835,6 +836,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
            deux fois la même estimation. */
         const zDep = detectZone(bcDepart.cp ?? '', zonesProp, bcDepart.label)
         const zArr = detectZone(bcArrivee.cp ?? '', zonesProp, bcArrivee.label)
+        const org = lireOrigine()
         fetch('/api/estimations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -844,6 +846,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             vehicule:        vh,
             prix:            prixFinal,
             source:          'vitrine',
+            /* Le détail demandé par l'exploitant le 2026-11-09. Il part dans
+               des champs distincts : les deux lignes ci-dessus restent
+               généralisées et restent la source des agrégats. */
+            adresse_depart_saisie:  dep,
+            adresse_arrivee_saisie: arr,
+            page:         typeof window !== 'undefined' ? window.location.pathname : null,
+            referent:     org.referent,
+            utm_source:   org.utm_source,
+            utm_campaign: org.utm_campaign,
+            gclid:        org.gclid,
           }),
         }).catch(() => {})
       }
