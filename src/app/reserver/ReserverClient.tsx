@@ -363,8 +363,10 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
       const lower = label.toLowerCase()
       const lieu  = LIEUX_CONNUS.find(l => l.keywords.some(k => k === lower) || l.label.toLowerCase() === lower)
       if (lieu) {
-        const cpMatch = lieu.sublabel.match(/\b(\d{5})\b/)
-        setter({ label: lieu.label, codePostal: cpMatch?.[1] ?? '', lat: lieu.lat, lng: lieu.lng })
+        /* `lieu.codePostal`, pas une relecture de `sublabel` : celui-ci est un
+           texte d'interface, et le relire à l'expression régulière faisait une
+           deuxième écriture d'une donnée qui existe déjà. */
+        setter({ label: lieu.label, codePostal: lieu.codePostal, lat: lieu.lat, lng: lieu.lng })
       }
     }
     const dep = searchParams.get('depart')
