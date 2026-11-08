@@ -84,7 +84,7 @@ export default async function EstimationsPage() {
     return (
       <div style={{ padding: 40, maxWidth: 700 }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#0A0A0A', marginBottom: 16 }}>
-          Estimations anonymes
+          Simulations de prix
         </h1>
         <div style={{
           background: 'rgba(201,168,76,.06)', border: '1.5px solid rgba(201,168,76,.25)',
@@ -188,10 +188,10 @@ export default async function EstimationsPage() {
           fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
           color: '#0A0A0A', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
         }}>
-          Estimations anonymes
+          Simulations de prix
         </h1>
         <p style={{ fontSize: 12, color: '#888' }}>
-          Recherches de prix sans saisie d&apos;informations personnelles — widget vitrine & page réservation
+          Ce que les visiteurs ont cherché : adresses saisies, prix affiché, page et canal d’arrivée
         </p>
       </div>
 

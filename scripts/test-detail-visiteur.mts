@@ -134,6 +134,15 @@ verifier('la page ne prétend plus que la mesure est anonymisée',
   !/analyse statistique anonymisée/.test(legales),
   'le texte annonce encore une analyse anonymisée')
 
+/* L'écran d'administration l'annonçait aussi — « Estimations anonymes »,
+   « sans saisie d'informations personnelles ». Un écran qui se décrit à
+   l'envers finit par être cru sur parole. */
+const ecran = lire('src/app/admin/estimations/page.tsx')
+verifier('l\'écran ne s\'annonce plus anonyme',
+  !/Estimations anonymes/.test(ecran), 'le titre dit encore « Estimations anonymes »')
+verifier('l\'écran ne promet plus l\'absence d\'informations personnelles',
+  !/sans saisie d&apos;informations personnelles/.test(ecran), 'le sous-titre le promet encore')
+
 const purge = lire('src/app/api/cron/purge-estimations/route.ts')
 verifier('la tâche d\'effacement lit la même constante',
   purge.includes('MOIS_CONSERVATION_SIMULATIONS'), 'absent')
