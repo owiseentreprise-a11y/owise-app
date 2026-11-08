@@ -266,7 +266,13 @@ const VEHICULES = [
     label: 'Grand Van 8 places',
     places: '8',
     descCle: 'veh_grand_van_desc' as const,
-    image: '/brand_assets/vehicle-grand-van-real.webp',
+    /* `vehicle-grand-van.png` et non `-real.webp`.
+       Les trois autres cartes de ce tunnel sont des illustrations 3D sur
+       fond uni (bleu clair, bleu nuit, crème). `-real.webp` est une vraie
+       photographie d'un van noir dans une rue : juste, mais visuellement
+       étrangère aux trois autres. C'est la version illustrée qu'emploie
+       déjà la vitrine pour ce même véhicule. */
+    image: '/brand_assets/vehicle-grand-van.png',
     badgeCle: 'a_valider' as const,
   },
 ]
