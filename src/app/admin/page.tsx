@@ -95,6 +95,30 @@ export default async function AdminDashboard() {
     })
     .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())
 
+  /* CE QUI EST DEVANT, ET CE QUI EST DERRIÈRE.
+
+     Le tableau de bord n'affichait qu'une liste, « Courses récentes » :
+     les douze dernières par date. Quand rien n’est réservé — le cas le
+     2026-11-09 — elle ne montre que des courses terminées, et la page
+     entière parle du passé. Or ce qu'un exploitant ouvre son tableau de
+     bord pour savoir, c’est ce qui l’attend.
+
+     Les deux listes sont séparées, et celle du devant reste visible même
+     vide : « aucune course prévue » est en soi le renseignement le plus
+     utile de la journée.
+
+     On compare des INSTANTS, jamais des heures murales — `date_prevue`
+     porte son fuseau, et `lireHeureCourse` est la seule porte de lecture
+     autorisée (voir la règle dans @/lib/heure). */
+  const maintenant = Date.now()
+  const aVenir = courses
+    .filter(c => c.statut !== 'annulee' && c.statut !== 'terminee'
+      && lireHeureCourse(c.date_prevue).getTime() >= maintenant)
+    .sort((a, b) => lireHeureCourse(a.date_prevue).getTime() - lireHeureCourse(b.date_prevue).getTime())
+  const passees = courses
+    .filter(c => lireHeureCourse(c.date_prevue).getTime() < maintenant
+      || c.statut === 'terminee' || c.statut === 'annulee')
+
   // CA jour : terminée (prix_final) + en attente (prix_estime)
   const caJourTerminee = coursesAujourdHui
     .filter(c => c.statut === 'terminee')
@@ -131,6 +155,73 @@ export default async function AdminDashboard() {
     statut: c.statut,
     profiles: Array.isArray(c.profiles) ? (c.profiles[0] ?? null) : (c.profiles ?? null),
   }))
+
+  /**
+   * Une ligne de la liste des courses.
+   *
+   * Écrite UNE fois et donnée aux deux listes : « À venir » et
+   * « Dernières courses ». Deux copies de la même ligne auraient fini par
+   * diverger — c'est exactement ce qui est arrivé au document de facture,
+   * qui existait en quatre dessins.
+   */
+  const ligneCourse = (course: Course, i: number, arr: Course[]) => {
+    const client   = (course as any).clients
+    const chauffeur = (course as any).chauffeurs
+    const passagerLibreNom = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
+    const clientNom = client?.profiles
+      ? `${client.profiles.prenom} ${client.profiles.nom}`
+      : client?.entreprise_nom ?? (passagerLibreNom || '—')
+    const chauffeurNom = chauffeur?.profiles
+      ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
+      : '—'
+    const date = lireHeureCourse(course.date_prevue)
+    return (
+      <a key={course.id} href={`/admin/courses/${course.id}`} style={{
+        display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
+        padding: '11px 20px', borderBottom: i < arr.length - 1 ? '1px solid var(--gb)' : 'none',
+        textDecoration: 'none', alignItems: 'center',
+      }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 1 }}>
+            {course.adresse_depart.split(',')[0]}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--t2)' }}>→ {course.adresse_arrivee.split(',')[0]}</div>
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--t2)' }}>{clientNom}</div>
+        <div style={{ fontSize: 11, color: 'var(--t2)' }}>{chauffeurNom}</div>
+        <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
+          {isNaN(date.getTime()) ? '—' : (
+            <>
+              {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+              {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </>
+          )}
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <span style={{
+            fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500,
+            color: STATUT_COURSE_COLOR[course.statut],
+            background: `${STATUT_COURSE_COLOR[course.statut]}18`,
+            border: `1px solid ${STATUT_COURSE_COLOR[course.statut]}30`,
+          }}>
+            {STATUT_COURSE_LABEL[course.statut]}
+          </span>
+        </div>
+      </a>
+    )
+  }
+
+  /** L’en-tête de colonnes, identique au-dessus des deux listes. */
+  const enteteColonnes = (
+    <div className="adm-cartes-entete" style={{
+      display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
+      padding: '8px 20px', fontSize: 9.5, letterSpacing: '.1em',
+      textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 500,
+      borderBottom: '1px solid rgba(201,168,76,.05)',
+    }}>
+      <div>Trajet</div><div>Client</div><div>Chauffeur</div><div>Date</div><div style={{ textAlign: 'right' }}>Statut</div>
+    </div>
+  )
 
   return (
     <>
@@ -227,7 +318,10 @@ export default async function AdminDashboard() {
             <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 8 }}>Aujourd&apos;hui</div>
             <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 26, fontWeight: 500, color: 'var(--t1)', lineHeight: 1 }}>
               {coursesAujourdHui.length}
-              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>courses</span>
+              {/* « 1 courses » s'affichait au singulier comme au pluriel. */}
+              <span style={{ fontSize: 11, color: 'var(--t2)', fontWeight: 400, marginLeft: 5 }}>
+                course{coursesAujourdHui.length > 1 ? 's' : ''}
+              </span>
             </div>
             {coursesEnAttente.length > 0 && coursesAujourdHui.length === 0 && (
               <div style={{ fontSize: 10, color: 'var(--amb)', marginTop: 5 }}>
@@ -529,85 +623,78 @@ export default async function AdminDashboard() {
               </div>
             )}
 
-            {/* Courses récentes */}
+            {/* ── CE QUI EST DEVANT ─────────────────────────────────────
+
+                Cette carte reste visible même vide. « Aucune course prévue »
+                est le renseignement le plus utile d’une journée creuse, et
+                une carte qui disparaît ne le dit pas. */}
             <div style={{
               background: 'var(--surface)', border: '1px solid var(--gb)',
               borderRadius: 12, overflow: 'hidden',
             }}>
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '14px 20px', borderBottom: '1px solid rgba(201,168,76,.07)',
+                padding: '13px 20px 11px',
+                borderBottom: '1px solid rgba(201,168,76,.07)',
               }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>Courses récentes</div>
-                <Link href="/admin/courses" style={{ fontSize: 11, color: 'var(--t2)', textDecoration: 'none' }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>
+                  À venir {aVenir.length > 0 ? `(${aVenir.length})` : ''}
+                </div>
+                <Link href="/admin/planning" style={{
+                  fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
+                }}>
+                  Planning →
+                </Link>
+              </div>
+
+              {/* Pas d en-tete au-dessus du vide : nommer cinq colonnes qui
+                  n existent pas donne l air d un tableau casse. */}
+              {aVenir.length > 0 && enteteColonnes}
+
+              {aVenir.length === 0 ? (
+                <div style={{ padding: '26px 20px', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--t3)', fontSize: 12.5, marginBottom: 10 }}>
+                    Aucune course prévue
+                  </div>
+                  <Link href="/admin/courses/nouvelle" style={{
+                    display: 'inline-block', padding: '8px 16px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 600, background: 'var(--gm)',
+                    border: '1px solid var(--gb)', color: 'var(--gold)',
+                    textDecoration: 'none',
+                  }}>
+                    Enregistrer une course
+                  </Link>
+                </div>
+              ) : aVenir.slice(0, 8).map(ligneCourse)}
+            </div>
+
+            {/* ── CE QUI EST DERRIÈRE ───────────────────────────────── */}
+            <div style={{
+              background: 'var(--surface)', border: '1px solid var(--gb)',
+              borderRadius: 12, overflow: 'hidden',
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '13px 20px 11px',
+                borderBottom: '1px solid rgba(201,168,76,.07)',
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>
+                  Dernières courses
+                </div>
+                <Link href="/admin/courses" style={{
+                  fontSize: 11, color: 'var(--t2)', textDecoration: 'none',
+                }}>
                   Voir tout →
                 </Link>
               </div>
 
-              {/* Header */}
-              {/* `adm-cartes-entete` : sous 900 px la ligne s'empile, et cet
-                  en-tête nomme des colonnes qui n'existent plus — il se
-                  repliait en escalier, « TRAJET / CHAUFFEUR » sur deux
-                  lignes. */}
-              <div className="adm-cartes-entete" style={{
-                display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
-                padding: '8px 20px', fontSize: 9.5, letterSpacing: '.1em',
-                textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 500,
-                borderBottom: '1px solid rgba(201,168,76,.05)',
-              }}>
-                <div>Trajet</div><div>Client</div><div>Chauffeur</div><div>Date</div><div style={{ textAlign: 'right' }}>Statut</div>
-              </div>
+              {passees.length > 0 && enteteColonnes}
 
-              {courses.length === 0 ? (
-                <div style={{ padding: '36px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
+              {passees.length === 0 ? (
+                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--t3)', fontSize: 12 }}>
                   Aucune course
                 </div>
-              ) : courses.slice(0, 12).map((course, i, arr) => {
-                const client   = (course as any).clients
-                const chauffeur = (course as any).chauffeurs
-                const passagerLibreNom = `${(course as any).passager_prenom ?? ''} ${(course as any).passager_nom ?? ''}`.trim()
-                const clientNom = client?.profiles
-                  ? `${client.profiles.prenom} ${client.profiles.nom}`
-                  : client?.entreprise_nom ?? (passagerLibreNom || '—')
-                const chauffeurNom = chauffeur?.profiles
-                  ? `${chauffeur.profiles.prenom} ${chauffeur.profiles.nom}`
-                  : '—'
-                const date = lireHeureCourse(course.date_prevue)
-                return (
-                  <a key={course.id} href={`/admin/courses/${course.id}`} style={{
-                    display: 'grid', gridTemplateColumns: '1fr 110px 110px 90px 70px',
-                    padding: '11px 20px', borderBottom: i < arr.length - 1 ? '1px solid var(--gb)' : 'none',
-                    textDecoration: 'none', alignItems: 'center',
-                  }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)', marginBottom: 1 }}>
-                        {course.adresse_depart.split(',')[0]}
-                      </div>
-                      <div style={{ fontSize: 10, color: 'var(--t2)' }}>→ {course.adresse_arrivee.split(',')[0]}</div>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--t2)' }}>{clientNom}</div>
-                    <div style={{ fontSize: 11, color: 'var(--t2)' }}>{chauffeurNom}</div>
-                    <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 10, color: 'var(--t3)' }}>
-                      {isNaN(date.getTime()) ? '—' : (
-                        <>
-                          {date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                          {' · '}{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                        </>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{
-                        fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500,
-                        color: STATUT_COURSE_COLOR[course.statut],
-                        background: `${STATUT_COURSE_COLOR[course.statut]}18`,
-                        border: `1px solid ${STATUT_COURSE_COLOR[course.statut]}30`,
-                      }}>
-                        {STATUT_COURSE_LABEL[course.statut]}
-                      </span>
-                    </div>
-                  </a>
-                )
-              })}
+              ) : passees.slice(0, 8).map(ligneCourse)}
             </div>
           </div>
 
