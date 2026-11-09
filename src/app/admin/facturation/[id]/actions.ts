@@ -16,6 +16,16 @@ import { dateCourse } from '@/lib/heure'
  */
 export async function envoyerFactureParEmail(
   factureId: string,
+  /**
+   * « moi » envoie le message a la messagerie d'Owise au lieu du client.
+   *
+   * L'exploitant, le 2026-11-09 : « pouvoir les envoyer vers une messagerie
+   * avant, pour les checker avant de les envoyer au client ». Le devis avait
+   * un ecran de brouillon ; la facture partait directement, sans rien
+   * montrer. Le message et la piece jointe sont identiques a ceux du
+   * client : seul le sujet est prefixe.
+   */
+  destinataire: 'client' | 'moi' = 'client',
 ): Promise<{ error?: string; envoyeA?: string }> {
   const supabase = await requireAdminClient()
 
@@ -31,8 +41,20 @@ export async function envoyerFactureParEmail(
   if (!facture) return { error: 'Facture introuvable' }
   if (!facture.client_id) return { error: 'Aucun client rattaché à cette facture' }
 
-  const email = await getUserEmail(facture.client_id)
-  if (!email) return { error: "Ce client n'a pas d'adresse e-mail enregistrée" }
+  const emailClient = await getUserEmail(facture.client_id)
+  if (!emailClient) return { error: "Ce client n'a pas d'adresse e-mail enregistrée" }
+
+  /* L'adresse d'Owise vient des reglages, jamais ecrite en dur ici. */
+  let email = emailClient
+  if (destinataire === 'moi') {
+    const { data: identite } = await supabase
+      .from('parametres').select('societe_email').eq('id', true).single()
+    const aMoi = identite?.societe_email as string | undefined
+    if (!aMoi) {
+      return { error: "Aucune adresse e-mail d'entreprise dans Paramètres : impossible de s'envoyer un exemplaire." }
+    }
+    email = aMoi
+  }
 
   const c = (facture as any).clients
   const clientNom = c?.type_compte === 'entreprise'
@@ -68,6 +90,7 @@ export async function envoyerFactureParEmail(
       dejaReglee: facture.statut === 'payee',
       modePaiement: facture.mode_paiement ?? null,
       factureId,
+      exemplaire: destinataire === 'moi',
     })
   } catch (e) {
     return { error: `Envoi impossible : ${(e as Error).message}` }

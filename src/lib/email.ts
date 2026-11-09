@@ -722,6 +722,18 @@ export async function envoyerNouvelleFacture(params: {
    */
   pieceJointeFournie?: PieceJointe
   /**
+   * EXEMPLAIRE DE CONTROLE, envoyé à la messagerie d'Owise et non au
+   * client.
+ *
+   * Demandé par l'exploitant le 2026-11-09 : « pouvoir les envoyer vers une
+   * messagerie avant, la messagerie de l'entreprise, pour les checker avant
+   * de les envoyer au client ». Le corps du message et la pièce jointe sont
+   * EXACTEMENT ceux que le client recevrait — sinon on validerait un
+   * message et on en expédierait un autre. Seul le sujet est préfixé, pour
+   * que les deux ne se confondent pas dans la boîte de réception.
+   */
+  exemplaire?: boolean
+  /**
    * Client sans compte sur le site. Le message n'annonce alors ni espace
    * client ni bouton « Voir ma facture » : le lien mènerait à un écran de
    * connexion impossible à franchir, et une facture qu'on ne peut pas ouvrir
@@ -809,10 +821,11 @@ export async function envoyerNouvelleFacture(params: {
   `)
   // Le sujet dit l'essentiel sans ouvrir : une facture acquittée n'appelle
   // aucune action du client.
+  const sujet = dejaReglee
+    ? `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC – réglée`
+    : `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC`
   await send(clientEmail,
-    dejaReglee
-      ? `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC – réglée`
-      : `Facture ${factureNumero} – ${formaterMontant(montantTtc)} TTC`,
+    params.exemplaire ? `[Exemplaire, non envoyé au client] ${sujet}` : sujet,
     html,
     pieceJointe ? [pieceJointe] : undefined)
 }

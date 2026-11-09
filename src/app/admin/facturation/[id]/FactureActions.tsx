@@ -28,12 +28,16 @@ export default function FactureActions({
     })
   }
 
-  function envoyerFacture() {
+  function envoyerFacture(destinataire: 'client' | 'moi' = 'client') {
     startTransition(async () => {
-      const r = await envoyerFactureParEmail(factureId)
+      const r = await envoyerFactureParEmail(factureId, destinataire)
       setSendOk(!r.error)
-      setSendMsg(r.error ?? `Facture envoyée à ${r.envoyeA}`)
-      setTimeout(() => setSendMsg(null), 8000)
+      setSendMsg(r.error ?? (
+        destinataire === 'moi'
+          ? `Exemplaire envoyé à ${r.envoyeA} — le client n’a rien reçu`
+          : `Facture envoyée à ${r.envoyeA}`
+      ))
+      setTimeout(() => setSendMsg(null), 10000)
     })
   }
 
@@ -70,8 +74,35 @@ export default function FactureActions({
 
       {/* Toujours disponible, réglée ou non : c'est le document que le client
           attend. Le lien de paiement, lui, n'a de sens que si elle est impayée. */}
+      {/* RELIRE AVANT D ENVOYER.
+
+          L'exploitant, le 2026-11-09 : « pouvoir les envoyer vers une
+          messagerie avant, la messagerie de l'entreprise, pour les checker
+          avant de les envoyer au client ». Le devis avait un écran de
+          brouillon depuis le 2026-11-02 ; la facture, elle, partait au client
+          dès le premier clic, sans rien montrer.
+
+          L'exemplaire est le message EXACT que le client recevrait, pièce
+          jointe comprise : seul le sujet est préfixé. Valider un message et
+          en expédier un autre n'aurait servi à rien. */}
       <button
-        onClick={envoyerFacture}
+        onClick={() => envoyerFacture('moi')}
+        disabled={pending}
+        style={{
+          width: '100%', padding: '11px',
+          borderRadius: 8,
+          background: 'var(--gm)', border: '1px solid var(--gb)',
+          color: 'var(--gold)', fontSize: 12, fontWeight: 600,
+          cursor: pending ? 'wait' : 'pointer',
+          opacity: pending ? .6 : 1,
+          fontFamily: 'var(--font-dm-sans), sans-serif',
+        }}
+      >
+        M’envoyer un exemplaire pour relecture
+      </button>
+
+      <button
+        onClick={() => envoyerFacture('client')}
         disabled={pending}
         style={{
           width: '100%', padding: '12px',
@@ -83,7 +114,7 @@ export default function FactureActions({
           fontFamily: 'var(--font-dm-sans), sans-serif',
         }}
       >
-        Envoyer la facture par e-mail
+        Envoyer la facture au client
       </button>
 
       {stripePaymentLink && statut !== 'payee' && (

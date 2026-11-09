@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation'
 import { formaterMontant } from '@/lib/montant'
 import { calculerTotal, ligneVide, STATUTS, type DevisClient, type LigneDevis } from '@/lib/devis-client'
 import { ANNULATION_MENTION, ATTENTE_MENTION } from '@/lib/conditions'
-import { changerStatutDevis, convertirDevisEnCourses, enregistrerDevis, supprimerDevisClient } from '../actions'
+import {
+  changerStatutDevis, convertirDevisEnCourses, enregistrerDevis, facturerDevisAction,
+  supprimerDevisClient,
+} from '../actions'
 
 /* Les styles sont en ligne comme sur le reste de l'administration. Les
    largeurs de colonnes passent par une grille nommée, pour qu'un seul
@@ -321,6 +324,38 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           {Object.entries(STATUTS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
 
+        {/* LE DEVIS DEVIENT UNE FACTURE.
+
+            Demandé par l'exploitant le 2026-11-09 : « transformer ce devis
+            en facture et en réservation en même temps ». Le bouton
+            n'apparaît qu'une fois le devis accepté — facturer un devis que
+            le client n'a pas validé n'a pas de sens, et l'ordre
+            « prestation puis facture » est celui que l'exploitant décrit
+            lui-même.
+
+            Il exige un client enregistré : c'est `factures.client_id` qui
+            rattache une facture à quelqu'un. L'action le dit en toutes
+            lettres quand il manque, plutôt que d'échouer en silence. */}
+        {devis.statut === 'accepte' && (
+          <button type="button" disabled={enCours}
+                  onClick={() => demarrer(async () => {
+                    setErreur(''); setMessage('')
+                    try {
+                      const r = await facturerDevisAction(devis.id)
+                      if ('clientManquant' in r) {
+                        setMessage(`Aucune fiche client pour ${devis.client_email} — on la crée d’abord.`)
+                        router.push(r.clientManquant)
+                        return
+                      }
+                      router.push(`/admin/facturation/${r.factureId}`)
+                    } catch (err) { setErreur(err instanceof Error ? err.message : 'Facturation impossible.') }
+                  })}
+                  style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)',
+                           color: '#9A7A2A', borderRadius: 9, padding: '12px 18px', fontSize: 13,
+                           fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Créer la facture
+          </button>
+        )}
         {devis.statut !== 'accepte' && (
           <button type="button" disabled={enCours}
                   onClick={() => demarrer(async () => {

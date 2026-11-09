@@ -55,12 +55,14 @@ export default function BrouillonEnvoi(p: Props) {
     ? obstacles
     : obstacles.filter(o => !o.startsWith('Ce devis n\'a pas d\'adresse'))
 
-  function envoyer() {
+  function envoyer(aQui: 'client' | 'moi' = 'client') {
     demarrer(async () => {
       setErreur(''); setMessage('')
       try {
-        const a = await envoyerDevisAction(p.id)
-        setMessage(`Devis envoyé à ${a}.`)
+        const a = await envoyerDevisAction(p.id, aQui)
+        setMessage(aQui === 'moi'
+          ? `Exemplaire envoyé à ${a} — le client n’a rien reçu, et le devis reste en brouillon.`
+          : `Devis envoyé à ${a}.`)
         router.refresh()
       } catch (e) {
         setErreur(e instanceof Error ? e.message : "L'envoi a échoué.")
@@ -231,7 +233,18 @@ export default function BrouillonEnvoi(p: Props) {
               display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
               marginTop: 20, paddingTop: 18, borderTop: '1px solid rgba(0,0,0,.08)',
             }}>
-              <button type="button" onClick={envoyer} disabled={enCours || bloquants.length > 0}
+              {/* Relire dans sa propre boite avant d envoyer au client.
+                  Le devis reste en brouillon : voir envoyerDevisAction. */}
+              <button type="button" onClick={() => envoyer('moi')} disabled={enCours}
+                      style={{
+                        background: 'none', border: '1px solid rgba(201,168,76,.45)',
+                        color: '#9A7A2A', borderRadius: 9, padding: '12px 18px',
+                        fontSize: 13, fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
+                        fontFamily: 'inherit', marginRight: 10,
+                      }}>
+                M’envoyer un exemplaire
+              </button>
+              <button type="button" onClick={() => envoyer('client')} disabled={enCours || bloquants.length > 0}
                       title={bloquants[0] ?? undefined}
                       style={{
                         background: bloquants.length ? 'rgba(0,0,0,.08)' : '#C9A84C',

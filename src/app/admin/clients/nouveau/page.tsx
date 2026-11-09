@@ -5,12 +5,26 @@ import SubmitButton from '../../components/SubmitButton'
 export default async function NouveauClientPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string }>
+  /* Le formulaire peut arriver PRE-REMPLI depuis un devis : le bouton
+     « Creer la facture » y conduit quand aucune fiche client ne porte
+     l'adresse du devis. Retaper six champs qu'on vient de saisir sur le
+     devis est exactement le genre de corvee qui fait renoncer. */
+  searchParams: Promise<{
+    erreur?: string
+    email?: string
+    prenom?: string
+    nom?: string
+    telephone?: string
+    entreprise_nom?: string
+    adresse_facturation?: string
+    depuis?: string
+  }>
 }) {
   /* Le message vient de l'action, qui redirige ici au lieu de lancer une
      exception. Voir actions.ts : avant le 2026-11-09, une adresse déjà
      utilisée produisait l'écran noir de Next.js. */
-  const { erreur } = await searchParams
+  const sp = await searchParams
+  const { erreur } = sp
   const inputStyle = {
     background: 'var(--elevated)', border: '1px solid var(--t3)',
     borderRadius: 8, padding: '10px 14px',
@@ -58,6 +72,17 @@ export default async function NouveauClientPage({
       </div>
 
       <div style={{ padding: '32px', maxWidth: 720 }}>
+        {sp.depuis && !erreur && (
+          <div style={{
+            marginBottom: 18, padding: '12px 16px', borderRadius: 10,
+            background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.22)',
+            fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.6,
+          }}>
+            Fiche pré-remplie depuis le devis <b>{sp.depuis}</b>. Choisissez un
+            mot de passe, enregistrez, puis revenez au devis pour créer la facture.
+          </div>
+        )}
+
         {erreur && (
           <div style={{
             background: 'rgba(217,80,80,.10)', border: '1px solid rgba(217,80,80,.35)',
@@ -82,7 +107,7 @@ export default async function NouveauClientPage({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
                 <label style={labelStyle} htmlFor="email">Email</label>
-                <input id="email" name="email" type="email" required style={inputStyle} placeholder="client@email.com" />
+                <input id="email" name="email" type="email" required style={inputStyle} placeholder="client@email.com" defaultValue={sp.email ?? ''} />
               </div>
               <div>
                 <label style={labelStyle} htmlFor="password">Mot de passe initial</label>
@@ -97,16 +122,16 @@ export default async function NouveauClientPage({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
                 <label style={labelStyle} htmlFor="prenom">Prénom</label>
-                <input id="prenom" name="prenom" required style={inputStyle} placeholder="Marie" />
+                <input id="prenom" name="prenom" required style={inputStyle} placeholder="Marie" defaultValue={sp.prenom ?? ''} />
               </div>
               <div>
                 <label style={labelStyle} htmlFor="nom">Nom</label>
-                <input id="nom" name="nom" required style={inputStyle} placeholder="Dupont" />
+                <input id="nom" name="nom" required style={inputStyle} placeholder="Dupont" defaultValue={sp.nom ?? ''} />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
               <label style={labelStyle} htmlFor="telephone">Téléphone</label>
-              <input id="telephone" name="telephone" style={inputStyle} placeholder="+33 6 00 00 00 00" />
+              <input id="telephone" name="telephone" style={inputStyle} placeholder="+33 6 00 00 00 00" defaultValue={sp.telephone ?? ''} />
             </div>
           </div>
 
@@ -126,7 +151,7 @@ export default async function NouveauClientPage({
               </div>
               <div>
                 <label style={labelStyle} htmlFor="entreprise_nom">Nom de l&apos;entreprise</label>
-                <input id="entreprise_nom" name="entreprise_nom" style={inputStyle} placeholder="ACME SAS" />
+                <input id="entreprise_nom" name="entreprise_nom" style={inputStyle} placeholder="ACME SAS" defaultValue={sp.entreprise_nom ?? ''} />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>

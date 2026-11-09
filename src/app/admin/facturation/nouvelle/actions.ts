@@ -127,6 +127,18 @@ export async function creerFacture(formData: FormData): Promise<void> {
       .from('courses')
       .update({ facture_id: facture.id })
       .in('id', course_ids)
+
+    /* Une course qui n'avait aucun client lui est rattachée par cette
+       facture. Huit courses terminées étaient dans ce cas, et restaient
+       donc invisibles dans l'écran de facturation, quel que soit le
+       client choisi. Les facturer à quelquun, cest dire à qui elles
+       sont : la condition `.is(client_id, null)` garantit quaucune course
+       déjà rattachée ne change de propriétaire au passage. */
+    await supabase
+      .from('courses')
+      .update({ client_id })
+      .in('id', course_ids)
+      .is('client_id', null)
   }
 
   redirect(`/admin/facturation/${facture.id}`)

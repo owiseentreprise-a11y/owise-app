@@ -72,7 +72,22 @@ export default function NouvelleFactureForm({
   const majLigne = (i: number, champ: 'libelle' | 'montant', v: string) =>
     setLignes(l => l.map((x, j) => (j === i ? { ...x, [champ]: v } : x)))
 
-  const clientCourses = courses.filter(c => c.client_id === clientId)
+  /* LES COURSES SANS CLIENT RATTACHÉ SONT PROPOSÉES AUSSI.
+
+     Cet écran ne montrait que les courses du client choisi. Or 8 courses
+     terminées, pour 782 €, ne portaient aucun client — elles avaient été
+     saisies à la main sans en choisir un. Elles étaient donc invisibles
+     ici, quel que soit le client : impossible d'en faire une facture
+     depuis l'application. Constaté en base le 2026-11-09.
+
+     Elles sont maintenant offertes avec celles du client, signalées d'une
+     pastille, et rattachées au client choisi au moment de la facturation
+     — voir `creerFacture`. Une course facturée à quelqu'un appartient à
+     ce quelquun : la fois suivante, elle apparaîtra normalement. */
+  const coursesDuClient = courses.filter(c => c.client_id === clientId)
+  const coursesSansClient = courses.filter(c => c.client_id === null)
+  const clientCourses = [...coursesDuClient, ...coursesSansClient]
+    .sort((a, b) => String(a.date_prevue).localeCompare(String(b.date_prevue)))
 
   function toggle(id: string) {
     setChecked(prev => {
@@ -158,8 +173,15 @@ export default function NouvelleFactureForm({
             padding: '16px 24px 12px',
             borderBottom: '1px solid rgba(201,168,76,.07)',
           }}>
-            <div style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)' }}>
-              Courses terminées non facturées
+            <div>
+              <div style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--t2)' }}>
+                Courses terminées non facturées
+              </div>
+              {coursesSansClient.length > 0 && (
+                <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 5 }}>
+                  dont {coursesSansClient.length} sans client enregistré, que cette facture rattachera
+                </div>
+              )}
             </div>
             {clientCourses.length > 0 && (
               <div style={{ display: 'flex', gap: 12 }}>
@@ -320,6 +342,17 @@ export default function NouvelleFactureForm({
                     <div style={{ fontSize: 11, color: 'var(--t2)' }}>
                       → {course.adresse_arrivee.split(',')[0]}
                     </div>
+                    {course.client_id === null && (
+                      <div style={{
+                        marginTop: 3, display: 'inline-block',
+                        fontSize: 9.5, letterSpacing: '.08em', textTransform: 'uppercase',
+                        color: 'var(--amb)', background: 'rgba(232,160,48,.10)',
+                        border: '1px solid rgba(232,160,48,.22)',
+                        borderRadius: 5, padding: '2px 7px',
+                      }}>
+                        sans client — sera rattachée
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--t2)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                     {lireHeureCourse(course.date_prevue).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
