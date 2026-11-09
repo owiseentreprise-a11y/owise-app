@@ -95,13 +95,17 @@ export const GAMME: Vehicule[] = [
   {
     cle: 'grand_van',
     nom: 'Grand Van 8 places',
-    /* Il n'a pas de ligne a lui dans `tarifs` : son prix DERIVE de celui du
-       Van 7 places — + 20 EUR sur le forfait, + 0,10 EUR du kilometre
-       (decision du 2026-11-03). On pointe donc la ligne du van, sans quoi la
-       recherche de tarif echoue, le moteur de prix est saute en entier, et le
-       code retombe sur une valeur en dur : c'est le 120 EUR forfaitaire,
-       identique sur 52 km et sur 120 km, qu'on vient de corriger. */
-    nomTarif: 'Van 7 places',
+    /* Depuis le 2026-11-09 il a SA PROPRE ligne dans `tarifs`, donc sa propre
+       carte dans /admin/tarifs : l'exploitant ne pouvait régler le prix du
+       8 places nulle part, il dérivait de celui du Van 7 places (+ 0,10 EUR
+       du kilomètre) écrit en dur dans calcPrix.ts.
+
+       `tarifPourVehicule()` se rabat sur la ligne du van, surcoût compris, si
+       celle-ci manque : le code et la ligne en base n'arrivent pas au même
+       instant, et sans ce repli la recherche échouerait, le moteur serait
+       sauté en entier et le prix retomberait sur 15 EUR + 2 EUR/km — moins
+       cher que le van 7 places, le défaut corrigé le 2026-11-03. */
+    nomTarif: 'Grand Van 8 places',
     valeurBase: 'grand_van_8',
     capaciteMin: 8, capaciteMax: 8,
     surDevis: true,

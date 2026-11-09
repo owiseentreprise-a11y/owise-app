@@ -199,6 +199,43 @@ function nomTarifPour(vehiculeKey: string): string {
 }
 
 /**
+ * La ligne de tarif d'un véhicule, et le surcoût au kilomètre à ajouter si
+ * l'on a dû se rabattre sur celle d'un autre.
+ *
+ * UNE SEULE écriture de ce repli, pour les trois endroits qui chiffrent au
+ * kilomètre (trajet direct, détour d'étape, et tout ce qui viendra).
+ *
+ * Pourquoi un repli : le Grand Van 8 places a reçu sa propre ligne le
+ * 2026-11-09, pour que l'exploitant puisse enfin régler son prix. Le code
+ * part en production et la ligne est créée en base à deux moments
+ * différents. Entre les deux, sans repli, `tarifs.find` échouerait et le
+ * calcul retomberait sur 15 EUR + 2 EUR/km — c'est-à-dire MOINS CHER que le
+ * van 7 places, exactement le défaut corrigé le 2026-11-03.
+ *
+ * Le repli reproduit donc à l'identique l'ancien comportement : la ligne du
+ * van, plus 0,10 EUR du kilomètre.
+ */
+export function tarifPourVehicule(
+  vehiculeKey: string,
+  tarifs: TarifCalc[],
+  params?: ParamsCalc | null,
+): { tarif: TarifCalc | undefined; surcoutKm: number } {
+  const propre = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
+  if (propre) return { tarif: propre, surcoutKm: 0 }
+
+  if (vehiculeKey === 'grand_van') {
+    const van = tarifs.find(t => t.vehicule === 'Van 7 places')
+    if (van) {
+      return {
+        tarif: van,
+        surcoutKm: Number(params?.surcout_km_grand_van ?? SURCOUT_KM_GRAND_VAN),
+      }
+    }
+  }
+  return { tarif: undefined, surcoutKm: 0 }
+}
+
+/**
  * Vocabulaire des destinations belges desservies.
  *
  * Sert à deux choses qui doivent rester d'accord : la détection de zone
@@ -555,15 +592,12 @@ export function calculerPrixEtapes(
   const nbEtapes = Math.max(0, distancesTronconsKm.length - 1)
   if (nbEtapes === 0) return Math.round(prixDirect * 100) / 100
 
-  /* `nomTarifPour` et non `VEHICULE_NOM` : le grand van n'a pas de ligne dans
-     `tarifs`, la recherche echouait, et le detour d'un grand van etait chiffre
-     a 2 EUR/km — une valeur inventee, inferieure a celle du van 7 places
-     (constate le 2026-11-03). */
-  const tarif  = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
-  const prixKm = tarif
-    ? Number(tarif.prix_km) + (vehiculeKey === 'grand_van'
-        ? Number(params?.surcout_km_grand_van ?? SURCOUT_KM_GRAND_VAN) : 0)
-    : 2
+  /* `tarifPourVehicule` et non une recherche directe : le détour d'un grand
+     van était chiffré à 2 EUR/km — une valeur inventée, inférieure à celle du
+     van 7 places (constaté le 2026-11-03). Le détour doit coûter le même
+     kilomètre que le trajet. */
+  const { tarif, surcoutKm } = tarifPourVehicule(vehiculeKey, tarifs, params)
+  const prixKm = tarif ? Number(tarif.prix_km) + surcoutKm : 2
   const frais  = params?.supplement_etape ?? SUPPLEMENT_ETAPE_DEFAUT
 
   const totalTroncons = distancesTronconsKm.reduce((t, d) => t + d, 0)
@@ -581,16 +615,13 @@ export function calculerPrixKm(
   tarifs: TarifCalc[],
   params?: ParamsCalc | null,
 ): number | null {
-  /* Le grand van n'a pas de ligne dans `tarifs`. Sans ce traitement, la
-     recherche echouait et le calcul retombait sur 15 EUR + 2 EUR/km, deux
-     valeurs inventees — moins cher que le van 7 places sur 50 km. */
-  const estGrandVan = vehiculeKey === 'grand_van'
-  const tarif = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
+  /* Une seule porte pour trouver le tarif, repli du grand van compris —
+     voir `tarifPourVehicule`. Sans elle, la recherche échouait pour le grand
+     van et le calcul retombait sur 15 EUR + 2 EUR/km, deux valeurs
+     inventées, moins chères que le van 7 places sur 50 km. */
+  const { tarif, surcoutKm } = tarifPourVehicule(vehiculeKey, tarifs, params)
   const base  = tarif ? Number(tarif.prise_en_charge) : 15
-  const surcout = estGrandVan
-    ? Number(params?.surcout_km_grand_van ?? SURCOUT_KM_GRAND_VAN)
-    : 0
-  const km    = (tarif ? Number(tarif.prix_km) : 2) + surcout
+  const km    = (tarif ? Number(tarif.prix_km) : 2) + surcoutKm
   // Arrondir la distance à l'entier le plus proche pour absorber les
   // écarts de géocodage entre sources (BAN, LIEUX_CONNUS, Google Maps)
   const dist  = Math.round(distanceKm)

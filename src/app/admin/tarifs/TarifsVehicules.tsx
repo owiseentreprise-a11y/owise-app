@@ -45,6 +45,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
     'Berline': '🚘',
     'Berline Premium': '🚙',
     'Van 7 places': '🚐',
+    'Grand Van 8 places': '🚌',
   }
 
   function save() {
@@ -118,12 +119,53 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
 }
 
 export default function TarifsVehicules({ tarifs }: { tarifs: Tarif[] }) {
-  const order = ['Berline', 'Berline Premium', 'Van 7 places']
+  /* L'ordre de la gamme, du plus petit au plus grand. Le Grand Van 8 places
+   a rejoint la liste le 2026-11-09 : il n'avait aucune carte, donc aucun
+   reglage de prix possible. */
+  const order = ['Berline', 'Berline Premium', 'Van 7 places', 'Grand Van 8 places']
   const sorted = [...tarifs].sort((a, b) => order.indexOf(a.vehicule) - order.indexOf(b.vehicule))
 
+  /* Un véhicule plus grand ne doit jamais coûter moins cher que le précédent.
+     Le défaut a déjà eu lieu : avant le 2026-11-03 le Grand Van revenait moins
+     cher que le Van 7 places sur 101 liaisons sur 127, et rien ne le disait.
+     Maintenant que les quatre prix se règlent à la main, l'écran le dit tout
+     seul — il ne bloque pas la saisie, il la signale. */
+  const incoherences: string[] = []
+  for (let i = 1; i < sorted.length; i++) {
+    const avant = sorted[i - 1], apres = sorted[i]
+    if (Number(apres.prix_km) < Number(avant.prix_km)) {
+      incoherences.push(`${apres.vehicule} coûte moins cher du kilomètre que ${avant.vehicule}`)
+    }
+    if (Number(apres.prise_en_charge) < Number(avant.prise_en_charge)) {
+      incoherences.push(`${apres.vehicule} a une prise en charge inférieure à ${avant.vehicule}`)
+    }
+  }
+  /* Le Grand Van sans ligne à lui : le prix se calcule encore depuis le Van. */
+  const grandVanAbsent = !tarifs.some(t => t.vehicule === 'Grand Van 8 places')
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-      {sorted.map(t => <VehiculeCard key={t.id} tarif={t} />)}
-    </div>
+    <>
+      {grandVanAbsent && (
+        <div style={{
+          marginBottom: 14, padding: '10px 14px', borderRadius: 8, fontSize: 11.5,
+          background: 'rgba(232,160,48,.08)', border: '1px solid rgba(232,160,48,.3)', color: 'var(--t1)',
+        }}>
+          <strong>Grand Van 8 places :</strong> pas encore de tarif à lui. Son prix est pour
+          l’instant calculé depuis le Van 7 places (+ 0,10 € du kilomètre).
+        </div>
+      )}
+      {incoherences.length > 0 && (
+        <div style={{
+          marginBottom: 14, padding: '10px 14px', borderRadius: 8, fontSize: 11.5,
+          background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.35)', color: 'var(--t1)',
+        }}>
+          <strong>À vérifier :</strong>{' '}
+          {incoherences.join(' · ')}. Un véhicule plus grand devrait coûter plus cher.
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        {sorted.map(t => <VehiculeCard key={t.id} tarif={t} />)}
+      </div>
+    </>
   )
 }
