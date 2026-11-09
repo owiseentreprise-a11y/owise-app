@@ -65,7 +65,23 @@ export const CSS_DOCUMENT = `
 .fac-table th{text-align:left; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--encre-3); font-weight:600; padding:0 0 9px; border-bottom:1px solid var(--or-trait)}
 .fac-table th.fac-chiffre, .fac-table td.fac-chiffre{text-align:right}
 .fac-table td{padding:14px 0; border-bottom:1px solid rgba(9,9,26,.07); vertical-align:top; font-size:13.5px}
-.fac-table td.fac-rang{width:28px; color:var(--or); font-family:var(--font-jetbrains),'JetBrains Mono',monospace; font-size:11.5px; padding-top:16px}
+/* La colonne de gauche qui porte la date (facture) ou l'heure (devis).
+   Elle vivait dans la feuille du DEVIS seulement : la facture n'avait donc
+   aucune date a l'ecran, alors que son PDF en affichait une. Trois documents
+   de la meme entreprise ne se ressemblaient pas — signale par l'exploitant le
+   2026-11-09. Une seule regle, ici, pour les deux. */
+.fac-table td.fac-date{
+  /* min-width autant que width : en mise en page automatique, un
+     tableau a 100 % reprend la largeur demandee par une colonne des que
+     les autres en reclament. La colonne faisait 72 px sur le devis et
+     63 px sur la facture, pour un contenu de meme longueur. */
+  width:72px; min-width:72px; font-family:var(--font-jetbrains),'JetBrains Mono',monospace;
+  font-size:12.5px; color:var(--encre); padding-top:15px; white-space:nowrap;
+}
+/* Meme raison que la colonne des dates : sans min-width, le tableau reprend
+   cette largeur des que les autres colonnes en reclament, et le numero de
+   ligne vient toucher la date. */
+.fac-table td.fac-rang{width:28px; min-width:28px; padding-right:10px; color:var(--or); font-family:var(--font-jetbrains),'JetBrains Mono',monospace; font-size:11.5px; padding-top:16px}
 .fac-trajet{font-weight:500; color:var(--encre)}
 .fac-detail{font-size:12px; color:var(--encre-3); margin-top:3px; line-height:1.55}
 .fac-table td.fac-chiffre{font-family:var(--font-jetbrains),'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; font-weight:500; white-space:nowrap; padding-left:18px}
@@ -86,7 +102,14 @@ export const CSS_DOCUMENT = `
 .fac-reglement .fac-etiquette{margin-bottom:7px}
 .fac-mono{font-family:var(--font-jetbrains),'JetBrains Mono',monospace; letter-spacing:.02em; display:block; color:var(--encre); font-size:12.5px}
 
-.fac-pied{margin-top:38px; padding-top:18px; border-top:1px solid var(--or-trait); font-size:10.5px; line-height:1.85; color:var(--encre-3)}
+/* Le pied des mentions legales. La facture l'ecrivait en 10,5 px et le
+   devis le redefinissait en 8,5 px dans sa propre feuille : deux documents
+   de la meme entreprise, imprimes le meme jour, avec deux tailles de
+   caractere. Une seule regle, ici, a 9,5 px — lisible de pres sur la
+   facture, assez compact pour les quatre mentions du devis. */
+.fac-pied{margin-top:38px; padding-top:18px; border-top:1px solid var(--or-trait); font-size:9.5px; line-height:1.72; color:var(--encre-3)}
+.fac-pied p{margin:0 0 4px}
+.fac-pied p:last-child{margin-bottom:0}
 .fac-pied b{color:var(--encre-2); font-weight:500}
 
 @media (max-width:640px){
@@ -122,6 +145,10 @@ export const CSS_DOCUMENT = `
   .fac-bloc p{line-height:1.65}
   .fac-table td{padding:10px 0}
   .fac-table td.fac-rang{padding-top:12px}
+  /* La regle d'ecran de cette colonne est plus specifique que
+     « .fac-table td » ci-dessus : sans cette ligne, elle garderait son
+     espacement d'ecran sur le papier. Meme raison que fac-rang. */
+  .fac-table td.fac-date{padding-top:10px}
   .fac-bas{margin-top:20px}
   .fac-pied{margin-top:15px; padding-top:10px; line-height:1.62}
 }

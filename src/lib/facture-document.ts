@@ -1,4 +1,9 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
+import {
+  COLONNES_PRESTATAIRE, capitaliserCommune, construirePrestataire,
+  formaterTelephone, grouperSiret, nomPropre,
+  type LigneParametres, type Prestataire,
+} from '@/lib/prestataire'
 
 /**
  * Contenu d'une facture, tel qu'il doit apparaître sur le document — quelle
@@ -47,7 +52,9 @@ export const STATUT_LABEL: Record<string, string> = {
  * navigateur ne peuvent donc pas s'en servir sans embarquer du code serveur.
  * Il n'existe toujours qu'une seule écriture d'un montant dans le projet.
  */
-export { formaterNombre, formaterMontant } from './montant'
+import { formaterMontant } from './montant'
+export { formaterNombre } from './montant'
+export { formaterMontant }
 
 export type LigneFacture = {
   /** Date de la course, déjà formatée en jj/mm. Vide sur une ligne saisie. */
@@ -100,43 +107,25 @@ export type DocumentFacture = {
   banque: { nom: string | null; iban: string | null; bic: string | null } | null
   mentions: string | null
   lignes: LigneFacture[]
-  /** Bloc « Prestataire » : identité commerciale et mentions légales. */
-  prestataire: {
-    nom: string
-    metier: string
-    telephone: string | null
-    email: string | null
-    legal: string[]
-  }
+  /** Bloc « Prestataire » : identité commerciale et mentions légales.
+   *  Décrite dans `prestataire.ts`, partagée mot pour mot avec le devis. */
+  prestataire: Prestataire
   /** Date des prestations, jj/mm/aaaa. Nulle si elles ne tombent pas le même jour. */
   datePrestation: string | null
   /** Délai de règlement en jours, tel que réglé dans /admin/tarifs. */
   delaiPaiement: number
-  /** Récapitulatif par nature affiché au-dessus du total. Peut être vide. */
+  /**
+   * Récapitulatif affiché au-dessus du total.
+   *
+   * Le devis en a toujours un — « 1 transfert … 201,00 € » — et la facture
+   * n'en avait un que si l'exploitant avait saisi un récapitulatif à la main.
+   * Sur la facture d'Isabelle Rivere, le cadre du total ne portait donc que
+   * « NET À PAYER », quand le devis du même jour portait trois lignes.
+   * Il se calcule maintenant à défaut, depuis les prestations.
+   */
   recap: { libelle: string; montant: number }[]
-}
-
-/**
- * Nom de l'exploitant, tel qu'il figure au registre.
- *
- * Écrit ici et nulle part ailleurs. La table `parametres` ne porte pas de
- * colonne pour lui, et il n'a rien à faire dans `identite-owise.ts`, qui
- * décrit l'identité PUBLIQUE d'Owise et omet volontairement le nom et la rue.
- * Une facture est le seul document qui doit les porter.
- */
-const EXPLOITANT = 'Houna Hassan'
-
-/** « +33619106356 » → « 06 19 10 63 56 ». Laisse tel quel ce qu'il ne sait pas lire. */
-function formaterTelephone(v: string | null | undefined): string | null {
-  if (!v) return null
-  const chiffres = String(v).replace(/[^\d+]/g, '').replace(/^\+33/, '0')
-  return /^0\d{9}$/.test(chiffres) ? chiffres.replace(/(\d{2})(?=\d)/g, '$1 ').trim() : String(v)
-}
-
-/** « 47753413500041 » → « 477 534 135 00041 », la coupure usuelle SIREN + NIC. */
-function grouperSiret(v: string): string {
-  const n = String(v).replace(/\s/g, '')
-  return /^\d{14}$/.test(n) ? `${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6, 9)} ${n.slice(9)}` : String(v)
+  /** Ce qui s'écrit en face de « TVA », à côté du total. Comme sur le devis. */
+  mentionTva: string
 }
 
 /** « 2026-10-08 » → « 08/10/2026 ». Le fuseau est obligatoire : une date
@@ -144,11 +133,6 @@ function grouperSiret(v: string): string {
 function dateChiffres(v: string | null | undefined): string {
   if (!v) return '—'
   return new Date(v).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-/** « OWISE » → « Owise ». Les capitales conviennent à un logo, pas à une phrase. */
-function nomPropre(v: string): string {
-  return /^[A-ZÀ-Ý\s-]+$/.test(v) ? v.charAt(0) + v.slice(1).toLowerCase() : v
 }
 
 /**
@@ -184,12 +168,6 @@ function datePrestations(courses: { date_prevue?: string | null }[] | null): str
   const formate = (v: string) => new Date(v).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: 'numeric' })
   const distinctes = new Set(jours.map(formate))
   return distinctes.size === 1 ? [...distinctes][0] : null
-}
-
-/** « Saint-maximin » → « Saint-Maximin ». La base porte la minuscule. */
-function capitaliserCommune(v: string | null | undefined): string | null {
-  if (!v) return null
-  return String(v).replace(/(^|[-\s])([a-zà-ÿ])/g, (_, s, c) => s + c.toUpperCase())
 }
 
 /**
@@ -253,7 +231,7 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
   const [factureRes, coursesRes, parametresRes] = await Promise.all([
     admin
       .from('factures')
-      .select('*, clients(type_compte, entreprise_nom, prenom, nom, adresse_facturation, tel, email, profiles(prenom, nom))')
+      .select('*, clients(type_compte, entreprise_nom, prenom, nom, adresse_facturation, tel, email, profiles(prenom, nom, telephone))')
       .eq('id', factureId)
       .single(),
     admin
@@ -263,7 +241,11 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
       .order('date_prevue', { ascending: true }),
     admin
       .from('parametres')
-      .select('societe_nom, societe_siret, societe_tva_numero, societe_naf, societe_adresse, societe_code_postal, societe_ville, societe_telephone, societe_email, banque_nom, banque_iban, banque_bic, facture_mentions, facture_delai_paiement')
+      /* Les colonnes de l'identite viennent de `prestataire.ts`. Les ecrire a la
+         main ici, c'etait la garantie qu'une colonne ajoutee la-bas serait
+         oubliee ici — et une colonne oubliee dans un `select` fait retomber le
+         code sur sa valeur de repli, sans un mot (regle de CLAUDE.md). */
+      .select(`${COLONNES_PRESTATAIRE}, societe_tva_numero, banque_nom, banque_iban, banque_bic, facture_mentions, facture_delai_paiement`)
       .eq('id', true)
       .single(),
   ])
@@ -273,6 +255,11 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
 
   const p = parametresRes.data
   const c = (f as Record<string, any>).clients
+
+  /* L'adresse du compte, en dernier recours pour le bloc « Client ».
+     `getUserEmail` existe deja et sait se rabattre sur l'API d'administration :
+     on ne reecrit pas cette lecture ici. */
+  const compteEmail = f.client_id ? await getUserEmail(String(f.client_id)) : null
 
   const nomClient = c?.type_compte === 'entreprise'
     ? (c.entreprise_nom ?? '—')
@@ -302,8 +289,17 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
        * nomme que si TOUTES les courses de la facture pointent le même, sinon
        * désigner quelqu'un serait arbitraire. */
       contact: contactUnique(coursesRes.data),
-      telephone: formaterTelephone(c?.tel),
-      email: c?.email ?? null,
+      /* Repli sur le PROFIL — constat du 2026-11-09.
+         `clients.tel` et `clients.email` sont vides pour toute fiche creee
+         depuis /admin/clients/nouveau : ce formulaire ecrit le telephone dans
+         `profiles` et l'e-mail dans le compte, jamais dans `clients`. La
+         facture n'affichait donc ni l'un ni l'autre, la ou le DEVIS les
+         montre — l'exploitant a vu deux documents differents pour la meme
+         entreprise, et il avait raison.
+         On lit la table `clients` d'abord (une adresse de facturation peut
+         differer volontairement du contact), puis le profil. */
+      telephone: formaterTelephone(c?.tel ?? c?.profiles?.telephone),
+      email: c?.email ?? compteEmail ?? null,
     },
     societe: {
       nom:        p?.societe_nom ?? 'OWISE',
@@ -324,26 +320,13 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
      * (art. L441-9 du Code de commerce). L'exploitant a validé le document
      * ainsi le 2026-10-16.
      *
-     * C'est le SEUL endroit du projet où ces mentions ont leur place : elles
-     * ne doivent apparaître sur aucune page publique — voir la règle dans
-     * CLAUDE.md et `test-identite-privee.mjs`, qui déclare ce fichier en
-     * exception.
+     * Le texte exact vit dans `prestataire.ts`, partagé avec le devis : il
+     * était écrit deux fois, et les deux copies avaient déjà divergé sur
+     * l'orthographe de la commune. Ces mentions ne doivent apparaître sur
+     * aucune page publique — voir la règle dans CLAUDE.md et
+     * `test-identite-privee.mjs`.
      */
-    prestataire: {
-      /* La base porte « OWISE » en capitales — bon pour un logo, lourd dans
-       * une phrase. Le document l'ecrit comme un nom propre. */
-      nom:       `${nomPropre(p?.societe_nom ?? 'OWISE')} — Chantilly`,
-      metier:    'Service de chauffeur privé',
-      telephone: formaterTelephone(p?.societe_telephone),
-      email:     p?.societe_email ?? null,
-      legal: [
-        `${EXPLOITANT} — entreprise individuelle (micro-entrepreneur)`,
-        [p?.societe_adresse, [p?.societe_code_postal, capitaliserCommune(p?.societe_ville)].filter(Boolean).join(' ')]
-          .filter(Boolean).join(', '),
-        [p?.societe_siret ? `SIRET ${grouperSiret(p.societe_siret)}` : null, p?.societe_naf ? `Code APE ${p.societe_naf}` : null]
-          .filter(Boolean).join(' · '),
-      ].filter(l => l && l.trim().length > 0),
-    },
+    prestataire: construirePrestataire(p as LigneParametres | null),
     datePrestation: datePrestations(coursesRes.data),
     delaiPaiement: Number(p?.facture_delai_paiement ?? 15),
     /**
@@ -362,9 +345,10 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
        l'écran le 2026-11-09, sur la première facture saisie à la main.
        La décision est prise ICI, une fois : les surfaces se contentent de
        rendre ce qu'on leur donne. */
-    recap: (coursesRes.data ?? []).length > 0
-      ? lireRecap(f.notes, Number(f.montant_ttc))
-      : [],
+    recap: recapDuDocument(coursesRes.data, f.notes, Number(f.montant_ttc), Number(f.montant_ht)),
+    /* « non applicable » en toutes lettres plutot que « 0,00 € » : c'est ce
+       qu'ecrit le devis, et un zero en euros se lit comme un oubli. */
+    mentionTva: Number(f.tva) === 0 ? 'non applicable' : formaterMontant(Number(f.tva)),
     banque: payee ? null : {
       nom:  p?.banque_nom ?? null,
       iban: p?.banque_iban ?? null,
@@ -391,6 +375,35 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
      */
     lignes: lignesDuDocument(coursesRes.data, f.notes, Number(f.montant_ttc)),
   }
+}
+
+/**
+ * Le recapitulatif affiche a cote du total.
+ *
+ * Trois cas, dans cet ordre :
+ *
+ *  1. le recapitulatif saisi a la main a DEJA servi de corps a la facture
+ *     (aucune course rattachee) — on ne le repete pas a cote du total ;
+ *  2. un recapitulatif a ete saisi ET des courses existent — on l'affiche,
+ *     c'est le detail par nature voulu par l'exploitant ;
+ *  3. ni l'un ni l'autre — on compte les prestations. C'est le cas courant,
+ *     et c'etait justement celui ou la facture n'affichait rien du tout,
+ *     quand le devis du meme jour affichait « 1 transfert · 201,00 € ».
+ */
+function recapDuDocument(
+  courses: CourseDeFacture[] | null,
+  notes: string | null | undefined,
+  montantTtc: number,
+  montantHt: number,
+): { libelle: string; montant: number }[] {
+  const nb = (courses ?? []).length
+  if (nb === 0) return []
+  const saisi = lireRecap(notes, montantTtc)
+  if (saisi.length > 0) return saisi
+  /* « transfert », le mot qu'emploie le devis pour la meme chose. Deux mots
+     differents pour un meme poste sur deux documents consecutifs, c'est
+     exactement ce que l'exploitant reproche. */
+  return [{ libelle: `${nb} transfert${nb > 1 ? 's' : ''}`, montant: montantHt }]
 }
 
 /** Ce que le document a besoin de savoir d'une course, et rien de plus. */

@@ -14,7 +14,8 @@ import Link from 'next/link'
 import { formaterMontant } from '@/lib/montant'
 import { CSS_DOCUMENT } from '@/lib/document-feuille'
 import {
-  basDePage, chargerDevis, chargerPrestataire, dateCourte, dateLongue, jourEmission,
+  basDePage, chargerDevis, chargerPrestataire, dateCourte, dateLongue,
+  formaterTelephone, jourEmission,
 } from '@/lib/devis-client'
 
 export const dynamic = 'force-dynamic'
@@ -92,6 +93,18 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
               <strong>{prestataire.nom}</strong>
               {prestataire.metier}<br />
               {prestataire.telephone} · {prestataire.email}
+              {/* La forme juridique, l'adresse de l'entreprise, le SIRET et le
+                 code APE. `chargerPrestataire()` les construisait deja, et
+                 AUCUNE page ne les affichait : le devis ne portait donc pas la
+                 meme identite d'entreprise que la facture qui le suit. C'est
+                 exactement ce que l'exploitant a signale le 2026-11-09 — « on
+                 ne voit pas les memes informations sur l'entreprise ».
+                 Un devis doit porter l'identite complete du prestataire, et il
+                 l'ecrit maintenant au meme endroit et dans le meme style que
+                 la facture. */}
+              <span className="fac-legal">
+                {prestataire.legal.map((l, i) => <span key={i}>{l}<br /></span>)}
+              </span>
             </p>
           </div>
           <div className="fac-bloc">
@@ -100,7 +113,9 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
               <strong>{devis.client_societe || devis.client_nom}</strong>
               {devis.client_societe && <>À l&apos;attention de {devis.client_nom}<br /></>}
               {devis.client_adresse && devis.client_adresse.split(',').map((m, i) => <span key={i}>{m.trim()}<br /></span>)}
-              {devis.client_tel && <>{devis.client_tel}<br /></>}
+              {/* Le meme formatage que la facture : « 0625322189 » y devenait
+                 « 06 25 32 21 89 », et restait colle sur le devis. */}
+              {devis.client_tel && <>{formaterTelephone(devis.client_tel)}<br /></>}
               {devis.client_email}
             </p>
           </div>
@@ -120,7 +135,7 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
             {devis.lignes.map((l, i) => (
               <tr key={i}>
                 <td className="fac-rang">{n(i)}</td>
-                <td className="dv-heure">{l.heure}</td>
+                <td className="fac-date">{l.heure}</td>
                 <td>
                   <div className="fac-trajet">{l.depart} → {l.arrivee}</div>
                   {(l.vehicule || l.passagers || l.observations) && (
@@ -169,12 +184,14 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
           <div className="dv-cadre">Date, signature et mention « bon pour accord »</div>
         </div>
 
-        {/* Tout ce qui doit figurer sans prendre la place : clause d'attente,
-            identite de l'entreprise, regime de TVA, penalites de retard. La
+        {/* Tout ce qui doit figurer sans prendre la place : annulation, clause
+            d'attente, regime de TVA, penalites de retard. L'identite de
+            l'entreprise n'est pas ici : elle est dans le bloc « Prestataire »,
+            au meme endroit que sur la facture. La
             liste et son ordre viennent de `basDePage()`, partagee avec le PDF
             — ecrire ce pied deux fois le ferait diverger. */}
         <footer className="fac-pied">
-          {basDePage(devis, prestataire).map((m, i) => <p key={i}>{m}</p>)}
+          {basDePage(devis).map((m, i) => <p key={i}>{m}</p>)}
         </footer>
 
       </div>
@@ -186,18 +203,13 @@ export default async function DocumentDevisPage({ params }: { params: Promise<{ 
  * d'attente et le cadre de signature. Les classes gardent le préfixe « dv- »
  * pour qu'on voie d'un coup d'œil ce qui appartient au devis seul. */
 const CSS_DEVIS = `
-/* Le pied porte quatre mentions au lieu de deux : clause d'attente,
-   identite de l'entreprise, TVA, penalites. A 10,5 px — la taille heritee
-   de la facture — il reprenait le tiers de la page qu'on venait de lui
-   retirer. Il descend a 8,5 px : lisible de pres, invisible de loin. */
-.fac-pied{font-size:8.5px; line-height:1.7}
-.fac-pied p{margin:0 0 4px}
-.fac-pied p:last-child{margin-bottom:0}
+/* Le pied de page a rejoint la feuille PARTAGEE : sa taille y est unique pour
+   le devis et pour la facture. Deux definitions, c'etaient deux tailles de
+   caractere sur deux documents de la meme entreprise. */
 
-.fac-table td.dv-heure{
-  width:72px; font-family:var(--font-jetbrains),'JetBrains Mono',monospace;
-  font-size:12.5px; color:var(--encre); padding-top:15px; white-space:nowrap;
-}
+/* La colonne des heures a rejoint la feuille PARTAGEE sous le nom .fac-date :
+   la facture en avait besoin aussi, et deux copies de la meme regle, c'est
+   deux presentations qui finissent par diverger. */
 .dv-signature{
   margin-top:34px; padding-top:18px; border-top:1px solid var(--or-trait);
   display:grid; grid-template-columns:1fr 240px; gap:30px; align-items:start;
@@ -214,7 +226,6 @@ const CSS_DEVIS = `
 @media print{
   .dv-signature{margin-top:16px; padding-top:12px}
   .dv-cadre{height:62px}
-  .fac-table td.dv-heure{padding-top:10px}
 
   /* Un devis de huit prestations dépasse l'A4 : mesuré le 2026-11-02, la
      feuille faisait 1 509 px pour 1 123 px de page utile. La coupure tombait

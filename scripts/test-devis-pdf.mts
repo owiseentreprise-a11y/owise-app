@@ -95,6 +95,17 @@ for (const d of devis) {
   // Identité du document
   verifier(`${ref} · numéro`, contient(texte, d.numero))
   verifier(`${ref} · mot DEVIS`, contient(texte, 'DEVIS'))
+
+  /* L'identité de l'émetteur — exploitant, adresse du siège, SIRET, code APE.
+     Elle manquait : un commentaire du PDF annonçait qu'elle « descend en bas
+     de page », mais `basDePage()` ne l'a jamais contenue, et aucun contrôle
+     ne la cherchait. Un devis engage son émetteur et doit la porter, au même
+     titre qu'une facture. Trouvé le 2026-11-09 en alignant le devis et la
+     facture, et vérifié rouge en retirant la boucle qui l'écrit. */
+  for (const [i, ligne] of prestataire.legal.entries()) {
+    verifier(`${ref} · identité de l'émetteur (${i + 1}/${prestataire.legal.length})`,
+      contient(texte, ligne.slice(0, 34)), ligne.slice(0, 34))
+  }
   verifier(`${ref} · nom du client`,
     contient(texte, d.client_societe || d.client_nom || ''),
     `cherché « ${d.client_societe || d.client_nom} »`)

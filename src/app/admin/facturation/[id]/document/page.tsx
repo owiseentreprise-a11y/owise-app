@@ -42,12 +42,21 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
     console.error('[facture/document] chargement impossible', id, e)
     throw e
   }
+  /* Vrai quand TOUTES les lignes sont saisies a la main : il n'y a alors
+     aucune date de course a montrer, et la colonne « Trajet » devient
+     « Designation ». Declare une fois, lu par l'en-tete et par les lignes. */
   if (!doc) {
     console.error('[facture/document] document vide pour', JSON.stringify(id))
     notFound()
   }
 
   const n = (i: number) => String(i + 1).padStart(2, '0')
+
+  /* Vrai quand TOUTES les lignes sont saisies à la main : il n'y a alors aucune
+     date de course à montrer, et « Trajet » devient « Désignation ». Déclaré
+     une fois, lu par l'en-tête et par les lignes — pour qu'ils ne puissent pas
+     diverger et produire une colonne d'en-tête sans cellule en face. */
+  const toutSaisi = doc.lignes.length > 0 && doc.lignes.every(l => l.libelle)
 
   return (
     <>
@@ -127,9 +136,15 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
           <thead>
             <tr>
               <th></th>
-              {/* « Désignation » quand la facture repose sur des lignes
-                  saisies et non sur des courses. Voir LigneFacture.libelle. */}
-              <th>{doc.lignes.length > 0 && doc.lignes.every(l => l.libelle) ? 'Désignation' : 'Trajet'}</th>
+              {/* La DATE manquait a l'ecran alors que le PDF l'affichait, et
+                 que le devis affiche l'heure : trois documents de la meme
+                 entreprise ne se ressemblaient pas. Signale par l'exploitant
+                 le 2026-11-09. Sur une facture qui regroupe plusieurs courses,
+                 le client ne pouvait pas savoir quelle ligne correspond a quel
+                 jour. La colonne s'efface sur une facture saisie a la main,
+                 ou aucune ligne ne porte de date. */}
+              {!toutSaisi && <th>Date</th>}
+              <th>{toutSaisi ? 'Désignation' : 'Trajet'}</th>
               <th className="fac-chiffre">Montant</th>
             </tr>
           </thead>
@@ -137,6 +152,7 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
             {doc.lignes.map((l, i) => (
               <tr key={i}>
                 <td className="fac-rang">{n(i)}</td>
+                {!toutSaisi && <td className="fac-date">{l.date}</td>}
                 <td>
                   <div className="fac-trajet">{l.libelle ?? `${l.depart} → ${l.arrivee}`}</div>
                   {l.detail && <div className="fac-detail">{l.detail}</div>}
@@ -148,7 +164,7 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
               /* Ce texte partait sur un document remis au client. Il ne doit
                  apparaître que si la facture est RÉELLEMENT vide — plus le cas
                  dès qu'un récapitulatif est saisi, qui fournit les lignes. */
-              <tr><td colSpan={3} className="fac-vide">Aucune prestation détaillée sur cette facture.</td></tr>
+              <tr><td colSpan={toutSaisi ? 3 : 4} className="fac-vide">Aucune prestation détaillée sur cette facture.</td></tr>
             )}
           </tbody>
         </table>
@@ -165,6 +181,11 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
             {doc.recap.map((r, i) => (
               <div className="fac-ligne" key={i}><span>{r.libelle}</span><span>{formaterMontant(r.montant)}</span></div>
             ))}
+            {/* La meme ligne que sur le devis. Elle manquait : le cadre du
+               total ne portait que « NET A PAYER », la ou le devis du meme
+               jour portait le detail puis la TVA. Deux documents de la meme
+               entreprise avec deux blocs de total differents. */}
+            <div className="fac-ligne"><span>TVA</span><span>{doc.mentionTva}</span></div>
             <div className="fac-total">
               <span>{doc.payee ? 'Montant réglé' : 'Net à payer'}</span>
               <b>{formaterMontant(doc.montantTtc)}</b>

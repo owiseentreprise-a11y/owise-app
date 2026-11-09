@@ -78,9 +78,6 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
     ecrire(ctx, 'PRESTATAIRE', MARGE, 7, TEXTE_3)
     ctx.y -= 14
     ecrire(ctx, p.nom, MARGE, 11, TEXTE, true)
-    /* L'identite legale — exploitant, adresse, SIRET, APE — descend en bas
-       de page. Elle occupait cinq lignes en haut du document, a cote du nom
-       du client, pour une information que personne ne lit a cet endroit. */
     for (const l of [
       p.metier,
       [p.telephone, p.email].filter(Boolean).join(' · '),
@@ -88,6 +85,20 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
       for (const bout of couper(String(l), ctx.normal, 8.5, 240)) {
         ctx.y -= 11
         ecrire(ctx, bout, MARGE, 8.5, TEXTE_2)
+      }
+    }
+    /* L'identite legale — exploitant, adresse, SIRET, APE.
+       Un commentaire annoncait ici qu'elle « descend en bas de page » : elle
+       n'y est jamais descendue. `basDePage()` ne l'a jamais contenue, et ce
+       PDF ne l'ecrivait donc nulle part — un devis sans l'identite de son
+       emetteur. Elle revient ou la facture la met : sous les coordonnees,
+       en petit et en gris. Trouve le 2026-11-09 en alignant les deux
+       documents. */
+    ctx.y -= 4
+    for (const l of p.legal) {
+      for (const bout of couper(String(l), ctx.normal, 7, 240)) {
+        ctx.y -= 9.5
+        ecrire(ctx, bout, MARGE, 7, TEXTE_3)
       }
     }
     const basPrestataire = ctx.y
@@ -233,7 +244,7 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
     // ── Bas de page ───────────────────────────────────────────────────────
     /* Tout ce qui doit figurer sans prendre la place : clause d'attente,
        identite de l'entreprise, regime de TVA, penalites. 6,5 pt, gris. */
-    const lignesBas = basDePage(d, p)
+    const lignesBas = basDePage(d)
     const hauteurBas = lignesBas.reduce(
       (h, m) => h + couper(m, ctx.normal, 6.5, A4.largeur - 2 * MARGE).length * 8.5 + 3, 0)
     placePour(ctx, hauteurBas + 16)

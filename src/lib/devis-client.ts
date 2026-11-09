@@ -122,56 +122,14 @@ export function jourEmission(d: Pick<DevisClient, 'created_at'>): string {
   return jourParis(d.created_at)
 }
 
-/** L'identite d'Owise sur le document, lue la ou les factures la lisent. */
-export type Prestataire = {
-  nom: string
-  metier: string
-  telephone: string | null
-  email: string | null
-  siret: string | null
-  legal: string[]
-}
-
-const EXPLOITANT = 'Houna Hassan'
-
-function grouperSiret(v: string | null): string | null {
-  if (!v) return null
-  const n = String(v).replace(/\s/g, '')
-  return /^\d{14}$/.test(n) ? `${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6, 9)} ${n.slice(9)}` : v
-}
-
-function formaterTelephone(v: string | null): string | null {
-  if (!v) return null
-  const n = String(v).replace(/[^\d+]/g, '').replace(/^\+33/, '0')
-  return /^0\d{9}$/.test(n) ? n.replace(/(\d{2})(?=\d)/g, '$1 ').trim() : v
-}
-
-export async function chargerPrestataire(): Promise<Prestataire> {
-  const supabase = createAdminClient()
-  const { data: p } = await supabase
-    .from('parametres')
-    .select('societe_nom, societe_siret, societe_naf, societe_adresse, societe_code_postal, societe_ville, societe_telephone, societe_email')
-    .eq('id', true)
-    .single()
-
-  const ville = p?.societe_ville
-    ? String(p.societe_ville).charAt(0).toUpperCase() + String(p.societe_ville).slice(1).toLowerCase()
-    : null
-
-  return {
-    nom: 'Owise — Chantilly',
-    metier: 'Service de chauffeur privé',
-    telephone: formaterTelephone(p?.societe_telephone ?? null),
-    email: p?.societe_email ?? null,
-    siret: grouperSiret(p?.societe_siret ?? null),
-    legal: [
-      `${EXPLOITANT} — entreprise individuelle (micro-entrepreneur)`,
-      [p?.societe_adresse, [p?.societe_code_postal, ville].filter(Boolean).join(' ')].filter(Boolean).join(', '),
-      [grouperSiret(p?.societe_siret ?? null) ? `SIRET ${grouperSiret(p?.societe_siret ?? null)}` : null,
-       p?.societe_naf ? `Code APE ${p.societe_naf}` : null].filter(Boolean).join(' · '),
-    ].filter(l => l && l.trim().length > 0),
-  }
-}
+/* L'identite d'Owise vient de `prestataire.ts`, partagee avec la facture.
+   Elle etait construite ici ET dans facture-document.ts, a partir des memes
+   colonnes — et les deux copies avaient deja diverge : le devis ecrivait
+   « 60740 Saint-maximin », la facture « 60740 Saint-Maximin ». Signale par
+   l'exploitant le 2026-11-09 : « on ne voit pas les memes informations sur
+   l'entreprise ». Une seule ecriture desormais. */
+export type { Prestataire } from '@/lib/prestataire'
+export { chargerPrestataire, formaterTelephone } from '@/lib/prestataire'
 
 export async function chargerDevis(id: string): Promise<DevisClient | null> {
   const supabase = createAdminClient()
@@ -287,12 +245,16 @@ export function detailLigne(l: LigneDevis): string {
  * de la page ; ils tiennent maintenant en quatre lignes grises en pied de
  * document — decision du 2026-11-03.
  *
- * L'ordre compte : la clause d'attente d'abord, parce qu'elle engage le
- * client ; l'identite ensuite ; les mentions legales en dernier.
+ * L'ordre compte : l'annulation et l'attente d'abord, parce qu'elles
+ * engagent le client ; les mentions legales ensuite.
+ *
+ * L'identite de l'entreprise, elle, n'est PAS ici : elle est dans le bloc
+ * « Prestataire », au meme endroit que sur la facture. Ce pied recevait un
+ * parametre `Prestataire` qu'il n'utilisait pas — il laissait croire qu'il
+ * la portait.
  */
 export function basDePage(
   d: Pick<DevisClient, 'client_societe'>,
-  p: Prestataire,
 ): string[] {
   return [
     ANNULATION_MENTION,
