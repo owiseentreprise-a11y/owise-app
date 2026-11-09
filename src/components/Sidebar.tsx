@@ -6,40 +6,79 @@ import { useEffect, useState } from 'react'
 import { logoutAction } from '@/app/login/actions'
 import { basculerMenu, fermerMenu, useMenuOuvert } from './adminMenu'
 
+/**
+ * Le menu, rangé par MOMENT DE LA JOURNÉE plutôt que par type de donnée.
+ *
+ * Il portait 16 entrées, dont 11 empilées sous un seul titre
+ * « Exploitation » qui mélangeait le travail du jour, la vente et la mesure.
+ * Quatre d'entre elles mesuraient la même activité — Statistiques,
+ * Analytics, Estimations, Tunnel — sans que rien ne dise laquelle ouvrir.
+ * Deux autres commençaient par « Devis ».
+ *
+ * L'exploitant, le 2026-11-09 : « il y a plein de trucs qui sont briqués…
+ * j'ai l'impression que c'est en vrac là-dedans ».
+ *
+ * Cinq blocs, dans l’ordre où on s’en sert :
+ *   Aujourd'hui  ce qui roule maintenant
+ *   Vendre       la demande arrive, devient un devis, puis une facture
+ *   Gérer        les personnes
+ *   Mesurer      une entrée, quatre onglets (voir admin/(mesures))
+ *   Réglages     ce qu’on ouvre rarement
+ *
+ * Deux noms changent, parce que les anciens ne disaient pas ce qu’ils
+ * contiennent : « Devis en ligne » (ce qu’on REÇOIT du site) devient
+ * « Demandes reçues », et « Devis clients » (ce qu’on ENVOIE) devient
+ * « Devis ». Lus à la suite sous « Vendre », les trois entrées racontent le
+ * parcours : une demande arrive, on répond par un devis, on facture.
+ */
 const navItems = [
   {
-    section: 'Exploitation',
+    section: 'Aujourd’hui',
     items: [
-      { href: '/admin',               label: 'Dashboard',    icon: 'grid'      },
-      { href: '/admin/planning',      label: 'Planning',     icon: 'calendar'  },
-      { href: '/admin/courses',       label: 'Courses',      icon: 'map'       },
-      /* « Devis » tout court désignait les demandes venues du formulaire du
-         site, et l'exploitant y a cherché un devis qu'il m'avait demandé de
-         composer — 2026-11-02. Les deux entrées disent désormais ce qu'elles
-         contiennent : ce qu'on reçoit, et ce qu'on envoie. */
-      { href: '/admin/devis-clients', label: 'Devis clients', icon: 'file'     },
-      { href: '/admin/devis',         label: 'Devis en ligne', icon: 'inbox'   },
-      { href: '/admin/chauffeurs',    label: 'Chauffeurs',   icon: 'users'     },
-      { href: '/admin/facturation',   label: 'Facturation',  icon: 'file'      },
-      { href: '/admin/stats',         label: 'Statistiques', icon: 'bar'       },
-      { href: '/admin/analytics',     label: 'Analytics',    icon: 'analytics' },
-      { href: '/admin/estimations',   label: 'Estimations',  icon: 'search'    },
-      { href: '/admin/funnel',        label: 'Tunnel',       icon: 'funnel'    },
+      { href: '/admin',          label: 'Tableau de bord', icon: 'grid'     },
+      { href: '/admin/planning', label: 'Planning',        icon: 'calendar' },
+      { href: '/admin/courses',  label: 'Courses',         icon: 'map'      },
     ],
   },
   {
-    section: 'Paramètres',
+    section: 'Vendre',
     items: [
-      { href: '/admin/clients',        label: 'Clients',        icon: 'briefcase' },
-      { href: '/admin/sous-traitants', label: 'Sous-traitants', icon: 'truck'     },
-      { href: '/admin/tarifs',         label: 'Tarifs',         icon: 'tag'       },
-      { href: '/admin/backups',         label: 'Sauvegardes',    icon: 'backup'    },
-      { href: '/admin/parametres',     label: 'Paramètres',     icon: 'settings'  },
+      { href: '/admin/devis',         label: 'Demandes reçues', icon: 'inbox'     },
+      { href: '/admin/devis-clients', label: 'Devis',           icon: 'file'      },
+      { href: '/admin/facturation',   label: 'Facturation',     icon: 'briefcase' },
+    ],
+  },
+  {
+    section: 'Gérer',
+    items: [
+      { href: '/admin/clients',        label: 'Clients',        icon: 'users'  },
+      { href: '/admin/chauffeurs',     label: 'Chauffeurs',     icon: 'volant' },
+      { href: '/admin/sous-traitants', label: 'Sous-traitants', icon: 'truck'  },
+    ],
+  },
+  {
+    section: 'Mesurer',
+    items: [
+      /* Une seule entrée : Visiteurs, Estimations et Tunnel sont devenus des
+         onglets de cette page. Elles gardent leurs adresses, et le lien reste
+         actif quand on est sur l’un des onglets — voir `estActif` plus bas. */
+      { href: '/admin/stats', label: 'Chiffres & mesures', icon: 'bar' },
+    ],
+  },
+  {
+    section: 'Réglages',
+    items: [
+      { href: '/admin/tarifs',     label: 'Tarifs',      icon: 'tag'      },
+      { href: '/admin/parametres', label: 'Paramètres',  icon: 'settings' },
+      { href: '/admin/backups',    label: 'Sauvegardes', icon: 'backup'   },
     ],
   },
 ]
 
 const ICONS: Record<string, React.ReactNode> = {
+  /* Un volant. Clients et Chauffeurs partageaient la meme icone de
+     personnages : deux entrees voisines, le meme dessin. */
+  volant:    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path strokeLinecap="round" d="M12 3v6M4.2 16.5l5.2-3M19.8 16.5l-5.2-3"/></svg>,
   grid:      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
   map:       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 13l4.553 2.276A1 1 0 0021 21.382V10.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 4"/></svg>,
   users:     <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
@@ -258,8 +297,14 @@ export default function Sidebar() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {group.items.map(item => {
-                const isActive = pathname === item.href ||
-                  (item.href !== '/admin' && pathname.startsWith(item.href))
+                /* Les trois onglets de « Mesurer » ont leurs propres
+                   adresses : sans cette ligne, le menu n'aurait plus rien
+                   d’allumé dès qu’on quitte le premier onglet, et on se
+                   croirait sorti de la rubrique. */
+                const ongletsMesures = ['/admin/analytics', '/admin/estimations', '/admin/funnel']
+                const isActive = pathname === item.href
+                  || (item.href !== '/admin' && pathname.startsWith(item.href))
+                  || (item.href === '/admin/stats' && ongletsMesures.some(o => pathname.startsWith(o)))
                 return <NavItem key={item.href} item={item} isActive={isActive} />
               })}
             </div>
