@@ -2,7 +2,15 @@ import Link from 'next/link'
 import { createClientAccount } from './actions'
 import SubmitButton from '../../components/SubmitButton'
 
-export default function NouveauClientPage() {
+export default async function NouveauClientPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erreur?: string }>
+}) {
+  /* Le message vient de l'action, qui redirige ici au lieu de lancer une
+     exception. Voir actions.ts : avant le 2026-11-09, une adresse déjà
+     utilisée produisait l'écran noir de Next.js. */
+  const { erreur } = await searchParams
   const inputStyle = {
     background: 'var(--elevated)', border: '1px solid var(--t3)',
     borderRadius: 8, padding: '10px 14px',
@@ -50,6 +58,22 @@ export default function NouveauClientPage() {
       </div>
 
       <div style={{ padding: '32px', maxWidth: 720 }}>
+        {erreur && (
+          <div style={{
+            background: 'rgba(217,80,80,.10)', border: '1px solid rgba(217,80,80,.35)',
+            borderRadius: 10, padding: '14px 16px', marginBottom: 20,
+            display: 'flex', gap: 11, alignItems: 'flex-start',
+          }}>
+            <span style={{ fontSize: 15, lineHeight: 1.2 }}>⚠</span>
+            <div>
+              <div style={{ fontSize: 12.5, color: 'var(--t1)', fontWeight: 600, marginBottom: 3 }}>
+                Le compte n’a pas été créé
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.6 }}>{erreur}</div>
+            </div>
+          </div>
+        )}
+
         <form action={createClientAccount} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Compte */}
