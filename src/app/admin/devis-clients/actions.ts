@@ -364,12 +364,29 @@ export async function facturerDevisAction(id: string): Promise<ResultatFacturati
 
   /* Les courses nées de ce devis, pas encore facturées. Leur `ref` porte le
      numéro du devis — c’est `convertirDevisEnCourses` qui la pose. */
-  const { data: coursesDuDevis } = await supabase
+  const { data: toutesLesCourses } = await supabase
     .from('courses')
-    .select('id')
+    .select('id, facture_id')
     .like('ref', `${devis.numero}-%`)
-    .is('facture_id', null)
-  const courseIds = (coursesDuDevis ?? []).map(c => c.id as string)
+
+  /* DEUX FOIS LA MEME FACTURE : le bouton ne s'efface pas apres usage, et
+     rien n'empechait de le cliquer a nouveau — deux factures, deux numeros,
+     pour une seule prestation. C'est une erreur comptable, pas une gene.
+
+     Ce garde ne voit que les devis DEJA convertis en courses : c'est la
+     marque qu'on a, puisque rien en base ne relie une facture au devis dont
+     elle vient. Un devis facture sans courses reste donc facturable deux
+     fois — il faudrait une colonne `devis_id` sur `factures` pour fermer ce
+     cas, ce qui touche au schema et attend une decision. */
+  const dejaFacturee = (toutesLesCourses ?? []).find(c => c.facture_id)
+  if (dejaFacturee) {
+    throw new Error(
+      'Ce devis a déjà été facturé : ses prestations sont rattachées à une facture. '
+      + 'Ouvrez Facturation pour la retrouver.',
+    )
+  }
+
+  const courseIds = (toutesLesCourses ?? []).map(c => c.id as string)
 
   const totalTtc = Math.round(Number(devis.total_ht) * 100) / 100
 
