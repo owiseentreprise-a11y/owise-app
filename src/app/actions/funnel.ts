@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { nettoyerMetaFunnel, nettoyerEtape, nettoyerPage } from '@/lib/funnel-confidentialite'
+import { estUnRobot } from '@/lib/robot'
 
 /**
  * Écrit une étape de parcours.
@@ -44,6 +45,19 @@ export async function logFunnelEvent(params: {
 }) {
   const step = nettoyerEtape(params.step)
   if (!step) return
+
+  /* Un navigateur piloté ou un robot d'indexation ne parcourt pas un tunnel
+     de conversion : il ne convertira jamais. Le 2026-11-09, les contrôles
+     automatiques ont écrit 118 événements ici — dont 52 dans une « visite »
+     unique qui chargeait /reserver douze fois par minute.
+
+     Une action serveur n'a pas d'objet `request`, mais `headers()` donne la
+     requête entrante. L'appel est gardé : si l'en-tête est indisponible, on
+     n'empêche rien plutôt que de perdre une vraie mesure. */
+  try {
+    const { headers } = await import('next/headers')
+    if (estUnRobot((await headers()).get('user-agent'))) return
+  } catch { /* contexte sans en-têtes : on laisse passer */ }
 
   const sessionId = typeof params.sessionId === 'string'
     && /^[A-Za-z0-9_-]{1,64}$/.test(params.sessionId)

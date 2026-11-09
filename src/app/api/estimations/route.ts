@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generaliserLieu } from '@/lib/estimation-anonyme'
 import { canalDepuisReferent } from '@/lib/origine-visite'
+import { estUnRobot } from '@/lib/robot'
 
 const hits = new Map<string, { count: number; reset: number }>()
 const LIMIT  = 10
@@ -23,6 +24,14 @@ const VEHICULES_VALIDES = ['berline', 'berline_premium', 'van', 'grand_van']
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   if (isRateLimited(ip)) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
+
+  /* Ni un navigateur piloté ni un robot d'indexation ne cherche une course.
+     Les compter gonflait les totaux sans rien dire du marché — et c'est un
+     contrôle automatique qui a produit 31 % des mesures du 2026-11-09. On
+     répond normalement pour ne rien changer au comportement de la page. */
+  if (estUnRobot(req.headers.get('user-agent'))) {
+    return NextResponse.json({ ok: true, mesure: 'ignoree' }, { status: 202 })
+  }
 
   let body: unknown
   try {
