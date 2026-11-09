@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { creerFacture } from './actions'
 import { lireHeureCourse } from '@/lib/heure'
 
@@ -158,8 +159,33 @@ export default function NouvelleFactureForm({
           </div>
 
           {clientCourses.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--t3)', fontSize: 13 }}>
-              Aucune course terminée non facturée pour ce client
+            /* Dire ce qu'il faut faire, pas seulement qu'il n'y a rien.
+               Constat du 2026-11-09 : une cliente avait réservé par téléphone,
+               la course n'était pas enregistrée, et cet écran se contentait de
+               « aucune course » — sans indiquer que le chemin existe. Une
+               facture à envoyer le jour même restait bloquée faute d'un lien. */
+            <div style={{ padding: '28px 32px', textAlign: 'center', fontSize: 13 }}>
+              <div style={{ color: 'var(--t3)', marginBottom: 10 }}>
+                Aucune course terminée non facturée pour ce client
+              </div>
+              <div style={{ color: 'var(--t2)', fontSize: 12, lineHeight: 1.7, maxWidth: 440, margin: '0 auto' }}>
+                La course a été réservée par téléphone et n’a pas été saisie ?
+                Enregistrez-la avec sa <strong>date réelle</strong> : la case
+                «&nbsp;Course déjà effectuée&nbsp;» apparaît dès que la date est
+                passée, la course est créée comme terminée, et elle revient ici
+                aussitôt.
+              </div>
+              <Link
+                href="/admin/courses/nouvelle"
+                style={{
+                  display: 'inline-block', marginTop: 14, padding: '9px 18px',
+                  borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                  background: 'var(--gm)', border: '1px solid var(--gb)',
+                  color: 'var(--gold)', textDecoration: 'none',
+                }}
+              >
+                Enregistrer une course déjà effectuée
+              </Link>
             </div>
           ) : (
             clientCourses.map(course => {
