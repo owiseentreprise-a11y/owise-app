@@ -659,7 +659,11 @@ async function lireCourseAValider(courseId: string) {
   const supabase = createAdminClient()
   const { data } = await supabase
     .from('courses')
-    .select('id, ref, stripe_payment_intent_id, paiement_statut, prix_estime, prix_final, adresse_depart, adresse_arrivee, date_prevue, type_vehicule, nb_passagers, passager_prenom, passager_nom, passager_email, client_id')
+    /* `etapes` fait partie de la liste : sans elle, la confirmation envoyée
+       après validation ne mentionnait pas l'arrêt intermédiaire, que le
+       client avait pourtant payé (15 € + les km du détour). Le défaut n'était
+       visible nulle part — l'e-mail partait, il était juste incomplet. */
+    .select('id, ref, stripe_payment_intent_id, paiement_statut, prix_estime, prix_final, adresse_depart, adresse_arrivee, etapes, date_prevue, type_vehicule, nb_passagers, passager_prenom, passager_nom, passager_email, client_id')
     .eq('id', courseId)
     .single()
   return { supabase, course: data }
@@ -714,6 +718,10 @@ export async function validerReservationAction(
       nbPassagers: course.nb_passagers ?? 8,
       prixEstime: montant,
       refCourse: course.ref ?? courseId.slice(0, 8),
+      /* L'arrêt en chemin, que le client a payé et doit pouvoir vérifier. */
+      etapes: Array.isArray(course.etapes)
+        ? (course.etapes as unknown[]).filter((e): e is string => typeof e === 'string' && !!e.trim())
+        : null,
     })
   }
 

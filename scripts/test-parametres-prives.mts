@@ -110,13 +110,23 @@ if (ligne) {
     dire(restes.length === 0, 'plus aucune colonne privée après filtrage', restes.join(', '))
 
     const serialise = JSON.stringify(filtre)
+    /* Les valeurs cherchées sont LUES DANS LA LIGNE, jamais recopiées ici.
+       Deux raisons. La première : recopier l'adresse du domicile ou un IBAN
+       dans un fichier du dépôt, c'est les publier sur GitHub — précisément ce
+       que ce contrôle existe pour empêcher. La seconde : une valeur en dur se
+       périme en silence le jour où le réglage change, et le contrôle cherche
+       alors une aiguille qui n'est plus dans la botte. */
     const interdits: [string, string][] = [
-      ['adresse du domicile', '14 rue du Vieux Moulin'],
-      ['IBAN', 'FR76'],
-      ['BIC', 'SNNNFR22'],
-      ['nom de la banque', 'SHINE'],
+      ['adresse du domicile', String(ligne.societe_adresse ?? '')],
+      ['IBAN',                String(ligne.banque_iban ?? '')],
+      ['BIC',                 String(ligne.banque_bic ?? '')],
+      ['nom de la banque',    String(ligne.banque_nom ?? '')],
     ]
     for (const [quoi, aiguille] of interdits) {
+      if (aiguille.trim().length < 4) {
+        dire(false, `${quoi} : rien à chercher en base — le contrôle ne prouverait rien`)
+        continue
+      }
       dire(!serialise.includes(aiguille), `${quoi} absent du résultat`)
     }
     dire(Object.keys(filtre).length >= 8,

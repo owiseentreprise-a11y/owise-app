@@ -108,7 +108,7 @@ for (const [libelle, cp, attendu] of REELLES) {
 console.log(`\n${B}5. aucune adresse de voirie ne franchit le filet${Z}`)
 const INTERDITES = [
   '12 Rue de Paris, 60500 Chantilly, France',
-  '14 rue du Vieux Moulin, 60740 Saint-Maximin, France',
+  '3 rue des Tilleuls, 60740 Saint-Maximin, France',
   '55 Rue des Usages, 60560 Orry-la-Ville, France',
   "4b avenue de l'Europe, 95700 Roissy-en-France",
   '18 Rue de Dunkerque, 75010 Paris, France',
@@ -118,14 +118,21 @@ for (const v of INTERDITES) {
   verifier(`« ${v.slice(0, 30)}… » perd sa voirie`, !VOIRIE.test(sortie), sortie)
   verifier(`« ${v.slice(0, 30)}… » perd son numéro`, !/^\s*\d{1,4}\s*[a-z]?\s+\p{L}/iu.test(sortie), sortie)
 }
-/* La commune de l'exploitant est desservie et peut légitimement apparaître ;
-   c'est la RUE qui ne doit jamais sortir. On vérifie les deux séparément. */
-verifier('la rue de l\'exploitant ne sort pas',
-  !/rue du vieux moulin/i.test(generaliserLieu('14 rue du Vieux Moulin, 60740 Saint-Maximin')),
-  generaliserLieu('14 rue du Vieux Moulin, 60740 Saint-Maximin'))
-verifier('mais sa commune reste lisible',
-  generaliserLieu('14 rue du Vieux Moulin, 60740 Saint-Maximin') === '60740 Saint-Maximin',
-  generaliserLieu('14 rue du Vieux Moulin, 60740 Saint-Maximin'))
+/* Saint-Maximin est une commune desservie : elle peut légitimement apparaître.
+   C'est la RUE qui ne doit jamais sortir. On vérifie les deux séparément, sur
+   une adresse INVENTÉE.
+
+   Pourquoi inventée : la première écriture de ce contrôle utilisait l'adresse
+   personnelle réelle de l'exploitant, pour « coller au cas réel ». Elle s'est
+   ainsi retrouvée dans un fichier du dépôt, donc sur GitHub — exactement ce
+   que la règle interdit. Trouvée par `test-identite-privee.mjs`, qui a fait
+   son travail. Un contrôle de confidentialité n'a jamais besoin de la vraie
+   donnée pour prouver qu'elle ne passerait pas. */
+const RUE_FICTIVE = '3 rue des Tilleuls, 60740 Saint-Maximin'
+verifier('une rue de Saint-Maximin ne sort pas',
+  !/rue des tilleuls/i.test(generaliserLieu(RUE_FICTIVE)), generaliserLieu(RUE_FICTIVE))
+verifier('mais la commune reste lisible',
+  generaliserLieu(RUE_FICTIVE) === '60740 Saint-Maximin', generaliserLieu(RUE_FICTIVE))
 
 /* ── 6. Le filet est idempotent ──────────────────────────────────────────
    Il tourne sur chaque écriture, y compris sur une valeur qu'il a lui-même
