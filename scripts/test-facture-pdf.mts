@@ -125,13 +125,20 @@ for (const f of factures) {
   // Montants : c'est là que se joue l'exactitude comptable.
   for (const [nom, valeur] of [
     ['HT',  Number(f.montant_ht)],
-    ['TVA', Number(f.tva)],
     ['TTC', Number(f.montant_ttc)],
   ] as const) {
     // Écriture française attendue : « 1 234,56 € », jamais « 1234.56 € ».
     const attendu = nettoyerPourPdf(formaterMontant(valeur))
     verifier(`${p} · montant ${nom} exact`, txt.includes(attendu), `attendu ${attendu}`)
   }
+
+  /* La TVA ne s'écrit PAS en euros : en franchise de base, le document écrit
+     « non applicable » en toutes lettres, parce qu'un « 0,00 € » se lit comme
+     un oubli. La règle est celle de `mentionTva`, dans facture-document.ts —
+     ce contrôle la lit là plutôt que de la réécrire, sinon il validerait sa
+     propre idée de la TVA et non celle du document. */
+  verifier(`${p} · TVA écrite comme le document la décide`,
+    txt.includes(nettoyerPourPdf(doc.mentionTva)), `attendu « ${doc.mentionTva} »`)
 
   // Somme des lignes = total HT. Un écart ici veut dire qu'une course
   // facturée manque au détail, ou qu'une course étrangère s'y est glissée.
@@ -145,16 +152,52 @@ for (const f of factures) {
     verifier(`${p} · course « ${ligne.arrivee} » au détail`, plat.includes(sansAccents(ligne.arrivee)))
   }
 
+  /* Comparaison sans les espaces : le document coupe le SIRET en groupes
+     (« 477 534 135 00041 »), la base le stocke d'un bloc. Le PDF l'écrivait
+     d'un bloc et était donc le seul document à ne pas le couper. */
   if (parametres?.societe_siret) {
-    verifier(`${p} · SIRET présent`, txt.includes(parametres.societe_siret))
+    const sansEspaces = (v: string) => v.replace(/\s/g, '')
+    verifier(`${p} · SIRET présent`,
+      sansEspaces(txt).includes(sansEspaces(parametres.societe_siret)))
   }
 
-  // Décision du 2026-09-20 : aucune adresse de société sur une facture.
+  /* L'ADRESSE DU SIÈGE NE DOIT PAS FIGURER.
+
+     Demandé par l'exploitant le 2026-09-20, confirmé le 2026-11-09 : son
+     siège est son domicile. La conséquence lui a été dite — une facture
+     sans l'adresse de l'émetteur est incomplète au regard de l'article
+     L441-9 du Code de commerce — et il a maintenu sa décision.
+
+     Ce contrôle existait déjà et il n'a rien empêché : il ne regardait que
+     le PDF, alors que l'adresse s'affichait sur la page d'administration
+     depuis le 2026-10-16 et sur le devis depuis le 2026-11-02. Un contrôle
+     qui ne cherche qu'à un endroit rassure à tort.
+
+     La vraie protection n'est plus ici : `COLONNES_PRESTATAIRE` ne demande
+     plus ces colonnes à la base, donc aucune surface ne peut les afficher.
+     Ce contrôle reste comme filet, sur le document que le client garde. */
   if (parametres?.societe_adresse) {
-    verifier(`${p} · pas d'adresse de la société`, !plat.includes(sansAccents(parametres.societe_adresse)))
+    verifier(`${p} · pas d'adresse du siège`,
+      !plat.includes(sansAccents(parametres.societe_adresse)),
+      parametres.societe_adresse)
   }
   if (parametres?.societe_code_postal) {
-    verifier(`${p} · pas de code postal de la société`, !txt.includes(parametres.societe_code_postal))
+    verifier(`${p} · pas de code postal du siège`,
+      !txt.includes(parametres.societe_code_postal), parametres.societe_code_postal)
+  }
+  /* Les mentions légales du pied, mot pour mot. Le PDF n'en portait AUCUNE :
+     ni le régime de TVA, ni les pénalités de retard. Elles viennent de
+     `mentionsLegales`, donc ce contrôle vérifie que le PDF rend ce que le
+     document déclare — pas qu'il contient des phrases choisies ici. */
+  /* Une boucle sur une liste vide ne declenche AUCUNE assertion et passe en
+     silence : on exige donc d abord qu il y en ait. Sans cette ligne, un
+     document qui perdrait toutes ses mentions legales resterait au vert. */
+  verifier(`${p} · le document declare des mentions legales`,
+    doc.mentionsLegales.length >= 1, String(doc.mentionsLegales.length))
+  for (const [i, m] of doc.mentionsLegales.entries()) {
+    const debut = ((m.fort ?? '') + m.texte).slice(0, 60)
+    verifier(`${p} · mention légale ${i + 1}/${doc.mentionsLegales.length}`,
+      plat.includes(sansAccents(debut)), debut)
   }
 
   // Jamais d'IBAN sur une facture acquittée : le client pourrait payer deux fois.

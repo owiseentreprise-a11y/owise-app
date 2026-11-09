@@ -18,12 +18,15 @@
  *
  * CONFIDENTIALITÉ
  *
- * Ce fichier porte le nom de l'exploitant et l'adresse de son siège, qui est
- * son domicile. C'est l'un des trois seuls endroits du projet où ils ont leur
- * place : un devis et une facture engagent leur émetteur et doivent porter
- * son identité (art. L441-9 du Code de commerce). Ils ne doivent apparaître
- * sur AUCUNE page publique — voir la règle dans CLAUDE.md et
- * `test-identite-privee.mjs`, qui déclare ce fichier en exception.
+ * Ce fichier porte le NOM de l'exploitant, parce qu'un devis et une facture
+ * engagent leur émetteur et doivent porter son identité (art. L441-9 du Code
+ * de commerce). Il ne porte PAS l'adresse de son siège, qui est son domicile :
+ * l'exploitant a demandé le 2026-09-20, et confirmé le 2026-11-09, qu'elle ne
+ * figure sur aucun document remis à un client. La facture est donc incomplète
+ * au regard de cet article — c'est son choix, pris en connaissance de cause.
+ *
+ * Le nom ne doit apparaître sur AUCUNE page publique — voir la règle dans
+ * CLAUDE.md et `test-identite-privee.mjs`, qui déclare ce fichier en exception.
  */
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -50,21 +53,34 @@ export type Prestataire = {
   legal: string[]
 }
 
-/** Les colonnes de `parametres` dont l'identité se construit. */
+/**
+ * Les colonnes de `parametres` dont l'identité se construit.
+ *
+ * L'ADRESSE DU SIÈGE N'EN FAIT PAS PARTIE, et ce n'est pas un oubli.
+ * L'exploitant l'a demandé le 2026-09-20, puis confirmé le 2026-11-09 : son
+ * siège est son domicile, il ne doit figurer sur aucun document remis à un
+ * client. La conséquence est assumée et lui a été dite : l'article L441-9 du
+ * Code de commerce exige l'adresse de l'émetteur sur une facture, donc ces
+ * factures sont incomplètes au regard de la loi.
+ *
+ * Elle est retirée de la REQUÊTE, pas seulement de l'affichage. Un commentaire
+ * « ne pas réintroduire » ne protège rien : il en existait un sur la page de
+ * l'espace client, et l'adresse est quand même apparue sur trois autres
+ * surfaces — la page d'administration depuis le 2026-10-16, le devis depuis le
+ * 2026-11-02, son PDF depuis le 2026-11-09. Une colonne qu'on ne demande pas
+ * ne peut pas s'afficher.
+ */
 export type LigneParametres = {
   societe_nom?: string | null
   societe_siret?: string | null
   societe_naf?: string | null
-  societe_adresse?: string | null
-  societe_code_postal?: string | null
-  societe_ville?: string | null
   societe_telephone?: string | null
   societe_email?: string | null
 }
 
 /** Les colonnes à demander à `parametres` pour construire l'identité. */
 export const COLONNES_PRESTATAIRE =
-  'societe_nom, societe_siret, societe_naf, societe_adresse, societe_code_postal, societe_ville, societe_telephone, societe_email'
+  'societe_nom, societe_siret, societe_naf, societe_telephone, societe_email'
 
 /** « +33619106356 » → « 06 19 10 63 56 ». Laisse tel quel ce qu'il ne sait pas lire. */
 export function formaterTelephone(v: string | null | undefined): string | null {
@@ -85,17 +101,11 @@ export function nomPropre(v: string): string {
   return /^[A-ZÀ-Ý\s-]+$/.test(v) ? v.charAt(0) + v.slice(1).toLowerCase() : v
 }
 
-/**
- * « saint-maximin » → « Saint-Maximin ». La base porte la minuscule.
- *
- * Le trait d'union compte : une capitalisation qui ne traite que la première
- * lettre rend « Saint-maximin », et c'est précisément l'écart qui existait
- * entre le devis et la facture avant ce fichier.
- */
-export function capitaliserCommune(v: string | null | undefined): string | null {
-  if (!v) return null
-  return String(v).replace(/(^|[-\s])([a-zà-ÿ])/g, (_, s, c) => s + c.toUpperCase())
-}
+/* `capitaliserCommune()` vivait ici : la base porte « saint-maximin » et le
+   devis l'écrivait « Saint-maximin » quand la facture écrivait
+   « Saint-Maximin ». La fonction a disparu avec la ligne qu'elle servait —
+   l'adresse du siège n'est plus affichée nulle part, donc il n'y a plus de
+   commune à capitaliser, et plus d'orthographe à faire diverger. */
 
 /**
  * L'identité, construite depuis une ligne de `parametres` déjà lue.
@@ -112,10 +122,11 @@ export function construirePrestataire(p: LigneParametres | null | undefined): Pr
     telephone: formaterTelephone(p?.societe_telephone),
     email: p?.societe_email ?? null,
     siret,
+    /* Le nom et la forme juridique, puis le SIRET et le code APE. PAS
+       l'adresse du siège : décision de l'exploitant, voir `LigneParametres`
+       ci-dessus. */
     legal: [
       `${EXPLOITANT} — entreprise individuelle (micro-entrepreneur)`,
-      [p?.societe_adresse, [p?.societe_code_postal, capitaliserCommune(p?.societe_ville)].filter(Boolean).join(' ')]
-        .filter(Boolean).join(', '),
       [siret ? `SIRET ${siret}` : null, p?.societe_naf ? `Code APE ${p.societe_naf}` : null]
         .filter(Boolean).join(' · '),
     ].filter(l => l && l.trim().length > 0),

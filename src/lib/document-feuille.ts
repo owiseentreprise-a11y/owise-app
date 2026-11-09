@@ -60,11 +60,34 @@ export const CSS_DOCUMENT = `
 .fac-bloc strong{display:block; color:var(--encre); font-weight:600; font-size:14.5px; margin-bottom:3px}
 .fac-legal{font-size:11px; line-height:1.6; color:var(--encre-3); display:block; margin-top:5px}
 
+/* LE DOCUMENT N'EST PAS UN TABLEAU D'ADMINISTRATION.
+
+   src/app/admin/mobile.css fait defiler les tableaux trop larges plutot
+   que d'elargir la page : « .adm-contenu table { display:block;
+   overflow-x:auto; white-space:nowrap } ». Utile sur une liste de courses.
+   Desastreux ici : le libelle « Aeroport Paris-Charles de Gaulle (CDG)
+   vers Aeroport Paris-Charles de Gaulle (CDG) » ne revenait jamais a la
+   ligne, le tableau depassait de 12,3 px, et le signe euro de la colonne
+   Montant etait coupe au bord de la feuille.
+
+   LE PIEGE : cette regle vit sous « @media (max-width:900px) », donc on la
+   croit reservee au telephone. Une page A4 fait 794 px de large a 96 ppp —
+   sous le seuil. Elle s'applique DONC AUSSI A L'IMPRESSION, sur un ecran
+   de bureau, sur le document que le client recoit. Mesure le 2026-11-09 ;
+   mesurer-documents.mjs chiffre desormais tout debordement.
+
+   Deux selecteurs a deux classes (0,2,0) l'emportent sur « .adm-contenu
+   table » (0,1,1) sans avoir besoin de !important. */
 .fac-table{width:100%; border-collapse:collapse}
+.fac-feuille .fac-table{display:table; overflow-x:visible; white-space:normal}
 .fac-table caption{text-align:left; font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--encre-3); padding-bottom:11px}
 .fac-table th{text-align:left; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--encre-3); font-weight:600; padding:0 0 9px; border-bottom:1px solid var(--or-trait)}
 .fac-table th.fac-chiffre, .fac-table td.fac-chiffre{text-align:right}
-.fac-table td{padding:14px 0; border-bottom:1px solid rgba(9,9,26,.07); vertical-align:top; font-size:13.5px}
+/* white-space:normal est porte ici, en (0,1,1), et non sur un selecteur
+   plus precis : les deux colonnes qui doivent VRAIMENT rester sur une
+   ligne — la date et le montant — le redeclarent plus bas en (0,2,1) et
+   l'emportent donc, sans que l'ordre d'ecriture entre en jeu. */
+.fac-table td{padding:14px 0; border-bottom:1px solid rgba(9,9,26,.07); vertical-align:top; font-size:13.5px; white-space:normal}
 /* La colonne de gauche qui porte la date (facture) ou l'heure (devis).
    Elle vivait dans la feuille du DEVIS seulement : la facture n'avait donc
    aucune date a l'ecran, alors que son PDF en affichait une. Trois documents

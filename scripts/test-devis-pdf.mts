@@ -161,8 +161,19 @@ for (const d of devis) {
     verifier(`${ref} · date de prestation`, contient(texte, dateCourte(d.date_prestation) ?? ''))
   }
 
-  // Le pied de page
-  verifier(`${ref} · pied de page`, contient(texte, 'owise.fr'))
+  /* Le pied cherchait « owise.fr ». Cette adresse etait ecrite dans le pied
+     du PDF seul : le document a l'ecran ne l'a jamais portee, et le devis
+     etait donc le seul des trois a l'afficher. Le pied du PDF rend
+     desormais les memes mentions que la page, et le moyen de joindre Owise
+     est la ou la page le met — dans le cartouche « Prestataire ».
+     On controle donc ce que le document declare, pas une chaine choisie
+     ici : sans cela, le controle validerait sa propre idee du document. */
+  if (prestataire.email) {
+    verifier(`${ref} · moyen de joindre Owise`, contient(texte, prestataire.email))
+  }
+  if (prestataire.telephone) {
+    verifier(`${ref} · telephone Owise`, contient(texte, prestataire.telephone))
+  }
 
   const n = (d.lignes as unknown[]).length
   console.log(`  ${d.numero.padEnd(20)} ${String(octets.length).padStart(5)} o · ${n} ligne(s) · ${d.statut}`)

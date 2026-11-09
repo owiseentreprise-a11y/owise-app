@@ -1,6 +1,6 @@
 import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
 import {
-  COLONNES_PRESTATAIRE, capitaliserCommune, construirePrestataire,
+  COLONNES_PRESTATAIRE, construirePrestataire,
   formaterTelephone, grouperSiret, nomPropre,
   type LigneParametres, type Prestataire,
 } from '@/lib/prestataire'
@@ -82,6 +82,12 @@ export type LigneFacture = {
   detail: string | null
 }
 
+/**
+ * Une mention du pied de page du document. « fort » est l'amorce en gras,
+ * s'il y en a une ; « texte » la suit sans espace.
+ */
+export type MentionLegale = { fort?: string; texte: string }
+
 export type DocumentFacture = {
   id: string
   numero: string
@@ -126,6 +132,27 @@ export type DocumentFacture = {
   recap: { libelle: string; montant: number }[]
   /** Ce qui s'écrit en face de « TVA », à côté du total. Comme sur le devis. */
   mentionTva: string
+  /**
+   * Les mentions du pied de page, dans l'ordre où elles s'impriment.
+   *
+   * Elles n'étaient écrites QUE dans le JSX de la page d'administration. Le
+   * PDF joint à l'e-mail du client n'en portait donc AUCUNE : ni le régime
+   * de TVA (art. 293 B du CGI), ni les pénalités de retard et l'indemnité
+   * forfaitaire de recouvrement de 40 € (art. L441-10 du Code de commerce),
+   * que la loi impose sur une facture. L'écran les affichait, la pièce
+   * jointe non — et c'est la pièce jointe que le client garde. Trouvé le
+   * 2026-11-09 en alignant les trois formes du document.
+   *
+   * Comme le récapitulatif et la mention de TVA : la décision se prend ici,
+   * les surfaces se contentent de rendre. C'est la règle de CLAUDE.md sur le
+   * contenu d'une facture, appliquée à son pied de page.
+   *
+   * Le champ « fort » est l'amorce en gras, quand il y en a une : la
+   * maquette validée écrit « TVA non applicable » en gras, puis la suite en
+   * maigre. Le porter dans la structure évite que le gras existe à l'écran
+   * et pas sur le papier.
+   */
+  mentionsLegales: MentionLegale[]
 }
 
 /** « 2026-10-08 » → « 08/10/2026 ». Le fuseau est obligatoire : une date
@@ -349,6 +376,7 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
     /* « non applicable » en toutes lettres plutot que « 0,00 € » : c'est ce
        qu'ecrit le devis, et un zero en euros se lit comme un oubli. */
     mentionTva: Number(f.tva) === 0 ? 'non applicable' : formaterMontant(Number(f.tva)),
+    mentionsLegales: mentionsDuDocument(Number(f.tva), p?.facture_mentions ?? null),
     banque: payee ? null : {
       nom:  p?.banque_nom ?? null,
       iban: p?.banque_iban ?? null,
@@ -390,6 +418,35 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
  *     et c'etait justement celui ou la facture n'affichait rien du tout,
  *     quand le devis du meme jour affichait « 1 transfert · 201,00 € ».
  */
+/**
+ * Les mentions du pied, construites une fois pour les trois formes du
+ * document : page d'administration, espace client, PDF joint à l'e-mail.
+ *
+ * L'ordre compte : le régime de TVA d'abord — c'est lui qui explique le
+ * montant —, puis les pénalités de retard, puis ce que l'exploitant a réglé
+ * lui-même dans /admin/tarifs.
+ */
+function mentionsDuDocument(
+  tva: number,
+  mentionsReglees: string | null,
+): MentionLegale[] {
+  const lignes: MentionLegale[] = []
+  if (tva === 0) {
+    lignes.push({
+      fort: 'TVA non applicable',
+      texte: ', article 293 B du Code général des impôts — le montant indiqué est net de taxe.',
+    })
+  }
+  lignes.push({
+    texte: 'En cas de retard de paiement : pénalités au taux légal en vigueur et indemnité '
+      + 'forfaitaire pour frais de recouvrement de 40 € (art. L441-10 du Code de commerce). '
+      + "Pas d'escompte pour paiement anticipé.",
+  })
+  const reglees = (mentionsReglees ?? '').trim()
+  if (reglees) lignes.push({ texte: reglees })
+  return lignes
+}
+
 function recapDuDocument(
   courses: CourseDeFacture[] | null,
   notes: string | null | undefined,

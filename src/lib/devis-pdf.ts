@@ -8,19 +8,27 @@
  * message soi-même. C'est ce qui a produit, le 2026-11-02, un e-mail parti
  * chez une cliente avec « [à compléter selon vos conditions] » dedans.
  *
- * Deux règles tiennent ce fichier :
+ * Trois règles tiennent ce fichier :
  *
- *  - il ne DESSINE pas son papier : marges, palette et tracé viennent de
- *    `pdf-feuille.ts`, partagé avec la facture ;
- *  - il n'ÉCRIT aucun libellé : chaque phrase vient de `devis-client.ts`,
- *    qui la donne aussi à la page web. Un devis imprimé et le même devis en
- *    pièce jointe doivent dire exactement la même chose.
+ *  - il ne DESSINE pas son papier : marges, palette, en-tête, cartouches,
+ *    bandeau du total et pied viennent de pdf-feuille.ts, partagé avec la
+ *    facture. Un devis et la facture qui le suit sont le même papier ;
+ *  - il n'ÉCRIT aucun libellé : chaque phrase vient de devis-client.ts, qui
+ *    la donne aussi à la page web ;
+ *  - ce qu'il ajoute est ce qu'une facture n'a pas, et rien d'autre : la
+ *    colonne des heures, et le cadre de signature.
+ *
+ * Réécrit le 2026-11-09 : il composait son propre en-tête (OWISE en or,
+ * « DEVIS » en haut à droite), ses propres blocs sans fond, et son propre pied
+ * en 6,5 pt — trois choix que ni la page web ni la facture ne faisaient.
  */
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 import { formaterMontant } from '@/lib/montant'
 import {
-  A4, MARGE, OR, TEXTE, TEXTE_2, TEXTE_3, TRAIT,
-  cartoucheOwise, couper, ecrire, nettoyerPourPdf, piedDePage, placePour, trait,
+  A4, MARGE, MARGE_HAUT, OR, TEXTE, TEXTE_2, TEXTE_3,
+  bandeauTotal, blocIdentite, couper, ecrire, ecrireEspace, enTeteDocument,
+  feuilleNeuve, hauteurBloc, ligneTitre, mentionsPied, nettoyerPourPdf,
+  piedDePage, placePour, px, traitLigne,
   type Contexte,
 } from '@/lib/pdf-feuille'
 import {
@@ -29,6 +37,9 @@ import {
   jourEmission, lignesTotaux, phraseAccord,
   type DevisClient, type Prestataire,
 } from '@/lib/devis-client'
+
+const DROITE = A4.largeur - MARGE
+const CONTENU = DROITE - MARGE
 
 export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Array> {
   return (async () => {
@@ -40,226 +51,197 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
 
     const ctx: Contexte = {
       doc,
-      page: doc.addPage([A4.largeur, A4.hauteur]),
-      y: A4.hauteur - MARGE,
+      page: feuilleNeuve(doc),
+      y: A4.hauteur - MARGE_HAUT,
       normal: await doc.embedFont(StandardFonts.Helvetica),
       gras:   await doc.embedFont(StandardFonts.HelveticaBold),
-    }
-    const droite = A4.largeur - MARGE
-
-    // ── En-tête ───────────────────────────────────────────────────────────
-    const hautEntete = ctx.y
-    /* Le cartouche, puis le nom : meme composition que l'en-tete de la page
-       web (`.fac-marque`), pour que le PDF joint et le document imprime
-       depuis le navigateur soient le meme papier. Le cartouche fait 46 pt,
-       le texte est centre dessus. */
-    const CARTOUCHE = 46
-    const hautCartouche = hautEntete + 16
-    cartoucheOwise(ctx, MARGE, hautCartouche, CARTOUCHE)
-    const apresCartouche = MARGE + CARTOUCHE + 13
-
-    ctx.y = hautEntete
-    ecrire(ctx, 'OWISE', apresCartouche, 21, OR, true)
-    ecrire(ctx, 'DEVIS', 0, 10, TEXTE_2, true, droite)
-
-    ctx.y = hautEntete - 13
-    ecrire(ctx, p.metier.toUpperCase(), apresCartouche, 7.5, TEXTE_3)
-    ctx.y = hautEntete - 20
-    ecrire(ctx, d.numero, 0, 16, OR, true, droite)
-
-    ctx.y = hautEntete - 56
-    trait(ctx, ctx.y)
-
-    // ── Prestataire, client, dates ────────────────────────────────────────
-    ctx.y -= 24
-    const hautBloc = ctx.y
-    const colonneClient = MARGE + 270
-
-    ecrire(ctx, 'PRESTATAIRE', MARGE, 7, TEXTE_3)
-    ctx.y -= 14
-    ecrire(ctx, p.nom, MARGE, 11, TEXTE, true)
-    for (const l of [
-      p.metier,
-      [p.telephone, p.email].filter(Boolean).join(' · '),
-    ].filter(Boolean)) {
-      for (const bout of couper(String(l), ctx.normal, 8.5, 240)) {
-        ctx.y -= 11
-        ecrire(ctx, bout, MARGE, 8.5, TEXTE_2)
-      }
-    }
-    /* L'identite legale — exploitant, adresse, SIRET, APE.
-       Un commentaire annoncait ici qu'elle « descend en bas de page » : elle
-       n'y est jamais descendue. `basDePage()` ne l'a jamais contenue, et ce
-       PDF ne l'ecrivait donc nulle part — un devis sans l'identite de son
-       emetteur. Elle revient ou la facture la met : sous les coordonnees,
-       en petit et en gris. Trouve le 2026-11-09 en alignant les deux
-       documents. */
-    ctx.y -= 4
-    for (const l of p.legal) {
-      for (const bout of couper(String(l), ctx.normal, 7, 240)) {
-        ctx.y -= 9.5
-        ecrire(ctx, bout, MARGE, 7, TEXTE_3)
-      }
-    }
-    const basPrestataire = ctx.y
-
-    ctx.y = hautBloc
-    ecrire(ctx, 'CLIENT', colonneClient, 7, TEXTE_3)
-    ctx.y -= 14
-    ecrire(ctx, d.client_societe || d.client_nom, colonneClient, 11, TEXTE, true)
-    const lignesClient = [
-      d.client_societe ? `À l'attention de ${d.client_nom}` : null,
-      ...(d.client_adresse ? d.client_adresse.split(',').map(m => m.trim()).filter(Boolean) : []),
-      d.client_tel,
-      d.client_email,
-    ].filter(Boolean)
-    for (const l of lignesClient) {
-      for (const bout of couper(String(l), ctx.normal, 8.5, 230)) {
-        ctx.y -= 11
-        ecrire(ctx, bout, colonneClient, 8.5, TEXTE_2)
-      }
+      serif:  await doc.embedFont(StandardFonts.TimesRoman),
     }
 
-    ctx.y = Math.min(basPrestataire, ctx.y) - 22
+    // ── .fac-haut ────────────────────────────────────────────────────────
+    enTeteDocument(ctx, {
+      metier: p.metier,
+      nom: p.nom,
+      telephone: p.telephone,
+      email: p.email,
+      siret: p.siret,
+    })
 
-    // Les repères de date, en une ligne sous les deux blocs.
-    const reperes = [
-      dateCourte(d.date_prestation) ? `Prestations prévues le ${dateCourte(d.date_prestation)}` : null,
-      `Devis émis le ${dateCourte(jourEmission(d))}`,
-      dateCourte(d.date_validite) ? `Valable jusqu'au ${dateCourte(d.date_validite)}` : null,
-    ].filter(Boolean).join('   ·   ')
-    ecrire(ctx, reperes, MARGE, 9, TEXTE_2)
+    // ── .fac-titre-ligne ─────────────────────────────────────────────────
+    /* dateCourte() peut rendre null : on la lit une fois dans une variable,
+       sinon TypeScript ne peut pas savoir que le test et la valeur portent
+       sur le meme appel. */
+    const jourPrestation = dateCourte(d.date_prestation)
+    const jourValidite = dateCourte(d.date_validite)
+    ligneTitre(ctx, 'Devis', d.numero, [
+      ...(jourPrestation
+        ? [{ libelle: 'Prestations prévues le', valeur: jourPrestation }]
+        : []),
+      { libelle: 'Devis émis le', valeur: dateCourte(jourEmission(d)) ?? '—' },
+      ...(jourValidite
+        ? [{ libelle: "Valable jusqu'au", valeur: jourValidite }]
+        : []),
+    ])
 
-    ctx.y -= 14
-    trait(ctx, ctx.y)
+    // ── .fac-parties ─────────────────────────────────────────────────────
+    const largeurBloc = (CONTENU - px(20)) / 2
+    const blocPrestataire = {
+      etiquette: 'Prestataire',
+      titre: p.nom,
+      lignes: [
+        p.metier,
+        [p.telephone, p.email].filter(Boolean).join(' · '),
+      ].filter(l => l.trim().length > 0),
+      legal: p.legal,
+    }
+    const blocClient = {
+      etiquette: 'Client',
+      titre: d.client_societe || d.client_nom,
+      lignes: [
+        d.client_societe ? `À l'attention de ${d.client_nom}` : null,
+        ...(d.client_adresse ? d.client_adresse.split(',').map(m => m.trim()) : []),
+        d.client_tel,
+        d.client_email,
+      ].filter((l): l is string => Boolean(l && l.trim())),
+    }
 
-    // ── Prestations ───────────────────────────────────────────────────────
+    const hauteurParties = Math.max(
+      hauteurBloc(ctx, blocPrestataire, largeurBloc),
+      hauteurBloc(ctx, blocClient, largeurBloc),
+    )
+    ctx.y -= px(24)
+    placePour(ctx, hauteurParties + px(40))
+    const hautParties = ctx.y
+    blocIdentite(ctx, MARGE, hautParties, largeurBloc, blocPrestataire, hauteurParties)
+    blocIdentite(ctx, MARGE + largeurBloc + px(20), hautParties, largeurBloc, blocClient, hauteurParties)
+    ctx.y = hautParties - hauteurParties
+
+    // ── Le tableau des prestations ───────────────────────────────────────
+    /* Ce qu'une facture n'a pas : l'heure de prise en charge. Elle occupe la
+       colonne que la facture réserve à la date — .fac-date de la feuille, même
+       largeur, même police. */
+    const xHeure = MARGE + px(28) + px(10)
+    const xTrajet = xHeure + px(72)
+    const largeurTrajet = DROITE - px(98) - xTrajet
+
     const jour = dateLongue(d.date_prestation)
-    if (jour) {
-      ctx.y -= 20
-      ecrire(ctx, `Prestations du ${jour}`, MARGE, 10, TEXTE, true)
-    }
+    ctx.y -= px(24)
+    ecrireEspace(ctx, (jour ? `Prestations du ${jour}` : 'Prestations').toUpperCase(),
+      MARGE, px(9.5), TEXTE_3, 0.2)
 
-    ctx.y -= 20
-    ecrire(ctx, 'HEURE', MARGE + 26, 7, TEXTE_3)
-    ecrire(ctx, 'TRAJET', MARGE + 80, 7, TEXTE_3)
-    ecrire(ctx, 'MONTANT', 0, 7, TEXTE_3, false, droite)
-    ctx.y -= 8
-    trait(ctx, ctx.y)
+    ctx.y -= px(11) + px(9.5)
+    ecrireEspace(ctx, 'HEURE', xHeure, px(9.5), TEXTE_3, 0.14, true)
+    ecrireEspace(ctx, 'TRAJET', xTrajet, px(9.5), TEXTE_3, 0.14, true)
+    ecrireEspace(ctx, 'MONTANT', 0, px(9.5), TEXTE_3, 0.14, true, DROITE)
+    ctx.y -= px(9)
+    traitLigne(ctx, ctx.y)
 
-    d.lignes.forEach((l, i) => {
+    for (const [i, l] of d.lignes.entries()) {
       const detail = detailLigne(l)
-      const trajet = couper(`${l.depart} vers ${l.arrivee}`, ctx.gras, 9.5, 290)
-      placePour(ctx, 24 + trajet.length * 12 + (detail ? 12 : 0))
+      const bouts = couper(`${l.depart} → ${l.arrivee}`, ctx.gras, px(13.5), largeurTrajet)
+      const hauteurLigne = px(10) + bouts.length * px(13.5) * 1.3
+        + (detail ? px(3) + px(12) * 1.55 : 0) + px(10)
+      placePour(ctx, hauteurLigne + px(20))
 
-      ctx.y -= 18
-      const hautLigne = ctx.y
-      ecrire(ctx, String(i + 1).padStart(2, '0'), MARGE, 9, TEXTE_3)
-      ecrire(ctx, l.heure || '—', MARGE + 26, 9, TEXTE_2)
-      ecrire(ctx, formaterMontant(Number(l.prix)), 0, 10, TEXTE, false, droite)
+      const haut = ctx.y
+      ctx.y = haut - px(12) - px(11.5)
+      ecrire(ctx, String(i + 1).padStart(2, '0'), MARGE, px(11.5), OR)
 
-      trajet.forEach((bout, k) => {
-        if (k > 0) ctx.y -= 12
-        ecrire(ctx, bout, MARGE + 80, 9.5, TEXTE, true)
-      })
+      ctx.y = haut - px(10) - px(12.5)
+      ecrire(ctx, l.heure || '—', xHeure, px(12.5), TEXTE)
+
+      ctx.y = haut - px(10) - px(13.5)
+      ecrire(ctx, formaterMontant(Number(l.prix)), 0, px(13.5), TEXTE, true, DROITE)
+      for (const [j, bout] of bouts.entries()) {
+        if (j > 0) ctx.y -= px(13.5) * 1.3
+        ecrire(ctx, bout, xTrajet, px(13.5), TEXTE, true)
+      }
       if (detail) {
-        for (const bout of couper(detail, ctx.normal, 8.5, 290)) {
-          ctx.y -= 11
-          ecrire(ctx, bout, MARGE + 80, 8.5, TEXTE_3)
+        for (const bout of couper(detail, ctx.normal, px(12), largeurTrajet)) {
+          ctx.y -= px(3) + px(12) * 1.55
+          ecrire(ctx, bout, xTrajet, px(12), TEXTE_3)
         }
       }
 
-      ctx.y = Math.min(hautLigne, ctx.y) - 12
-      trait(ctx, ctx.y)
-    })
-
-    if (d.lignes.length === 0) {
-      ctx.y -= 18
-      ecrire(ctx, 'Aucune prestation sur ce devis.', MARGE, 9, TEXTE_3)
-      ctx.y -= 12
-      trait(ctx, ctx.y)
+      ctx.y -= px(10)
+      traitLigne(ctx, ctx.y)
     }
 
-    // ── Règlement et totaux ───────────────────────────────────────────────
-    const totaux = lignesTotaux(d)
-    placePour(ctx, 60 + totaux.length * 16)
-    ctx.y -= 30
-    const hautTotaux = ctx.y
-    const gaucheTotaux = droite - 215
+    if (d.lignes.length === 0) {
+      ctx.y -= px(10) + px(12.5)
+      ecrire(ctx, 'Aucune prestation sur ce devis.', xTrajet, px(12.5), TEXTE_3)
+      ctx.y -= px(10)
+      traitLigne(ctx, ctx.y)
+    }
 
-    ecrire(ctx, TITRE_REGLEMENT.toUpperCase(), MARGE, 7, TEXTE_3)
+    // ── .fac-bas ─────────────────────────────────────────────────────────
+    const totaux = lignesTotaux(d)
+    const largeurDroite = px(296)
+    const xDroiteBas = DROITE - largeurDroite
+    const largeurGauche = xDroiteBas - px(30) - MARGE
+
+    placePour(ctx, totaux.length * px(24.5) + px(12) + px(53) + px(50))
+    ctx.y -= px(20)
+    const hautBas = ctx.y
+
+    ecrireEspace(ctx, TITRE_REGLEMENT.toUpperCase(), MARGE, px(9.5), TEXTE_3, 0.2)
+    ctx.y -= px(7)
     for (const l of LIGNES_REGLEMENT) {
-      for (const bout of couper(l, ctx.normal, 8.5, 230)) {
-        ctx.y -= 12
-        ecrire(ctx, bout, MARGE, 8.5, TEXTE_2)
+      for (const bout of couper(l, ctx.normal, px(12), largeurGauche)) {
+        ctx.y -= px(12) * 1.8
+        ecrire(ctx, bout, MARGE, px(12), TEXTE_2)
       }
     }
     const basReglement = ctx.y
 
-    ctx.y = hautTotaux
+    ctx.y = hautBas
     for (const t of totaux) {
-      ecrire(ctx, t.libelle, gaucheTotaux, 9.5, TEXTE_2)
-      ecrire(ctx, t.valeur, 0, 9.5, TEXTE, false, droite)
-      ctx.y -= 16
+      ctx.y -= px(6) + px(12.5)
+      ecrire(ctx, t.libelle, xDroiteBas, px(12.5), TEXTE_2)
+      ecrire(ctx, t.valeur, 0, px(12.5), TEXTE_2, false, DROITE)
+      ctx.y -= px(6)
     }
-    ctx.page.drawLine({
-      start: { x: gaucheTotaux, y: ctx.y + 4 }, end: { x: droite, y: ctx.y + 4 },
-      thickness: 0.7, color: TRAIT,
-    })
-    ctx.y -= 10
-    ecrire(ctx, LIBELLE_NET, gaucheTotaux, 11, TEXTE, true)
-    ecrire(ctx, formaterMontant(Number(d.total_ht)), 0, 15, OR, true, droite)
+    ctx.y -= px(12)
 
-    ctx.y = Math.min(basReglement, ctx.y) - 30
+    bandeauTotal(ctx, LIBELLE_NET, formaterMontant(Number(d.total_ht)), xDroiteBas, largeurDroite)
 
-    // ── Accord et signature ───────────────────────────────────────────────
-    const accord = couper(phraseAccord(d), ctx.normal, 8.5, 290)
-    placePour(ctx, 24 + Math.max(accord.length * 12, 74))
+    ctx.y = Math.min(basReglement, ctx.y)
+
+    // ── .dv-signature : ce qu'une facture n'a pas ────────────────────────
+    const accord = couper(phraseAccord(d), ctx.normal, px(11.5), largeurGauche)
+    const cadreLargeur = px(240)
+    const cadreHauteur = px(62)
+    placePour(ctx, px(34) + Math.max(accord.length * px(11.5) * 1.8, cadreHauteur) + px(20))
+
+    ctx.y -= px(34)
     const hautAccord = ctx.y
     for (const bout of accord) {
-      ecrire(ctx, bout, MARGE, 8.5, TEXTE_2)
-      ctx.y -= 12
+      ctx.y -= px(11.5) * 1.8
+      ecrire(ctx, bout, MARGE, px(11.5), TEXTE_2)
     }
 
-    const cadreHaut = hautAccord + 8
-    const cadreLargeur = 190
-    const cadreHauteur = 70
+    /* Le cadre pointillé de .dv-cadre. pdf-lib ne trace pas de pointillés :
+       un filet continu très clair rend la même intention sur du papier. */
     ctx.page.drawRectangle({
-      x: droite - cadreLargeur, y: cadreHaut - cadreHauteur,
+      x: DROITE - cadreLargeur, y: hautAccord - cadreHauteur,
       width: cadreLargeur, height: cadreHauteur,
-      borderColor: TRAIT, borderWidth: 0.8,
+      borderColor: TEXTE, borderOpacity: 0.22, borderWidth: 0.8,
     })
-    const legende = couper(CADRE_SIGNATURE, ctx.normal, 7.5, cadreLargeur - 16)
-    let yLegende = cadreHaut - 14
-    for (const bout of legende) {
-      ctx.page.drawText(nettoyerPourPdf(bout), {
-        x: droite - cadreLargeur + 8, y: yLegende, size: 7.5,
-        font: ctx.normal, color: TEXTE_3,
-      })
-      yLegende -= 10
+    ctx.y = hautAccord - px(14)
+    for (const bout of couper(CADRE_SIGNATURE, ctx.normal, px(10), cadreLargeur - px(20))) {
+      ecrire(ctx, bout, DROITE - cadreLargeur + px(10), px(10), TEXTE_3)
+      ctx.y -= px(10) * 1.5
     }
 
-    ctx.y = Math.min(ctx.y, cadreHaut - cadreHauteur) - 24
+    ctx.y = Math.min(ctx.y, hautAccord - cadreHauteur)
 
-    // ── Bas de page ───────────────────────────────────────────────────────
-    /* Tout ce qui doit figurer sans prendre la place : clause d'attente,
-       identite de l'entreprise, regime de TVA, penalites. 6,5 pt, gris. */
-    const lignesBas = basDePage(d)
-    const hauteurBas = lignesBas.reduce(
-      (h, m) => h + couper(m, ctx.normal, 6.5, A4.largeur - 2 * MARGE).length * 8.5 + 3, 0)
-    placePour(ctx, hauteurBas + 16)
-    ctx.y -= 16
-    trait(ctx, ctx.y)
-    ctx.y -= 12
-    for (const mention of lignesBas) {
-      for (const bout of couper(mention, ctx.normal, 6.5, A4.largeur - 2 * MARGE)) {
-        ecrire(ctx, bout, MARGE, 6.5, TEXTE_3)
-        ctx.y -= 8.5
-      }
-      ctx.y -= 3
-    }
+    // ── .fac-pied ────────────────────────────────────────────────────────
+    /* basDePage() donne les mentions dans l'ordre, et la page web rend la
+       même liste. Pas de gras ici : contrairement à la facture, la maquette
+       du devis n'en met pas. */
+    mentionsPied(ctx, basDePage(d).map(texte => ({ texte })))
 
-    piedDePage(ctx, `${p.nom} · Service VTC · Paris & Île-de-France · owise.fr`)
+    piedDePage(ctx, '')
 
     return doc.save()
   })()
@@ -276,3 +258,5 @@ export async function genererDevisPdf(
     contenu: await rendreDevisPdf(devis, prestataire),
   }
 }
+
+export { nettoyerPourPdf }
