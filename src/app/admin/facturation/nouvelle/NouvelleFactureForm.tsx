@@ -62,6 +62,15 @@ export default function NouvelleFactureForm({
   /** Course déjà encaissée : la facture est un justificatif, pas un appel à paiement. */
   const [dejaReglee, setDejaReglee]   = useState(false)
   const [modePaiement, setModePaiement] = useState('')
+  /* Lignes saisies a la main, pour une prestation qui n'a aucune course
+     enregistree — reservee par telephone, par exemple. Elles ne coexistent
+     jamais avec des courses cochees : l'action le refuse, et l'ecran ne les
+     propose que lorsque aucune course n'est selectionnee. */
+  const [lignes, setLignes] = useState<{ libelle: string; montant: string }[]>([])
+  const ajouterLigne  = () => setLignes(l => [...l, { libelle: '', montant: '' }])
+  const retirerLigne  = (i: number) => setLignes(l => l.filter((_, j) => j !== i))
+  const majLigne = (i: number, champ: 'libelle' | 'montant', v: string) =>
+    setLignes(l => l.map((x, j) => (j === i ? { ...x, [champ]: v } : x)))
 
   const clientCourses = courses.filter(c => c.client_id === clientId)
 
@@ -82,8 +91,12 @@ export default function NouvelleFactureForm({
   }
 
   const selectedCourses = clientCourses.filter(c => checked.has(c.id))
-  const totalTTC = selectedCourses.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  const lignesValides = lignes.filter(l => l.libelle.trim() && Number(l.montant) > 0)
+  const totalLignes = Math.round(lignesValides.reduce((s, l) => s + Number(l.montant), 0) * 100) / 100
+  const totalCourses = selectedCourses.reduce((s, c) => s + (c.prix_final ?? c.prix_estime ?? 0), 0)
+  const totalTTC = lignesValides.length > 0 ? totalLignes : totalCourses
   const totalHT = totalTTC / (1 + tauxTva / 100)
+  const peutCreer = selectedCourses.length > 0 || lignesValides.length > 0
 
   const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
@@ -94,6 +107,14 @@ export default function NouvelleFactureForm({
       <input type="hidden" name="delai_paiement" value={delaiPaiement} />
       {[...checked].map(id => (
         <input key={id} type="hidden" name="course_ids[]" value={id} />
+      ))}
+      {/* Les lignes saisies. Seules les lignes completes partent : une ligne
+          vide laissee a l'ecran ne doit pas arriver au serveur. */}
+      {lignesValides.map((l, i) => (
+        <span key={i}>
+          <input type="hidden" name="ligne_libelle[]" value={l.libelle.trim()} />
+          <input type="hidden" name="ligne_montant[]" value={String(Number(l.montant))} />
+        </span>
       ))}
 
       {/* Client */}
@@ -186,6 +207,91 @@ export default function NouvelleFactureForm({
               >
                 Enregistrer une course déjà effectuée
               </Link>
+
+              {/* ── Ou saisir la prestation directement ──────────────────
+                  Pour une prestation qui n'a pas vocation à devenir une
+                  course — un forfait à la journée, une mise à disposition,
+                  une prestation déjà facturée hors système. On saisit comme
+                  sur un devis : une désignation, un montant. */}
+              <div style={{
+                marginTop: 26, paddingTop: 20, borderTop: '1px solid var(--gb)', textAlign: 'left',
+              }}>
+                <div style={{
+                  fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase',
+                  color: 'var(--t2)', fontWeight: 500, marginBottom: 4,
+                }}>
+                  Ou saisir la prestation à la main
+                </div>
+                <div style={{ fontSize: 11.5, color: 'var(--t3)', marginBottom: 14, lineHeight: 1.6 }}>
+                  Une désignation et un montant par ligne, comme sur un devis.
+                  Elles apparaîtront telles quelles sur la facture.
+                </div>
+
+                {lignes.map((l, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                    <input
+                      value={l.libelle}
+                      onChange={e => majLigne(i, 'libelle', e.target.value)}
+                      placeholder="Transfert Senlis → CDG, le 7 novembre"
+                      style={{
+                        flex: 1, background: 'var(--elevated)', border: '1px solid var(--t3)',
+                        borderRadius: 8, padding: '9px 12px', fontSize: 12.5, color: 'var(--t1)',
+                        outline: 'none', fontFamily: 'var(--font-dm-sans), sans-serif',
+                      }}
+                    />
+                    <input
+                      value={l.montant}
+                      onChange={e => majLigne(i, 'montant', e.target.value.replace(',', '.'))}
+                      inputMode="decimal"
+                      placeholder="59"
+                      style={{
+                        width: 96, background: 'var(--elevated)', border: '1px solid var(--t3)',
+                        borderRadius: 8, padding: '9px 12px', fontSize: 12.5, color: 'var(--t1)',
+                        outline: 'none', textAlign: 'right',
+                        fontFamily: 'var(--font-jetbrains), monospace',
+                      }}
+                    />
+                    <span style={{ fontSize: 12, color: 'var(--t3)' }}>€</span>
+                    <button
+                      type="button"
+                      onClick={() => retirerLigne(i)}
+                      title="Retirer cette ligne"
+                      style={{
+                        background: 'transparent', border: '1px solid var(--t3)', borderRadius: 8,
+                        color: 'var(--t2)', cursor: 'pointer', padding: '7px 11px', fontSize: 13,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={ajouterLigne}
+                  style={{
+                    marginTop: 4, padding: '8px 15px', borderRadius: 8, fontSize: 12,
+                    background: 'transparent', border: '1px dashed var(--gb)',
+                    color: 'var(--gold)', cursor: 'pointer',
+                    fontFamily: 'var(--font-dm-sans), sans-serif',
+                  }}
+                >
+                  + Ajouter une ligne
+                </button>
+
+                {lignesValides.length > 0 && (
+                  <div style={{
+                    marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--gb)',
+                    display: 'flex', justifyContent: 'space-between',
+                    fontSize: 13, color: 'var(--t1)',
+                  }}>
+                    <span>Total de la facture</span>
+                    <b style={{ fontFamily: 'var(--font-jetbrains), monospace', color: 'var(--gold)' }}>
+                      {fmt(totalLignes)} €
+                    </b>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             clientCourses.map(course => {
@@ -236,7 +342,7 @@ export default function NouvelleFactureForm({
       )}
 
       {/* Totaux + options */}
-      {clientId && checked.size > 0 && (
+      {clientId && peutCreer && (
         <div style={{
           background: 'var(--surface)', border: '1px solid var(--gb)',
           borderRadius: 14, padding: '24px',

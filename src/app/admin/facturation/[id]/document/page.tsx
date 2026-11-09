@@ -127,7 +127,9 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
           <thead>
             <tr>
               <th></th>
-              <th>Trajet</th>
+              {/* « Désignation » quand la facture repose sur des lignes
+                  saisies et non sur des courses. Voir LigneFacture.libelle. */}
+              <th>{doc.lignes.length > 0 && doc.lignes.every(l => l.libelle) ? 'Désignation' : 'Trajet'}</th>
               <th className="fac-chiffre">Montant</th>
             </tr>
           </thead>
@@ -136,14 +138,17 @@ export default async function DocumentFacturePage({ params }: { params: Promise<
               <tr key={i}>
                 <td className="fac-rang">{n(i)}</td>
                 <td>
-                  <div className="fac-trajet">{l.depart} → {l.arrivee}</div>
+                  <div className="fac-trajet">{l.libelle ?? `${l.depart} → ${l.arrivee}`}</div>
                   {l.detail && <div className="fac-detail">{l.detail}</div>}
                 </td>
                 <td className="fac-chiffre">{formaterMontant(l.montantHt)}</td>
               </tr>
             ))}
             {doc.lignes.length === 0 && (
-              <tr><td colSpan={3} className="fac-vide">Aucune course rattachée à cette facture.</td></tr>
+              /* Ce texte partait sur un document remis au client. Il ne doit
+                 apparaître que si la facture est RÉELLEMENT vide — plus le cas
+                 dès qu'un récapitulatif est saisi, qui fournit les lignes. */
+              <tr><td colSpan={3} className="fac-vide">Aucune prestation détaillée sur cette facture.</td></tr>
             )}
           </tbody>
         </table>

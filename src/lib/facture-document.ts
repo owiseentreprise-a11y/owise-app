@@ -50,12 +50,22 @@ export const STATUT_LABEL: Record<string, string> = {
 export { formaterNombre, formaterMontant } from './montant'
 
 export type LigneFacture = {
-  /** Date de la course, déjà formatée en jj/mm. */
+  /** Date de la course, déjà formatée en jj/mm. Vide sur une ligne saisie. */
   date: string
   /** Commune de départ (première partie de l'adresse). */
   depart: string
   /** Commune d'arrivée. */
   arrivee: string
+  /**
+   * Désignation d'une ligne SAISIE À LA MAIN, quand la facture ne repose sur
+   * aucune course enregistrée — une prestation réservée par téléphone, par
+   * exemple. Présente, elle remplace « départ → arrivée » à l'affichage.
+   *
+   * Les trois surfaces qui rendent une facture doivent écrire
+   * `ligne.libelle ?? « départ → arrivée »`, et rien d'autre : c'est la seule
+   * règle, et elle est énoncée ici.
+   */
+  libelle: string | null
   montantHt: number | null
   /**
    * Le décompte de la ligne : « Transfert 110 € · attente 70 € · 1 arrêt
@@ -346,19 +356,75 @@ export async function chargerDocumentFacture(factureId: string): Promise<Documen
      * « libellé|montant ». Absent, le document affiche le total seul — ce qui
      * reste une facture correcte.
      */
-    recap: lireRecap(f.notes, Number(f.montant_ttc)),
+    /* Vidé quand le récapitulatif A DÉJÀ SERVI de corps à la facture : sans
+       cela, les mêmes postes s'impriment deux fois sur le même document, une
+       fois dans le tableau et une fois à côté du règlement. Constaté à
+       l'écran le 2026-11-09, sur la première facture saisie à la main.
+       La décision est prise ICI, une fois : les surfaces se contentent de
+       rendre ce qu'on leur donne. */
+    recap: (coursesRes.data ?? []).length > 0
+      ? lireRecap(f.notes, Number(f.montant_ttc))
+      : [],
     banque: payee ? null : {
       nom:  p?.banque_nom ?? null,
       iban: p?.banque_iban ?? null,
       bic:  p?.banque_bic ?? null,
     },
     mentions: p?.facture_mentions ?? null,
-    lignes: (coursesRes.data ?? []).map(course => ({
-      date:      dateCourte(course.date_prevue),
-      depart:    premierSegment(course.adresse_depart),
-      arrivee:   premierSegment(course.adresse_arrivee),
-      montantHt: course.prix_final ?? course.prix_estime ?? null,
-      detail:    detailLigne(course.notes),
-    })),
+    /**
+     * Les lignes du corps de la facture.
+     *
+     * Normalement, une par course rattachée. Mais une prestation réservée par
+     * téléphone et jamais saisie n'a aucune course — et le document imprimait
+     * alors « Aucune course rattachée à cette facture », en toutes lettres,
+     * sur un document remis à un client. Constaté le 2026-11-09, sur une
+     * facture qui devait partir le jour même.
+     *
+     * Dans ce cas seulement, on prend le récapitulatif déclaré dans les notes
+     * (« libellé|montant »), celui-là même que l'exploitant utilisait déjà à
+     * la main. Il ne sert donc qu'en l'absence de course : jamais à côté, pour
+     * qu'un montant ne puisse pas être compté deux fois.
+     *
+     * Le garde-fou de `lireRecap` protège l'ensemble : si la somme des postes
+     * ne fait pas le total de la facture, il ne rend rien — et le corps reste
+     * vide plutôt que faux.
+     */
+    lignes: lignesDuDocument(coursesRes.data, f.notes, Number(f.montant_ttc)),
   }
+}
+
+/** Ce que le document a besoin de savoir d'une course, et rien de plus. */
+type CourseDeFacture = {
+  adresse_depart: string
+  adresse_arrivee: string
+  date_prevue?: string | null
+  prix_final?: number | null
+  prix_estime?: number | null
+  notes?: string | null
+}
+
+/** Les lignes du corps : les courses, ou, à défaut, le récapitulatif saisi. */
+function lignesDuDocument(
+  courses: CourseDeFacture[] | null,
+  notes: string | null | undefined,
+  montantTtc: number,
+): LigneFacture[] {
+  const desCourses = (courses ?? []).map(course => ({
+    date:      dateCourte(course.date_prevue),
+    depart:    premierSegment(course.adresse_depart),
+    arrivee:   premierSegment(course.adresse_arrivee),
+    libelle:   null,
+    montantHt: course.prix_final ?? course.prix_estime ?? null,
+    detail:    detailLigne(course.notes),
+  }))
+  if (desCourses.length > 0) return desCourses
+
+  return lireRecap(notes, montantTtc).map(r => ({
+    date:      '',
+    depart:    '',
+    arrivee:   '',
+    libelle:   r.libelle,
+    montantHt: r.montant,
+    detail:    null,
+  }))
 }

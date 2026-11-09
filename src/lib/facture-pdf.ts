@@ -94,7 +94,7 @@ export function rendreFacturePdf(f: DocumentFacture): Promise<Uint8Array> {
     if (f.lignes.length) {
       ctx.y -= 18
       ecrire(ctx, 'DATE', MARGE, 7, TEXTE_3)
-      ecrire(ctx, 'TRAJET', MARGE + 60, 7, TEXTE_3)
+      ecrire(ctx, f.lignes.every(l => l.libelle) ? 'DESIGNATION' : 'TRAJET', MARGE + 60, 7, TEXTE_3)
       ecrire(ctx, 'MONTANT HT', 0, 7, TEXTE_3, false, droite)
       ctx.y -= 8
       trait(ctx, ctx.y)
@@ -104,10 +104,14 @@ export function rendreFacturePdf(f: DocumentFacture): Promise<Uint8Array> {
         ctx.y -= 18
         const hautLigne = ctx.y
         ecrire(ctx, ligne.date, MARGE, 9, TEXTE_3)
-        ecrire(ctx, ligne.depart, MARGE + 60, 10, TEXTE, true)
+        /* Une ligne SAISIE porte un libelle et aucune adresse : on ecrit la
+           designation seule, et surtout pas « vers  » suivi de rien. Voir
+           `LigneFacture.libelle` dans facture-document.ts : la regle y est
+           enoncee une fois, les trois surfaces s'y conforment. */
+        ecrire(ctx, ligne.libelle ?? ligne.depart, MARGE + 60, 10, TEXTE, true)
         ecrire(ctx, montant(ligne.montantHt), 0, 10, TEXTE, false, droite)
         ctx.y -= 12
-        ecrire(ctx, `vers ${ligne.arrivee}`, MARGE + 60, 9, TEXTE_2)
+        if (!ligne.libelle) ecrire(ctx, `vers ${ligne.arrivee}`, MARGE + 60, 9, TEXTE_2)
         ctx.y = hautLigne - 20
         trait(ctx, ctx.y)
       }
