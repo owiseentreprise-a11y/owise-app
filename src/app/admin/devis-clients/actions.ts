@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient, trouverClientParEmail } from '@/lib/supabase/admin'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
@@ -342,9 +342,10 @@ export async function facturerDevisAction(id: string): Promise<ResultatFacturati
       'Ce devis ne porte pas d’adresse e-mail. Ajoutez-la, puis créez la fiche client.',
     )
   }
-  const { data: client } = await supabase
-    .from('clients').select('id').ilike('email', email).maybeSingle()
-  if (!client) {
+  /* Par le compte, pas par `clients.email` : cette colonne est vide pour
+     presque toutes les fiches. Voir trouverClientParEmail. */
+  const clientId = await trouverClientParEmail(email)
+  if (!clientId) {
     /* Pas d'erreur sèche : on renvoie le formulaire client PRÉ-REMPLI avec
        ce que le devis porte déjà. Créer un compte d'office serait pire —
        c'est un vrai compte, avec un mot de passe et un accès ; il revient à
@@ -401,7 +402,7 @@ export async function facturerDevisAction(id: string): Promise<ResultatFacturati
   const { data: facture, error: erreurFacture } = await supabase
     .from('factures')
     .insert({
-      client_id: client.id,
+      client_id: clientId,
       numero,
       statut: 'en_attente',
       montant_ht: totalHt,
@@ -420,7 +421,7 @@ export async function facturerDevisAction(id: string): Promise<ResultatFacturati
   if (courseIds.length > 0) {
     await supabase
       .from('courses')
-      .update({ facture_id: facture.id, client_id: client.id })
+      .update({ facture_id: facture.id, client_id: clientId })
       .in('id', courseIds)
   }
 
