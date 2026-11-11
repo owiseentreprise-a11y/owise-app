@@ -18,26 +18,29 @@
  *
  * CONFIDENTIALITÉ
  *
- * Ce fichier porte le NOM de l'exploitant, parce qu'un devis et une facture
- * engagent leur émetteur et doivent porter son identité (art. L441-9 du Code
- * de commerce). Il ne porte PAS l'adresse de son siège, qui est son domicile :
- * l'exploitant a demandé le 2026-09-20, et confirmé le 2026-11-09, qu'elle ne
- * figure sur aucun document remis à un client. La facture est donc incomplète
- * au regard de cet article — c'est son choix, pris en connaissance de cause.
+ * Ce fichier ne porte AUCUNE donnée personnelle : ni le nom de l'exploitant,
+ * ni l'adresse de son siège, qui est son domicile. Deux décisions distinctes
+ * du même exploitant, prises en connaissance de cause — l'adresse le
+ * 2026-09-20 et confirmée le 2026-11-09, le nom le 2026-11-12.
  *
- * Le nom ne doit apparaître sur AUCUNE page publique — voir la règle dans
- * CLAUDE.md et `test-identite-privee.mjs`, qui déclare ce fichier en exception.
+ * L'art. L441-9 du Code de commerce impose l'un et l'autre sur une facture.
+ * Les factures d'Owise sont donc incomplètes au regard de cet article. Ce
+ * n'est pas un défaut à corriger : c'est ce qui a été demandé, deux fois,
+ * après qu'on en a dit la conséquence.
+ *
+ * Un document d'Owise se présente désormais avec exactement ce que porte sa
+ * vitrine : le nom commercial, le téléphone, l'e-mail, le SIRET.
  */
 import { createAdminClient } from '@/lib/supabase/admin'
 
-/**
- * Nom de l'exploitant, tel qu'il figure au registre.
- *
- * La table `parametres` ne porte pas de colonne pour lui, et il n'a rien à
- * faire dans `identite-owise.ts`, qui décrit l'identité PUBLIQUE d'Owise et
- * omet volontairement le nom et la rue.
- */
-export const EXPLOITANT = 'Houna Hassan'
+/* LE NOM DE L'EXPLOITANT N'EST PLUS ÉCRIT ICI, et ce n'est pas un oubli.
+   Il y figurait jusqu'au 2026-11-12 sous la forme d'une constante
+   `EXPLOITANT`, rendue sur chaque devis et chaque facture. L'exploitant a
+   demandé ce jour-là qu'il n'apparaisse ni sur l'un ni sur l'autre — voir
+   `construirePrestataire` plus bas pour la décision et sa conséquence
+   légale. Ne pas réintroduire cette constante : ce fichier ne doit plus
+   porter aucune donnée personnelle, et `test-identite-privee.mjs` n'a plus
+   besoin de le déclarer en exception. */
 
 /** L'identité d'Owise sur un devis ou une facture. */
 export type Prestataire = {
@@ -122,11 +125,21 @@ export function construirePrestataire(p: LigneParametres | null | undefined): Pr
     telephone: formaterTelephone(p?.societe_telephone),
     email: p?.societe_email ?? null,
     siret,
-    /* Le nom et la forme juridique, puis le SIRET et le code APE. PAS
-       l'adresse du siège : décision de l'exploitant, voir `LigneParametres`
-       ci-dessus. */
+    /* Le SIRET et le code APE, et RIEN D'AUTRE.
+
+       NI le nom de l'exploitant, NI l'adresse de son siège : deux décisions
+       distinctes du même exploitant, prises en connaissance de cause.
+       L'adresse le 2026-09-20, confirmée le 2026-11-09. Le nom le
+       2026-11-12, en découvrant sa mention nominative de forme juridique
+       sur la page de devis que son client ouvre : « il faut pas que ce soit
+       affiché dans les devis ni facture ».
+
+       Conséquence dite et acceptée : l'art. L441-9 du Code de commerce
+       impose le nom et l'adresse du vendeur sur une facture, et pour une
+       entreprise individuelle ce nom est celui de la personne. Les factures
+       d'Owise sont donc incomplètes au regard de cet article. Ce n'est pas
+       un oubli à « corriger ». */
     legal: [
-      `${EXPLOITANT} — entreprise individuelle (micro-entrepreneur)`,
       [siret ? `SIRET ${siret}` : null, p?.societe_naf ? `Code APE ${p.societe_naf}` : null]
         .filter(Boolean).join(' · '),
     ].filter(l => l && l.trim().length > 0),
