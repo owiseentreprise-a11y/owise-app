@@ -5,6 +5,9 @@ import type { Course } from '@/lib/types'
 import AdminRealtime from './AdminRealtime'
 import PanierCourses from './PanierCourses'
 import { lireHeureCourse, jourParis, aujourdhuiParis, debutJourParis, decalerJour, jourDeLaSemaine } from '@/lib/heure'
+/* Un montant en euros s ecrit avec formaterMontant(), jamais toFixed(2) :
+   « 243,00 € » prend une virgule en francais. Regle de CLAUDE.md. */
+import { formaterMontant } from '@/lib/montant'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +36,7 @@ export default async function AdminDashboard() {
   const monthStart = debutJourParis(premierDuMois)
   const monthEnd   = debutJourParis(`${decalerJour(premierDuMois, 32).slice(0, 7)}-01`)
 
-  const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, docsAlertRes] = await Promise.all([
+  const [coursesRes, chauffeursRes, weekRes, monthRes, facturesRetardRes, devisAttenteRes, docsAlertRes] = await Promise.all([
     supabase
       .from('courses')
       .select('*, clients(*, profiles(*)), chauffeurs(*, profiles(*)), collaborateurs(prenom, nom)')
@@ -59,6 +62,24 @@ export default async function AdminDashboard() {
       .in('statut', ['en_attente', 'retard'])
       .lt('date_echeance', now.toISOString())
       .order('date_echeance'),
+    /* LES DEVIS ENVOYÉS QUI ATTENDENT UNE RÉPONSE.
+
+       L'exploitant, le 2026-11-11 : « si elle ne répond pas d'ici le 17,
+       personne ne me le rappelle ». Un devis envoyé reste en « envoyé »
+       jusqu'à ce qu'on le passe à la main en « accepté » — et pendant ce
+       temps la date de prestation approche sans que rien ne le signale.
+
+       On ne lit que le statut et la date de prestation : aucune colonne
+       nouvelle. Le suivi complet (date d’envoi, destinataire, acceptation
+       par le client) demande des informations que la base ne porte pas
+       encore. */
+    supabase
+      .from('devis_clients')
+      .select('id, numero, client_nom, client_societe, total_ht, date_prestation, date_validite, created_at')
+      .in('statut', ['envoye'])
+      .not('date_prestation', 'is', null)
+      .order('date_prestation'),
+
     // Documents chauffeurs expirés ou expirant dans 30 jours
     supabase
       .from('documents_chauffeur')
@@ -73,6 +94,20 @@ export default async function AdminDashboard() {
   const weekCourses  = weekRes.data ?? []
   const monthCourses = monthRes.data ?? []
   const facturesRetard = facturesRetardRes.data ?? []
+
+  /* Un devis devient pressant quand la prestation approche sans réponse.
+     Dix jours : assez tôt pour relancer, assez tard pour ne pas crier au
+     loup sur un devis envoyé la veille pour dans deux mois. On compare
+     des JOURS de Paris, jamais des instants — un départ à 05:00 le 17 est
+     « dans 6 jours » quelle que soit l’heure qu’il est. */
+  const devisEnAttente = (devisAttenteRes.data ?? [])
+    .map((d: any) => {
+      const jours = Math.round(
+        (new Date(`${d.date_prestation}T12:00:00+01:00`).getTime() - Date.now()) / 86_400_000,
+      )
+      return { ...d, jours }
+    })
+    .filter((d: any) => d.jours >= 0 && d.jours <= 10)
 
   // KPIs jour
   const coursesAujourdHui    = courses.filter(c => jourParis(c.date_prevue) === today)
@@ -438,6 +473,64 @@ export default async function AdminDashboard() {
           </div>
         )}
 
+
+        {/* ── DEVIS ENVOYÉS SANS RÉPONSE, PRESTATION PROCHE ───────────── */}
+        {devisEnAttente.length > 0 && (
+          <div style={{
+            background: 'var(--surface)', border: '1px solid rgba(201,168,76,.28)',
+            borderRadius: 12, padding: '16px 20px', marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={1.8}>
+                  <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 7v5l3 2" />
+                </svg>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--t1)' }}>
+                  {devisEnAttente.length} devis sans réponse, prestation proche
+                </div>
+              </div>
+              <Link href="/admin/devis-clients" style={{
+                padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                background: 'var(--gm)', border: '1px solid var(--gb)',
+                color: 'var(--gold)', textDecoration: 'none',
+              }}>
+                Voir les devis →
+              </Link>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {devisEnAttente.slice(0, 5).map((d: any) => (
+                <a key={d.id} href={`/admin/devis-clients/${d.id}`} style={{
+                  display: 'grid', gridTemplateColumns: '1fr 150px 110px',
+                  background: 'var(--elevated)', borderRadius: 8, padding: '10px 14px',
+                  textDecoration: 'none', alignItems: 'center', gap: 12,
+                }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--t1)' }}>
+                      {d.client_societe || d.client_nom}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--t2)', marginTop: 1, fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      {d.numero}
+                    </div>
+                  </div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600,
+                    color: d.jours <= 2 ? 'var(--red)' : d.jours <= 5 ? 'var(--amb)' : 'var(--t2)',
+                  }}>
+                    {d.jours === 0 ? "prestation aujourd'hui"
+                      : d.jours === 1 ? 'prestation demain'
+                      : `dans ${d.jours} jours`}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-jetbrains), monospace',
+                    fontSize: 12, color: 'var(--gold)', textAlign: 'right',
+                  }}>
+                    {formaterMontant(Number(d.total_ht))}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Factures en retard */}
         {facturesRetard.length > 0 && (
