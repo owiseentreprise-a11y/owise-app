@@ -166,6 +166,22 @@ export async function chargerDevis(id: string): Promise<DevisClient | null> {
 }
 
 /**
+ * Le devis derrière un lien privé, pour la page que voit le CLIENT.
+ *
+ * Séparée de `chargerDevis` exprès : celle-ci se cherche par un jeton
+ * impossible à deviner, et elle est appelée depuis une page publique, sans
+ * aucune connexion. Lire par identifiant depuis une page publique aurait
+ * laissé passer un devis au suivant.
+ */
+export async function chargerDevisParJeton(jeton: string): Promise<DevisClient | null> {
+  if (!jeton || jeton.length < 20) return null
+  const supabase = createAdminClient()
+  const { data, error } = await supabase.from('devis_clients').select('*').eq('jeton', jeton).maybeSingle()
+  if (error || !data) return null
+  return { ...data, lignes: Array.isArray(data.lignes) ? data.lignes : [] } as DevisClient
+}
+
+/**
  * La clause d'attente, redigee ici et nulle part ailleurs.
  *
  * La base ne porte que les deux nombres ; la phrase remise au client est
@@ -204,6 +220,32 @@ export const TITRE_ATTENTE   = "Conditions particulières — temps d'attente"
 export const TITRE_REGLEMENT = "Règlement"
 export const CADRE_SIGNATURE = "Date, signature et mention « bon pour accord »"
 
+/**
+ * CE QUE LE DEVIS PROMET COMME RÈGLEMENT.
+ *
+ * Il y en avait DEUX écritures : cette constante, lue par le PDF, et le
+ * même texte tapé en dur dans le document web. Le 2026-11-11, la page
+ * d'acceptation a rendu la divergence visible à l'œil nu : le bandeau
+ * annonçait « montant retenu sur votre carte » et le document, dix
+ * centimètres plus bas, « virement à réception de la facture ». Deux
+ * promesses contradictoires sur le même écran, sous les yeux du client.
+ *
+ * Une seule fonction désormais, et elle dépend de ce qu'on demande
+ * vraiment au client.
+ */
+export function lignesReglement(d: Pick<DevisClient, 'carte_requise'>): string[] {
+  return d.carte_requise
+    ? [
+        "Par carte, à la confirmation de votre réservation.",
+        "Le montant est retenu sans être débité : il n'est encaissé qu'une fois votre chauffeur confirmé.",
+      ]
+    : [
+        "Par virement bancaire, à réception de la facture.",
+        "Les coordonnées bancaires figureront sur celle-ci.",
+      ]
+}
+
+/** @deprecated Lire `lignesReglement(devis)` : la promesse dépend du devis. */
 export const LIGNES_REGLEMENT = [
   "Par virement bancaire, à réception de la facture.",
   "Les coordonnées bancaires figureront sur celle-ci.",
@@ -227,11 +269,21 @@ export function lignesTotaux(
 }
 
 /** La phrase d'accord, sous le total. */
-export function phraseAccord(d: Pick<DevisClient, 'date_validite'>): string {
+/**
+ * La phrase d'accord, sous le total.
+ *
+ * Elle demandait de renvoyer le document signé. Depuis qu'un lien permet
+ * de confirmer en un clic, le dire encore enverrait le client chercher
+ * une imprimante qu'il n'a pas.
+ */
+export function phraseAccord(d: Pick<DevisClient, 'date_validite' | 'carte_requise'>): string {
   const validite = dateCourte(d.date_validite)
-  return (validite ? `Devis valable jusqu'au ${validite}. ` : "")
-    + "Pour accord, retournez ce document daté et signé, avec la mention "
-    + "« bon pour accord », ou répondez par écrit à l'adresse ci-dessus."
+  const entete = validite ? `Devis valable jusqu'au ${validite}. ` : ""
+  return d.carte_requise
+    ? entete + "Pour accord, confirmez votre réservation depuis le lien que nous "
+      + "vous avons adressé, ou répondez simplement à ce message."
+    : entete + "Pour accord, retournez ce document daté et signé, avec la mention "
+      + "« bon pour accord », ou répondez par écrit à l'adresse ci-dessus."
 }
 
 /**

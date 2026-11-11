@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { stripe, nettoyerCleEnv } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { creerCoursesDepuisDevis } from '@/lib/devis-vers-courses'
 import { envoyerConfirmationClient, envoyerNotificationAdmin, envoyerBienvenueClient, envoyerDemandeBloquee } from '@/lib/email'
 import { enregistrerParrainage } from '@/app/espace-client/actions-parrainage'
 import { capiPurchase } from '@/lib/capi'
@@ -131,6 +132,85 @@ export async function POST(req: Request) {
       }
       await marquerEvenementTraite(journal, event.id, { courseId })
       return NextResponse.json({ received: true })
+    }
+
+    /* ── UN DEVIS ACCEPTÉ PAR LE CLIENT ────────────────────────────────
+
+       Le client a ouvert son lien privé, cliqué « Confirmer ma
+       réservation » et laissé sa carte. Stripe l’a AUTORISÉE sans la
+       débiter : la session est `complete` mais `payment_status: unpaid`,
+       et c’est le drapeau `a_valider` qui la fait passer le garde
+       ci-dessus.
+
+       C'EST ICI, ET NULLE PART AILLEURS, que la course est créée. Tant que
+       Stripe n’a pas confirmé la retenue, rien n’entre dans le planning —
+       et une retenue sans course est l'incident du 2026-10-07, deux
+       clients débités sans trajet. Les deux faces doivent tomber ensemble.
+
+       La construction des courses est celle de l’administration, mot pour
+       mot : `creerCoursesDepuisDevis`. */
+    if (session.metadata?.type === 'devis' && session.metadata?.devis_id) {
+      const supabase = createAdminClient()
+      const devisId = session.metadata.devis_id
+      const paymentIntentId = typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null
+
+      try {
+        const { creees, dejaFait } = await creerCoursesDepuisDevis(devisId)
+
+        /* On date l’acceptation et on range la session, même si les courses
+           existaient déjà : Stripe peut rejouer le même événement, et la
+           seconde fois ne doit rien casser. */
+        const { error: erreurDevis } = await supabase
+          .from('devis_clients')
+          .update({
+            accepte_le: new Date().toISOString(),
+            stripe_session_id: session.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', devisId)
+
+        if (erreurDevis) {
+          await marquerEvenementEchec(journal, event.id, erreurDevis)
+          await signalerIncident(supabase, {
+            type: 'devis_accepte_non_enregistre', gravite: 'critique', reference: devisId,
+            detail: erreurDevis.message,
+          })
+          return NextResponse.json({ error: 'devis update failed' }, { status: 500 })
+        }
+
+        /* La carte est RETENUE, pas encaissée : on le dit à l’exploitant,
+           sinon il croira la course payée. */
+        envoyerNotificationAdmin({
+          adresseDepart:  session.metadata.devis_numero ?? devisId,
+          adresseArrivee: `${creees} course${creees > 1 ? 's' : ''} créée${creees > 1 ? 's' : ''}`,
+          datePrevue:     new Date().toISOString(),
+          clientNom:      session.customer_details?.name ?? session.customer_email ?? '—',
+          typeVehicule:   'devis accepté par le client',
+          refCourse:      session.metadata.devis_numero ?? '—',
+          aValider:       true,
+        }).catch(e => console.error('[DEVIS ACCEPTE — ALERTE NON PARTIE]', devisId, e))
+
+        /* Le journal ne range que course_id et facture_id : un devis n’a
+           pas sa colonne, et en ajouter une pour une trace ne vaut pas une
+           migration. L’identifiant reste dans les métadonnées Stripe et
+           dans le journal applicatif ci-dessous. */
+        console.log(`[DEVIS ACCEPTE] ${devisId} · ${creees} course(s)` +
+          `${dejaFait ? " (deja converti)" : ""} · ${paymentIntentId ?? "sans intent"}`)
+        await marquerEvenementTraite(journal, event.id)
+        return NextResponse.json({ received: true })
+      } catch (err) {
+        /* La carte du client est bloquée et aucune course n’existe : le pire
+           état possible. On le signale et on répond 500 pour que Stripe
+           rejoue — plutôt que d’annoncer un succès qu’on n’a pas constaté. */
+        await marquerEvenementEchec(journal, event.id, err)
+        await signalerIncident(supabase, {
+          type: 'devis_accepte_sans_course', gravite: 'critique', reference: devisId,
+          detail: err instanceof Error ? err.message : String(err),
+        })
+        return NextResponse.json({ error: 'devis conversion failed' }, { status: 500 })
+      }
     }
 
     if (session.metadata?.type === 'reservation') {

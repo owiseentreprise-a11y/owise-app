@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient, trouverClientParEmail } from '@/lib/supabase/admin'
+import { creerCoursesDepuisDevis } from '@/lib/devis-vers-courses'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { instantDepuisSaisieParis } from '@/lib/heure'
 import { vehiculePourBase } from '@/lib/vehicule'
 import { calculerTotal, chargerDevis, chargerPrestataire, genererNumeroDevis, type LigneDevis } from '@/lib/devis-client'
-import { composerEmailDevis } from '@/lib/devis-email'
+import { composerEmailAcceptation, composerEmailDevis } from '@/lib/devis-email'
+import { assurerJeton, lienAcceptation } from '@/lib/devis-jeton'
 import { genererDevisPdf } from '@/lib/devis-pdf'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { envoyerDevisClient } from '@/lib/email'
@@ -102,24 +104,6 @@ export async function supprimerDevisClient(id: string) {
   revalidatePath('/admin/devis-clients')
 }
 
-/** « 10h15 », « 10:15 », « 02h15 (nuit) » → « 10:15 ». Rien d'exploitable → null. */
-function heureVersHhMm(brut: string): string | null {
-  const m = String(brut).match(/(\d{1,2})\s*[h:]\s*(\d{2})?/)
-  if (!m) return null
-  const h = String(Math.min(23, Number(m[1]))).padStart(2, '0')
-  const min = String(Math.min(59, Number(m[2] ?? 0))).padStart(2, '0')
-  return `${h}:${min}`
-}
-
-/** « 1 van + 1 berline » → la categorie que porte la base. */
-function vehiculeDepuisLibelle(libelle: string): string {
-  const t = libelle.toLowerCase()
-  if (t.includes('grand van') || t.includes('8 place')) return 'grand_van'
-  if (t.includes('van'))                                return 'van'
-  if (t.includes('premium'))                            return 'berline_premium'
-  return 'berline'
-}
-
 /**
  * Le devis accepte devient des courses — une par ligne.
  *
@@ -133,68 +117,20 @@ function vehiculeDepuisLibelle(libelle: string): string {
  */
 export async function convertirDevisEnCourses(id: string): Promise<number> {
   await requireAdminClient()
-  const supabase = createAdminClient()
 
-  const { data: devis, error: err } = await supabase
-    .from('devis_clients').select('*').eq('id', id).single()
-  if (err || !devis) throw new Error('Devis introuvable.')
-  if (devis.statut === 'accepte') throw new Error('Ce devis a déjà été converti.')
-
-  const lignes = (Array.isArray(devis.lignes) ? devis.lignes : []) as LigneDevis[]
-  const utiles = lignes.filter(l => l.depart?.trim() && l.arrivee?.trim())
-  if (utiles.length === 0) throw new Error('Aucune ligne exploitable : il faut un départ et une arrivée.')
-
-  const parts = String(devis.client_nom ?? '').trim().split(/\s+/)
-  const prenom = parts[0] ?? ''
-  const nomFamille = parts.slice(1).join(' ') || prenom
-
-  const notes = [
-    `Devis ${devis.numero}`,
-    devis.client_email ? `Email: ${devis.client_email}` : '',
-    devis.client_societe ? `Société: ${devis.client_societe}` : '',
-  ].filter(Boolean).join(' | ')
-
-  const aInserer = utiles.map((l, i) => {
-    /* L'heure saisie est une heure de Paris, jamais un instant : sur Vercel,
-       qui tourne en temps universel, `new Date('...T14:00')` donnerait 16:00. */
-    const hhmm = heureVersHhMm(l.heure ?? '')
-    const date_prevue = devis.date_prestation && hhmm
-      ? instantDepuisSaisieParis(`${devis.date_prestation}T${hhmm}:00`).toISOString()
-      : devis.date_prestation
-        ? instantDepuisSaisieParis(`${devis.date_prestation}T00:00:00`).toISOString()
-        : new Date().toISOString()
-
-    return {
-      adresse_depart:  l.depart.trim(),
-      adresse_arrivee: l.arrivee.trim(),
-      date_prevue,
-      statut:          'en_attente',
-      prix_estime:     Number(l.prix) || null,
-      type_vehicule:   vehiculePourBase(vehiculeDepuisLibelle(l.vehicule ?? '')),
-      nb_passagers:    l.passagers ?? null,
-      passager_prenom: prenom,
-      passager_nom:    nomFamille,
-      passager_tel:    devis.client_tel ?? null,
-      paiement_statut: 'a_percevoir',
-      source:          'devis',
-      ref:             `${devis.numero}-${String(i + 1).padStart(2, '0')}`,
-      notes:           [notes, l.observations?.trim()].filter(Boolean).join(' | ') || null,
-    }
-  })
-
-  const { error } = await supabase.from('courses').insert(aInserer)
-  if (error) throw new Error(error.message)
-
-  await supabase.from('devis_clients')
-    .update({ statut: 'accepte', updated_at: new Date().toISOString() })
-    .eq('id', id)
+  /* La construction des courses vit dans `devis-vers-courses.ts`, parce
+     que le webhook Stripe l'emprunte aussi quand le client accepte son
+     devis lui-même. Deux écritures auraient divergé sur l’heure, le
+     véhicule ou la référence. */
+  const { creees, dejaFait } = await creerCoursesDepuisDevis(id)
+  if (dejaFait) throw new Error('Ce devis a déjà été converti.')
 
   revalidatePath('/admin/devis-clients')
   revalidatePath(`/admin/devis-clients/${id}`)
   revalidatePath('/admin/courses')
   revalidatePath('/admin/planning')
 
-  return aInserer.length
+  return creees
 }
 
 /**
@@ -465,3 +401,53 @@ export async function facturerDevisAction(id: string): Promise<ResultatFacturati
   return { factureId: facture.id as string }
 }
 
+/**
+ * « Nous avons accepté votre demande » : le client reçoit son lien.
+ *
+ * L'exploitant, le 2026-11-11 : « dès qu'on a accepté, on lui envoie
+ * l'acceptation, mais elle doit mettre sa carte bleue pour valider la
+ * réservation ».
+ *
+ * CE QUE CETTE ACTION NE FAIT PAS : passer le devis en « accepté ».
+ * L'acceptation appartient désormais au CLIENT — c'est lui qui clique, et
+ * c'est son clic (ou sa carte) qui la date. Marquer « accepté » ici ferait
+ * croire à un engagement qui n’existe pas encore.
+ */
+export async function envoyerAcceptationAction(id: string): Promise<string> {
+  await requireAdminClient()
+
+  const [devis, prestataire] = await Promise.all([chargerDevis(id), chargerPrestataire()])
+  if (!devis) throw new Error('Devis introuvable.')
+  if (!devis.client_email) {
+    throw new Error('Ce devis ne porte pas d’adresse e-mail : le client ne peut rien recevoir.')
+  }
+
+  const jeton = await assurerJeton(id)
+  const message = composerEmailAcceptation(devis, prestataire, lienAcceptation(jeton))
+
+  await envoyerDevisClient({ message })
+
+  return message.destinataire as string
+}
+
+/**
+ * Lève ou remet l'exigence de carte sur ce devis.
+ *
+ * « Tant qu'on ne connaît pas le client, il faut qu'il paye sa
+ * réservation. À moins qu'il nous appelle, on fait connaissance, et si on
+ * a jugé qu'on peut lui faire confiance » — exploitant, 2026-11-11.
+ * Exigée par défaut ; levée d’un clic sur un habitué.
+ */
+export async function basculerCarteRequise(
+  id: string,
+  requise: boolean,
+): Promise<void> {
+  await requireAdminClient()
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from('devis_clients')
+    .update({ carte_requise: requise, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+  revalidatePath(`/admin/devis-clients/${id}`)
+}

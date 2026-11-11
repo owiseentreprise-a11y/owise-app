@@ -247,6 +247,75 @@ export function composerEmailDevis(d: DevisClient, p: Prestataire): EmailDevis {
   return { destinataire: d.client_email, sujet: e.sujet, html, texte: enTexte(e) }
 }
 
+/**
+ * « Nous avons accepté votre demande » — le message qui porte le lien par
+ * lequel le client confirme lui-même et laisse sa carte.
+ *
+ * Composé ICI, avec les autres, et jamais dans l'action qui l'envoie :
+ * l'écran d'aperçu doit pouvoir montrer exactement ce qui partira. Faire
+ * valider un message et en expédier un autre ne sert à rien.
+ *
+ * CE QU'IL PROMET, le reste du circuit le tient : quand la carte est
+ * demandée, Stripe l’AUTORISE sans la débiter, et l’exploitant encaisse
+ * seulement après avoir confirmé le véhicule. D'où « retenue, pas
+ * débitée » écrit noir sur blanc — un écran de paiement ne se permet pas
+ * une approximation.
+ */
+export function composerEmailAcceptation(
+  d: DevisClient,
+  p: Prestataire,
+  lien: string,
+): EmailDevis {
+  const e = elements(d, p)
+  const montant = formaterMontant(Number(d.total_ht))
+
+  const phrase = d.carte_requise
+    ? `Pour bloquer le véhicule, confirmez votre réservation en suivant le lien ci-dessous. Le montant de ${montant} sera retenu sur votre carte sans être débité : nous l’encaissons seulement une fois votre chauffeur confirmé.`
+    : `Pour bloquer le véhicule, il vous suffit de confirmer votre réservation en suivant le lien ci-dessous. Vous n’avez rien à avancer aujourd’hui.`
+
+  const html = base(`
+    <h2 style="margin:0 0 6px;font-size:22px;color:#09091A;font-weight:600;">Nous avons accepté votre demande</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#848499;">
+      Bonjour,<br>${echapper(phrase)}
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      ${e.resume.map(([l, v]) => row(echapper(l), echapper(v))).join('')}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center">
+        <a href="${lien}" style="display:inline-block;padding:15px 30px;border-radius:9px;background:#09091A;color:#F8F6F1;font-size:15px;font-weight:600;text-decoration:none;">
+          Confirmer ma réservation
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 6px;font-size:12px;color:#848499;">
+      Si le bouton ne fonctionne pas, copiez cette adresse dans votre navigateur :<br>
+      <span style="color:#C9A84C;word-break:break-all;">${lien}</span>
+    </p>
+  `)
+
+  const texte = [
+    'Nous avons accepté votre demande.',
+    '',
+    phrase,
+    '',
+    ...e.resume.map(([l, v]) => `${l} : ${v}`),
+    '',
+    'Confirmer ma réservation :',
+    lien,
+  ].join('\n')
+
+  return {
+    destinataire: d.client_email,
+    sujet: `Owise — votre réservation ${d.numero} est à confirmer`,
+    html,
+    texte,
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 //  2. La réponse sobre, à coller dans un fil Gmail
 // ─────────────────────────────────────────────────────────────────────────

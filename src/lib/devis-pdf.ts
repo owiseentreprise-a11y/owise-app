@@ -32,7 +32,7 @@ import {
   type Contexte,
 } from '@/lib/pdf-feuille'
 import {
-  CADRE_SIGNATURE, LIBELLE_NET, LIGNES_REGLEMENT, TITRE_REGLEMENT, basDePage,
+  CADRE_SIGNATURE, LIBELLE_NET, TITRE_REGLEMENT, basDePage, lignesReglement,
   chargerDevis, chargerPrestataire, dateCourte, dateLongue, detailLigne,
   jourEmission, lignesTotaux, phraseAccord,
   type DevisClient, type Prestataire,
@@ -186,7 +186,7 @@ export function rendreDevisPdf(d: DevisClient, p: Prestataire): Promise<Uint8Arr
 
     ecrireEspace(ctx, TITRE_REGLEMENT.toUpperCase(), MARGE, px(9.5), TEXTE_3, 0.2)
     ctx.y -= px(7)
-    for (const l of LIGNES_REGLEMENT) {
+    for (const l of lignesReglement(d)) {
       for (const bout of couper(l, ctx.normal, px(12), largeurGauche)) {
         ctx.y -= px(12) * 1.8
         ecrire(ctx, bout, MARGE, px(12), TEXTE_2)

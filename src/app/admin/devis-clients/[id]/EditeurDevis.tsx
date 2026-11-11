@@ -7,8 +7,8 @@ import { formaterMontant } from '@/lib/montant'
 import { calculerTotal, ligneVide, STATUTS, type DevisClient, type LigneDevis } from '@/lib/devis-client'
 import { ANNULATION_MENTION, ATTENTE_MENTION } from '@/lib/conditions'
 import {
-  changerStatutDevis, convertirDevisEnCourses, enregistrerDevis, facturerDevisAction,
-  supprimerDevisClient,
+  basculerCarteRequise, changerStatutDevis, convertirDevisEnCourses, enregistrerDevis,
+  envoyerAcceptationAction, facturerDevisAction, supprimerDevisClient,
 } from '../actions'
 
 /* Les styles sont en ligne comme sur le reste de l'administration. Les
@@ -154,6 +154,68 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           </button>
         </div>
       </div>
+
+      {/* ── FAIRE CONFIRMER LE CLIENT ────────────────────────────────
+
+          Le devis envoyé, c'est au client de s'engager. Ce bouton lui
+          adresse « nous avons accepté votre demande » avec un lien privé :
+          il ouvre son devis, confirme, et laisse sa carte si elle est
+          demandée. La carte est RETENUE, pas débitée — vous encaissez
+          après avoir confirmé le véhicule.
+
+          Le devis ne passe pas en « accepté » ici : c'est le clic du
+          client qui le fait, et lui seul. */}
+      {devis.statut !== 'brouillon' && !devis.accepte_le && (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12,
+          padding: '14px 16px', marginBottom: 16, borderRadius: 10,
+          background: 'rgba(9,9,26,.035)', border: '1px solid rgba(9,9,26,.10)',
+        }}>
+          <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#2A2A22', marginBottom: 3 }}>
+              Faire confirmer la réservation
+            </div>
+            <div style={{ fontSize: 11.5, color: '#6A6A58', lineHeight: 1.55 }}>
+              {devis.carte_requise
+                ? 'Le client confirmera en laissant sa carte — retenue, pas débitée.'
+                : 'Le client confirmera d’un clic, sans carte.'}
+            </div>
+          </div>
+
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 7, fontSize: 12,
+            color: '#5A5A48', cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>
+            <input
+              type="checkbox"
+              checked={!devis.carte_requise}
+              disabled={enCours}
+              onChange={e => demarrer(async () => {
+                try { await basculerCarteRequise(devis.id, !e.target.checked); router.refresh() }
+                catch (err) { setErreur(err instanceof Error ? err.message : 'Changement impossible.') }
+              })}
+              style={{ width: 15, height: 15, accentColor: '#C9A84C', cursor: 'pointer' }}
+            />
+            Client de confiance — sans carte
+          </label>
+
+          <button type="button" disabled={enCours}
+                  onClick={() => demarrer(async () => {
+                    setErreur(''); setMessage('')
+                    try {
+                      const a = await envoyerAcceptationAction(devis.id)
+                      setMessage(`Demande de confirmation envoyée à ${a}.`)
+                      router.refresh()
+                    } catch (err) { setErreur(err instanceof Error ? err.message : 'Envoi impossible.') }
+                  })}
+                  style={{ background: '#09091A', border: 'none', color: '#F8F6F1',
+                           borderRadius: 9, padding: '11px 18px', fontSize: 13,
+                           fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
+                           fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+            Accepter et demander confirmation
+          </button>
+        </div>
+      )}
 
       {/* Où en est ce devis — voir le composant en bas de fichier. */}
       <Progression devis={devis} />
