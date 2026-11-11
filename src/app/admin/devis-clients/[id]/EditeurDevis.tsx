@@ -7,8 +7,9 @@ import { formaterMontant } from '@/lib/montant'
 import { calculerTotal, ligneVide, STATUTS, type DevisClient, type LigneDevis } from '@/lib/devis-client'
 import { ANNULATION_MENTION, ATTENTE_MENTION } from '@/lib/conditions'
 import {
-  basculerCarteRequise, changerStatutDevis, convertirDevisEnCourses, enregistrerDevis,
-  envoyerAcceptationAction, facturerDevisAction, supprimerDevisClient,
+  basculerCarteRequise, changerStatutDevis, convertirDevisEnCourses, encaisserDevisAction,
+  enregistrerDevis, envoyerAcceptationAction, facturerDevisAction, libererDevisAction,
+  supprimerDevisClient,
 } from '../actions'
 
 /* Les styles sont en ligne comme sur le reste de l'administration. Les
@@ -214,6 +215,77 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                            fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
             Accepter et demander confirmation
           </button>
+        </div>
+      )}
+
+      {/* ── LA RETENUE DE CARTE : ENCAISSER OU LIBÉRER ───────────────────
+
+          Le client a confirmé et laissé sa carte. Stripe retient la somme
+          sans la débiter, SEPT JOURS — après quoi il la rend tout seul, sans
+          avertir personne. Deux boutons, une décision :
+
+            Encaisser → la somme est prise, les courses passent « payé » ;
+            Libérer   → rien n'est débité, les courses sont annulées.
+
+          POURQUOI ICI, ET PAS SUR CHAQUE COURSE. Un devis porte plusieurs
+          prestations et UNE SEULE retenue. Un index unique interdit qu'un
+          même paiement Stripe appartienne à deux courses — c'est lui qui
+          empêche un rejeu de Stripe de dédoubler le planning. La décision se
+          prend donc une fois, sur le devis, pour toutes ses courses. */}
+      {devis.accepte_le && devis.stripe_session_id && (
+        <div style={{
+          padding: '14px 16px', marginBottom: 16, borderRadius: 10,
+          background: 'rgba(201,168,76,.10)', border: '1px solid rgba(201,168,76,.30)',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#2A2A22', marginBottom: 4 }}>
+            La carte du client est retenue
+          </div>
+          <div style={{ fontSize: 11.5, color: '#6A6A58', lineHeight: 1.6, marginBottom: 12 }}>
+            Rien ne lui a été débité. Vérifiez que vous avez les véhicules à la
+            date prévue, puis encaissez — ou libérez la retenue si vous ne
+            pouvez pas assurer la prestation.
+            <br />
+            <span style={{ color: '#8A6A2A' }}>
+              Stripe libère la somme tout seul au bout de 7 jours, sans prévenir.
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <button type="button" disabled={enCours}
+                    onClick={() => demarrer(async () => {
+                      setErreur(''); setMessage('')
+                      const r = await encaisserDevisAction(devis.id)
+                      if (r.error) { setErreur(r.error); return }
+                      /* `formaterMontant` et rien d'autre : `toFixed(2)` rend
+                         l'écriture anglaise, et le corriger par une virgule
+                         posée à la main serait une DEUXIÈME écriture de la
+                         règle, à côté de la bonne (charte, 2026-10-15). */
+                      setMessage(`Encaissé : ${formaterMontant(r.montant ?? 0)} · `
+                        + `${r.coursesReglees ?? 0} course(s) passée(s) en « payé ».`)
+                      router.refresh()
+                    })}
+                    style={{ background: '#2E8A58', border: 'none', color: '#F8F6F1',
+                             borderRadius: 9, padding: '11px 18px', fontSize: 13,
+                             fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
+                             fontFamily: 'inherit' }}>
+              Encaisser la retenue
+            </button>
+
+            <button type="button" disabled={enCours}
+                    onClick={() => demarrer(async () => {
+                      setErreur(''); setMessage('')
+                      const r = await libererDevisAction(devis.id)
+                      if (r.error) { setErreur(r.error); return }
+                      setMessage(`Retenue levée · ${r.coursesLiberees ?? 0} course(s) `
+                        + `annulée(s). Le client n'a rien payé.`)
+                      router.refresh()
+                    })}
+                    style={{ background: 'transparent', border: '1px solid rgba(9,9,26,.20)',
+                             color: '#5A5A48', borderRadius: 9, padding: '11px 18px',
+                             fontSize: 13, fontWeight: 500,
+                             cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
+              Libérer la retenue
+            </button>
+          </div>
         </div>
       )}
 

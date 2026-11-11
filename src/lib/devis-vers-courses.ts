@@ -46,6 +46,20 @@ function vehiculeDepuisLibelle(libelle: string): string {
   return 'berline'
 }
 
+/**
+ * L'ARGENT DEJA RETENU, quand le client a laisse sa carte.
+ *
+ * Sans ces deux valeurs, les courses naissent en « a_percevoir » et sans
+ * identifiant de paiement — et `validerReservationAction` REFUSE alors
+ * d'encaisser (« Aucun paiement Stripe associe »). La carte du client
+ * reste bloquee sept jours, puis Stripe libere la somme tout seul :
+ * la course est faite et rien n'est encaisse.
+ *
+ * C'est le defaut du 2026-10-07 dans l'autre sens, et il a ete trouve
+ * ici en relisant le code avant de le livrer, pas apres.
+ */
+export type RetenueCarte = { paymentIntentId: string | null }
+
 export type ResultatConversion = { creees: number; dejaFait: boolean }
 
 /**
@@ -57,6 +71,7 @@ export type ResultatConversion = { creees: number; dejaFait: boolean }
  */
 export async function creerCoursesDepuisDevis(
   devisId: string,
+  retenue?: RetenueCarte,
 ): Promise<ResultatConversion> {
   const supabase = createAdminClient()
 
@@ -112,7 +127,20 @@ export async function creerCoursesDepuisDevis(
       passager_prenom: prenom,
       passager_nom:    nomFamille,
       passager_tel:    devis.client_tel ?? null,
-      paiement_statut: 'a_percevoir',
+      /* « AUTORISE » : l'argent est retenu chez Stripe, pas encaisse.
+
+         LE PAIEMENT N'EST PAS RECOPIE ICI, et ce n'est pas un oubli : un
+         index unique (`courses_stripe_pi_unique`, octobre 2026) interdit
+         qu'un meme paiement Stripe appartienne a deux courses. Il protege
+         contre les doublons d'un rejeu, et il a raison.
+
+         Or un devis porte PLUSIEURS prestations et UNE SEULE retenue. La
+         retenue appartient donc au devis, qui garde sa session Stripe, et
+         l'encaissement se fait depuis le devis — en une fois, pour toutes
+         ses courses. Essayer de la poser sur chaque course faisait echouer
+         l'insertion sur la deuxieme ligne : carte bloquee, aucune course.
+         Trouve au banc d’essai le 2026-11-11, avant tout client. */
+      paiement_statut: retenue?.paymentIntentId ? 'autorise' : 'a_percevoir',
       source:          'devis',
       ref:             `${devis.numero}-${String(i + 1).padStart(2, '0')}`,
       notes:           [notes, l.observations?.trim()].filter(Boolean).join(' | ') || null,

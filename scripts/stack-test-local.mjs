@@ -94,11 +94,32 @@ export async function up() {
   if (rs.erreur) throw new Error('schéma : ' + rs.erreur.slice(0, 500))
   console.log(`  ${sql(`SELECT count(*) FROM information_schema.tables WHERE table_schema='public';`).sortie} tables créées`)
 
-  console.log('  application de la migration du Sprint 2, telle quelle…')
-  const migration = readFileSync(resolve(process.cwd(), 'supabase/migrations/20261017000000_fiabilite_paiements.sql'), 'utf8')
-  const rm = sql(migration)
-  if (rm.erreur) throw new Error('migration : ' + rm.erreur.slice(0, 500))
-  console.log('  migration appliquée')
+  /* LES MIGRATIONS QUE LE BANC REJOUE, TELLES QUELLES.
+
+     Le schéma reconstitué fige un état ; tout ce qui est arrivé après vit
+     dans ces fichiers. Une migration oubliée ici fait échouer le test sur
+     une colonne absente — et pire, laisse croire que la production en
+     manque aussi. Ajouter la ligne en même temps que le fichier. */
+  const MIGRATIONS = [
+    '20261017000000_fiabilite_paiements.sql',                 // journal Stripe, incidents
+    '20261017000100_backfill_paiement_statut.sql',            // reprise des anciens statuts
+    '20261102000000_devis_clients.sql',                       // les devis commerciaux
+    '20261107000000_prix_par_vehicule.sql',                   // un prix par vehicule
+    /* CELLE-CI MANQUAIT, et son absence se voyait mal : la contrainte CHECK
+       de paiement_statut refusait « autorise ». Le banc rejetait donc TOUTE
+       carte retenue, et test-e2e-blocage.mjs comme test-e2e-devis.mjs
+       echouaient sur un code parfaitement juste. Trouve le 2026-11-11. */
+    '20261108000000_paiement_autorise_libere.sql',            // autorise / libere
+    '20261109000000_estimations_detail_visiteur.sql',         // detail du visiteur
+    '20261109020000_tarif_propre_grand_van.sql',              // tarif du Grand Van
+    '20261111160312_suivi_devis_et_acceptation_en_ligne.sql', // jeton, accepte_le, carte
+  ]
+  for (const nom of MIGRATIONS) {
+    console.log(`  migration ${nom}…`)
+    const r = sql(readFileSync(resolve(process.cwd(), 'supabase/migrations/' + nom), 'utf8'))
+    if (r.erreur) throw new Error(`migration ${nom} : ` + r.erreur.slice(0, 500))
+  }
+  console.log(`  ${MIGRATIONS.length} migrations appliquées`)
 
   /* Données fictives. Aucun nom, aucune adresse, aucun e-mail réels. */
   console.log('  données fictives…')

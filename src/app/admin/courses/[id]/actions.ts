@@ -680,6 +680,14 @@ export async function validerReservationAction(
     return { error: `Cette course n'attend pas de validation (paiement : ${course.paiement_statut ?? 'inconnu'}).` }
   }
   if (!course.stripe_payment_intent_id) {
+    /* UNE COURSE NEE D’UN DEVIS n’a pas son propre paiement : la retenue
+       couvre tout le devis, et s’encaisse depuis le devis. Sans ce
+       message, l’exploitant lisait « Aucun paiement Stripe associé » sur
+       une course dont la carte EST bien retenue, et ne savait pas où
+       aller. */
+    if (course.ref?.startsWith('DEV-')) {
+      return { error: `Cette course vient du devis ${course.ref.replace(/-\d+$/, '')} : la retenue couvre tout le devis et s’encaisse depuis sa fiche, en une seule fois.` }
+    }
     return { error: 'Aucun paiement Stripe associé : impossible d’encaisser.' }
   }
 
@@ -742,6 +750,9 @@ export async function refuserReservationAction(
     return { error: `Cette course n'attend pas de validation (paiement : ${course.paiement_statut ?? 'inconnu'}).` }
   }
   if (!course.stripe_payment_intent_id) {
+    if (course.ref?.startsWith('DEV-')) {
+      return { error: `Cette course vient du devis ${course.ref.replace(/-\d+$/, '')} : la retenue se libère depuis sa fiche, pour tout le devis.` }
+    }
     return { error: 'Aucun paiement Stripe associé : rien à libérer.' }
   }
 

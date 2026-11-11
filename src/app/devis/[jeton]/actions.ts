@@ -28,6 +28,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { chargerDevisParJeton } from '@/lib/devis-client'
 import { envoyerNotificationAdmin } from '@/lib/email'
+import { aujourdhuiParis } from '@/lib/heure'
 
 export async function accepterDevisAction(
   jeton: string,
@@ -42,11 +43,10 @@ export async function accepterDevisAction(
     return {}
   }
 
-  if (devis.date_validite) {
-    const limite = new Date(`${devis.date_validite}T23:59:59+01:00`).getTime()
-    if (limite < Date.now()) {
-      return { error: 'Ce devis a dépassé sa date de validité. Appelez-nous, nous le refaisons.' }
-    }
+  /* Même règle que sur la page : on compare des jours de Paris. Le décalage
+     écrit à la main (« +01:00 ») était faux tout l'été. */
+  if (devis.date_validite && aujourdhuiParis() > devis.date_validite) {
+    return { error: 'Ce devis a dépassé sa date de validité. Appelez-nous, nous le refaisons.' }
   }
 
   const montant = Math.round(Number(devis.total_ht))

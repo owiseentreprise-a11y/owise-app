@@ -12,6 +12,7 @@ import { assurerJeton, lienAcceptation } from '@/lib/devis-jeton'
 import { genererDevisPdf } from '@/lib/devis-pdf'
 import { genererNumeroFacture } from '@/lib/facturation'
 import { envoyerDevisClient } from '@/lib/email'
+import { stripe } from '@/lib/stripe'
 
 /** Les champs que le formulaire renvoie. Le total n'en fait pas partie. */
 export type SaisieDevis = {
@@ -450,4 +451,121 @@ export async function basculerCarteRequise(
     .eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath(`/admin/devis-clients/${id}`)
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LA RETENUE DE CARTE D’UN DEVIS ACCEPTÉ : ENCAISSER OU LIBÉRER
+   ════════════════════════════════════════════════════════════════════════
+   Le client a accepté son devis et laissé sa carte. Stripe retient la
+   somme sans la débiter. L’exploitant vérifie qu’il a les véhicules à la
+   date demandée — ce que rien ne sait faire automatiquement — puis tranche.
+
+   POURQUOI C’EST ICI, ET PAS SUR CHAQUE COURSE
+
+   Un devis porte plusieurs prestations et UNE SEULE retenue. Un index
+   unique interdit qu’un même paiement Stripe appartienne à deux courses,
+   et il a raison : c’est ce qui empêche un rejeu de Stripe de dédoubler
+   le planning. La retenue appartient donc au devis — un acte commercial,
+   une décision, un clic — et règle toutes ses courses d’un coup.
+
+   LE DÉLAI N’EST PAS INFINI : 7 jours, mesuré chez Stripe le 2026-11-07.
+   Passé ce terme, Stripe libère la somme tout seul et personne n’en est
+   averti. D’où la date limite affichée sur la fiche du devis.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/** Le paiement retenu derrière la session rangée sur le devis. */
+async function retenueDuDevis(devisId: string) {
+  const supabase = createAdminClient()
+  const { data: devis } = await supabase
+    .from('devis_clients')
+    .select('id, numero, statut, stripe_session_id, total_ht')
+    .eq('id', devisId).single()
+
+  if (!devis) return { ok: false as const, erreur: 'Devis introuvable.' }
+  if (!devis.stripe_session_id) {
+    return { ok: false as const, erreur: 'Ce devis ne porte aucun paiement : le client ne l’a pas confirmé par carte.' }
+  }
+
+  /* On demande à Stripe, qui porte la vérité — pas à une colonne qui
+     pourrait avoir pris du retard. */
+  const session = await stripe.checkout.sessions.retrieve(devis.stripe_session_id)
+  const pi = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent?.id ?? null
+  if (!pi) return { ok: false as const, erreur: 'Stripe ne rattache aucun paiement à cette confirmation.' }
+
+  return { ok: true as const, supabase, devis, paymentIntentId: pi }
+}
+
+/**
+ * Encaisse la retenue, et marque payées toutes les courses du devis.
+ *
+ * L'ordre compte : on encaisse d'abord chez Stripe, on écrit ensuite. Un
+ * échec d'écriture après un encaissement réussi est dit franchement, pour
+ * que la correction soit faite à la main — jamais masqué.
+ */
+export async function encaisserDevisAction(
+  devisId: string,
+): Promise<{ error?: string; montant?: number; coursesReglees?: number }> {
+  await requireAdminClient()
+  const r = await retenueDuDevis(devisId)
+  if (!r.ok) return { error: r.erreur }
+  const { supabase, devis, paymentIntentId } = r
+
+  let montant: number
+  try {
+    const pi = await stripe.paymentIntents.capture(paymentIntentId)
+    montant = (pi.amount_received ?? 0) / 100
+  } catch (err) {
+    const m = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Encaissement impossible : ${m}. La retenue a peut-être expiré (7 jours).` }
+  }
+
+  const { error, count } = await supabase
+    .from('courses')
+    .update({ paiement_statut: 'paye' }, { count: 'exact' })
+    .like('ref', `${devis.numero}-%`)
+    .eq('paiement_statut', 'autorise')
+  if (error) {
+    return { error: `Encaissé chez Stripe (${montant} €) mais les courses n’ont pas pu être mises à jour : ${error.message}. À corriger à la main.` }
+  }
+
+  revalidatePath(`/admin/devis-clients/${devisId}`)
+  revalidatePath('/admin/courses')
+  revalidatePath('/admin')
+  return { montant, coursesReglees: count ?? 0 }
+}
+
+/**
+ * Libère la retenue : le client n’est jamais débité, et ses courses sont
+ * annulées. Utilisé quand aucun véhicule n’est disponible à la date.
+ */
+export async function libererDevisAction(
+  devisId: string,
+): Promise<{ error?: string; coursesLiberees?: number }> {
+  await requireAdminClient()
+  const r = await retenueDuDevis(devisId)
+  if (!r.ok) return { error: r.erreur }
+  const { supabase, devis, paymentIntentId } = r
+
+  try {
+    /* `cancel()` lève la retenue. Le client n’est jamais débité. */
+    await stripe.paymentIntents.cancel(paymentIntentId, { cancellation_reason: 'abandoned' })
+  } catch (err) {
+    const m = err instanceof Error ? err.message : 'Erreur inconnue'
+    return { error: `Libération impossible : ${m}` }
+  }
+
+  const { error, count } = await supabase
+    .from('courses')
+    .update({ paiement_statut: 'libere', statut: 'annulee' }, { count: 'exact' })
+    .like('ref', `${devis.numero}-%`)
+    .eq('paiement_statut', 'autorise')
+  if (error) {
+    return { error: `Retenue levée chez Stripe mais les courses n’ont pas pu être mises à jour : ${error.message}. À corriger à la main.` }
+  }
+
+  revalidatePath(`/admin/devis-clients/${devisId}`)
+  revalidatePath('/admin/courses')
+  return { coursesLiberees: count ?? 0 }
 }

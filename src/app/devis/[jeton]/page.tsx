@@ -24,6 +24,7 @@ import { CSS_DOCUMENT } from '@/lib/document-feuille'
 import { CSS_DEVIS } from '@/lib/devis-feuille'
 import FeuilleDevis from '@/components/FeuilleDevis'
 import BandeauAcceptation from './BandeauAcceptation'
+import { aujourdhuiParis } from '@/lib/heure'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,8 +59,15 @@ export default async function DevisPublicPage({ params }: { params: Promise<{ je
       })
   }
 
+  /* EXPIRÉ OU NON : on compare des JOURS de Paris, pas des instants.
+     Première écriture : `new Date(\`${'${date}'}T23:59:59+01:00\`)`. Le « +01:00 »
+     était tapé à la main, donc faux six mois par an — Paris est à +02:00 en
+     été, et un devis valable jusqu'au 30 juin expirait une heure trop tôt.
+     `aujourdhuiParis()` rend « 2026-11-11 », et deux dates ISO se comparent
+     correctement comme du texte. Règle de @/lib/heure : aucun fuseau écrit
+     à la main hors de ce fichier. */
   const expire = devis.date_validite
-    ? new Date(`${devis.date_validite}T23:59:59+01:00`).getTime() < Date.now()
+    ? aujourdhuiParis() > devis.date_validite
     : false
 
   return (

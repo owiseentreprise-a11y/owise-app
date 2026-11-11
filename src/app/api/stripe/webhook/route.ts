@@ -157,7 +157,9 @@ export async function POST(req: Request) {
         : session.payment_intent?.id ?? null
 
       try {
-        const { creees, dejaFait } = await creerCoursesDepuisDevis(devisId)
+        /* La retenue voyage avec les courses : sans elle, rien ne
+           permettrait d'encaisser plus tard ce que Stripe bloque. */
+        const { creees, dejaFait } = await creerCoursesDepuisDevis(devisId, { paymentIntentId })
 
         /* On date l’acceptation et on range la session, même si les courses
            existaient déjà : Stripe peut rejouer le même événement, et la
@@ -166,6 +168,10 @@ export async function POST(req: Request) {
           .from('devis_clients')
           .update({
             accepte_le: new Date().toISOString(),
+            /* LA SESSION EST LA CLE DE LA RETENUE : c'est par elle que
+               l'exploitant encaissera ou liberera, depuis le devis.
+               Sans elle, l'argent reste bloque sept jours puis
+               retourne au client, course faite et rien perçu. */
             stripe_session_id: session.id,
             updated_at: new Date().toISOString(),
           })
