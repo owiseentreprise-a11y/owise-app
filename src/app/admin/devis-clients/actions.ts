@@ -254,8 +254,24 @@ export async function envoyerDevisAction(
   if (aMoi) return message.destinataire as string
 
   const supabase = createAdminClient()
+  /* ON ENREGISTRE QUAND, ET A QUI.
+
+     Le statut « envoyé » se posait aussi bien par ce bouton que par la
+     liste déroulante de l'éditeur : impossible de savoir si un e-mail
+     était réellement parti, ni vers quelle adresse. L'exploitant, le
+     2026-11-11 : « j'ai pas l'information comme quoi c'est bien parti ».
+
+     `envoye_le` n'est écrit QUE sur ce chemin, c'est-à-dire seulement
+     après un envoi réussi — `envoyerDevisClient` lève si Resend refuse,
+     et la ligne suivante n'est jamais atteinte. Un devis qui porte une
+     date d'envoi est donc un devis réellement parti. */
   await supabase.from('devis_clients')
-    .update({ statut: 'envoye', updated_at: new Date().toISOString() })
+    .update({
+      statut: 'envoye',
+      envoye_le: new Date().toISOString(),
+      envoye_a: message.destinataire as string,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
 
   revalidatePath('/admin/devis-clients')

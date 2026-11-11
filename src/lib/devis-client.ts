@@ -44,6 +44,33 @@ export type DevisClient = {
   attente_tarif_heure: number | null
   notes: string | null
   created_at: string
+
+  /* ── Le suivi, depuis le 2026-11-11 ─────────────────────────────────
+
+     L'exploitant : « j'ai pas l'information comme quoi c'est bien parti »,
+     et « j'ai pas le suivi des étapes du devis avant l'acceptation ».
+
+     `chargerDevis` fait un select('*') : ces champs arrivent donc tout
+     seuls. Aucun secret ne part au navigateur — ce sont les coordonnées
+     du client et le jeton de SON propre lien, lus par un écran
+     d'administration déjà authentifié. */
+
+  /** Quand le devis est réellement parti. Écrit SEULEMENT après un envoi
+   *  réussi : un devis qui porte cette date est un devis parti. */
+  envoye_le: string | null
+  /** L'adresse à laquelle il est parti. */
+  envoye_a: string | null
+  /** Le lien privé remis au client pour qu’il accepte lui-même. */
+  jeton: string | null
+  /** Quand le client a ouvert ce lien pour la première fois. */
+  vu_le: string | null
+  /** Quand il a accepté. */
+  accepte_le: string | null
+  /** « Tant qu’on ne connaît pas le client, il faut qu’il paye sa
+   *  réservation » — exploitant, 2026-11-11. Levée sur un client connu. */
+  carte_requise: boolean
+  /** L'empreinte bancaire retenue à l'acceptation. */
+  stripe_session_id: string | null
 }
 
 export const STATUTS: Record<DevisClient['statut'], string> = {

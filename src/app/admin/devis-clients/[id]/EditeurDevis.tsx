@@ -155,6 +155,9 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
         </div>
       </div>
 
+      {/* Où en est ce devis — voir le composant en bas de fichier. */}
+      <Progression devis={devis} />
+
       {/* ── Client ─────────────────────────────────────────── */}
       <div style={carte}>
         <div style={{ ...etiquette, marginBottom: 14 }}>Client</div>
@@ -397,4 +400,70 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
 function confirmerSuppression(): boolean {
   if (typeof window === 'undefined') return false
   try { return window.confirm('Supprimer définitivement ce devis ?') } catch { return false }
+}
+
+/**
+ * Où en est ce devis, en une ligne.
+ *
+ * L'exploitant ne pouvait pas savoir si un devis était réellement parti,
+ * ni depuis combien de temps il attendait une réponse. Le statut seul ne
+ * le disait pas : « envoyé » se pose aussi bien par le bouton d'envoi que
+ * par la liste déroulante.
+ *
+ * Les devis d'avant le 2026-11-11 n'ont pas de date d'envoi : on écrit
+ * alors « marqué envoyé » plutôt que d'inventer une date.
+ */
+function Progression({ devis }: { devis: DevisClient }) {
+  const fmt = (v: string | null) => v
+    ? new Date(v).toLocaleString('fr-FR', {
+        timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : null
+
+  const jours = devis.envoye_le
+    ? Math.floor((Date.now() - new Date(devis.envoye_le).getTime()) / 86_400_000)
+    : null
+
+  const etapes: { fait: boolean; texte: string }[] = [
+    { fait: true, texte: `Créé le ${fmt(devis.created_at)}` },
+    devis.envoye_le
+      ? {
+          fait: true,
+          texte: `Envoyé le ${fmt(devis.envoye_le)}`
+            + (devis.envoye_a ? ` à ${devis.envoye_a}` : ''),
+        }
+      : { fait: devis.statut !== 'brouillon', texte: devis.statut === 'brouillon'
+          ? 'Pas encore envoyé'
+          : 'Marqué envoyé — aucune date enregistrée' },
+    devis.accepte_le
+      ? { fait: true, texte: `Accepté le ${fmt(devis.accepte_le)}` }
+      : { fait: devis.statut === 'accepte',
+          texte: devis.statut === 'accepte'
+            ? 'Accepté'
+            : jours === null
+              ? 'En attente de réponse'
+              : `En attente depuis ${jours} jour${jours > 1 ? 's' : ''}` },
+  ]
+
+  return (
+    <div style={{
+      display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
+      padding: '10px 14px', marginBottom: 16, borderRadius: 9,
+      background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.18)',
+      fontSize: 12, color: '#5A5A48',
+    }}>
+      {etapes.map((e, i) => (
+        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          {i > 0 && <span style={{ color: '#C9A84C', opacity: .5 }}>→</span>}
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: e.fait ? '#2E8A58' : 'rgba(0,0,0,.18)',
+            display: 'inline-block', flex: 'none',
+          }} />
+          <span style={{ color: e.fait ? '#3A3A30' : '#8A8A7A' }}>{e.texte}</span>
+        </span>
+      ))}
+    </div>
+  )
 }

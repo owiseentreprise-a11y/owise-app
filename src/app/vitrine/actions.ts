@@ -62,10 +62,30 @@ export async function soumettreDevis(params: {
     clientIp,
     userAgent,
     sourceUrl : 'https://owise.fr',
-  }).catch(() => {})
+  }).catch((e) => {
+    /* Même raison : une mesure perdue en silence se découvre des mois
+       plus tard, en cherchant pourquoi les chiffres ne tombent pas. */
+    console.error('[MESURE META NON PARTIE]', e)
+  })
 
-  // Email en arrière-plan — ne bloque pas la réponse
-  envoyerNouveauDevis(params).catch(() => {})
+  /* L'ALERTE À L'EXPLOITANT, et sa trace en cas d'échec.
+
+     Elle partait déjà — mon premier repérage avait conclu l'inverse, à
+     tort. Le vrai défaut est le `.catch(() => {})` qui était ici : il
+     avalait TOUT échec d'envoi sans un mot. Si Resend refuse, si la clé
+     expire, si l'adresse change, la demande du client arrive en base et
+     personne n'est prévenu — et personne ne peut savoir pourquoi.
+
+     L'exploitant, le 2026-11-11 : « est-ce que je pourrais recevoir une
+     notification quand je reçois une demande de devis en ligne ». La
+     réponse est oui, elle existe ; encore faut-il pouvoir vérifier
+     qu'elle est partie. Le marqueur se cherche dans les journaux Vercel.
+
+     L'envoi reste en arrière-plan : une alerte qui échoue ne doit jamais
+     empêcher la demande du client de passer. */
+  envoyerNouveauDevis(params).catch((e) => {
+    console.error('[ALERTE DEVIS NON PARTIE]', params.email, e)
+  })
 
   return { ok: true }
 }
