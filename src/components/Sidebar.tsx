@@ -302,8 +302,13 @@ export default function Sidebar() {
                    d’allumé dès qu’on quitte le premier onglet, et on se
                    croirait sorti de la rubrique. */
                 const ongletsMesures = ['/admin/analytics', '/admin/estimations', '/admin/funnel']
+                /* La barre oblique finale est indispensable : sans elle,
+                   /admin/devis-clients « commence par » /admin/devis, et
+                   « Demandes reçues » s’allumait EN MÊME TEMPS que
+                   « Devis ». Deux entrées allumées, on ne sait plus où on
+                   est. Vu sur une capture du devis de Mme Courdier. */
                 const isActive = pathname === item.href
-                  || (item.href !== '/admin' && pathname.startsWith(item.href))
+                  || (item.href !== '/admin' && pathname.startsWith(item.href + '/'))
                   || (item.href === '/admin/stats' && ongletsMesures.some(o => pathname.startsWith(o)))
                 return <NavItem key={item.href} item={item} isActive={isActive} />
               })}
