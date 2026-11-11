@@ -2,15 +2,20 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { changerStatutFacture, envoyerLienPaiement, envoyerFactureParEmail } from './actions'
+import {
+  changerStatutFacture, envoyerFactureParEmail, envoyerLienPaiement, supprimerFacture,
+} from './actions'
 import Link from 'next/link'
 
 export default function FactureActions({
   factureId,
+  numero,
   statut,
   stripePaymentLink,
 }: {
   factureId: string
+  /** Sert de mot de passe a la suppression : on le retape pour confirmer. */
+  numero: string
   statut: 'en_attente' | 'payee' | 'retard'
   stripePaymentLink: string | null
 }) {
@@ -20,6 +25,9 @@ export default function FactureActions({
   // Couleur pilotee par un drapeau, jamais par le texte : comparer le libelle
   // faisait passer tout nouveau message de succes pour une erreur.
   const [sendOk, setSendOk]   = useState(false)
+  const [ouvertSuppr, setOuvertSuppr] = useState(false)
+  const [saisie, setSaisie]   = useState('')
+  const [errSuppr, setErrSuppr] = useState<string | null>(null)
 
   function run(s: 'payee' | 'retard' | 'en_attente') {
     startTransition(async () => {
@@ -228,6 +236,94 @@ export default function FactureActions({
           Remettre en attente
         </button>
       )}
+
+      {/* ── SUPPRIMER UNE FACTURE CREEE PAR ERREUR ───────────────────
+
+          On ne supprime pas une facture emise : on emet un avoir. C'est
+          pour cela que ce bouton n'existait pas, et c'etait un bon
+          reflexe. Mais des factures se creent par erreur, et le
+          2026-11-09 trois factures d essai plus un doublon pose sur le
+          dossier d un VRAI client ne pouvaient s enlever par aucun chemin
+          de l application.
+
+          L'action refuse toute facture qui couvre des courses. Le numero
+          se retape, comme pour la suppression d un client. */}
+      <div style={{ marginTop: 6, paddingTop: 10, borderTop: '1px solid var(--gb)' }}>
+        {!ouvertSuppr ? (
+          <button
+            onClick={() => { setOuvertSuppr(true); setErrSuppr(null) }}
+            disabled={pending}
+            style={{
+              width: '100%', padding: '9px', borderRadius: 8,
+              background: 'transparent', border: '1px solid rgba(217,84,84,.25)',
+              color: 'var(--red)', fontSize: 11,
+              cursor: pending ? 'wait' : 'pointer',
+              fontFamily: 'var(--font-dm-sans), sans-serif',
+            }}
+          >
+            Supprimer cette facture
+          </button>
+        ) : (
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--t2)', lineHeight: 1.6, marginBottom: 8 }}>
+              À réserver aux factures créées par erreur et jamais transmises.
+              La numérotation gardera un trou.
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--t3)', marginBottom: 6 }}>
+              Tapez{' '}
+              <span style={{ color: 'var(--red)', fontFamily: 'var(--font-jetbrains), monospace' }}>{numero}</span>
+              {' '}pour confirmer
+            </div>
+            <input
+              autoFocus
+              value={saisie}
+              onChange={e => setSaisie(e.target.value)}
+              placeholder={numero}
+              style={{
+                width: '100%', boxSizing: 'border-box', background: 'var(--elevated)',
+                border: '1px solid var(--t3)', borderRadius: 8, padding: '8px 11px',
+                fontSize: 12, color: 'var(--t1)', outline: 'none', marginBottom: 8,
+                fontFamily: 'var(--font-dm-sans), sans-serif',
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                disabled={saisie !== numero || pending}
+                onClick={() => startTransition(async () => {
+                  const r = await supprimerFacture(factureId)
+                  if (r.error) { setErrSuppr(r.error); return }
+                  router.push('/admin/facturation')
+                })}
+                style={{
+                  flex: 1, padding: '9px', borderRadius: 8, border: 'none',
+                  background: saisie === numero ? 'var(--red)' : 'rgba(217,84,84,.15)',
+                  color: saisie === numero ? '#fff' : 'rgba(217,84,84,.4)',
+                  fontSize: 11, fontWeight: 600,
+                  cursor: saisie === numero && !pending ? 'pointer' : 'not-allowed',
+                  fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                {pending ? 'Suppression…' : 'Supprimer'}
+              </button>
+              <button
+                onClick={() => { setOuvertSuppr(false); setSaisie(''); setErrSuppr(null) }}
+                style={{
+                  padding: '9px 12px', borderRadius: 8, border: '1px solid var(--gb)',
+                  background: 'transparent', color: 'var(--t2)', fontSize: 11,
+                  cursor: 'pointer', fontFamily: 'var(--font-dm-sans), sans-serif',
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+            {errSuppr && (
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--red)', lineHeight: 1.5 }}>
+                {errSuppr}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -141,3 +141,59 @@ export async function envoyerLienPaiement(
 
   return {}
 }
+
+/**
+ * Supprime une facture créée par erreur.
+ *
+ * POURQUOI CETTE ACTION N'EXISTAIT PAS, ET POURQUOI ELLE EXISTE MAINTENANT
+ *
+ * On ne supprime pas une facture émise : on émet un avoir. C'est pour ça
+ * que l'administration n'avait aucun bouton — et c'était un bon réflexe.
+ *
+ * Mais des factures se créent par erreur, et il faut pouvoir les retirer.
+ * Le 2026-11-09, trois factures d'essai et un doublon posé sur le dossier
+ * d'un vrai client ne pouvaient s'enlever par AUCUN chemin de
+ * l'application : il a fallu passer par la base.
+ *
+ * LE GARDE-FOU : une facture qui couvre des COURSES décrit une prestation
+ * réellement effectuée. Celle-là se refuse, toujours. Ne restent
+ * supprimables que les factures sans aucune course — celles qu'on a créées
+ * en se trompant.
+ *
+ * La numérotation garde un trou. C'est assumé et dit à l'écran : un trou
+ * sur une facture jamais transmise vaut mieux qu'un document faux qui reste.
+ */
+export async function supprimerFacture(
+  factureId: string,
+): Promise<{ error?: string }> {
+  const supabase = await requireAdminClient()
+
+  const { data: facture } = await supabase
+    .from('factures')
+    .select('id, numero')
+    .eq('id', factureId)
+    .maybeSingle()
+  if (!facture) return { error: 'Facture introuvable.' }
+
+  /* Le garde-fou. On compte AVANT de supprimer, et on refuse proprement —
+     jamais de suppression à moitié faite. */
+  const { count } = await supabase
+    .from('courses')
+    .select('id', { count: 'exact', head: true })
+    .eq('facture_id', factureId)
+
+  if ((count ?? 0) > 0) {
+    return {
+      error: `Cette facture couvre ${count} course${(count ?? 0) > 1 ? 's' : ''} : `
+        + 'elle décrit une prestation réellement effectuée et ne peut pas être '
+        + 'supprimée. Détachez d’abord les courses si c’est une erreur.',
+    }
+  }
+
+  const { error } = await supabase.from('factures').delete().eq('id', factureId)
+  if (error) return { error: `Suppression impossible : ${error.message}` }
+
+  revalidatePath('/admin/facturation')
+  revalidatePath('/admin')
+  return {}
+}

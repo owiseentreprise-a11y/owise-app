@@ -382,6 +382,7 @@ export default async function FactureDetailPage({
             <div className="no-print">
               <FactureActions
                 factureId={facture.id}
+                numero={facture.numero}
                 statut={facture.statut as any}
                 stripePaymentLink={(facture as any).stripe_payment_link ?? null}
               />
