@@ -367,7 +367,12 @@ export default async function AnalyticsPage() {
               </div>
               {etrangersRows.map((row: unknown[], i: number) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)', fontSize: 11.5 }}>
-                  <span style={{ color: '#09091A', fontWeight: 500 }}>{str(row[0])}</span>
+                  {/* var(--t1), pas #09091A : cette nuance est le FOND du poste
+                     de pilotage. Ecrite comme encre, elle donne un texte invisible
+                     sur son propre fond — 1,06. Vue seulement en mesurant la
+                     PRODUCTION : en local, la liste des pays etrangers etait plus
+                     courte et la ligne fautive n'apparaissait pas. */}
+                  <span style={{ color: 'var(--t1)', fontWeight: 500 }}>{str(row[0])}</span>
                   <span style={{ color: 'var(--t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{str(row[1])}</span>
                   <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, textAlign: 'right' }}>{num(row[2])}</span>
                   <span style={{ fontFamily: 'monospace', color: 'var(--t3)', textAlign: 'right' }}>{num(row[3])}</span>
