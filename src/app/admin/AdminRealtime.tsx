@@ -49,7 +49,7 @@ export default function AdminRealtime({ intervalMs = 30000 }: { intervalMs?: num
         table: 'devis',
       }, () => {
         soundAlert()
-        addToast('📋 Nouveau devis soumis', '#4D8ED4')
+        addToast('📋 Nouveau devis soumis', 'var(--blu)')
         router.refresh()
       })
       .subscribe()
@@ -77,7 +77,7 @@ export default function AdminRealtime({ intervalMs = 30000 }: { intervalMs?: num
           borderLeft: `3px solid ${t.color}`,
           borderRadius: 10, padding: '11px 16px',
           fontSize: 12, fontWeight: 500, color: '#EDE8DF',
-          boxShadow: '0 4px 20px rgba(0,0,0,.4)',
+          boxShadow: '0 4px 20px rgba(201,168,76,.12)',
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'fadeIn .2s ease',
           minWidth: 220,

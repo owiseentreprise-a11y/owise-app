@@ -51,17 +51,17 @@ function FunnelBar({ steps, counts }: { steps: string[]; counts: Record<string, 
         return (
           <div key={step} style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-              <span style={{ fontSize: 12, color: '#333' }}>{STEP_LABEL[step] ?? step}</span>
+              <span style={{ fontSize: 12, color: 'var(--t1)' }}>{STEP_LABEL[step] ?? step}</span>
               <span style={{ fontSize: 12 }}>
                 <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#C9A84C' }}>{count}</span>
                 {prev !== null && (
-                  <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#999', marginLeft: 8 }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--t3)', marginLeft: 8 }}>
                     ({pct(count, prev)} de l&apos;étape précédente)
                   </span>
                 )}
               </span>
             </div>
-            <div style={{ height: 10, background: '#F0EDE8', borderRadius: 5, overflow: 'hidden' }}>
+            <div style={{ height: 10, background: 'var(--elevated)', borderRadius: 5, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', width: `${Math.max(width, count > 0 ? 2 : 0)}%`,
                 background: 'linear-gradient(90deg, #C9A84C, #DDB95A)', borderRadius: 5,
@@ -89,7 +89,7 @@ export default async function FunnelPage() {
   if (error?.code === '42P01') {
     return (
       <div style={{ padding: 40, maxWidth: 700 }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#0A0A0A', marginBottom: 16 }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--t1)', marginBottom: 16 }}>
           Tunnel de conversion
         </h1>
         <div style={{
@@ -97,7 +97,7 @@ export default async function FunnelPage() {
           borderRadius: 12, padding: '24px 28px',
         }}>
           <div style={{ fontWeight: 600, marginBottom: 8, color: '#C9A84C' }}>Table non créée</div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: 'var(--t2)', lineHeight: 1.6 }}>
             Exécutez la migration <code>20260912020000_funnel_events.sql</code> dans le SQL Editor Supabase.
           </p>
         </div>
@@ -143,8 +143,8 @@ export default async function FunnelPage() {
   const maxDay = Math.max(1, ...days.map(([, n]) => n))
 
   const card = {
-    background: '#FFFFFF',
-    border: '1.5px solid rgba(0,0,0,.07)',
+    background: 'var(--surface)',
+    border: '1.5px solid rgba(201,168,76,.12)',
     borderRadius: 12,
     padding: '18px 22px',
   } as const
@@ -155,11 +155,11 @@ export default async function FunnelPage() {
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
           fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
-          color: '#0A0A0A', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
+          color: 'var(--t1)', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
         }}>
           Tunnel de conversion
         </h1>
-        <p style={{ fontSize: 12, color: '#888' }}>
+        <p style={{ fontSize: 12, color: 'var(--t3)' }}>
           Chaque étape du parcours devis → réservation → paiement, sur les 30 derniers jours — pour voir où les visiteurs décrochent sans avoir à deviner.
         </p>
       </div>
@@ -173,7 +173,7 @@ export default async function FunnelPage() {
           { label: 'Taux session → paiement', value: pct(checkoutSessions.size, sessionsTotal) },
         ].map(kpi => (
           <div key={kpi.label} style={card}>
-            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
               {kpi.label}
             </div>
             <div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 600, color: '#C9A84C', lineHeight: 1 }}>
@@ -186,22 +186,22 @@ export default async function FunnelPage() {
       {/* 3 tunnels côte à côte */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 28 }}>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Widget hero (accueil)
           </div>
           <FunnelBar steps={heroSteps} counts={counts} />
         </div>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Widget devis
           </div>
           <FunnelBar steps={devisSteps} counts={counts} />
-          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,.05)', fontSize: 11, color: '#999' }}>
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.12)', fontSize: 11, color: 'var(--t3)' }}>
             + {counts['devis_cta_rappel_click'] ?? 0} clic(s) &quot;Être rappelé&quot; → {counts['devis_rappel_submitted'] ?? 0} envoyé(s)
           </div>
         </div>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Page /reserver
           </div>
           <FunnelBar steps={reserverSteps} counts={counts} />
@@ -211,28 +211,28 @@ export default async function FunnelPage() {
       {/* Erreurs — le plus actionnable */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Erreurs étape 1 (trajet/adresses)
           </div>
           {Object.keys(step1Errors).length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>Aucune erreur enregistrée</div>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune erreur enregistrée</div>
           ) : Object.entries(step1Errors).sort((a, b) => b[1] - a[1]).map(([reason, n]) => (
-            <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)' }}>
-              <span style={{ fontSize: 12, color: '#D95454' }}>{reason}</span>
-              <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: '#D95454' }}>{n}</span>
+            <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)' }}>
+              <span style={{ fontSize: 12, color: 'var(--red-txt)' }}>{reason}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: 'var(--red-txt)' }}>{n}</span>
             </div>
           ))}
         </div>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Erreurs étape 2 (paiement)
           </div>
           {Object.keys(step2Errors).length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>Aucune erreur enregistrée</div>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune erreur enregistrée</div>
           ) : Object.entries(step2Errors).sort((a, b) => b[1] - a[1]).map(([reason, n]) => (
-            <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)' }}>
-              <span style={{ fontSize: 12, color: '#D95454' }}>{reason}</span>
-              <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: '#D95454' }}>{n}</span>
+            <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)' }}>
+              <span style={{ fontSize: 12, color: 'var(--red-txt)' }}>{reason}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: 'var(--red-txt)' }}>{n}</span>
             </div>
           ))}
         </div>
@@ -240,21 +240,21 @@ export default async function FunnelPage() {
 
       {/* Activité par jour */}
       <div style={{ ...card, marginBottom: 28 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
           Activité par jour (14 derniers jours)
         </div>
         {days.length === 0 ? (
-          <div style={{ fontSize: 12, color: '#bbb' }}>Aucune donnée</div>
+          <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
             {days.map(([day, n]) => (
               <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 9, fontFamily: 'monospace', color: '#999' }}>{n}</span>
+                <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--t3)' }}>{n}</span>
                 <div style={{
                   width: '100%', height: Math.max(4, (n / maxDay) * 70),
                   background: 'linear-gradient(180deg, #DDB95A, #C9A84C)', borderRadius: '3px 3px 0 0',
                 }} />
-                <span style={{ fontSize: 9, color: '#bbb' }}>{day.slice(5).replace('-', '/')}</span>
+                <span style={{ fontSize: 9, color: 'var(--t3)' }}>{day.slice(5).replace('-', '/')}</span>
               </div>
             ))}
           </div>
@@ -264,16 +264,16 @@ export default async function FunnelPage() {
       {/* Table événements récents */}
       <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
         <div style={{
-          padding: '14px 22px', borderBottom: '1px solid rgba(0,0,0,.06)',
+          padding: '14px 22px', borderBottom: '1px solid rgba(201,168,76,.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>Derniers événements</span>
-          <span style={{ fontSize: 11, color: '#bbb' }}>{total} sur 30 jours</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--t1)' }}>Derniers événements</span>
+          <span style={{ fontSize: 11, color: 'var(--t3)' }}>{total} sur 30 jours</span>
         </div>
         <div style={{
           display: 'grid', gridTemplateColumns: '100px 1fr 120px 1fr', padding: '7px 22px',
-          fontSize: 9, letterSpacing: '.15em', textTransform: 'uppercase', color: '#ccc', fontWeight: 600,
-          borderBottom: '1px solid rgba(0,0,0,.05)',
+          fontSize: 9, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 600,
+          borderBottom: '1px solid rgba(201,168,76,.12)',
         }}>
           <div>Date</div>
           <div>Étape</div>
@@ -281,16 +281,16 @@ export default async function FunnelPage() {
           <div>Détail</div>
         </div>
         {events.length === 0 ? (
-          <div style={{ padding: '32px 22px', color: '#ccc', fontSize: 12, textAlign: 'center' }}>Aucun événement</div>
+          <div style={{ padding: '32px 22px', color: 'var(--t3)', fontSize: 12, textAlign: 'center' }}>Aucun événement</div>
         ) : events.slice(0, 100).map((e, i) => (
           <div key={e.id} style={{
             display: 'grid', gridTemplateColumns: '100px 1fr 120px 1fr', padding: '9px 22px',
-            alignItems: 'center', borderBottom: i < 99 ? '1px solid rgba(0,0,0,.04)' : 'none', fontSize: 11,
+            alignItems: 'center', borderBottom: i < 99 ? '1px solid rgba(201,168,76,.12)' : 'none', fontSize: 11,
           }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#999' }}>{formatDate(e.created_at)}</div>
-            <div style={{ color: '#333' }}>{STEP_LABEL[e.step] ?? e.step}</div>
-            <div style={{ color: '#999', fontSize: 10 }}>{e.page ?? '—'}</div>
-            <div style={{ color: '#999', fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--t3)' }}>{formatDate(e.created_at)}</div>
+            <div style={{ color: 'var(--t1)' }}>{STEP_LABEL[e.step] ?? e.step}</div>
+            <div style={{ color: 'var(--t3)', fontSize: 10 }}>{e.page ?? '—'}</div>
+            <div style={{ color: 'var(--t3)', fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {e.meta ? JSON.stringify(e.meta) : ''}
             </div>
           </div>

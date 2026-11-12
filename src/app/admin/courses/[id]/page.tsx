@@ -15,7 +15,7 @@ const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: st
   en_route:        { color: 'var(--blu)', bg: 'rgba(74,142,208,.12)', border: 'rgba(74,142,208,.25)' },
   prise_en_charge: { color: 'var(--grn)', bg: 'rgba(60,196,124,.12)', border: 'rgba(60,196,124,.25)' },
   terminee:        { color: 'var(--t2)',  bg: 'var(--elevated)',      border: 'var(--t3)' },
-  annulee:         { color: 'var(--red)', bg: 'rgba(217,80,80,.12)',  border: 'rgba(217,80,80,.25)' },
+  annulee:         { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.12)',  border: 'rgba(217,80,80,.25)' },
 }
 
 // Toujours l'heure de Paris : sans fuseau explicite, cette page affichait
@@ -362,13 +362,13 @@ export default async function CourseDetailPage({
                 background: 'rgba(77,142,212,.07)', border: '1px solid rgba(77,142,212,.2)',
                 display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
               }}>
-                <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4D8ED4', fontWeight: 600, width: '100%' }}>
+                <div style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--blu)', fontWeight: 600, width: '100%' }}>
                   ✈ Infos vol / train
                 </div>
                 {(course as any).num_vol_train && (
                   <div>
                     <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 3 }}>N° VOL / TRAIN</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#4D8ED4', fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.08em' }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--blu)', fontFamily: 'var(--font-jetbrains), monospace', letterSpacing: '.08em' }}>
                       {(course as any).num_vol_train}
                     </div>
                   </div>
@@ -398,12 +398,12 @@ export default async function CourseDetailPage({
                         <>
                           <a href={`https://www.flightradar24.com/data/flights/${num.toLowerCase().replace(/\s/g, '')}`}
                             target="_blank" rel="noopener noreferrer"
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)', color: '#4D8ED4', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.15)', border: '1px solid rgba(77,142,212,.3)', color: 'var(--blu)', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
                             FlightRadar24 →
                           </a>
                           <a href={`https://www.aeroport.fr/vols?type=arrivee`}
                             target="_blank" rel="noopener noreferrer"
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.08)', border: '1px solid rgba(77,142,212,.2)', color: '#4D8ED4', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(77,142,212,.08)', border: '1px solid rgba(77,142,212,.2)', color: 'var(--blu)', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
                             ADP Arrivées →
                           </a>
                         </>
@@ -411,12 +411,12 @@ export default async function CourseDetailPage({
                         <>
                           <a href={`https://www.sncf-connect.com/recherche/trains`}
                             target="_blank" rel="noopener noreferrer"
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.12)', border: '1px solid rgba(61,184,122,.3)', color: '#3DB87A', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.12)', border: '1px solid rgba(61,184,122,.3)', color: 'var(--grn)', fontSize: 10, fontWeight: 600, textDecoration: 'none' }}>
                             SNCF Connect →
                           </a>
                           <a href="https://www.infra.sncf.com/fr/ponctualite-transilien"
                             target="_blank" rel="noopener noreferrer"
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.06)', border: '1px solid rgba(61,184,122,.2)', color: '#3DB87A', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
+                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(61,184,122,.06)', border: '1px solid rgba(61,184,122,.2)', color: 'var(--grn)', fontSize: 10, fontWeight: 500, textDecoration: 'none' }}>
                             Info trafic →
                           </a>
                         </>

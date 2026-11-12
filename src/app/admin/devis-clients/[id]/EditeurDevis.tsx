@@ -17,15 +17,15 @@ import {
    `@media` suffise à tout empiler sur téléphone. */
 const champ: React.CSSProperties = {
   width: '100%', padding: '9px 11px', fontSize: 13.5, fontFamily: 'inherit',
-  background: '#FFFFFF', border: '1px solid rgba(0,0,0,.14)', borderRadius: 8,
-  color: '#0A0A0A', outline: 'none', boxSizing: 'border-box',
+  background: 'var(--surface)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 8,
+  color: 'var(--t1)', outline: 'none', boxSizing: 'border-box',
 }
 const etiquette: React.CSSProperties = {
   display: 'block', fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase',
-  color: '#999', marginBottom: 5, fontWeight: 600,
+  color: 'var(--t3)', marginBottom: 5, fontWeight: 600,
 }
 const carte: React.CSSProperties = {
-  background: '#FFFFFF', border: '1px solid rgba(0,0,0,.07)',
+  background: 'var(--surface)', border: '1px solid rgba(201,168,76,.12)',
   borderRadius: 12, padding: '20px 22px', marginBottom: 18,
 }
 
@@ -115,8 +115,8 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           .dv-barre   { position: static !important; }
         }
         .dv-ligne input:focus { border-color: rgba(201,168,76,.65); box-shadow: 0 0 0 3px rgba(201,168,76,.12) }
-        .dv-ico { background:none; border:1px solid rgba(0,0,0,.12); border-radius:7px; width:28px; height:28px;
-                  cursor:pointer; color:#777; font-size:13px; line-height:1 }
+        .dv-ico { background:none; border:1px solid rgba(201,168,76,.12); border-radius:7px; width:28px; height:28px;
+                  cursor:pointer; color:var(--t3); font-size:13px; line-height:1 }
         .dv-ico:hover { border-color: rgba(201,168,76,.5); color:#C9A84C }
         .dv-ico:disabled { opacity:.3; cursor:default }
       `}</style>
@@ -125,7 +125,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 22 }}>
         <div>
           <Link href="/admin/devis-clients" style={{ fontSize: 12.5, color: '#C9A84C', textDecoration: 'none' }}>← Tous les devis</Link>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 25, fontWeight: 500, color: '#0A0A0A', margin: '8px 0 2px' }}>
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 25, fontWeight: 500, color: 'var(--t1)', margin: '8px 0 2px' }}>
             {form.client_nom || 'Nouveau devis'}
           </h1>
           <div style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#C9A84C' }}>
@@ -136,7 +136,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           <Link
             href={`/admin/devis-clients/${devis.id}/document`}
             style={{
-              background: 'none', border: '1px solid rgba(0,0,0,.18)', color: '#0A0A0A',
+              background: 'none', border: '1px solid rgba(201,168,76,.12)', color: 'var(--t1)',
               borderRadius: 9, padding: '10px 16px',
               fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
             }}
@@ -146,7 +146,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           <button
             type="button" onClick={allerEnvoyer} disabled={enCours}
             style={{
-              background: '#0A0A0A', color: '#F8F6F1', border: 'none', borderRadius: 9,
+              background: 'var(--gold)', color: '#0B0B14', border: 'none', borderRadius: 9,
               padding: '11px 18px', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
               cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit',
             }}
@@ -170,7 +170,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
         <div style={{
           display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12,
           padding: '14px 16px', marginBottom: 16, borderRadius: 10,
-          background: 'rgba(9,9,26,.035)', border: '1px solid rgba(9,9,26,.10)',
+          background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.12)',
         }}>
           <div style={{ flex: '1 1 260px', minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#2A2A22', marginBottom: 3 }}>
@@ -183,9 +183,13 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
             </div>
           </div>
 
+          {/* La zone CLIQUABLE est l'étiquette entière, pas la case : au doigt,
+              une case de 15 px se rate. `audit-admin-mobile.mjs` exige 44 px,
+              d'où la hauteur minimale et la marge intérieure ici. */}
           <label style={{
-            display: 'flex', alignItems: 'center', gap: 7, fontSize: 12,
-            color: '#5A5A48', cursor: 'pointer', whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 12,
+            color: 'var(--t2)', cursor: 'pointer', whiteSpace: 'nowrap',
+            minHeight: 44, padding: '0 10px 0 4px', borderRadius: 8,
           }}>
             <input
               type="checkbox"
@@ -195,7 +199,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                 try { await basculerCarteRequise(devis.id, !e.target.checked); router.refresh() }
                 catch (err) { setErreur(err instanceof Error ? err.message : 'Changement impossible.') }
               })}
-              style={{ width: 15, height: 15, accentColor: '#C9A84C', cursor: 'pointer' }}
+              style={{ width: 18, height: 18, accentColor: 'var(--gold)', cursor: 'pointer', flexShrink: 0 }}
             />
             Client de confiance — sans carte
           </label>
@@ -263,7 +267,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                         + `${r.coursesReglees ?? 0} course(s) passée(s) en « payé ».`)
                       router.refresh()
                     })}
-                    style={{ background: '#2E8A58', border: 'none', color: '#F8F6F1',
+                    style={{ background: 'var(--grn)', border: 'none', color: '#F8F6F1',
                              borderRadius: 9, padding: '11px 18px', fontSize: 13,
                              fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
                              fontFamily: 'inherit' }}>
@@ -279,8 +283,8 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                         + `annulée(s). Le client n'a rien payé.`)
                       router.refresh()
                     })}
-                    style={{ background: 'transparent', border: '1px solid rgba(9,9,26,.20)',
-                             color: '#5A5A48', borderRadius: 9, padding: '11px 18px',
+                    style={{ background: 'transparent', border: '1px solid rgba(201,168,76,.12)',
+                             color: 'var(--t2)', borderRadius: 9, padding: '11px 18px',
                              fontSize: 13, fontWeight: 500,
                              cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
               Libérer la retenue
@@ -322,13 +326,13 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           <input id="dv-adr" style={champ} value={form.client_adresse}
                  onChange={e => setForm(f => ({ ...f, client_adresse: e.target.value }))}
                  placeholder="18 rue du vieux lavoir, 95470 Saint-Witz" />
-          <div style={{ fontSize: 11.5, color: '#999', marginTop: 5 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--t3)', marginTop: 5 }}>
             Séparez les lignes par des virgules : le document les met l&apos;une sous l&apos;autre.
           </div>
         </div>
         <div style={{
-          marginTop: 14, fontSize: 12, color: '#777', background: 'rgba(0,0,0,.025)',
-          border: '1px solid rgba(0,0,0,.06)', borderRadius: 8, padding: '10px 13px',
+          marginTop: 14, fontSize: 12, color: 'var(--t3)', background: 'rgba(201,168,76,.12)',
+          border: '1px solid rgba(201,168,76,.12)', borderRadius: 8, padding: '10px 13px',
         }}>
           {form.client_societe.trim()
             ? <>Société renseignée : le devis portera les mentions de <b>retard de paiement entre professionnels</b> (art. L441-10).</>
@@ -357,7 +361,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
       <div style={carte}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
           <div style={etiquette}>Prestations</div>
-          <div style={{ fontSize: 12, color: '#999' }}>{lignes.length} ligne{lignes.length > 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 12, color: 'var(--t3)' }}>{lignes.length} ligne{lignes.length > 1 ? 's' : ''}</div>
         </div>
 
         <div className="dv-entetes" style={{
@@ -365,7 +369,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           gap: 9, marginBottom: 7,
         }}>
           {['Heure', 'Départ', 'Arrivée', 'Véhicule', 'Pax', 'Prix €', ''].map((t, i) => (
-            <span key={i} style={{ fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase', color: '#AAA', fontWeight: 600 }}>{t}</span>
+            <span key={i} style={{ fontSize: 9.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 600 }}>{t}</span>
           ))}
         </div>
 
@@ -401,13 +405,13 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 14, flexWrap: 'wrap' }}>
           <button type="button" onClick={() => setLignes(l => [...l, ligneVide()])}
                   style={{ background: 'rgba(201,168,76,.10)', border: '1px solid rgba(201,168,76,.32)',
-                           color: '#9A7E2E', borderRadius: 8, padding: '9px 16px', fontSize: 13,
+                           color: 'var(--gold)', borderRadius: 8, padding: '9px 16px', fontSize: 13,
                            fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             + Ajouter une prestation
           </button>
-          <div style={{ fontSize: 13, color: '#777' }}>
+          <div style={{ fontSize: 13, color: 'var(--t3)' }}>
             Total&nbsp;
-            <b style={{ fontFamily: 'monospace', fontSize: 18, color: '#0A0A0A', fontVariantNumeric: 'tabular-nums' }}>
+            <b style={{ fontFamily: 'monospace', fontSize: 18, color: 'var(--t1)', fontVariantNumeric: 'tabular-nums' }}>
               {formaterMontant(total)}
             </b>
           </div>
@@ -422,13 +426,13 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
           vit dans `conditions.ts`. Les champs sont retirés plutôt que laissés
           sans effet — un formulaire qui n'agit sur rien est pire qu'un
           formulaire absent. */}
-      <div style={{ ...carte, background: 'rgba(0,0,0,.02)' }}>
+      <div style={{ ...carte, background: 'rgba(201,168,76,.12)' }}>
         <div style={{ ...etiquette, marginBottom: 10 }}>Conditions, identiques sur tous les devis</div>
-        <div style={{ fontSize: 12.5, color: '#666', lineHeight: 1.75 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.75 }}>
           {ANNULATION_MENTION}<br />
           {ATTENTE_MENTION}
         </div>
-        <div style={{ fontSize: 11.5, color: '#999', marginTop: 10, lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11.5, color: 'var(--t3)', marginTop: 10, lineHeight: 1.6 }}>
           Elles figurent en bas du devis, en petits caractères. Pour les changer,
           il faut modifier la règle du projet — elles doivent rester identiques
           partout : site, devis, fiche Google.
@@ -438,11 +442,11 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
       {/* ── Barre d'actions ────────────────────────────────── */}
       <div className="dv-barre" style={{
         position: 'sticky', bottom: 0, background: 'rgba(248,246,241,.96)',
-        backdropFilter: 'blur(8px)', borderTop: '1px solid rgba(0,0,0,.08)',
+        backdropFilter: 'blur(8px)', borderTop: '1px solid rgba(201,168,76,.12)',
         padding: '14px 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
       }}>
         <button type="button" onClick={enregistrer} disabled={enCours}
-                style={{ background: '#C9A84C', color: '#0A0A0A', border: 'none', borderRadius: 9,
+                style={{ background: '#C9A84C', color: 'var(--t1)', border: 'none', borderRadius: 9,
                          padding: '12px 22px', fontSize: 13.5, fontWeight: 700,
                          cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
           {enCours ? 'Enregistrement…' : 'Enregistrer'}
@@ -488,7 +492,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                     } catch (err) { setErreur(err instanceof Error ? err.message : 'Facturation impossible.') }
                   })}
                   style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)',
-                           color: '#9A7A2A', borderRadius: 9, padding: '12px 18px', fontSize: 13,
+                           color: 'var(--gold)', borderRadius: 9, padding: '12px 18px', fontSize: 13,
                            fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             Créer la facture
           </button>
@@ -504,7 +508,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                     } catch (err) { setErreur(err instanceof Error ? err.message : 'Conversion impossible.') }
                   })}
                   style={{ background: 'rgba(61,184,122,.12)', border: '1px solid rgba(61,184,122,.35)',
-                           color: '#2E8A58', borderRadius: 9, padding: '12px 18px', fontSize: 13,
+                           color: 'var(--grn)', borderRadius: 9, padding: '12px 18px', fontSize: 13,
                            fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             Accepté → créer les courses
           </button>
@@ -516,14 +520,14 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
                   try { await supprimerDevisClient(devis.id); router.push('/admin/devis-clients') }
                   catch (err) { setErreur(err instanceof Error ? err.message : 'Suppression impossible.') }
                 })}
-                style={{ background: 'none', border: '1px solid rgba(217,84,84,.3)', color: '#B14343',
+                style={{ background: 'none', border: '1px solid rgba(217,84,84,.3)', color: 'var(--red-txt)',
                          borderRadius: 9, padding: '12px 16px', fontSize: 13, cursor: 'pointer',
                          fontFamily: 'inherit', marginLeft: 'auto' }}>
           Supprimer
         </button>
 
-        {message && <span style={{ fontSize: 13, color: '#2E8A58', width: '100%' }}>{message}</span>}
-        {erreur && <span style={{ fontSize: 13, color: '#D95454', width: '100%' }}>{erreur}</span>}
+        {message && <span style={{ fontSize: 13, color: 'var(--grn)', width: '100%' }}>{message}</span>}
+        {erreur && <span style={{ fontSize: 13, color: 'var(--red-txt)', width: '100%' }}>{erreur}</span>}
       </div>
     </div>
   )
@@ -585,14 +589,14 @@ function Progression({ devis }: { devis: DevisClient }) {
       display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
       padding: '10px 14px', marginBottom: 16, borderRadius: 9,
       background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.18)',
-      fontSize: 12, color: '#5A5A48',
+      fontSize: 12, color: 'var(--t2)',
     }}>
       {etapes.map((e, i) => (
         <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           {i > 0 && <span style={{ color: '#C9A84C', opacity: .5 }}>→</span>}
           <span style={{
             width: 7, height: 7, borderRadius: '50%',
-            background: e.fait ? '#2E8A58' : 'rgba(0,0,0,.18)',
+            background: e.fait ? 'var(--grn)' : 'rgba(201,168,76,.12)',
             display: 'inline-block', flex: 'none',
           }} />
           <span style={{ color: e.fait ? '#3A3A30' : '#8A8A7A' }}>{e.texte}</span>

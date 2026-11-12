@@ -96,7 +96,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
       </div>
 
       {/* Feedback */}
-      {error && <div style={{ fontSize: 11, color: 'var(--red)' }}>Erreur : {error}</div>}
+      {error && <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>Erreur : {error}</div>}
       {saved && <div style={{ fontSize: 11, color: 'var(--grn)' }}>✓ Enregistré</div>}
 
       {/* Save */}
@@ -106,7 +106,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
         style={{
           padding: '9px 18px', borderRadius: 8,
           background: pending ? 'var(--elevated)' : 'var(--gold)',
-          color: pending ? 'var(--t2)' : '#fff',
+          color: pending ? 'var(--t2)' : 'var(--base)',
           fontSize: 12, fontWeight: 600, border: 'none',
           cursor: pending ? 'wait' : 'pointer',
           transition: 'background .15s', alignSelf: 'flex-end',

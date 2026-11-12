@@ -121,8 +121,8 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
 
   if (success) {
     return (
-      <tr style={{ background: 'rgba(61,184,122,.04)', borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,.05)' }}>
-        <td colSpan={10} style={{ padding: '14px 20px', fontSize: 13, color: '#3DB87A', fontWeight: 500 }}>
+      <tr style={{ background: 'rgba(61,184,122,.04)', borderBottom: isLast ? 'none' : '1px solid rgba(201,168,76,.12)' }}>
+        <td colSpan={10} style={{ padding: '14px 20px', fontSize: 13, color: 'var(--grn)', fontWeight: 500 }}>
           ✓ <span style={{ fontFamily: 'monospace' }}>{success}</span> — devis supprimé
         </td>
       </tr>
@@ -130,18 +130,18 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
   }
 
   return (
-    <tr style={{ borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,.05)', opacity: pending ? .5 : 1, transition: 'opacity .15s' }}>
+    <tr style={{ borderBottom: isLast ? 'none' : '1px solid rgba(201,168,76,.12)', opacity: pending ? .5 : 1, transition: 'opacity .15s' }}>
       {/* Date */}
-      <td style={{ padding: '13px 14px', fontSize: 11, color: '#999', whiteSpace: 'nowrap' }}>{fmtDate(d.created_at)}</td>
+      <td style={{ padding: '13px 14px', fontSize: 11, color: 'var(--t3)', whiteSpace: 'nowrap' }}>{fmtDate(d.created_at)}</td>
       {/* Client */}
       <td style={{ padding: '13px 14px' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>{d.nom || '—'}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>{d.nom || '—'}</div>
         {d.societe && <div style={{ fontSize: 10, color: '#C9A84C', marginTop: 2 }}>{d.societe}</div>}
       </td>
       {/* Tel */}
       <td style={{ padding: '13px 14px' }}>
         {d.tel ? (
-          <a href={`tel:${d.tel}`} style={{ fontSize: 12, color: '#0A0A0A', textDecoration: 'none', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <a href={`tel:${d.tel}`} style={{ fontSize: 12, color: 'var(--t1)', textDecoration: 'none', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 5 }}>
             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#3DB87A" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
             {d.tel}
           </a>
@@ -149,18 +149,18 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       </td>
       {/* Email */}
       <td style={{ padding: '13px 14px' }}>
-        {d.email ? <a href={`mailto:${d.email}`} style={{ fontSize: 11, color: '#4D8ED4', textDecoration: 'none', maxWidth: 150, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.email}</a> : '—'}
+        {d.email ? <a href={`mailto:${d.email}`} style={{ fontSize: 11, color: 'var(--blu)', textDecoration: 'none', maxWidth: 150, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.email}</a> : '—'}
       </td>
       {/* Trajet */}
       <td style={{ padding: '13px 14px', maxWidth: 180 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3DB87A', flexShrink: 0 }}/>
-            <span style={{ fontSize: 11, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{d.origin || '—'}</span>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--grn)', flexShrink: 0 }}/>
+            <span style={{ fontSize: 11, color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{d.origin || '—'}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9A84C', flexShrink: 0 }}/>
-            <span style={{ fontSize: 11, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{d.destination || '—'}</span>
+            <span style={{ fontSize: 11, color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{d.destination || '—'}</span>
           </div>
         </div>
       </td>
@@ -172,14 +172,14 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
       </td>
       {/* Prix */}
       <td style={{ padding: '13px 14px' }}>
-        {d.price ? <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>{d.price} €</span> : '—'}
+        {d.price ? <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>{d.price} €</span> : '—'}
       </td>
       {/* Pax */}
-      <td style={{ padding: '13px 14px', fontSize: 12, color: '#666', textAlign: 'center' }}>{d.pax ?? '—'}</td>
+      <td style={{ padding: '13px 14px', fontSize: 12, color: 'var(--t2)', textAlign: 'center' }}>{d.pax ?? '—'}</td>
       {/* Date course */}
-      <td style={{ padding: '13px 14px', fontSize: 11, color: '#666', whiteSpace: 'nowrap' }}>
+      <td style={{ padding: '13px 14px', fontSize: 11, color: 'var(--t2)', whiteSpace: 'nowrap' }}>
         {fmtDateCourse(d.date_course)}
-        {d.heure && <span style={{ color: '#999', marginLeft: 4 }}>{d.heure}</span>}
+        {d.heure && <span style={{ color: 'var(--t3)', marginLeft: 4 }}>{d.heure}</span>}
       </td>
       {/* Actions */}
       {/* `whiteSpace: nowrap` retiré : il empêchait les boutons de passer à
@@ -205,7 +205,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(201,168,76,.45)',
-                background: 'rgba(201,168,76,.16)', color: '#A8862F',
+                background: 'rgba(201,168,76,.16)', color: 'var(--gold)',
                 fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
               }}>
               <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -229,7 +229,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(77,142,212,.3)',
-                background: 'rgba(77,142,212,.06)', color: '#4D8ED4',
+                background: 'rgba(77,142,212,.06)', color: 'var(--blu)',
                 fontSize: 11, fontWeight: 500, cursor: d.price ? 'pointer' : 'not-allowed',
                 opacity: d.price ? 1 : .4, fontFamily: 'inherit',
               }}>
@@ -243,7 +243,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '5px 8px', borderRadius: 6, border: '1px solid rgba(232,160,48,.3)',
-                background: 'rgba(232,160,48,.07)', color: '#B87A14',
+                background: 'rgba(232,160,48,.07)', color: 'var(--amb)',
                 fontSize: 11, cursor: d.email ? 'pointer' : 'not-allowed',
                 opacity: d.email ? 1 : .4, fontFamily: 'inherit',
               }}>
@@ -255,7 +255,7 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '5px 8px', borderRadius: 6, border: '1px solid rgba(217,84,84,.2)',
-                background: 'rgba(217,84,84,.05)', color: '#D95454',
+                background: 'rgba(217,84,84,.05)', color: 'var(--red-txt)',
                 fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
               }}>
               <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -268,11 +268,11 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
           <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600 }}>Créer la course ?</span>
             <button onClick={handleConvertirCourse} disabled={pending}
-              style={{ padding: '4px 8px', borderRadius: 5, background: '#C9A84C', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--gold)', color: '#0B0B14', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Oui
             </button>
             <button onClick={() => setConfirm(null)}
-              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(201,168,76,.12)', color: 'var(--t2)', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
               Non
             </button>
           </div>
@@ -282,19 +282,19 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
             l'exploitant. Rien n'est inventé s'il le laisse vide. */}
         {confirm === 'refus' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 10, color: '#B87A14', fontWeight: 600 }}>Refuser et prévenir&nbsp;?</span>
+            <span style={{ fontSize: 10, color: 'var(--amb)', fontWeight: 600 }}>Refuser et prévenir&nbsp;?</span>
             <input
               value={motifRefus}
               onChange={e => setMotifRefus(e.target.value)}
               placeholder="motif (facultatif)"
-              style={{ width: 170, padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(0,0,0,.15)', fontSize: 10, fontFamily: 'inherit' }}
+              style={{ width: 170, padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(201,168,76,.12)', fontSize: 10, fontFamily: 'inherit' }}
             />
             <button onClick={handleRefuser} disabled={pending}
-              style={{ padding: '4px 8px', borderRadius: 5, background: '#B87A14', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--amb)', color: '#0B0B14', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Envoyer le refus
             </button>
             <button onClick={() => { setConfirm(null); setMotifRefus('') }}
-              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(201,168,76,.12)', color: 'var(--t2)', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
               Annuler
             </button>
           </div>
@@ -303,13 +303,13 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
         {/* Confirmation supprimer */}
         {confirm === 'delete' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            <span style={{ fontSize: 10, color: '#D95454', fontWeight: 600 }}>Supprimer sans prévenir&nbsp;?</span>
+            <span style={{ fontSize: 10, color: 'var(--red-txt)', fontWeight: 600 }}>Supprimer sans prévenir&nbsp;?</span>
             <button onClick={handleSupprimer} disabled={pending}
-              style={{ padding: '4px 8px', borderRadius: 5, background: '#D95454', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--red-txt)', color: '#0B0B14', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Oui
             </button>
             <button onClick={() => setConfirm(null)}
-              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(201,168,76,.12)', color: 'var(--t2)', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
               Non
             </button>
           </div>
@@ -318,13 +318,13 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
         {/* Confirmation facture */}
         {confirm === 'facture' && (
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            <span style={{ fontSize: 10, color: '#4D8ED4', fontWeight: 600 }}>Créer facture {d.price}€ ?</span>
+            <span style={{ fontSize: 10, color: 'var(--blu)', fontWeight: 600 }}>Créer facture {d.price}€ ?</span>
             <button onClick={handleConvertirFacture} disabled={pending}
-              style={{ padding: '4px 8px', borderRadius: 5, background: '#4D8ED4', color: '#fff', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--blu)', color: '#0B0B14', border: 'none', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               Oui
             </button>
             <button onClick={() => setConfirm(null)}
-              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(0,0,0,.06)', color: '#666', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ padding: '4px 8px', borderRadius: 5, background: 'rgba(201,168,76,.12)', color: 'var(--t2)', border: 'none', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
               Non
             </button>
           </div>
@@ -351,12 +351,12 @@ function DevisRow({ d, isLast }: { d: any; isLast: boolean }) {
  */
 export default function DevisTable({ devis }: { devis: any[] }) {
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,.07)', borderRadius: 12, overflowX: 'auto', boxShadow: '0 1px 8px rgba(0,0,0,.04)' }}>
+    <div style={{ background: 'var(--surface)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 12, overflowX: 'auto', boxShadow: '0 1px 8px rgba(201,168,76,.12)' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr style={{ background: '#F8F6F1', borderBottom: '1px solid rgba(0,0,0,.07)' }}>
+          <tr style={{ background: 'var(--elevated)', borderBottom: '1px solid rgba(201,168,76,.12)' }}>
             {['Date', 'Client', 'Téléphone', 'Email', 'Trajet', 'Véhicule', 'Prix', 'Pax', 'Date course', 'Actions'].map(h => (
-              <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: '#999', fontWeight: 600 }}>{h}</th>
+              <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 600 }}>{h}</th>
             ))}
           </tr>
         </thead>

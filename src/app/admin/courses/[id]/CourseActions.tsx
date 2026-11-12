@@ -21,7 +21,7 @@ const STATUT_STYLE: Record<StatutCourse, { color: string; bg: string; border: st
   en_route:        { color: 'var(--blu)', bg: 'rgba(74,142,208,.12)', border: 'rgba(74,142,208,.25)' },
   prise_en_charge: { color: 'var(--grn)', bg: 'rgba(60,196,124,.12)', border: 'rgba(60,196,124,.25)' },
   terminee:        { color: 'var(--t2)',  bg: 'var(--elevated)',     border: 'var(--t3)' },
-  annulee:         { color: 'var(--red)', bg: 'rgba(217,80,80,.12)', border: 'rgba(217,80,80,.25)' },
+  annulee:         { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.12)', border: 'rgba(217,80,80,.25)' },
 }
 
 const STATUT_ORDER: StatutCourse[] = ['en_attente', 'acceptee', 'en_route', 'prise_en_charge', 'terminee']
@@ -290,7 +290,7 @@ export default function CourseActions({
           <div style={{
             padding: '10px 14px', borderRadius: 8,
             background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)',
-            color: 'var(--red)', fontSize: 12, fontWeight: 500,
+            color: 'var(--red-txt)', fontSize: 12, fontWeight: 500,
             marginBottom: 14,
           }}>
             Course annulée
@@ -344,7 +344,7 @@ export default function CourseActions({
             style={{
               width: '100%', padding: '9px', borderRadius: 8,
               background: 'rgba(217,80,80,.08)', border: '1px solid rgba(217,80,80,.2)',
-              color: 'var(--red)', fontSize: 11, cursor: pending ? 'wait' : 'pointer',
+              color: 'var(--red-txt)', fontSize: 11, cursor: pending ? 'wait' : 'pointer',
               fontFamily: 'var(--font-dm-sans), sans-serif',
             }}
           >
@@ -582,7 +582,7 @@ export default function CourseActions({
                       style={{
                         padding: '7px', borderRadius: 8, width: '100%',
                         background: 'transparent', border: '1px solid rgba(217,80,80,.25)',
-                        color: 'var(--red)', fontSize: 11, cursor: 'pointer',
+                        color: 'var(--red-txt)', fontSize: 11, cursor: 'pointer',
                         fontFamily: 'var(--font-dm-sans), sans-serif',
                       }}
                     >
@@ -720,7 +720,7 @@ export default function CourseActions({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div style={{ background: 'var(--elevated)', borderRadius: 8, padding: '10px 12px' }}>
                 <div style={{ fontSize: 9, color: 'var(--t3)', marginBottom: 4 }}>Coût ST</div>
-                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600, color: 'var(--red)' }}>
+                <div style={{ fontFamily: 'var(--font-jetbrains), monospace', fontSize: 16, fontWeight: 600, color: 'var(--red-txt)' }}>
                   {course.prix_sous_traitant != null ? `${formaterMontant(course.prix_sous_traitant)}` : '—'}
                 </div>
               </div>
@@ -872,7 +872,7 @@ export default function CourseActions({
                       style={{
                         padding: '0 12px', borderRadius: 8, cursor: 'pointer', flexShrink: 0,
                         background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
-                        color: 'var(--red)', fontSize: 14, lineHeight: 1,
+                        color: 'var(--red-txt)', fontSize: 14, lineHeight: 1,
                       }}
                     >×</button>
                   </div>
@@ -934,7 +934,7 @@ export default function CourseActions({
               </div>
 
               {editError && (
-                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+                <div style={{ fontSize: 11, color: 'var(--red-txt)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
                   {editError}
                 </div>
               )}
@@ -1053,7 +1053,7 @@ export default function CourseActions({
         >
           <span style={{
             position: 'absolute', top: 3, left: course.paiement_a_bord ? 21 : 3,
-            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+            width: 16, height: 16, borderRadius: '50%', background: 'var(--surface)',
             transition: 'left .2s', display: 'block',
           }} />
         </button>
@@ -1074,7 +1074,7 @@ export default function CourseActions({
                 Génère un lien Stripe pour le montant de cette course, à envoyer par email ou WhatsApp à un client qui a réservé par téléphone.
               </p>
               {payLinkError && (
-                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: 'var(--red-txt)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)', marginBottom: 10 }}>
                   {payLinkError}
                 </div>
               )}
@@ -1135,7 +1135,7 @@ export default function CourseActions({
                     style={{
                       flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center',
                       background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.3)',
-                      color: '#3DB87A', fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                      color: 'var(--grn)', fontSize: 12, fontWeight: 500, textDecoration: 'none',
                       fontFamily: 'var(--font-dm-sans), sans-serif',
                     }}
                   >
@@ -1172,7 +1172,7 @@ export default function CourseActions({
                 </div>
               )}
               {emailError && (
-                <div style={{ fontSize: 11, color: 'var(--red)' }}>{emailError}</div>
+                <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>{emailError}</div>
               )}
             </div>
           )}
@@ -1286,7 +1286,7 @@ export default function CourseActions({
               style={{
                 flex: 1, minWidth: 90, padding: '9px', borderRadius: 7, textAlign: 'center',
                 background: 'rgba(61,184,122,.1)', border: '1px solid rgba(61,184,122,.3)',
-                color: '#3DB87A', fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                color: 'var(--grn)', fontSize: 12, fontWeight: 500, textDecoration: 'none',
                 fontFamily: 'var(--font-dm-sans), sans-serif',
               }}
             >
@@ -1326,7 +1326,7 @@ export default function CourseActions({
           )}
         </div>
         {sendEmailError && (
-          <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 8 }}>{sendEmailError}</div>
+          <div style={{ fontSize: 11, color: 'var(--red-txt)', marginTop: 8 }}>{sendEmailError}</div>
         )}
       </div>
 
@@ -1351,7 +1351,7 @@ export default function CourseActions({
           {limiteValidation && (
             <div style={{
               fontSize: 12, fontWeight: 600, marginBottom: 14, padding: '8px 12px', borderRadius: 8,
-              background: joursRestants != null && joursRestants <= 2 ? 'rgba(217,84,84,.12)' : 'rgba(0,0,0,.04)',
+              background: joursRestants != null && joursRestants <= 2 ? 'rgba(217,84,84,.12)' : 'rgba(201,168,76,.12)',
               color: joursRestants != null && joursRestants <= 2 ? 'var(--red)' : 'var(--t2)',
             }}>
               {joursRestants != null && joursRestants <= 0
@@ -1369,15 +1369,15 @@ export default function CourseActions({
                 value={motifRefus}
                 onChange={e => setMotifRefus(e.target.value)}
                 placeholder="motif communique au client (facultatif)"
-                style={{ padding: '8px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.15)', fontSize: 12, fontFamily: 'inherit' }}
+                style={{ padding: '8px 11px', borderRadius: 8, border: '1px solid rgba(201,168,76,.12)', fontSize: 12, fontFamily: 'inherit' }}
               />
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={handleRefuserReservation} disabled={pending}
-                  style={{ flex: 1, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'var(--red)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>
+                  style={{ flex: 1, padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'var(--red-txt)', color: 'var(--base)', border: 'none', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>
                   Liberer et prevenir le client
                 </button>
                 <button onClick={() => { setRefusOuvert(false); setMotifRefus('') }}
-                  style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(0,0,0,.06)', color: 'var(--t2)', border: 'none', fontSize: 12, fontFamily: 'inherit' }}>
+                  style={{ padding: '9px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(201,168,76,.12)', color: 'var(--t2)', border: 'none', fontSize: 12, fontFamily: 'inherit' }}>
                   Annuler
                 </button>
               </div>
@@ -1389,7 +1389,7 @@ export default function CourseActions({
                 Valider — encaisser{montantBloque != null ? ` ${formaterMontant(montantBloque)}` : ''}
               </button>
               <button onClick={() => setRefusOuvert(true)} disabled={pending}
-                style={{ flex: 1, minWidth: 150, padding: '10px 16px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: 'var(--red)', border: '1px solid rgba(217,84,84,.4)', fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit' }}>
+                style={{ flex: 1, minWidth: 150, padding: '10px 16px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: 'var(--red-txt)', border: '1px solid rgba(217,84,84,.4)', fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit' }}>
                 Refuser — liberer la somme
               </button>
             </div>
@@ -1427,7 +1427,7 @@ export default function CourseActions({
                 Ceci déclenche un <strong style={{ color: 'var(--amb)' }}>vrai remboursement Stripe</strong>, irréversible.
               </div>
               {refundError && (
-                <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+                <div style={{ fontSize: 11, color: 'var(--red-txt)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
                   {refundError}
                 </div>
               )}
@@ -1473,7 +1473,7 @@ export default function CourseActions({
         background: 'var(--surface)', border: '1px solid rgba(217,84,84,.2)',
         borderRadius: 12, padding: '18px 20px',
       }}>
-        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 12, opacity: .7 }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red-txt)', marginBottom: 12, opacity: .7 }}>
           Zone dangereuse
         </div>
         {!deleteOpen ? (
@@ -1482,7 +1482,7 @@ export default function CourseActions({
             style={{
               width: '100%', padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
               background: 'rgba(217,84,84,.06)', border: '1px solid rgba(217,84,84,.2)',
-              color: 'var(--red)', fontSize: 12, fontWeight: 500,
+              color: 'var(--red-txt)', fontSize: 12, fontWeight: 500,
               fontFamily: 'var(--font-dm-sans), sans-serif',
             }}
           >
@@ -1491,10 +1491,10 @@ export default function CourseActions({
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontSize: 12, color: 'var(--t1)', lineHeight: 1.5 }}>
-              Cette action est <strong style={{ color: 'var(--red)' }}>irréversible</strong>. La course sera définitivement supprimée de la base de données.
+              Cette action est <strong style={{ color: 'var(--red-txt)' }}>irréversible</strong>. La course sera définitivement supprimée de la base de données.
             </div>
             {deleteError && (
-              <div style={{ fontSize: 11, color: 'var(--red)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
+              <div style={{ fontSize: 11, color: 'var(--red-txt)', padding: '6px 10px', borderRadius: 6, background: 'rgba(217,84,84,.1)' }}>
                 {deleteError}
               </div>
             )}

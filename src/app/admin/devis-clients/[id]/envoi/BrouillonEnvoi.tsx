@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation'
 import { envoyerDevisAction, telechargerDevisPdfAction } from '../../actions'
 
 const carte: React.CSSProperties = {
-  background: '#FFFFFF', border: '1px solid rgba(0,0,0,.07)',
+  background: 'var(--surface)', border: '1px solid rgba(201,168,76,.12)',
   borderRadius: 12, padding: '18px 20px', marginBottom: 16,
 }
 const etiquette: React.CSSProperties = {
   fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase',
-  color: '#999', fontWeight: 600,
+  color: 'var(--t3)', fontWeight: 600,
 }
 
 type Route = 'owise' | 'gmail'
@@ -141,11 +141,11 @@ export default function BrouillonEnvoi(p: Props) {
         flex: 1, minWidth: 240, textAlign: 'left', cursor: 'pointer',
         padding: '14px 16px', borderRadius: 11, fontFamily: 'inherit',
         background: route === r ? 'rgba(201,168,76,.10)' : '#FFFFFF',
-        border: route === r ? '1.5px solid #C9A84C' : '1.5px solid rgba(0,0,0,.09)',
+        border: route === r ? '1.5px solid #C9A84C' : '1.5px solid rgba(201,168,76,.12)',
       }}
     >
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0A0A0A', marginBottom: 4 }}>{titre}</div>
-      <div style={{ fontSize: 12.5, color: '#777', lineHeight: 1.55 }}>{sous}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--t1)', marginBottom: 4 }}>{titre}</div>
+      <div style={{ fontSize: 12.5, color: 'var(--t3)', lineHeight: 1.55 }}>{sous}</div>
     </button>
   )
 
@@ -166,7 +166,7 @@ export default function BrouillonEnvoi(p: Props) {
               style={{ fontSize: 12.5, color: '#C9A84C', textDecoration: 'none' }}>
           ← Retour au devis
         </Link>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 25, fontWeight: 500, color: '#0A0A0A', margin: '8px 0 2px' }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 25, fontWeight: 500, color: 'var(--t1)', margin: '8px 0 2px' }}>
           Envoyer le devis
         </h1>
         <div style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#C9A84C', marginBottom: 20 }}>
@@ -184,10 +184,10 @@ export default function BrouillonEnvoi(p: Props) {
         {bloquants.map((o, i) => (
           <div key={i} style={{
             ...carte, background: 'rgba(217,84,84,.06)', border: '1px solid rgba(217,84,84,.28)',
-            color: '#9C3A3A', fontSize: 13.5, lineHeight: 1.6, marginBottom: 12,
+            color: 'var(--red-txt)', fontSize: 13.5, lineHeight: 1.6, marginBottom: 12,
           }}>
             {o}{' '}
-            <Link href={`/admin/devis-clients/${p.id}`} style={{ color: '#9C3A3A', fontWeight: 600 }}>
+            <Link href={`/admin/devis-clients/${p.id}`} style={{ color: 'var(--red-txt)', fontWeight: 600 }}>
               Corriger le devis
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function BrouillonEnvoi(p: Props) {
                 }}>
                   <div style={etiquette}>{l}</div>
                   <div style={{
-                    fontSize: 13.5, color: v.startsWith('—') ? '#B14343' : '#1a1a2e',
+                    fontSize: 13.5, color: v.startsWith('—') ? 'var(--red-txt)' : '#1a1a2e',
                     wordBreak: 'break-word',
                   }}>{v}</div>
                 </div>
@@ -231,14 +231,14 @@ export default function BrouillonEnvoi(p: Props) {
 
             <div className="env-actes" style={{
               display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
-              marginTop: 20, paddingTop: 18, borderTop: '1px solid rgba(0,0,0,.08)',
+              marginTop: 20, paddingTop: 18, borderTop: '1px solid rgba(201,168,76,.12)',
             }}>
               {/* Relire dans sa propre boite avant d envoyer au client.
                   Le devis reste en brouillon : voir envoyerDevisAction. */}
               <button type="button" onClick={() => envoyer('moi')} disabled={enCours}
                       style={{
                         background: 'none', border: '1px solid rgba(201,168,76,.45)',
-                        color: '#9A7A2A', borderRadius: 9, padding: '12px 18px',
+                        color: 'var(--gold)', borderRadius: 9, padding: '12px 18px',
                         fontSize: 13, fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
                         fontFamily: 'inherit', marginRight: 10,
                       }}>
@@ -247,15 +247,15 @@ export default function BrouillonEnvoi(p: Props) {
               <button type="button" onClick={() => envoyer('client')} disabled={enCours || bloquants.length > 0}
                       title={bloquants[0] ?? undefined}
                       style={{
-                        background: bloquants.length ? 'rgba(0,0,0,.08)' : '#C9A84C',
-                        color: bloquants.length ? '#999' : '#0A0A0A',
+                        background: bloquants.length ? 'rgba(201,168,76,.12)' : '#C9A84C',
+                        color: bloquants.length ? 'var(--t3)' : 'var(--t1)',
                         border: 'none', borderRadius: 9, padding: '13px 24px',
                         fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit',
                         cursor: bloquants.length ? 'not-allowed' : enCours ? 'wait' : 'pointer',
                       }}>
                 {enCours ? 'Envoi…' : 'Envoyer au client'}
               </button>
-              <span style={{ fontSize: 12.5, color: '#999' }}>
+              <span style={{ fontSize: 12.5, color: 'var(--t3)' }}>
                 Le devis passera en « envoyé ».
               </span>
             </div>
@@ -264,7 +264,7 @@ export default function BrouillonEnvoi(p: Props) {
           <>
             <ol style={{
               ...carte, margin: '0 0 16px', paddingLeft: 38, fontSize: 13.5,
-              color: '#444', lineHeight: 1.9,
+              color: 'var(--t2)', lineHeight: 1.9,
             }}>
               <li><strong>Copier la réponse</strong> ci-dessous, puis <strong>Télécharger le PDF</strong>.</li>
               <li>Dans votre messagerie, ouvrir le message du client et cliquer <strong>Répondre</strong>.</li>
@@ -276,7 +276,7 @@ export default function BrouillonEnvoi(p: Props) {
                 messagerie ajoute la signature réglée dans ses paramètres, et
                 deux signatures l'une sur l'autre font négligé. */}
             <p style={{
-              fontSize: 12.5, color: '#777', lineHeight: 1.65,
+              fontSize: 12.5, color: 'var(--t3)', lineHeight: 1.65,
               margin: '-4px 0 16px', paddingLeft: 2,
             }}>
               Le bloc s&apos;arrête à « Bien à vous » : votre signature de messagerie
@@ -297,12 +297,12 @@ export default function BrouillonEnvoi(p: Props) {
 
             <div className="env-actes" style={{
               display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
-              marginTop: 20, paddingTop: 18, borderTop: '1px solid rgba(0,0,0,.08)',
+              marginTop: 20, paddingTop: 18, borderTop: '1px solid rgba(201,168,76,.12)',
             }}>
               <button type="button" onClick={copierReponse} disabled={enCours || bloquants.length > 0}
                       style={{
-                        background: bloquants.length ? 'rgba(0,0,0,.08)' : '#C9A84C',
-                        color: bloquants.length ? '#999' : '#0A0A0A',
+                        background: bloquants.length ? 'rgba(201,168,76,.12)' : '#C9A84C',
+                        color: bloquants.length ? 'var(--t3)' : 'var(--t1)',
                         border: 'none', borderRadius: 9, padding: '13px 24px',
                         fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit',
                         cursor: bloquants.length ? 'not-allowed' : 'pointer',
@@ -311,7 +311,7 @@ export default function BrouillonEnvoi(p: Props) {
               </button>
               <button type="button" onClick={telecharger} disabled={enCours}
                       style={{
-                        background: 'none', border: '1px solid rgba(0,0,0,.18)', color: '#0A0A0A',
+                        background: 'none', border: '1px solid rgba(201,168,76,.12)', color: 'var(--t1)',
                         borderRadius: 9, padding: '12px 18px', fontSize: 13, fontWeight: 600,
                         cursor: enCours ? 'wait' : 'pointer', fontFamily: 'inherit',
                       }}>
@@ -321,16 +321,16 @@ export default function BrouillonEnvoi(p: Props) {
           </>
         )}
 
-        {copie   && <p style={{ fontSize: 13.5, color: '#2E8A58', marginTop: 14 }}>{copie}</p>}
-        {message && <p style={{ fontSize: 13.5, color: '#2E8A58', marginTop: 14 }}>{message}</p>}
-        {erreur  && <p style={{ fontSize: 13.5, color: '#D95454', marginTop: 14 }}>{erreur}</p>}
+        {copie   && <p style={{ fontSize: 13.5, color: 'var(--grn)', marginTop: 14 }}>{copie}</p>}
+        {message && <p style={{ fontSize: 13.5, color: 'var(--grn)', marginTop: 14 }}>{message}</p>}
+        {erreur  && <p style={{ fontSize: 13.5, color: 'var(--red-txt)', marginTop: 14 }}>{erreur}</p>}
 
         {/* Repli si le presse-papier est refusé par le navigateur. */}
         <details style={{ marginTop: 22 }}>
           <summary style={{ ...etiquette, cursor: 'pointer' }}>Voir le texte brut</summary>
           <pre style={{
-            marginTop: 10, padding: '14px 16px', background: '#FFFFFF',
-            border: '1px solid rgba(0,0,0,.07)', borderRadius: 10,
+            marginTop: 10, padding: '14px 16px', background: 'var(--surface)',
+            border: '1px solid rgba(201,168,76,.12)', borderRadius: 10,
             fontSize: 12.5, lineHeight: 1.75, color: '#1a1a2e',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'inherit',
           }}>{route === 'owise' ? p.texte : p.reponseTexte}</pre>

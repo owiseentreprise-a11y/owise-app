@@ -29,7 +29,7 @@ const TYPE_DOC_LABEL: Record<TypeDocument, string> = {
 const DOC_STATUT_STYLE: Record<string, { color: string; bg: string }> = {
   valide:          { color: 'var(--grn)', bg: 'rgba(60,196,124,.12)' },
   bientot_expire:  { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)' },
-  expire:          { color: 'var(--red)', bg: 'rgba(217,80,80,.12)' },
+  expire:          { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.12)' },
 }
 
 const STATUT_STYLE: Record<StatutChauffeur, { color: string; bg: string; label: string }> = {
@@ -144,7 +144,7 @@ function EmailField({ chauffeurId, email }: { chauffeurId: string; email: string
               width: '100%', boxSizing: 'border-box' as const,
             }}
           />
-          {err && <div style={{ fontSize: 11, color: 'var(--red)' }}>{err}</div>}
+          {err && <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>{err}</div>}
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={save} disabled={pending} style={{
               flex: 1, padding: '7px', borderRadius: 7, border: 'none', cursor: pending ? 'wait' : 'pointer',
@@ -165,14 +165,14 @@ function EmailField({ chauffeurId, email }: { chauffeurId: string; email: string
           border: `1px solid ${saved ? 'rgba(61,184,122,.2)' : 'rgba(201,168,76,.18)'}`,
           borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'all .3s',
         }}>
-          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? '#3DB87A' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? 'var(--grn)' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
           <span style={{
             flex: 1, fontSize: 12, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains, monospace)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{value}</span>
-          {saved && <span style={{ fontSize: 10, color: '#3DB87A', fontWeight: 600, flexShrink: 0 }}>✓ Mis à jour</span>}
+          {saved && <span style={{ fontSize: 10, color: 'var(--grn)', fontWeight: 600, flexShrink: 0 }}>✓ Mis à jour</span>}
           <button onClick={copy} title="Copier" style={{
             background: copied ? 'rgba(61,184,122,.12)' : 'transparent',
             border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer',
@@ -295,7 +295,7 @@ export default function ChauffeurEditActions({
                 style={{
                   padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500,
                   background: 'rgba(217,80,80,.08)', border: '1px solid rgba(217,80,80,.2)',
-                  color: 'var(--red)', cursor: 'pointer',
+                  color: 'var(--red-txt)', cursor: 'pointer',
                   fontFamily: 'var(--font-dm-sans), sans-serif',
                 }}
               >Suspendre</button>

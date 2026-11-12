@@ -65,7 +65,7 @@ export default async function ClientsPage({
         position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--surface)',
         borderBottom: '1px solid var(--gb)',
-        boxShadow: '0 1px 3px rgba(0,0,0,.04)',
+        boxShadow: '0 1px 3px rgba(201,168,76,.12)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -82,7 +82,7 @@ export default async function ClientsPage({
         <Link href="/admin/clients/nouveau" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8,
-          background: 'var(--gold)', color: '#0A0A0A',
+          background: 'var(--gold)', color: 'var(--base)',
           fontSize: 12, fontWeight: 600, textDecoration: 'none',
           boxShadow: '0 2px 8px rgba(201,168,76,.25)',
         }}>

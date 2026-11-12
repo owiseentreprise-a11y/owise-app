@@ -60,7 +60,7 @@ export default function NouveauChauffeurForm({
             <div style={{
               padding: '12px 16px', borderRadius: 10,
               background: 'rgba(217,84,84,.12)', border: '1px solid rgba(217,84,84,.25)',
-              color: '#D95454', fontSize: 13, fontWeight: 500,
+              color: 'var(--red-txt)', fontSize: 13, fontWeight: 500,
             }}>
               ⚠️ {state.error}
             </div>

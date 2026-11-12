@@ -58,7 +58,7 @@ export default function DeleteSTButton({
           padding: '8px 10px', borderRadius: 7,
           background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--red)', marginBottom: 2 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--red-txt)', marginBottom: 2 }}>
             ✕ {warnData.coursesActiveCount} course{warnData.coursesActiveCount > 1 ? 's' : ''} active{warnData.coursesActiveCount > 1 ? 's' : ''}
           </div>
           <div style={{ fontSize: 9, color: 'var(--t3)' }}>Remises en attente sans sous-traitant.</div>
@@ -75,7 +75,7 @@ export default function DeleteSTButton({
             if (error) { setErr(error); setStep('idle') }
             else setStep('idle')
           })}
-          style={{ flex: 1, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'var(--red)', color: '#fff', fontSize: 10, fontWeight: 600, cursor: pending ? 'wait' : 'pointer' }}
+          style={{ flex: 1, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'var(--red-txt)', color: 'var(--base)', fontSize: 10, fontWeight: 600, cursor: pending ? 'wait' : 'pointer' }}
         >
           {pending ? '…' : 'Supprimer quand même'}
         </button>
@@ -88,7 +88,7 @@ export default function DeleteSTButton({
 
   if (step === 'confirm-delete') return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontSize: 10, color: 'var(--red)' }}>⚠️ Supprimer définitivement ?</span>
+      <span style={{ fontSize: 10, color: 'var(--red-txt)' }}>⚠️ Supprimer définitivement ?</span>
       <button
         disabled={pending}
         onClick={() => start(async () => {
@@ -96,7 +96,7 @@ export default function DeleteSTButton({
           if (error) { setErr(error); setStep('idle') }
           else setStep('idle')
         })}
-        style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--red)', color: '#fff', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+        style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--red-txt)', color: 'var(--base)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
       >
         {pending ? '…' : 'Supprimer'}
       </button>
@@ -108,7 +108,7 @@ export default function DeleteSTButton({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-      {err && <div style={{ fontSize: 9, color: 'var(--red)', maxWidth: 200, textAlign: 'right' }}>{err}</div>}
+      {err && <div style={{ fontSize: 9, color: 'var(--red-txt)', maxWidth: 200, textAlign: 'right' }}>{err}</div>}
       <div style={{ display: 'flex', gap: 5 }}>
         <button
           onClick={() => setStep('confirm-toggle')}
@@ -130,7 +130,7 @@ export default function DeleteSTButton({
           })}
           style={{
             padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500, cursor: pending ? 'wait' : 'pointer',
-            background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: 'var(--red)',
+            background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: 'var(--red-txt)',
           }}
         >
           {pending ? '…' : 'Supprimer'}

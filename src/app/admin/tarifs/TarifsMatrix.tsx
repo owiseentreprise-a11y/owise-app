@@ -119,7 +119,7 @@ function PrixCell({
   // prix, une saisie des deux côtés ne pourrait que créer une divergence.
   if (miroir) {
     return (
-      <td style={{ padding: '8px 12px', verticalAlign: 'middle', background: 'rgba(0,0,0,.025)' }}>
+      <td style={{ padding: '8px 12px', verticalAlign: 'middle', background: 'rgba(201,168,76,.12)' }}>
         <div title="Se règle dans l'autre sens" style={{ padding: '4px 8px', cursor: 'not-allowed' }}>
           <div style={{
             fontFamily: 'var(--font-jetbrains), monospace', fontSize: 13,
@@ -139,7 +139,7 @@ function PrixCell({
     <td style={{ padding: '8px 12px', verticalAlign: 'middle' }}>
       {erreur && (
         <div style={{
-          fontSize: 9.5, color: 'var(--red)', marginBottom: 4,
+          fontSize: 9.5, color: 'var(--red-txt)', marginBottom: 4,
           maxWidth: 150, lineHeight: 1.3,
         }}>
           {erreur}

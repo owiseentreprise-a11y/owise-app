@@ -12,7 +12,7 @@ const style = (statut: StatutCourse) => {
     en_route:        { color: 'var(--blu)', background: 'rgba(74,142,208,.1)', borderColor: 'rgba(74,142,208,.2)' },
     prise_en_charge: { color: 'var(--grn)', background: 'rgba(60,196,124,.1)', borderColor: 'rgba(60,196,124,.2)' },
     terminee:        { color: 'var(--t2)', background: 'var(--elevated)', borderColor: 'var(--t3)' },
-    annulee:         { color: 'var(--red)', background: 'rgba(217,80,80,.1)', borderColor: 'rgba(217,80,80,.2)' },
+    annulee:         { color: 'var(--red-txt)', background: 'rgba(217,80,80,.1)', borderColor: 'rgba(217,80,80,.2)' },
   }
   return map[statut] ?? map.en_attente
 }

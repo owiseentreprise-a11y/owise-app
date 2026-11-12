@@ -48,7 +48,7 @@ export default async function NouveauSousTraitantPage({
           <div style={{
             background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.25)',
             borderRadius: 9, padding: '11px 14px', marginBottom: 20,
-            fontSize: 13, color: '#e88080',
+            fontSize: 13, color: 'var(--red-txt)',
           }}>
             {errorMsg}
           </div>

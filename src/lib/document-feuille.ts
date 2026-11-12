@@ -11,6 +11,13 @@
  * papiers qui ne se ressemblent plus.
  */
 export const CSS_DOCUMENT = `
+/* LE POURTOUR DE LA FEUILLE RESTE CLAIR, même si l'administration est passée
+   en sombre le 2026-11-12. Un document est du papier : on le regarde comme
+   on l'imprimera, pas comme un écran de pilotage. La règle vise le conteneur
+   de la mise en page d'administration quand il contient une feuille — sans
+   quoi le crème du document flotterait sur du bleu nuit. */
+.adm-shell > main.adm-contenu:has(.fac-feuille){ background:#F8F6F1 !important; }
+
 .fac-barre{
   display:flex; justify-content:space-between; align-items:center; gap:16px;
   padding:14px 22px; background:#FFFFFF; border-bottom:1px solid rgba(9,9,26,.08);
@@ -146,9 +153,19 @@ export const CSS_DOCUMENT = `
      d'écran avec débordement masqué : à l'impression, tout ce qui dépasse la
      première page disparaîtrait. On la neutralise, et on retire la barre
      latérale, le bandeau cookies et la barre de retour. */
-  .theme-light{display:block !important; height:auto !important; overflow:visible !important}
-  .theme-light > main{overflow:visible !important; padding-bottom:0 !important; display:block !important}
-  .theme-light > *:not(main){display:none !important}
+  /* On vise .adm-shell, pas .theme-light : ces regles portent sur la
+     STRUCTURE de la mise en page d'administration, pas sur sa couleur.
+     Jusqu'au 2026-11-12 elles ciblaient le nom du theme ; le jour ou
+     l'administration est passee en sombre, elles auraient cesse de
+     s'appliquer sans un mot d'erreur, et toute facture de plus d'une page
+     serait sortie tronquee.
+     ATTENTION : ce commentaire vit DANS une chaine a accents graves. Un
+     seul accent grave ici la referme et casse le fichier, et une
+     interpolation vide le casse aussi. Les deux me sont arrives le jour
+     meme de l'ecrire. Ni accent grave, ni interpolation dans ce bloc. */
+  .adm-shell{display:block !important; height:auto !important; overflow:visible !important}
+  .adm-shell > main{overflow:visible !important; padding-bottom:0 !important; display:block !important}
+  .adm-shell > *:not(main){display:none !important}
   .fac-barre, .cookie-banner, .bandeau-cookies{display:none !important}
 
   /* La charte Owise interdit le blanc pur : la feuille entière reste crème.

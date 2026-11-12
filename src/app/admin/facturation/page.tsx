@@ -8,7 +8,7 @@ const statutBadge = (statut: string) => {
   const map: Record<string, { color: string; bg: string; label: string }> = {
     en_attente: { color: 'var(--amb)', bg: 'rgba(232,160,48,.1)', label: 'En attente' },
     payee:      { color: 'var(--grn)', bg: 'rgba(60,196,124,.1)', label: 'Payée' },
-    retard:     { color: 'var(--red)', bg: 'rgba(217,80,80,.1)',  label: 'En retard' },
+    retard:     { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.1)',  label: 'En retard' },
   }
   return map[statut] ?? map.en_attente
 }
@@ -102,7 +102,7 @@ export default async function FacturationPage() {
           {[
             { label: 'Encaissé', value: `${fmt(caTotal)} €`, color: 'var(--grn)' },
             { label: 'En attente', value: `${fmt(caAttente)} €`, color: 'var(--amb)' },
-            { label: 'En retard', value: `${fmt(caRetard)} €`, color: 'var(--red)' },
+            { label: 'En retard', value: `${fmt(caRetard)} €`, color: 'var(--red-txt)' },
           ].map(kpi => (
             <div key={kpi.label} style={{
               background: 'var(--surface)',

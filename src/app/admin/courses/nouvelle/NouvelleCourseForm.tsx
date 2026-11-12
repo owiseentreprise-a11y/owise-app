@@ -170,7 +170,7 @@ function AddressInput({
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
           background: 'var(--floating)', border: '1px solid var(--t3)',
           borderRadius: 8, marginTop: 4, overflow: 'hidden',
-          boxShadow: '0 8px 24px rgba(0,0,0,.4)',
+          boxShadow: '0 8px 24px rgba(201,168,76,.12)',
         }}>
           {suggestions.map((s, i) => (
             <div key={i} onMouseDown={() => pick(s)} style={{
@@ -461,7 +461,7 @@ export default function NouvelleCourseForm({
                   style={{
                     width: 32, height: 32, borderRadius: 7, flexShrink: 0,
                     background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)',
-                    color: 'var(--red)', cursor: 'pointer', fontSize: 16,
+                    color: 'var(--red-txt)', cursor: 'pointer', fontSize: 16,
                   }}
                 >×</button>
               </div>
@@ -607,7 +607,7 @@ export default function NouvelleCourseForm({
                   padding: '6px 10px', borderRadius: 7, background: 'var(--elevated)', border: '1px solid var(--t3)',
                   flexWrap: 'wrap',
                 }}>
-                  <span style={{ color: 'var(--red)', fontSize: 9 }}>●</span>
+                  <span style={{ color: 'var(--red-txt)', fontSize: 9 }}>●</span>
                   <span style={{ color: 'var(--t3)' }}>{arrivee.label || '…'}</span>
                   <span style={{ color: 'var(--t3)' }}>→</span>
                   <span style={{ color: 'var(--grn)', fontSize: 9 }}>●</span>
@@ -643,7 +643,7 @@ export default function NouvelleCourseForm({
           const isGare = !isAero && (depGare || arrGare || labelGare.test(depart.label) || labelGare.test(arrivee.label))
           if (!isAero && !isGare) return null
           const type = isAero ? 'vol' : 'train'
-          const color = isAero ? '#4D8ED4' : '#3DB87A'
+          const color = isAero ? 'var(--blu)' : 'var(--grn)'
           const bg    = isAero ? 'rgba(77,142,212,.06)' : 'rgba(61,184,122,.06)'
           const border = isAero ? 'rgba(77,142,212,.2)' : 'rgba(61,184,122,.2)'
           return (
@@ -830,7 +830,7 @@ export default function NouvelleCourseForm({
                 <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', background: creerCompte ? 'rgba(61,184,122,.08)' : 'rgba(201,168,76,.04)', borderRadius: 8, border: `1px solid ${creerCompte ? 'rgba(61,184,122,.3)' : 'rgba(201,168,76,.15)'}`, transition: 'all .15s' }}>
                   <input
                     type="checkbox" checked={creerCompte} onChange={e => setCreerCompte(e.target.checked)}
-                    style={{ width: 16, height: 16, accentColor: '#3DB87A', cursor: 'pointer' }}
+                    style={{ width: 16, height: 16, accentColor: 'var(--grn)', cursor: 'pointer' }}
                   />
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t1)' }}>Créer un compte client et envoyer les identifiants par email</div>
@@ -895,7 +895,7 @@ export default function NouvelleCourseForm({
           <div style={{
             padding: '10px 14px', borderRadius: 8,
             background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)',
-            color: 'var(--red)', fontSize: 12,
+            color: 'var(--red-txt)', fontSize: 12,
           }}>
             {error}
           </div>

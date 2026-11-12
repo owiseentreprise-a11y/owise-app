@@ -211,8 +211,8 @@ export default async function AnalyticsPage() {
   const maxVisitors = dailyRows.length > 0 ? Math.max(...dailyRows.map((r: unknown[]) => num(r[1])), 1) : 1
 
   const card = {
-    background: '#FFFFFF',
-    border: '1.5px solid rgba(0,0,0,.07)',
+    background: 'var(--surface)',
+    border: '1.5px solid rgba(201,168,76,.12)',
     borderRadius: 12,
     padding: '18px 22px',
   } as const
@@ -224,14 +224,14 @@ export default async function AnalyticsPage() {
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
           fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
-          color: '#0A0A0A', letterSpacing: '.02em', marginBottom: 6,
+          color: 'var(--t1)', letterSpacing: '.02em', marginBottom: 6,
         }}>
           Analytics
         </h1>
-        <p style={{ fontSize: 12, color: '#888' }}>
+        <p style={{ fontSize: 12, color: 'var(--t3)' }}>
           Trafic owise.fr · 30 derniers jours · données PostHog
           {noData && phError && (
-            <span style={{ color: '#D95454', marginLeft: 8 }}>
+            <span style={{ color: 'var(--red-txt)', marginLeft: 8 }}>
               — {phError}
             </span>
           )}
@@ -247,7 +247,7 @@ export default async function AnalyticsPage() {
           { label: 'Pages / session',    value: noData ? '—' : pagesPerV },
         ].map(kpi => (
           <div key={kpi.label} style={card}>
-            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
               {kpi.label}
             </div>
             <div style={{ fontFamily: 'monospace', fontSize: 30, fontWeight: 600, color: '#C9A84C', lineHeight: 1 }}>
@@ -260,7 +260,7 @@ export default async function AnalyticsPage() {
       {/* Sparkline visiteurs 14j */}
       {dailyRows.length > 0 && (
         <div style={{ ...card, marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 18, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 18, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Visiteurs uniques · 14 derniers jours
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
@@ -279,7 +279,7 @@ export default async function AnalyticsPage() {
                       : 'rgba(201,168,76,.35)',
                     transition: 'height .3s',
                   }} />
-                  <div style={{ fontSize: 9, color: '#bbb', fontFamily: 'monospace' }}>{day}</div>
+                  <div style={{ fontSize: 9, color: 'var(--t3)', fontFamily: 'monospace' }}>{day}</div>
                 </div>
               )
             })}
@@ -292,23 +292,23 @@ export default async function AnalyticsPage() {
 
         {/* Top pages */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Pages les plus visitées
           </div>
           {pagesRows.length === 0
-            ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune donnée</div>
+            ? <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
             : pagesRows.map((row: unknown[], i: number) => {
               const views = num(row[1])
               const pct   = pagesRows[0] ? (views / num(pagesRows[0][1])) * 100 : 0
               return (
                 <div key={i} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
-                    <span style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>
+                    <span style={{ color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>
                       {str(row[0]) || '/'}
                     </span>
                     <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, flexShrink: 0 }}>{views}</span>
                   </div>
-                  <div style={{ height: 3, background: '#F0EDE8', borderRadius: 2 }}>
+                  <div style={{ height: 3, background: 'var(--elevated)', borderRadius: 2 }}>
                     <div style={{ height: 3, width: `${pct}%`, background: 'linear-gradient(90deg, #C9A84C, #DDB95A)', borderRadius: 2 }} />
                   </div>
                 </div>
@@ -319,21 +319,21 @@ export default async function AnalyticsPage() {
 
         {/* Pays */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Pays
           </div>
           {countriesRows.length === 0
-            ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune donnée</div>
+            ? <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
             : countriesRows.map((row: unknown[], i: number) => {
               const v   = num(row[1])
               const pct = countriesRows[0] ? (v / num(countriesRows[0][1])) * 100 : 0
               return (
                 <div key={i} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
-                    <span style={{ color: '#333' }}>{str(row[0])}</span>
-                    <span style={{ fontFamily: 'monospace', color: '#666', fontWeight: 600 }}>{v}</span>
+                    <span style={{ color: 'var(--t1)' }}>{str(row[0])}</span>
+                    <span style={{ fontFamily: 'monospace', color: 'var(--t2)', fontWeight: 600 }}>{v}</span>
                   </div>
-                  <div style={{ height: 3, background: '#F0EDE8', borderRadius: 2 }}>
+                  <div style={{ height: 3, background: 'var(--elevated)', borderRadius: 2 }}>
                     <div style={{ height: 3, width: `${pct}%`, background: 'rgba(201,168,76,.4)', borderRadius: 2 }} />
                   </div>
                 </div>
@@ -349,28 +349,28 @@ export default async function AnalyticsPage() {
           ces gens étaient arrivés. Les pays d'un côté, les sources de l'autre,
           jamais croisés. */}
       <div style={{ ...card, marginBottom: 20 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 4, letterSpacing: '.08em', textTransform: 'uppercase' }}>
           D&apos;où viennent les visiteurs étrangers
         </div>
-        <div style={{ fontSize: 11, color: '#999', marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 14 }}>
           Hors France · 30 derniers jours · « direct » = aucun référent transmis
           (lien tapé, favori, application, ou assistant qui n&apos;en envoie pas)
         </div>
         {etrangersRows.length === 0
-          ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune visite étrangère sur la période</div>
+          ? <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune visite étrangère sur la période</div>
           : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', fontSize: 10, color: '#999', letterSpacing: '.06em', textTransform: 'uppercase', paddingBottom: 8, borderBottom: '1px solid rgba(0,0,0,.08)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', fontSize: 10, color: 'var(--t3)', letterSpacing: '.06em', textTransform: 'uppercase', paddingBottom: 8, borderBottom: '1px solid rgba(201,168,76,.12)' }}>
                 <span>Pays</span><span>Source</span>
                 <span style={{ textAlign: 'right' }}>Visiteurs</span>
                 <span style={{ textAlign: 'right' }}>Pages</span>
               </div>
               {etrangersRows.map((row: unknown[], i: number) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)', fontSize: 11.5 }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 70px 70px', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)', fontSize: 11.5 }}>
                   <span style={{ color: '#09091A', fontWeight: 500 }}>{str(row[0])}</span>
-                  <span style={{ color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{str(row[1])}</span>
+                  <span style={{ color: 'var(--t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{str(row[1])}</span>
                   <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, textAlign: 'right' }}>{num(row[2])}</span>
-                  <span style={{ fontFamily: 'monospace', color: '#888', textAlign: 'right' }}>{num(row[3])}</span>
+                  <span style={{ fontFamily: 'monospace', color: 'var(--t3)', textAlign: 'right' }}>{num(row[3])}</span>
                 </div>
               ))}
             </>
@@ -383,14 +383,14 @@ export default async function AnalyticsPage() {
 
         {/* Référents */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Sources de trafic
           </div>
           {referrersRows.length === 0
-            ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune donnée</div>
+            ? <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
             : referrersRows.map((row: unknown[], i: number) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)', fontSize: 11 }}>
-                <span style={{ color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>{str(row[0])}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)', fontSize: 11 }}>
+                <span style={{ color: 'var(--t2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>{str(row[0])}</span>
                 <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, flexShrink: 0 }}>{num(row[1])}</span>
               </div>
             ))
@@ -399,19 +399,19 @@ export default async function AnalyticsPage() {
 
         {/* Appareils */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Appareils
           </div>
           {devicesRows.length === 0
-            ? <div style={{ fontSize: 12, color: '#ccc' }}>Aucune donnée</div>
+            ? <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
             : devicesRows.map((row: unknown[], i: number) => {
               const v   = num(row[1])
               const tot = devicesRows.reduce((s: number, r: unknown[]) => s + num(r[1]), 0)
               return (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)', fontSize: 12 }}>
-                  <span style={{ color: '#444' }}>{str(row[0]) || 'Inconnu'}</span>
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#888' }}>
-                    {v} <span style={{ color: '#ccc' }}>({tot ? Math.round(v/tot*100) : 0}%)</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)', fontSize: 12 }}>
+                  <span style={{ color: 'var(--t2)' }}>{str(row[0]) || 'Inconnu'}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--t3)' }}>
+                    {v} <span style={{ color: 'var(--t3)' }}>({tot ? Math.round(v/tot*100) : 0}%)</span>
                   </span>
                 </div>
               )
@@ -421,13 +421,13 @@ export default async function AnalyticsPage() {
 
         {/* Estimations flash */}
         <div style={{ ...card, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 8, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 8, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Estimations prix
           </div>
           <div style={{ fontFamily: 'monospace', fontSize: 36, fontWeight: 600, color: '#C9A84C', lineHeight: 1, marginBottom: 8 }}>
             {(estCount as number).toLocaleString('fr-FR')}
           </div>
-          <div style={{ fontSize: 11, color: '#999', marginBottom: 16 }}>recherches de prix sans réservation</div>
+          <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 16 }}>recherches de prix sans réservation</div>
           <Link href="/admin/estimations" style={{
             display: 'inline-block', fontSize: 11, color: '#C9A84C',
             textDecoration: 'none', fontWeight: 500,

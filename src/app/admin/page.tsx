@@ -265,11 +265,11 @@ export default async function AdminDashboard() {
       {/* Topbar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(255,255,255,.95)', 
-        borderBottom: '1px solid rgba(0,0,0,.07)',
+        background: 'rgba(17,17,40,.94)', 
+        borderBottom: '1px solid rgba(201,168,76,.12)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        boxShadow: '0 1px 0 rgba(0,0,0,.06)',
+        boxShadow: '0 1px 0 rgba(201,168,76,.12)',
       }}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Dashboard</div>
@@ -307,7 +307,7 @@ export default async function AdminDashboard() {
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--red)', flexShrink: 0 }} />
               <span style={{
                 fontSize: 11, fontWeight: 600, letterSpacing: '.1em',
-                textTransform: 'uppercase', color: 'var(--red)',
+                textTransform: 'uppercase', color: 'var(--red-txt)',
               }}>
                 {imminentes.length === 1
                   ? 'Une course démarre dans moins de 24 h sans chauffeur'
@@ -328,7 +328,7 @@ export default async function AdminDashboard() {
                   }}>
                     <span style={{
                       fontFamily: 'var(--font-jetbrains), monospace', fontSize: 12,
-                      fontWeight: 600, color: 'var(--red)', minWidth: 58,
+                      fontWeight: 600, color: 'var(--red-txt)', minWidth: 58,
                     }}>
                       dans {dans}
                     </span>
@@ -541,14 +541,14 @@ export default async function AdminDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)', display: 'inline-block' }} />
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--red)' }}>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--red-txt)' }}>
                   {facturesRetard.length} facture{facturesRetard.length > 1 ? 's' : ''} en retard de paiement
                 </span>
               </div>
               <Link href="/admin/facturation" style={{
                 padding: '6px 14px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                 background: 'rgba(217,80,80,.12)', border: '1px solid rgba(217,80,80,.3)',
-                color: 'var(--red)', textDecoration: 'none',
+                color: 'var(--red-txt)', textDecoration: 'none',
               }}>
                 Voir tout →
               </Link>
@@ -581,7 +581,7 @@ export default async function AdminDashboard() {
                       {f.montant_ttc.toFixed(0)} €
                     </div>
                     <div style={{
-                      fontSize: 10, color: 'var(--red)', textAlign: 'right', fontWeight: 500,
+                      fontSize: 10, color: 'var(--red-txt)', textAlign: 'right', fontWeight: 500,
                     }}>
                       +{joursRetard}j
                     </div>

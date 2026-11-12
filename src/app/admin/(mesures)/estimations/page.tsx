@@ -83,7 +83,7 @@ export default async function EstimationsPage() {
     // Table n'existe pas encore
     return (
       <div style={{ padding: 40, maxWidth: 700 }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#0A0A0A', marginBottom: 16 }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--t1)', marginBottom: 16 }}>
           Simulations de prix
         </h1>
         <div style={{
@@ -91,7 +91,7 @@ export default async function EstimationsPage() {
           borderRadius: 12, padding: '24px 28px',
         }}>
           <div style={{ fontWeight: 600, marginBottom: 8, color: '#C9A84C' }}>Table non créée</div>
-          <p style={{ fontSize: 13, color: '#555', marginBottom: 16, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 16, lineHeight: 1.6 }}>
             Exécutez la migration SQL dans le Dashboard Supabase pour activer le suivi des estimations.
           </p>
           <a
@@ -107,7 +107,7 @@ export default async function EstimationsPage() {
           >
             Ouvrir SQL Editor →
           </a>
-          <p style={{ fontSize: 11, color: '#999', marginTop: 16 }}>
+          <p style={{ fontSize: 11, color: 'var(--t3)', marginTop: 16 }}>
             Fichier : <code>owise-app/supabase/migrations/20260612000000_estimations.sql</code>
           </p>
         </div>
@@ -173,8 +173,8 @@ export default async function EstimationsPage() {
 
   // ── Render ──────────────────────────────────────────────
   const card = {
-    background: '#FFFFFF',
-    border: '1.5px solid rgba(0,0,0,.07)',
+    background: 'var(--surface)',
+    border: '1.5px solid rgba(201,168,76,.12)',
     borderRadius: 12,
     padding: '18px 22px',
   } as const
@@ -186,11 +186,11 @@ export default async function EstimationsPage() {
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
           fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
-          color: '#0A0A0A', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
+          color: 'var(--t1)', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
         }}>
           Simulations de prix
         </h1>
-        <p style={{ fontSize: 12, color: '#888' }}>
+        <p style={{ fontSize: 12, color: 'var(--t3)' }}>
           Ce que les visiteurs ont cherché : adresses saisies, prix affiché, page et canal d’arrivée
         </p>
       </div>
@@ -204,13 +204,13 @@ export default async function EstimationsPage() {
           { label: 'Prix moyen estimé', value: Math.round(avgPrix), suffix: ' €' },
         ].map(kpi => (
           <div key={kpi.label} style={card}>
-            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: '#999', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
               {kpi.label}
             </div>
             <div style={{
               fontFamily: 'monospace', fontSize: 28, fontWeight: 600, color: '#C9A84C', lineHeight: 1,
             }}>
-              {kpi.value}<span style={{ fontSize: 14, color: '#999' }}>{kpi.suffix}</span>
+              {kpi.value}<span style={{ fontSize: 14, color: 'var(--t3)' }}>{kpi.suffix}</span>
             </div>
           </div>
         ))}
@@ -221,20 +221,20 @@ export default async function EstimationsPage() {
 
         {/* Top routes */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Trajets les plus demandés
           </div>
           {topRoutes.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>Aucune donnée</div>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
           ) : topRoutes.map(([route, count], i) => {
             const pct = topRoutes[0][1] > 0 ? (count / topRoutes[0][1]) * 100 : 0
             return (
               <div key={i} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                  <span style={{ color: '#333', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{route}</span>
+                  <span style={{ color: 'var(--t1)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{route}</span>
                   <span style={{ fontFamily: 'monospace', color: '#C9A84C', fontWeight: 600, flexShrink: 0 }}>{count}×</span>
                 </div>
-                <div style={{ height: 3, background: '#F0EDE8', borderRadius: 2 }}>
+                <div style={{ height: 3, background: 'var(--elevated)', borderRadius: 2 }}>
                   <div style={{ height: 3, width: `${pct}%`, background: 'linear-gradient(90deg, #C9A84C, #DDB95A)', borderRadius: 2 }} />
                 </div>
               </div>
@@ -244,30 +244,30 @@ export default async function EstimationsPage() {
 
         {/* Répartition véhicule */}
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Par véhicule
           </div>
           {Object.entries(vhMap).length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>Aucune donnée</div>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>Aucune donnée</div>
           ) : Object.entries(vhMap)
               .sort((a, b) => b[1] - a[1])
               .map(([vh, count]) => (
-            <div key={vh} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(0,0,0,.04)' }}>
-              <span style={{ fontSize: 12, color: '#444' }}>{VH_LABEL[vh] ?? vh}</span>
+            <div key={vh} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(201,168,76,.12)' }}>
+              <span style={{ fontSize: 12, color: 'var(--t2)' }}>{VH_LABEL[vh] ?? vh}</span>
               <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#C9A84C', fontWeight: 600 }}>
-                {count} <span style={{ color: '#bbb', fontWeight: 400 }}>({total ? Math.round(count / total * 100) : 0}%)</span>
+                {count} <span style={{ color: 'var(--t3)', fontWeight: 400 }}>({total ? Math.round(count / total * 100) : 0}%)</span>
               </span>
             </div>
           ))}
 
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(0,0,0,.06)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 10, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(201,168,76,.12)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 10, letterSpacing: '.08em', textTransform: 'uppercase' }}>
               Zones départ fréquentes
             </div>
             {topDep.map(([zone, count]) => (
               <div key={zone} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6 }}>
-                <span style={{ color: '#555', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{zone}</span>
-                <span style={{ fontFamily: 'monospace', color: '#666', flexShrink: 0 }}>{count}×</span>
+                <span style={{ color: 'var(--t2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>{zone}</span>
+                <span style={{ fontFamily: 'monospace', color: 'var(--t2)', flexShrink: 0 }}>{count}×</span>
               </div>
             ))}
           </div>
@@ -278,11 +278,11 @@ export default async function EstimationsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
 
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Par où ils sont arrivés
           </div>
           {topCanaux.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>
               Aucune donnée encore — le canal est relevé depuis le 9 novembre 2026.
             </div>
           ) : topCanaux.map(([canal, count]) => {
@@ -291,13 +291,13 @@ export default async function EstimationsPage() {
               <div key={canal} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 7 }}>
                 <span style={{
                   flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  color: CANAUX_ASSISTANTS.has(canal) ? '#C9A84C' : '#555',
+                  color: CANAUX_ASSISTANTS.has(canal) ? '#C9A84C' : 'var(--t2)',
                   fontWeight: CANAUX_ASSISTANTS.has(canal) ? 600 : 400,
                 }}>
                   {CANAL_LABEL[canal] ?? canal}
                 </span>
-                <span style={{ fontFamily: 'monospace', color: '#666', flexShrink: 0 }}>
-                  {count}× <span style={{ color: '#bbb' }}>({pct}%)</span>
+                <span style={{ fontFamily: 'monospace', color: 'var(--t2)', flexShrink: 0 }}>
+                  {count}× <span style={{ color: 'var(--t3)' }}>({pct}%)</span>
                 </span>
               </div>
             )
@@ -305,24 +305,24 @@ export default async function EstimationsPage() {
           {/* Dit explicitement ce qu'on ne sait pas, au lieu de le ranger en
               « direct » : un chiffre muet est pire qu'un chiffre absent. */}
           {sansCanal > 0 && (
-            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,.06)', fontSize: 10, color: '#bbb' }}>
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.12)', fontSize: 10, color: 'var(--t3)' }}>
               {sansCanal} estimation{sansCanal > 1 ? 's' : ''} sans canal connu — antérieure{sansCanal > 1 ? 's' : ''} au relevé.
             </div>
           )}
         </div>
 
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
             Pages qui déclenchent une simulation
           </div>
           {topPages.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#bbb' }}>
+            <div style={{ fontSize: 12, color: 'var(--t3)' }}>
               Aucune donnée encore — la page est relevée depuis le 9 novembre 2026.
             </div>
           ) : topPages.map(([p, count]) => (
             <div key={p} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 7 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#555', flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</span>
-              <span style={{ fontFamily: 'monospace', color: '#666', flexShrink: 0 }}>{count}×</span>
+              <span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--t2)', flex: 1, marginRight: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</span>
+              <span style={{ fontFamily: 'monospace', color: 'var(--t2)', flexShrink: 0 }}>{count}×</span>
             </div>
           ))}
         </div>
@@ -331,20 +331,20 @@ export default async function EstimationsPage() {
       {/* Table des estimations récentes */}
       <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
         <div style={{
-          padding: '14px 22px', borderBottom: '1px solid rgba(0,0,0,.06)',
+          padding: '14px 22px', borderBottom: '1px solid rgba(201,168,76,.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#333' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--t1)' }}>
             Dernières estimations
           </span>
-          <span style={{ fontSize: 11, color: '#bbb' }}>{total} enregistrement{total !== 1 ? 's' : ''}</span>
+          <span style={{ fontSize: 11, color: 'var(--t3)' }}>{total} enregistrement{total !== 1 ? 's' : ''}</span>
         </div>
 
         {/* Thead */}
         <div style={{
           display: 'grid', gridTemplateColumns: '115px 1fr 1fr 110px 95px 68px 70px',
           padding: '7px 22px', fontSize: 9, letterSpacing: '.15em', textTransform: 'uppercase',
-          color: '#ccc', fontWeight: 600, borderBottom: '1px solid rgba(0,0,0,.05)',
+          color: 'var(--t3)', fontWeight: 600, borderBottom: '1px solid rgba(201,168,76,.12)',
         }}>
           <div>Date</div>
           <div>Départ</div>
@@ -356,19 +356,19 @@ export default async function EstimationsPage() {
         </div>
 
         {estimations.length === 0 ? (
-          <div style={{ padding: '32px 22px', color: '#ccc', fontSize: 12, textAlign: 'center' }}>
+          <div style={{ padding: '32px 22px', color: 'var(--t3)', fontSize: 12, textAlign: 'center' }}>
             Aucune estimation enregistrée
           </div>
         ) : estimations.slice(0, 100).map((e, i) => (
           <div key={e.id} style={{
             display: 'grid', gridTemplateColumns: '115px 1fr 1fr 110px 95px 68px 70px',
             padding: '10px 22px', alignItems: 'center',
-            borderBottom: i < 99 ? '1px solid rgba(0,0,0,.04)' : 'none',
+            borderBottom: i < 99 ? '1px solid rgba(201,168,76,.12)' : 'none',
             fontSize: 11,
           }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#999' }}>{formatDate(e.created_at)}</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--t3)' }}>{formatDate(e.created_at)}</div>
             <div style={{ paddingRight: 12, overflow: 'hidden' }}>
-              <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
+              <div style={{ color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
                 {e.adresse_depart.split(',')[0]?.trim().slice(0, 30) ?? e.adresse_depart.slice(0, 30)}
               </div>
               {extractCity(e.adresse_depart) && (
@@ -380,7 +380,7 @@ export default async function EstimationsPage() {
                   2026-11-09 : la ligne disparaît au lieu d'afficher « null ». */}
               {e.adresse_depart_saisie && (
                 <div title={e.adresse_depart_saisie} style={{
-                  color: '#999', fontSize: 9, marginTop: 2,
+                  color: 'var(--t3)', fontSize: 9, marginTop: 2,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {e.adresse_depart_saisie}
@@ -388,12 +388,12 @@ export default async function EstimationsPage() {
               )}
             </div>
             <div style={{ paddingRight: 12, overflow: 'hidden' }}>
-              <div style={{ color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
+              <div style={{ color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11 }}>
                 {shortAddr(e.adresse_arrivee)}
               </div>
               {e.adresse_arrivee_saisie && (
                 <div title={e.adresse_arrivee_saisie} style={{
-                  color: '#999', fontSize: 9, marginTop: 2,
+                  color: 'var(--t3)', fontSize: 9, marginTop: 2,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {e.adresse_arrivee_saisie}
@@ -406,26 +406,26 @@ export default async function EstimationsPage() {
                   title={e.referent || undefined}
                   style={{
                     fontSize: 10, fontWeight: 600,
-                    color: CANAUX_ASSISTANTS.has(e.canal) ? '#C9A84C' : '#555',
+                    color: CANAUX_ASSISTANTS.has(e.canal) ? '#C9A84C' : 'var(--t2)',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}
                 >
                   {CANAL_LABEL[e.canal] ?? e.canal}
                 </div>
               ) : (
-                <div style={{ fontSize: 10, color: '#ccc' }}>—</div>
+                <div style={{ fontSize: 10, color: 'var(--t3)' }}>—</div>
               )}
               {e.page && (
                 <div title={e.page} style={{
-                  fontFamily: 'monospace', fontSize: 9, color: '#999', marginTop: 2,
+                  fontFamily: 'monospace', fontSize: 9, color: 'var(--t3)', marginTop: 2,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {e.page}
                 </div>
               )}
             </div>
-            <div style={{ color: '#666' }}>{e.vehicule ? (VH_LABEL[e.vehicule] ?? e.vehicule) : '—'}</div>
-            <div style={{ fontFamily: 'monospace', fontWeight: 600, color: e.prix ? '#C9A84C' : '#ccc' }}>
+            <div style={{ color: 'var(--t2)' }}>{e.vehicule ? (VH_LABEL[e.vehicule] ?? e.vehicule) : '—'}</div>
+            <div style={{ fontFamily: 'monospace', fontWeight: 600, color: e.prix ? '#C9A84C' : 'var(--t3)' }}>
               {e.prix ? `${e.prix} €` : '—'}
             </div>
             <div>
@@ -433,7 +433,7 @@ export default async function EstimationsPage() {
                 fontSize: 9, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase',
                 padding: '2px 7px', borderRadius: 4,
                 background: e.source === 'reservation' ? 'rgba(77,142,212,.12)' : 'rgba(201,168,76,.10)',
-                color: e.source === 'reservation' ? '#4D8ED4' : '#C9A84C',
+                color: e.source === 'reservation' ? 'var(--blu)' : '#C9A84C',
               }}>
                 {e.source === 'reservation' ? 'Résa' : 'Vitrine'}
               </span>

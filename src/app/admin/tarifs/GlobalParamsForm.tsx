@@ -301,7 +301,7 @@ export default function GlobalParamsForm({ p }: { p: any }) {
       </Section>
 
       {error && (
-        <div style={{ marginTop: 16, padding: '10px 16px', borderRadius: 8, background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)', color: 'var(--red)', fontSize: 12 }}>
+        <div style={{ marginTop: 16, padding: '10px 16px', borderRadius: 8, background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)', color: 'var(--red-txt)', fontSize: 12 }}>
           Erreur : {error}
         </div>
       )}

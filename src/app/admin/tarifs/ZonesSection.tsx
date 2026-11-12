@@ -29,7 +29,7 @@ const TYPE_LABEL: Record<string, string> = {
 const TYPE_COLOR: Record<string, { color: string; bg: string; border: string }> = {
   aeroport:  { color: 'var(--blu)', bg: 'rgba(77,142,212,.12)',  border: 'rgba(77,142,212,.2)' },
   gare:      { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)',  border: 'rgba(232,160,48,.2)' },
-  hors_zone: { color: 'var(--red)', bg: 'rgba(217,80,80,.08)',   border: 'rgba(217,80,80,.15)' },
+  hors_zone: { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.08)',   border: 'rgba(217,80,80,.15)' },
   zone:      { color: 'var(--t2)', bg: 'rgba(132,132,153,.08)',  border: 'rgba(132,132,153,.15)' },
 }
 
@@ -135,7 +135,7 @@ function ZoneRow({ zone }: { zone: Zone }) {
         border: '1px solid rgba(217,80,80,.2)',
         marginBottom: 4,
       }}>
-        <span style={{ fontSize: 12, color: 'var(--red)' }}>
+        <span style={{ fontSize: 12, color: 'var(--red-txt)' }}>
           Supprimer <strong>{zone.nom}</strong> et toutes ses cellules tarifaires ?
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -144,7 +144,7 @@ function ZoneRow({ zone }: { zone: Zone }) {
             disabled={pending}
             style={{
               padding: '5px 14px', borderRadius: 6,
-              background: 'var(--red)', color: '#fff',
+              background: 'var(--red-txt)', color: 'var(--base)',
               fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
             }}
           >
@@ -204,7 +204,7 @@ function ZoneRow({ zone }: { zone: Zone }) {
           <span style={{
             position: 'absolute', top: 3, left: isActive ? 20 : 3,
             width: 18, height: 18, borderRadius: '50%',
-            background: isActive ? '#3DB87A' : 'var(--t3)',
+            background: isActive ? 'var(--grn)' : 'var(--t3)',
             transition: 'left .2s, background .2s',
             display: 'block',
           }}/>
@@ -231,7 +231,7 @@ function ZoneRow({ zone }: { zone: Zone }) {
           style={{
             width: 28, height: 28, borderRadius: 6,
             background: 'rgba(217,80,80,.08)', border: '1px solid rgba(217,80,80,.15)',
-            color: 'var(--red)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--red-txt)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'background .15s',
           }}
           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(217,80,80,.2)')}

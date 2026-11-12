@@ -47,11 +47,11 @@ export default async function TarifsPage() {
       {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(255,255,255,.95)', 
-        borderBottom: '1px solid rgba(0,0,0,.07)',
+        background: 'rgba(17,17,40,.94)', 
+        borderBottom: '1px solid rgba(201,168,76,.12)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center',
-        boxShadow: '0 1px 0 rgba(0,0,0,.06)',
+        boxShadow: '0 1px 0 rgba(201,168,76,.12)',
       }}>
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Tarification</div>
       </div>

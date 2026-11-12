@@ -24,7 +24,7 @@ export default function NouveauBouton() {
           }
         })}
         style={{
-          background: '#C9A84C', color: '#0A0A0A', border: 'none', borderRadius: 9,
+          background: 'var(--gold)', color: 'var(--base)', border: 'none', borderRadius: 9,
           padding: '12px 20px', fontSize: 13.5, fontWeight: 600, cursor: enCours ? 'wait' : 'pointer',
           fontFamily: 'inherit', opacity: enCours ? .65 : 1,
           transition: 'opacity .15s, transform .1s',
@@ -33,7 +33,7 @@ export default function NouveauBouton() {
         {enCours ? 'Création…' : '+ Nouveau devis'}
       </button>
       {erreur && (
-        <div style={{ fontSize: 12, color: '#D95454', marginTop: 6, maxWidth: 220 }}>{erreur}</div>
+        <div style={{ fontSize: 12, color: 'var(--red-txt)', marginTop: 6, maxWidth: 220 }}>{erreur}</div>
       )}
     </div>
   )

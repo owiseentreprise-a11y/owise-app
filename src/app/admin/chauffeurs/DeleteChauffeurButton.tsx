@@ -32,7 +32,7 @@ export default function DeleteChauffeurButton({
 
   if (step === 'confirm-delete') return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontSize: 10, color: 'var(--red)' }}>⚠️ Supprimer définitivement ?</span>
+      <span style={{ fontSize: 10, color: 'var(--red-txt)' }}>⚠️ Supprimer définitivement ?</span>
       <button
         disabled={pending}
         onClick={() => start(async () => {
@@ -40,7 +40,7 @@ export default function DeleteChauffeurButton({
           if (error) { setErr(error); setStep('idle') }
           else setStep('idle')
         })}
-        style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--red)', color: '#fff', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+        style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--red-txt)', color: 'var(--base)', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
       >
         {pending ? '…' : 'Supprimer'}
       </button>
@@ -52,7 +52,7 @@ export default function DeleteChauffeurButton({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-      {err && <div style={{ fontSize: 9, color: 'var(--red)', maxWidth: 200, textAlign: 'right' }}>{err}</div>}
+      {err && <div style={{ fontSize: 9, color: 'var(--red-txt)', maxWidth: 200, textAlign: 'right' }}>{err}</div>}
       <div style={{ display: 'flex', gap: 5 }}>
         {actif ? (
           <button
@@ -88,7 +88,7 @@ export default function DeleteChauffeurButton({
           title="Supprimer définitivement"
           style={{
             padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500, cursor: 'pointer',
-            background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: 'var(--red)',
+            background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.2)', color: 'var(--red-txt)',
             transition: 'background .15s',
           }}
         >

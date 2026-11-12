@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 const STATUT_STYLE = {
   en_attente: { color: 'var(--amb)', bg: 'rgba(232,160,48,.12)', border: 'rgba(232,160,48,.25)', label: 'En attente' },
   payee:      { color: 'var(--grn)', bg: 'rgba(61,184,122,.12)',  border: 'rgba(61,184,122,.25)',  label: 'Payée' },
-  retard:     { color: 'var(--red)', bg: 'rgba(217,80,80,.12)',   border: 'rgba(217,80,80,.25)',   label: 'En retard' },
+  retard:     { color: 'var(--red-txt)', bg: 'rgba(217,80,80,.12)',   border: 'rgba(217,80,80,.25)',   label: 'En retard' },
 }
 
 export default async function FactureDetailPage({

@@ -243,7 +243,7 @@ export default async function CoursesPage({
               }} />
               <span style={{
                 fontSize: 11, fontWeight: 600, letterSpacing: '.1em',
-                textTransform: 'uppercase', color: 'var(--red)',
+                textTransform: 'uppercase', color: 'var(--red-txt)',
               }}>
                 {imminentes.length === 1
                   ? '1 course dans moins de 24 h sans chauffeur'
@@ -268,7 +268,7 @@ export default async function CoursesPage({
                   >
                     <span style={{
                       fontFamily: 'var(--font-jetbrains), monospace',
-                      fontSize: 12, fontWeight: 600, color: 'var(--red)',
+                      fontSize: 12, fontWeight: 600, color: 'var(--red-txt)',
                       minWidth: 58,
                     }}>
                       dans {dans}

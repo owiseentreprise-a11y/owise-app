@@ -171,7 +171,7 @@ export default function CollaborateursSection({
             <input style={inputStyle} value={form.adresse} placeholder="12 rue des Lilas, 75001 Paris"
               onChange={e => setForm(f => ({ ...f, adresse: e.target.value }))} />
           </div>
-          {error && <div style={{ fontSize: 11, color: 'var(--red)' }}>{error}</div>}
+          {error && <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>{error}</div>}
           <button
             onClick={submit}
             disabled={pending}
@@ -232,7 +232,7 @@ export default function CollaborateursSection({
                   <input style={inputStyle} value={editForm.adresse} placeholder="12 rue des Lilas, 75001 Paris"
                     onChange={e => setEditForm(f => ({ ...f, adresse: e.target.value }))} />
                 </div>
-                {error && <div style={{ fontSize: 11, color: 'var(--red)' }}>{error}</div>}
+                {error && <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>{error}</div>}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={submitEdit} disabled={pending} style={{
                     padding: '7px 14px', borderRadius: 7,

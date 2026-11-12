@@ -40,7 +40,7 @@ export function TriggerButton() {
         {pending ? '⏳ En cours…' : '+ Créer un backup maintenant'}
       </button>
       {msg && (
-        <span style={{ fontSize: 11, color: msg.ok ? '#3DB87A' : '#D95454' }}>
+        <span style={{ fontSize: 11, color: msg.ok ? 'var(--grn)' : 'var(--red-txt)' }}>
           {msg.text}
         </span>
       )}

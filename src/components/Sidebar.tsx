@@ -109,10 +109,10 @@ function NavItem({ item, isActive }: { item: { href: string; label: string; icon
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '8px 12px', borderRadius: 8,
         fontSize: 12.5, fontWeight: isActive ? 600 : 400,
-        color: isActive ? '#C9A84C' : hovered ? '#0A0A0A' : '#666666',
+        color: isActive ? 'var(--gold2)' : hovered ? 'var(--t1)' : 'var(--t2)',
         background: isActive
           ? 'linear-gradient(90deg, rgba(201,168,76,.12), rgba(201,168,76,.05))'
-          : hovered ? 'rgba(0,0,0,.04)' : 'transparent',
+          : hovered ? 'rgba(201,168,76,.08)' : 'transparent',
         textDecoration: 'none',
         position: 'relative',
         transition: 'color .12s, background .12s',
@@ -129,7 +129,7 @@ function NavItem({ item, isActive }: { item: { href: string; label: string; icon
         }} />
       )}
       <span style={{
-        color: isActive ? '#C9A84C' : hovered ? '#555555' : '#AAAAAA',
+        color: isActive ? 'var(--gold2)' : hovered ? 'var(--t1)' : 'var(--t3)',
         transition: 'color .12s', flexShrink: 0,
       }}>
         {ICONS[item.icon]}
@@ -191,7 +191,7 @@ export default function Sidebar() {
             position: fixed !important; top: 0; left: 0; z-index: 85;
             transform: translateX(-100%);
             transition: transform .22s ease, opacity .1s;
-            box-shadow: 0 0 44px rgba(10,10,10,.22);
+            box-shadow: 0 0 44px rgba(201,168,76,.12);
           }
           .adm-barre[data-ouvert="oui"] { transform: translateX(0); }
           .adm-ouvrir { display: flex !important; }
@@ -215,7 +215,7 @@ export default function Sidebar() {
           aria-expanded={ouvert}
           style={{
             alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: '#0A0A0A', padding: 0,
+            cursor: 'pointer', color: 'var(--t1)', padding: 0,
           }}
         >
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -226,11 +226,11 @@ export default function Sidebar() {
         </button>
         <span style={{
           fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 500,
-          letterSpacing: '.12em', color: '#0A0A0A',
+          letterSpacing: '.12em', color: 'var(--t1)',
         }}>OWISE</span>
         <span style={{
           fontSize: 8.5, letterSpacing: '.2em', textTransform: 'uppercase',
-          color: '#BBBBBB', marginLeft: -4, alignSelf: 'center', paddingTop: 3,
+          color: 'var(--t3)', marginLeft: -4, alignSelf: 'center', paddingTop: 3,
         }}>Administration</span>
       </div>
 
@@ -238,14 +238,14 @@ export default function Sidebar() {
         <div
           className="adm-voile"
           onClick={fermerMenu}
-          style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(10,10,10,.45)' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(201,168,76,.12)' }}
         />
       )}
 
     <aside className="adm-barre" data-ouvert={ouvert ? 'oui' : 'non'} style={{
       width: 220, minWidth: 220, height: '100dvh',
-      background: '#FFFFFF',
-      borderRight: '1px solid rgba(0,0,0,.07)',
+      background: 'var(--surface)',
+      borderRight: '1px solid rgba(201,168,76,.10)',
       display: 'flex', flexDirection: 'column',
       position: 'relative', flexShrink: 0,
       overflow: 'hidden',
@@ -261,24 +261,34 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{
         padding: '22px 18px 16px',
-        borderBottom: '1px solid rgba(0,0,0,.06)',
+        borderBottom: '1px solid rgba(201,168,76,.10)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, #C9A84C, #8B6A1A)',
+            /* Une couleur de fond EXPLICITE sous le dégradé, et pas seulement
+               le dégradé : un dégradé n'est pas une `background-color`, donc
+               ni le navigateur ni `audit-contraste-admin.mjs` ne savent sur
+               quoi la lettre est posée — le contrôle lisait « O » comme
+               posé sur le panneau, et annonçait 1,04. Le dégradé s'arrête
+               aussi plus clair qu'avant (#C9A84C au lieu de #8B6A1A) pour
+               que l'encre sombre tienne 8,4 sur toute sa longueur. */
+            /* La couleur est DANS le raccourci, pas avant lui : `background`
+               déclaré après `backgroundColor` remet la couleur à
+               transparent, et la mesure retombait à 1,04. */
+            background: '#C9A84C linear-gradient(135deg, #DDB95A, #C9A84C)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#fff',
+            fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#120E02',
             boxShadow: '0 4px 14px rgba(201,168,76,.25)',
           }}>O</div>
           <div>
             <div style={{
               fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 500,
-              letterSpacing: '.1em', color: '#0A0A0A', lineHeight: 1,
+              letterSpacing: '.1em', color: 'var(--t1)', lineHeight: 1,
             }}>OWISE</div>
             <div style={{
               fontSize: 8.5, letterSpacing: '.2em', textTransform: 'uppercase',
-              color: '#BBBBBB', marginTop: 2,
+              color: 'var(--t3)', marginTop: 2,
             }}>Administration</div>
           </div>
         </div>
@@ -290,7 +300,7 @@ export default function Sidebar() {
           <div key={group.section} style={{ marginTop: gi === 0 ? 4 : 0 }}>
             <div style={{
               fontSize: 9, letterSpacing: '.2em', textTransform: 'uppercase',
-              color: '#CCCCCC', fontWeight: 600,
+              color: 'var(--t3)', fontWeight: 600,
               padding: '16px 12px 6px',
             }}>
               {group.section}
@@ -318,7 +328,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Séparateur + Déconnexion */}
-      <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', padding: '12px 14px' }}>
+      <div style={{ borderTop: '1px solid rgba(201,168,76,.12)', padding: '12px 14px' }}>
         <form action={logoutAction}>
           <button
             type="submit"
@@ -326,7 +336,7 @@ export default function Sidebar() {
             onMouseLeave={() => setLogoutHover(false)}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              fontSize: 11, color: logoutHover ? '#D95454' : '#AAAAAA',
+              fontSize: 11, color: logoutHover ? 'var(--red-txt)' : 'var(--t3)',
               background: logoutHover ? 'rgba(217,84,84,.06)' : 'none',
               border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-dm-sans), sans-serif',

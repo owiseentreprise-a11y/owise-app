@@ -438,7 +438,7 @@ export default function NouvelleFactureForm({
                   la facture sert de justificatif, pas d'appel à paiement. Sans
                   cette case, elle partait « en attente » avec un lien Stripe. */}
               <div style={{ padding: '12px 14px', borderRadius: 8,
-                background: dejaReglee ? 'rgba(61,196,124,.08)' : 'rgba(0,0,0,.03)',
+                background: dejaReglee ? 'rgba(61,196,124,.08)' : 'rgba(201,168,76,.12)',
                 border: `1px solid ${dejaReglee ? 'rgba(61,196,124,.3)' : 'var(--gb)'}` }}>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--t1)' }}>
                   <input type="checkbox" name="deja_reglee" checked={dejaReglee}

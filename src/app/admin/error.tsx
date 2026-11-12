@@ -47,13 +47,13 @@ export default function ErreurAdmin({
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: '70vh', padding: 24, background: '#F8F6F1',
+      minHeight: '70vh', padding: 24, background: 'var(--elevated)',
     }}>
       <div style={{
-        maxWidth: 520, width: '100%', background: '#FFFFFF',
-        border: '1.5px solid rgba(0,0,0,.08)', borderRadius: 14,
+        maxWidth: 520, width: '100%', background: 'var(--surface)',
+        border: '1.5px solid rgba(201,168,76,.12)', borderRadius: 14,
         padding: '30px 32px',
-        boxShadow: '0 1px 2px rgba(10,10,10,.04), 0 12px 32px rgba(10,10,10,.06)',
+        boxShadow: '0 1px 2px rgba(201,168,76,.12), 0 12px 32px rgba(201,168,76,.12)',
       }}>
         <div style={{
           fontSize: 9.5, letterSpacing: '.16em', textTransform: 'uppercase',
@@ -63,18 +63,18 @@ export default function ErreurAdmin({
         </div>
 
         <h1 style={{
-          fontFamily: 'Georgia, serif', fontSize: 23, color: '#0A0A0A',
+          fontFamily: 'Georgia, serif', fontSize: 23, color: 'var(--t1)',
           margin: '0 0 12px', lineHeight: 1.25,
         }}>
           Cette page n’a pas pu se charger
         </h1>
 
-        <p style={{ fontSize: 13, lineHeight: 1.65, color: '#555', margin: '0 0 8px' }}>
+        <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--t2)', margin: '0 0 8px' }}>
           Le serveur a renvoyé une erreur. Ce n’est pas une mauvaise manipulation
           de votre part, et <strong>rien n’a été enregistré à moitié</strong> :
           une opération qui échoue est annulée en entier.
         </p>
-        <p style={{ fontSize: 13, lineHeight: 1.65, color: '#555', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--t2)', margin: '0 0 20px' }}>
           Réessayez une première fois. Si l’erreur revient, communiquez le
           numéro ci-dessous — c’est lui qui permet de retrouver la cause exacte
           dans les journaux.
@@ -93,7 +93,7 @@ export default function ErreurAdmin({
             </div>
             <div style={{
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              fontSize: 15, color: '#0A0A0A', userSelect: 'all', letterSpacing: '.02em',
+              fontSize: 15, color: 'var(--t1)', userSelect: 'all', letterSpacing: '.02em',
             }}>
               {error.digest}
             </div>
@@ -110,8 +110,8 @@ export default function ErreurAdmin({
           <a
             href="/admin"
             style={{
-              ...bouton, background: '#FFFFFF', color: '#555',
-              border: '1px solid rgba(0,0,0,.12)', textDecoration: 'none',
+              ...bouton, background: 'var(--surface)', color: 'var(--t2)',
+              border: '1px solid rgba(201,168,76,.12)', textDecoration: 'none',
               display: 'inline-block',
             }}
           >

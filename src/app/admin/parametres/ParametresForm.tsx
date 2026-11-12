@@ -173,7 +173,7 @@ export default function ParametresForm({ data }: { data: Parametres }) {
         <div style={{
           padding: '10px 16px', borderRadius: 8,
           background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.2)',
-          color: 'var(--red)', fontSize: 12,
+          color: 'var(--red-txt)', fontSize: 12,
         }}>
           {error}
         </div>

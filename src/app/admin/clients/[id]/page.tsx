@@ -106,7 +106,7 @@ export default async function ClientDetailPage({
         position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--surface)',
         borderBottom: '1px solid var(--gb)',
-        boxShadow: '0 1px 3px rgba(0,0,0,.04)',
+        boxShadow: '0 1px 3px rgba(201,168,76,.12)',
         padding: '0 32px', height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -338,7 +338,7 @@ export default async function ClientDetailPage({
                       position: 'absolute', top: 3,
                       left: client.payer_a_bord ? 21 : 3,
                       width: 16, height: 16, borderRadius: '50%',
-                      background: '#fff', transition: 'left .2s',
+                      background: 'var(--surface)', transition: 'left .2s',
                       display: 'block',
                     }} />
                   </button>
@@ -373,7 +373,7 @@ export default async function ClientDetailPage({
                   <span style={{
                     position: 'absolute', top: 3, left: afficherPrix ? 21 : 3,
                     width: 16, height: 16, borderRadius: '50%',
-                    background: '#fff', transition: 'left .2s', display: 'block',
+                    background: 'var(--surface)', transition: 'left .2s', display: 'block',
                   }} />
                 </button>
                 <span style={{ fontSize: 13, color: 'var(--t1)' }}>

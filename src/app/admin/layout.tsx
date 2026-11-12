@@ -10,14 +10,25 @@ import ErrorReporter from './ErrorReporter'
 // contrôle sans bénéfice de sécurité réel.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="theme-light" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#F8F6F1' }}>
+    /* DEUX CLASSES, ET C'EST VOULU.
+
+       `adm-shell` dit la STRUCTURE : c'est elle que visent les règles
+       d'impression de `document-feuille.ts`, qui doivent neutraliser la
+       hauteur d'écran et masquer la barre latérale pour qu'une facture tienne
+       sur plusieurs pages. Elles ciblaient `.theme-light` jusqu'au
+       2026-11-12 — renommer le thème aurait cassé l'impression des factures
+       en silence, sans qu'aucune compilation ne s'en plaigne.
+
+       `theme-cockpit` dit la COULEUR, et rien d'autre. On peut la changer
+       sans rien casser d'autre que l'apparence. */
+    <div className="adm-shell theme-cockpit" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: 'var(--base)' }}>
       <ErrorReporter />
       <Sidebar />
       <main className="adm-contenu" style={{
         flex: 1, minHeight: 0,
         overflowY: 'auto', overflowX: 'hidden',
         display: 'flex', flexDirection: 'column',
-        background: '#F8F6F1',
+        background: 'var(--base)',
         /* Réserve la hauteur du bandeau cookies, qui sinon recouvre le bas de
            page — y compris les boutons de validation des formulaires. Sur
            téléphone, `mobile.css` y ajoute la navigation basse. */

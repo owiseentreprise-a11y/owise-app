@@ -82,6 +82,100 @@ input:focus, select:focus, textarea:focus {
 button { transition: opacity .15s, transform .1s; }
 button:active { transform: scale(.98); }
 
+/* ── Poste de pilotage — le thème de l'ADMINISTRATION ────────────────────
+
+   POURQUOI CE BLOC EXISTE
+
+   L'administration était en thème clair, et réutilisait l'or du thème sombre
+   sans le réajuster : #C9A84C sur du blanc donne un contraste de 2,29 quand
+   il en faut 4,5. Mesure du 2026-11-12 par `audit-contraste-admin.mjs` :
+   **1 092 textes sur 2 110 — 52 % — sous le seuil WCAG AA**, dont 469 sur la
+   seule page Tarifs. L'exploitant : « faut faire l'effort pour lire […] je
+   voudrais que ce soit un peu plus comme un tableau de bord d'avion ».
+
+   POURQUOI PAS SIMPLEMENT `:root`
+
+   Le bloc `:root` ci-dessus sert au site public, à l'espace client et à
+   l'application chauffeur. Y toucher changerait des pages que personne n'a
+   demandé de changer. Le poste de pilotage a donc ses propres valeurs, et
+   `:root` reste intact.
+
+   CHAQUE COUPLE EST VÉRIFIÉ, aucun n'est choisi à l'œil. `palette-admin.mjs`
+   calcule le rapport WCAG de chaque encre sur chacun des quatre fonds et
+   refuse de passer au vert sous 4,5 — y compris pour les étiquettes, sans se
+   donner la facilité du seuil « grand texte ». Les contrastes obtenus sur le
+   fond de base : texte 16,2 · secondaire 8,5 · étiquettes 6,6 · or 8,6 ·
+   vert 10,1 · ambre 10,3 · rouge 6,8 · bleu 7,8.
+
+   Ne pas éclaircir un fond ni pâlir une encre sans relancer les deux outils.
+   ──────────────────────────────────────────────────────────────────────── */
+.theme-cockpit {
+  --base:     #09091A;   /* le fond général */
+  --surface:  #111128;   /* panneaux, barre latérale */
+  --elevated: #181832;   /* cartes, survols */
+  --floating: #202042;   /* modales, menus déroulants */
+
+  --gold:     #C9A84C;
+  --gold2:    #DDB95A;
+  --gm:       rgba(201,168,76,.12);
+  --gb:       rgba(201,168,76,.16);
+
+  --t1:       #EDE8DF;   /* texte courant */
+  --t2:       #A8A8C0;   /* texte secondaire — éclairci depuis #7A7A96 */
+  --t3:       #9292B4;   /* étiquettes — éclairci depuis #38385A, illisible */
+
+  /* Les états, francs. Ce sont eux qui donnent la couleur réclamée : une
+     ligne se lit d'un coup d'œil à sa teinte, pas à son libellé. */
+  --grn:      #4ED08A;   /* disponible, payé, terminé */
+  --amb:      #F0B04A;   /* en attente, à vérifier */
+  --red:      #D95454;   /* urgent, erreur, retard */
+  --blu:      #6BA8E0;   /* en cours */
+  --amber:    #F0B04A;   /* alias : plusieurs écrans écrivent var(--amber) */
+
+  /* Le rouge vif ne tient pas 4,5 partout ; l'admin l'emploie sur les quatre
+     fonds, donc on prend la variante éclaircie pour le TEXTE. */
+  --red-txt:  #F07070;
+
+  /* Fonds des pastilles d'état : assez sombres pour que l'encre vive passe. */
+  --pastille-grn: #12301F;
+  --pastille-amb: #33240C;
+  --pastille-red: #331616;
+  --pastille-blu: #14233A;
+
+  color: var(--t1);
+  background: var(--base);
+}
+
+/* Les cartes se détachent par une ombre teintée, jamais par un trait blanc —
+   « shadows multicouches, teintées or/bleu », règle de CLAUDE.md. */
+.theme-cockpit [style*="background: var(--surface)"],
+.theme-cockpit [style*="background:var(--surface)"],
+.theme-cockpit [style*="background: var(--elevated)"],
+.theme-cockpit [style*="background:var(--elevated)"] {
+  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset,
+              0 2px 10px rgba(4,4,14,.55) !important;
+}
+
+/* Survol d'une ligne de liste : un voile or, pas un aplat gris. */
+.theme-cockpit a[style*="display: grid"]:hover,
+.theme-cockpit a[style*="display:grid"]:hover {
+  background: rgba(201,168,76,.07) !important;
+}
+
+/* Champs de saisie : fond en retrait du panneau, encre pleine, trait sobre. */
+.theme-cockpit input,
+.theme-cockpit select,
+.theme-cockpit textarea {
+  background: #0D0D20 !important;
+  color: var(--t1) !important;
+  border-color: rgba(201,168,76,.22) !important;
+}
+.theme-cockpit input::placeholder,
+.theme-cockpit textarea::placeholder { color: #8282A2 !important; }
+/* Le menu déroulant natif est peint par le système : sans ça, Chrome affiche
+   du texte sombre sur fond sombre dans la liste ouverte. */
+.theme-cockpit select option { background: #181832; color: #EDE8DF; }
+
 /* ── Thème clair (pages client-facing) ─────────────────── */
 .theme-light {
   --base:     #F8F6F1;

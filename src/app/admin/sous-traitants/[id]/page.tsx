@@ -100,7 +100,7 @@ export default async function SousTraitantDetailPage({
         {sp.error && (
           <div style={{
             background: 'rgba(217,80,80,.1)', border: '1px solid rgba(217,80,80,.25)',
-            borderRadius: 9, padding: '12px 16px', fontSize: 13, color: '#e88080',
+            borderRadius: 9, padding: '12px 16px', fontSize: 13, color: 'var(--red-txt)',
             lineHeight: 1.6,
           }}>
             {sp.error === 'compte-existant' || sp.error === 'email-deja-utilise' ? (
@@ -161,7 +161,7 @@ export default async function SousTraitantDetailPage({
         {/* KPIs financiers */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'Coût sous-traitant', value: totalCout > 0 ? `${formaterMontant(totalCout)}` : '—', color: 'var(--red)' },
+            { label: 'Coût sous-traitant', value: totalCout > 0 ? `${formaterMontant(totalCout)}` : '—', color: 'var(--red-txt)' },
             { label: 'Marge Owise', value: totalCout > 0 ? `${formaterMontant(totalMarge)}` : '—', color: totalMarge >= 0 ? 'var(--grn)' : 'var(--red)' },
             { label: 'Taux de marge', value: totalCA > 0 && totalCout > 0 ? `${((totalMarge / totalCA) * 100).toFixed(1)} %` : '—', color: 'var(--blu)' },
           ].map(k => (
@@ -220,7 +220,7 @@ export default async function SousTraitantDetailPage({
                 </div>
               )}
               {errorMsg && (
-                <div style={{ background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.25)', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: 'var(--red)' }}>
+                <div style={{ background: 'rgba(217,84,84,.1)', border: '1px solid rgba(217,84,84,.25)', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 11, color: 'var(--red-txt)' }}>
                   {errorMsg}
                 </div>
               )}
@@ -260,7 +260,7 @@ export default async function SousTraitantDetailPage({
                     <button type="submit" style={{
                       padding: '6px 12px', borderRadius: 7, fontSize: 10,
                       background: 'transparent', border: '1px solid rgba(217,84,84,.3)',
-                      color: 'var(--red)', cursor: 'pointer',
+                      color: 'var(--red-txt)', cursor: 'pointer',
                       fontFamily: 'var(--font-dm-sans), sans-serif',
                     }}>
                       Supprimer l&apos;accès
@@ -617,7 +617,7 @@ export default async function SousTraitantDetailPage({
                             alignItems: 'center', gap: 12,
                             padding: '9px 16px 9px 24px', textDecoration: 'none',
                             borderBottom: ci < coursesDeLaFacture.length - 1 ? '1px solid rgba(201,168,76,.04)' : 'none',
-                            background: 'rgba(0,0,0,.06)',
+                            background: 'rgba(201,168,76,.12)',
                           }}
                         >
                           <div>

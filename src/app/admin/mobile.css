@@ -81,7 +81,7 @@
     background: rgba(255, 255, 255, .92);
     backdrop-filter: saturate(180%) blur(12px);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
-    border-bottom: 1px solid rgba(0, 0, 0, .07);
+    border-bottom: 1px solid rgba(201,168,76,.12);
   }
   /* La bande or de la marque, reprise de la barre latérale. */
   .adm-barre-haut::after {
@@ -111,13 +111,13 @@
     background: rgba(255, 255, 255, .94);
     backdrop-filter: saturate(180%) blur(14px);
     -webkit-backdrop-filter: saturate(180%) blur(14px);
-    border-top: 1px solid rgba(0, 0, 0, .08);
+    border-top: 1px solid rgba(201,168,76,.12);
   }
   .adm-nav-basse a, .adm-nav-basse button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 3px; min-height: 44px;
     font-size: 10px; letter-spacing: .02em;
-    color: #8A8A8A; text-decoration: none;
+    color: var(--t3); text-decoration: none;
     background: none; border: none; cursor: pointer;
     font-family: inherit;
     /* Pas de `transition: all` : seules la couleur et l'opacité bougent. */
@@ -212,10 +212,10 @@
     display: block !important;
     grid-template-columns: none !important;
     background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, .07);
+    border: 1px solid rgba(201,168,76,.12);
     border-radius: 14px;
     padding: 14px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 3px rgba(201,168,76,.12);
     text-decoration: none;
   }
   .adm-carte:active { background: rgba(201, 168, 76, .05); }

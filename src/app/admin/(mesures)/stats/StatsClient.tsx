@@ -125,7 +125,7 @@ function AreaChart({ data, color, label }: { data: { label: string; value: numbe
           fontSize: 11, color: 'var(--t1)', fontWeight: 600, whiteSpace: 'nowrap',
           pointerEvents: 'none', zIndex: 10,
           fontFamily: 'var(--font-jetbrains), monospace',
-          boxShadow: '0 4px 20px rgba(0,0,0,.3)',
+          boxShadow: '0 4px 20px rgba(201,168,76,.12)',
         }}>
           <span style={{ color: 'var(--t3)', fontWeight: 400, fontSize: 9, marginRight: 6 }}>{tooltip.lab}</span>
           {label === 'ca' ? `${tooltip.val.toFixed(0)} €` : tooltip.val}
@@ -181,7 +181,7 @@ function KpiCard({ label, value, sub, color, evo }: {
         {value}
       </div>
       {evo && (
-        <div style={{ fontSize: 10, color: evo.pos ? 'var(--grn)' : 'var(--red)', marginTop: 5 }}>
+        <div style={{ fontSize: 10, color: evo.pos ? 'var(--grn)' : 'var(--red-txt)', marginTop: 5 }}>
           {evo.text} vs période précédente
         </div>
       )}
@@ -257,7 +257,7 @@ export default function StatsClient({
         <KpiCard label={`CA ${period} mois`} value={`${caTotal.toFixed(0)} €`} color="var(--gold)" evo={evo(caTotal, caPrev)} />
         <KpiCard label="Courses terminées" value={String(countTotal)} evo={evo(countTotal, countPrev)} sub={`${annulTotal} annulée${annulTotal>1?'s':''}`} />
         <KpiCard label="Panier moyen" value={panierMoy > 0 ? `${panierMoy.toFixed(0)} €` : '—'} color="var(--t1)" />
-        <KpiCard label="Taux d'annulation" value={`${txAnn.toFixed(0)} %`} color={txAnn > 15 ? 'var(--red)' : 'var(--grn)'} />
+        <KpiCard label="Taux d'annulation" value={`${txAnn.toFixed(0)} %`} color={txAnn > 15 ? 'var(--red-txt)' : 'var(--grn)'} />
       </div>
 
       {/* Graphiques CA + Volume */}
@@ -402,7 +402,10 @@ export default function StatsClient({
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{
                         width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                        background: i===0 ? 'linear-gradient(135deg,var(--gold),#8B6A1A)' : 'var(--elevated)',
+                        /* La couleur est DANS le raccourci : un dégradé seul laisse la
+                           `background-color` à transparent, et le chiffre « 1 »
+                           était mesuré sur le panneau — 1,06. */
+                        background: i===0 ? '#C9A84C linear-gradient(135deg,var(--gold2),var(--gold))' : 'var(--elevated)',
                         border: i===0 ? 'none' : '1px solid var(--t3)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 9, fontWeight: 700, color: i===0 ? 'var(--base)' : 'var(--t3)',

@@ -57,8 +57,8 @@ export default async function BackupsPage() {
   }
 
   const card = {
-    background: '#FFFFFF',
-    border: '1.5px solid rgba(0,0,0,.07)',
+    background: 'var(--surface)',
+    border: '1.5px solid rgba(201,168,76,.12)',
     borderRadius: 12,
     padding: '20px 24px',
   } as const
@@ -69,10 +69,10 @@ export default async function BackupsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, color: '#0A0A0A', letterSpacing: '.02em', marginBottom: 6 }}>
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, color: 'var(--t1)', letterSpacing: '.02em', marginBottom: 6 }}>
             Sauvegardes
           </h1>
-          <p style={{ fontSize: 12, color: '#888' }}>
+          <p style={{ fontSize: 12, color: 'var(--t3)' }}>
             Backup automatique quotidien à 3h du matin · 30 fichiers conservés · Supabase Storage
           </p>
         </div>
@@ -88,10 +88,10 @@ export default async function BackupsPage() {
             { label: 'Tables sauvegardées', value: '14 tables' },
           ].map(item => (
             <div key={item.label}>
-              <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: '#999', marginBottom: 4 }}>
+              <div style={{ fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 4 }}>
                 {item.label}
               </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)' }}>
                 {item.value}
               </div>
             </div>
@@ -101,18 +101,18 @@ export default async function BackupsPage() {
 
       {/* File list */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 16, letterSpacing: '.08em', textTransform: 'uppercase' }}>
           Fichiers de backup ({backups.length})
         </div>
 
         {error && (
-          <div style={{ fontSize: 12, color: '#D95454', padding: '10px 0' }}>
+          <div style={{ fontSize: 12, color: 'var(--red-txt)', padding: '10px 0' }}>
             Erreur de lecture du bucket : {error.message}
           </div>
         )}
 
         {!error && backups.length === 0 && (
-          <div style={{ fontSize: 13, color: '#aaa', padding: '20px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: 'var(--t3)', padding: '20px 0', textAlign: 'center' }}>
             Aucun backup trouvé. Cliquez sur « Créer un backup maintenant » pour générer le premier.
           </div>
         )}
@@ -123,7 +123,7 @@ export default async function BackupsPage() {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '12px 0',
-              borderBottom: i < backups.length - 1 ? '1px solid rgba(0,0,0,.05)' : 'none',
+              borderBottom: i < backups.length - 1 ? '1px solid rgba(201,168,76,.12)' : 'none',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -142,7 +142,7 @@ export default async function BackupsPage() {
                 <div style={{ fontSize: 13, fontWeight: 500, color: '#1A1A1A', fontFamily: 'monospace' }}>
                   {b.name}
                 </div>
-                <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 2 }}>
                   {b.created_at ? fmtDate(b.created_at) : '—'}
                   {b.metadata?.size ? ` · ${fmtBytes(b.metadata.size)}` : ''}
                 </div>
@@ -168,18 +168,18 @@ export default async function BackupsPage() {
                 Télécharger
               </a>
             ) : (
-              <span style={{ fontSize: 11, color: '#ccc' }}>Lien expiré</span>
+              <span style={{ fontSize: 11, color: 'var(--t3)' }}>Lien expiré</span>
             )}
           </div>
         ))}
       </div>
 
       {/* Instructions restauration */}
-      <div style={{ marginTop: 24, padding: '16px 20px', borderRadius: 10, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.06)' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 8, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+      <div style={{ marginTop: 24, padding: '16px 20px', borderRadius: 10, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.12)' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--t2)', marginBottom: 8, letterSpacing: '.08em', textTransform: 'uppercase' }}>
           Comment restaurer
         </div>
-        <div style={{ fontSize: 12, color: '#666', lineHeight: 1.7 }}>
+        <div style={{ fontSize: 12, color: 'var(--t2)', lineHeight: 1.7 }}>
           Chaque fichier JSON contient toutes les tables Owise. Pour restaurer, ouvrez le fichier,
           copiez les données d&apos;une table, et importez-les via <strong>Supabase → Table Editor</strong> ou
           via un script SQL <code>INSERT</code>. Contactez le support technique pour une restauration complète.

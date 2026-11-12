@@ -165,7 +165,7 @@ export default function FactureActions({
       {sendMsg && (
         <p style={{
           margin: 0, fontSize: 11, textAlign: 'center',
-          color: sendOk ? 'var(--grn)' : 'var(--red)',
+          color: sendOk ? 'var(--grn)' : 'var(--red-txt)',
         }}>
           {sendMsg}
         </p>
@@ -212,7 +212,7 @@ export default function FactureActions({
             width: '100%', padding: '10px',
             borderRadius: 8,
             background: 'rgba(217,80,80,.08)', border: '1px solid rgba(217,80,80,.2)',
-            color: 'var(--red)', fontSize: 11,
+            color: 'var(--red-txt)', fontSize: 11,
             cursor: pending ? 'wait' : 'pointer',
             fontFamily: 'var(--font-dm-sans), sans-serif',
           }}
@@ -256,7 +256,7 @@ export default function FactureActions({
             style={{
               width: '100%', padding: '9px', borderRadius: 8,
               background: 'transparent', border: '1px solid rgba(217,84,84,.25)',
-              color: 'var(--red)', fontSize: 11,
+              color: 'var(--red-txt)', fontSize: 11,
               cursor: pending ? 'wait' : 'pointer',
               fontFamily: 'var(--font-dm-sans), sans-serif',
             }}
@@ -271,7 +271,7 @@ export default function FactureActions({
             </div>
             <div style={{ fontSize: 10.5, color: 'var(--t3)', marginBottom: 6 }}>
               Tapez{' '}
-              <span style={{ color: 'var(--red)', fontFamily: 'var(--font-jetbrains), monospace' }}>{numero}</span>
+              <span style={{ color: 'var(--red-txt)', fontFamily: 'var(--font-jetbrains), monospace' }}>{numero}</span>
               {' '}pour confirmer
             </div>
             <input
@@ -317,7 +317,7 @@ export default function FactureActions({
               </button>
             </div>
             {errSuppr && (
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--red)', lineHeight: 1.5 }}>
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--red-txt)', lineHeight: 1.5 }}>
                 {errSuppr}
               </div>
             )}

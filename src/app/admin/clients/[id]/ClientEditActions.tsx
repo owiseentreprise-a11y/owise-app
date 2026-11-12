@@ -51,7 +51,7 @@ function EmailField({ clientId, email }: { clientId: string; email: string }) {
               outline: 'none', fontFamily: 'var(--font-jetbrains, monospace)',
               width: '100%', boxSizing: 'border-box' as const,
             }} />
-          {err && <div style={{ fontSize: 11, color: 'var(--red)' }}>{err}</div>}
+          {err && <div style={{ fontSize: 11, color: 'var(--red-txt)' }}>{err}</div>}
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={save} disabled={pending} style={{
               flex: 1, padding: '7px', borderRadius: 7, border: 'none', cursor: pending ? 'wait' : 'pointer',
@@ -72,14 +72,14 @@ function EmailField({ clientId, email }: { clientId: string; email: string }) {
           border: `1px solid ${saved ? 'rgba(61,184,122,.2)' : 'rgba(201,168,76,.18)'}`,
           borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'all .3s',
         }}>
-          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? '#3DB87A' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? 'var(--grn)' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
           <span style={{
             flex: 1, fontSize: 12, color: 'var(--t1)', fontFamily: 'var(--font-jetbrains, monospace)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{value}</span>
-          {saved && <span style={{ fontSize: 10, color: '#3DB87A', fontWeight: 600, flexShrink: 0 }}>✓ Mis à jour</span>}
+          {saved && <span style={{ fontSize: 10, color: 'var(--grn)', fontWeight: 600, flexShrink: 0 }}>✓ Mis à jour</span>}
           <button onClick={copy} title="Copier" style={{
             background: 'transparent', border: 'none', borderRadius: 4,
             padding: '3px 6px', cursor: 'pointer', fontSize: 10,
@@ -162,7 +162,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
         border: '1px solid rgba(217,84,84,.2)',
         borderRadius: 12, padding: 16,
       }}>
-        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red)', fontWeight: 500, marginBottom: 8 }}>
+        <div style={{ fontSize: 9.5, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--red-txt)', fontWeight: 500, marginBottom: 8 }}>
           Zone dangereuse
         </div>
         <p style={{ fontSize: 12, color: 'var(--t2)', marginBottom: 12, lineHeight: 1.5 }}>
@@ -173,7 +173,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
           style={{
             width: '100%', padding: '8px 0', borderRadius: 8,
             background: 'rgba(217,84,84,.08)', border: '1px solid rgba(217,84,84,.25)',
-            color: 'var(--red)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            color: 'var(--red-txt)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'var(--font-dm-sans), sans-serif',
             transition: 'background .15s',
           }}
@@ -187,7 +187,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
           onClick={e => { if (e.target === e.currentTarget) close() }}
           style={{
             position: 'fixed', inset: 0, zIndex: 300,
-            background: 'rgba(9,9,26,.8)', backdropFilter: 'blur(4px)',
+            background: 'rgba(201,168,76,.12)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 24,
           }}
@@ -197,7 +197,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
             border: '1px solid rgba(217,84,84,.3)',
             borderRadius: 16, padding: 28,
             maxWidth: 400, width: '100%',
-            boxShadow: '0 24px 64px rgba(0,0,0,.6)',
+            boxShadow: '0 24px 64px rgba(201,168,76,.12)',
           }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
@@ -226,7 +226,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, color: 'var(--t3)', marginBottom: 6 }}>
                 Tapez{' '}
-                <span style={{ color: 'var(--red)', fontFamily: 'var(--font-jetbrains), monospace' }}>
+                <span style={{ color: 'var(--red-txt)', fontFamily: 'var(--font-jetbrains), monospace' }}>
                   {nomAffiche}
                 </span>{' '}
                 pour confirmer
@@ -250,7 +250,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
             </div>
 
             {error && (
-              <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 12, padding: '8px 12px', background: 'rgba(217,84,84,.08)', borderRadius: 6 }}>
+              <div style={{ fontSize: 12, color: 'var(--red-txt)', marginBottom: 12, padding: '8px 12px', background: 'rgba(217,84,84,.08)', borderRadius: 6 }}>
                 {error}
               </div>
             )}

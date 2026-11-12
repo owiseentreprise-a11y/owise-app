@@ -105,17 +105,17 @@ export default function DispatchRapideButton({
             ...(pos.bottom !== undefined ? { bottom: pos.bottom } : { top: pos.top }),
             right: pos.right,
             zIndex: 9999, minWidth: 210,
-            background: '#FFFFFF',
-            border: '1px solid rgba(0,0,0,.1)',
+            background: 'var(--surface)',
+            border: '1px solid rgba(201,168,76,.12)',
             borderRadius: 10,
-            boxShadow: '0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06)',
+            boxShadow: '0 8px 32px rgba(201,168,76,.12), 0 2px 8px rgba(201,168,76,.12)',
             overflow: 'hidden',
           }}
         >
           <div style={{
             padding: '9px 13px 6px',
             fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase',
-            color: '#999', fontWeight: 500, borderBottom: '1px solid rgba(0,0,0,.07)',
+            color: 'var(--t3)', fontWeight: 500, borderBottom: '1px solid rgba(201,168,76,.12)',
           }}>
             Assigner un chauffeur
           </div>
@@ -139,9 +139,9 @@ export default function DispatchRapideButton({
                     style={{
                       display: 'flex', alignItems: 'center', gap: 9,
                       width: '100%', padding: '9px 13px',
-                      background: isCurrent ? 'rgba(201,168,76,.08)' : isHov ? 'rgba(0,0,0,.04)' : 'transparent',
+                      background: isCurrent ? 'rgba(201,168,76,.08)' : isHov ? 'rgba(201,168,76,.12)' : 'transparent',
                       border: 'none', cursor: 'pointer',
-                      color: isCurrent ? '#C9A84C' : '#0A0A0A',
+                      color: isCurrent ? '#C9A84C' : 'var(--t1)',
                       fontSize: 12, textAlign: 'left',
                       transition: 'background .08s',
                     }}
@@ -159,7 +159,7 @@ export default function DispatchRapideButton({
                     )}
                     {!isCurrent && (
                       <span style={{
-                        fontSize: 9, color: c.statut === 'disponible' ? '#3DB87A' : '#999',
+                        fontSize: 9, color: c.statut === 'disponible' ? 'var(--grn)' : 'var(--t3)',
                         letterSpacing: '.06em',
                       }}>
                         {c.statut === 'disponible' ? 'Dispo' : 'Hors ligne'}
@@ -182,7 +182,7 @@ export default function DispatchRapideButton({
                   display: 'flex', alignItems: 'center', gap: 8,
                   width: '100%', padding: '9px 13px 11px',
                   background: hovered === '__unassign__' ? 'rgba(217,84,84,.06)' : 'transparent',
-                  border: 'none', cursor: 'pointer', color: '#D95454',
+                  border: 'none', cursor: 'pointer', color: 'var(--red-txt)',
                   fontSize: 11, textAlign: 'left', transition: 'background .08s',
                 }}
               >
