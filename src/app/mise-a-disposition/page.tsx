@@ -1,0 +1,308 @@
+/**
+ * Mise à disposition — un chauffeur réservé à l'heure, pas pour un trajet.
+ *
+ * POURQUOI CETTE PAGE EXISTE
+ *
+ * Mesure Search Console du 2026-11-12 : « private chauffeur in paris for a
+ * full day, how much » montrait owise.fr 29 fois en huit semaines, en
+ * position 9,4 — page 1 — pour **zéro clic**. Des gens demandaient le prix
+ * d'une journée de chauffeur, Google proposait Owise, et le site n'avait
+ * rien à répondre. Côté français, « mise à disposition chauffeur » tombait
+ * en position 77 sur un article de blog : aucune page ne traitait le sujet.
+ *
+ * AUCUN PRIX N'EST ÉCRIT DANS CE FICHIER
+ *
+ * Même règle que les deux pages anglaises. Tous les montants viennent de la
+ * table `tarifs`, colonne `prix_heure`, réglable depuis /admin/tarifs ; le
+ * calcul vient de `prixMiseADisposition()` dans `calcPrix.ts`. Un montant
+ * écrit ici serait un second barème, hors de portée de l'exploitant et de
+ * tout contrôle.
+ *
+ * SI LA LECTURE ÉCHOUE, LA PAGE N'ANNONCE AUCUN PRIX plutôt qu'un prix faux :
+ * chaque véhicule retombe alors sur « sur devis », ce qui reste vrai.
+ */
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { GAMME } from '@/lib/gamme'
+import { formaterMontant } from '@/lib/montant'
+import { BASE_OWISE, IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
+import { EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
+import {
+  DEFINITION, USAGES, MENTION_TARIFS, SOUS_RESERVE, HEURE_ENTAMEE,
+} from '@/lib/mise-a-disposition'
+import DemandeMiseADisposition, { type VehiculeMAD } from './DemandeMiseADisposition'
+
+export const revalidate = 3600
+
+const CHEMIN = '/mise-a-disposition'
+const URL_FR = `${BASE_OWISE}${CHEMIN}`
+const URL_EN = `${BASE_OWISE}/en/private-chauffeur-paris`
+const TITRE  = 'Mise à disposition d’un chauffeur — Paris et Île-de-France'
+
+export const metadata: Metadata = {
+  title: TITRE,
+  description:
+    'Un chauffeur et un véhicule réservés à l’heure, à la demi-journée ou à la '
+    + 'journée, à Paris et en Île-de-France. Tarif horaire annoncé par véhicule, '
+    + 'toute heure entamée est due, sous réserve de disponibilité.',
+  alternates: { canonical: URL_FR, languages: { fr: URL_FR, en: URL_EN } },
+  openGraph: { title: TITRE, url: URL_FR, type: 'website', locale: 'fr_FR' },
+}
+
+/** Les véhicules avec leur tarif horaire, tels qu'ils sont en base. */
+async function lireVehicules(): Promise<{ vehicules: VehiculeMAD[]; avis: { nombre: number; note: number } }> {
+  const admin = createAdminClient()
+  const [{ data: tarifs }, avis] = await Promise.all([
+    admin.from('tarifs').select('*'),   /* '*' et pas une liste : voir la note dans tarification.ts */
+    lireAvis(admin),
+  ])
+
+  /* L'ordre vient de GAMME, seule source des noms et de l'ordre d'affichage.
+     Lire l'ordre de la base donnerait un classement par identifiant. */
+  const vehicules: VehiculeMAD[] = GAMME.map(v => {
+    const ligne = (tarifs ?? []).find((t: { vehicule: string }) => t.vehicule === v.nomTarif)
+    const brut = ligne?.prix_heure
+    const prixHeure = brut == null ? null : Number(brut)
+    return {
+      cle: v.cle,
+      nom: v.nom,
+      places: v.capaciteMin === v.capaciteMax
+        ? `${v.capaciteMax} passagers`
+        : `${v.capaciteMin} à ${v.capaciteMax} passagers`,
+      prixHeure: prixHeure != null && Number.isFinite(prixHeure) && prixHeure > 0 ? prixHeure : null,
+    }
+  })
+  return { vehicules, avis }
+}
+
+const FAQ = [
+  {
+    q: 'Qu’est-ce qu’une mise à disposition ?',
+    a: DEFINITION,
+  },
+  {
+    q: 'Comment les heures sont-elles comptées ?',
+    a: `Elles courent de l’heure de prise en charge à l’heure où vous libérez le `
+       + `chauffeur. ${HEURE_ENTAMEE} Une prestation de 3 h 15 est donc facturée 4 h.`,
+  },
+  {
+    q: 'Le prix annoncé est-il garanti ?',
+    a: `Le tarif horaire affiché est celui qui s’applique. ${SOUS_RESERVE} `
+       + `Nous confirmons la disponibilité du véhicule avant toute réservation ferme.`,
+  },
+  {
+    q: 'Puis-je changer de programme en cours de journée ?',
+    a: 'Oui, c’est l’intérêt de la formule : le chauffeur reste avec vous et vous '
+       + 'décidez des étapes au fur et à mesure, dans la limite de la durée réservée.',
+  },
+  {
+    q: 'Et si la prestation dure plus longtemps que prévu ?',
+    a: `Les heures supplémentaires se facturent au même tarif horaire, `
+       + `${HEURE_ENTAMEE.toLowerCase()}`,
+  },
+]
+
+export default async function Page() {
+  const { vehicules, avis } = await lireVehicules()
+  const tarifes = vehicules.filter(v => v.prixHeure != null)
+
+  const ficheLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Mise à disposition de chauffeur avec véhicule',
+    provider: { '@type': 'LocalBusiness', ...IDENTITE_OWISE },
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+      { '@type': 'AdministrativeArea', name: 'Oise' },
+    ],
+    url: URL_FR,
+    description: DEFINITION,
+    /* Les offres portent le prix HORAIRE, avec son unité. Déclarer « 60 »
+       sans dire « par heure » laisserait croire à un forfait. */
+    offers: tarifes.map(v => ({
+      '@type': 'Offer',
+      name: `Mise à disposition — ${v.nom}`,
+      priceCurrency: 'EUR',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: String(v.prixHeure),
+        priceCurrency: 'EUR',
+        unitCode: 'HUR',
+        unitText: 'heure',
+        valueAddedTaxIncluded: true,
+      },
+      availability: 'https://schema.org/LimitedAvailability',
+    })),
+    aggregateRating: ficheAvis(avis.nombre, avis.note),
+  }
+
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }
+
+  const filAriane = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Owise', item: BASE_OWISE },
+      { '@type': 'ListItem', position: 2, name: 'Mise à disposition', item: URL_FR },
+    ],
+  }
+
+  const or = '#C9A84C'
+  const creme = '#EDE8DF'
+  const doux = 'rgba(237,232,223,.72)'
+  const pale = 'rgba(237,232,223,.60)'
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ficheLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(filAriane) }} />
+
+      <main style={{ background: '#09091A', minHeight: '100vh', fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}>
+
+        <header style={{
+          borderBottom: '1px solid rgba(201,168,76,.16)', padding: '14px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
+        }}>
+          <Link href="/" style={{ color: or, textDecoration: 'none', fontSize: 17, fontWeight: 600, letterSpacing: '.14em' }}>
+            OWISE
+          </Link>
+          <Link href="/en/private-chauffeur-paris" hrefLang="en" style={{ color: pale, textDecoration: 'none', fontSize: 12.5, letterSpacing: '.04em' }}>
+            English version →
+          </Link>
+        </header>
+
+        {/* ── Bandeau ─────────────────────────────────────────────────── */}
+        <section style={{ padding: '60px 20px 40px', maxWidth: 940, margin: '0 auto' }}>
+          <p style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(201,168,76,.85)', marginBottom: 18 }}>
+            Chauffeur à l’heure · Paris &amp; Île-de-France
+          </p>
+          <h1 style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 'clamp(34px, 6vw, 58px)', fontWeight: 500, lineHeight: 1.08,
+            color: creme, margin: '0 0 22px', textWrap: 'balance',
+          }}>
+            Un chauffeur à votre disposition, à l’heure ou à la journée
+          </h1>
+          <p style={{ fontSize: 16.5, lineHeight: 1.75, color: doux, maxWidth: 660, margin: '0 0 10px' }}>
+            {DEFINITION}
+          </p>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: pale, maxWidth: 660, margin: 0 }}>
+            {MENTION_TARIFS}
+          </p>
+        </section>
+
+        {/* ── La grille des tarifs, lue en base ───────────────────────── */}
+        <section style={{ padding: '0 20px 48px', maxWidth: 940, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase', color: pale, marginBottom: 14, fontWeight: 500 }}>
+            Tarif horaire par véhicule
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            {vehicules.map(v => (
+              <div key={v.cle} style={{
+                background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.16)',
+                borderRadius: 13, padding: '18px 18px 16px',
+              }}>
+                <div style={{ fontSize: 14.5, fontWeight: 600, color: creme, marginBottom: 3 }}>{v.nom}</div>
+                <div style={{ fontSize: 11.5, color: pale, marginBottom: 12 }}>{v.places}</div>
+                <div style={{
+                  fontFamily: "var(--font-jetbrains), monospace",
+                  fontSize: 21, fontWeight: 600, color: v.prixHeure == null ? doux : or, lineHeight: 1.1,
+                }}>
+                  {v.prixHeure == null ? 'sur devis' : formaterMontant(v.prixHeure)}
+                </div>
+                {v.prixHeure != null && (
+                  <div style={{ fontSize: 11.5, color: pale, marginTop: 3 }}>de l’heure</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Le simulateur et la demande ─────────────────────────────── */}
+        <section id="demande" style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
+          <div style={{
+            background: 'rgba(237,232,223,.025)', border: '1px solid rgba(201,168,76,.18)',
+            borderRadius: 18, padding: 'clamp(20px, 4vw, 34px)',
+          }}>
+            <h2 style={{
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 500, color: creme, margin: '0 0 6px',
+            }}>
+              Calculez votre mise à disposition
+            </h2>
+            <p style={{ fontSize: 14, color: pale, margin: '0 0 26px' }}>
+              Choisissez le véhicule et la durée : le prix s’affiche tout de suite.
+            </p>
+            <DemandeMiseADisposition vehicules={vehicules} />
+          </div>
+        </section>
+
+        {/* ── Les occasions ───────────────────────────────────────────── */}
+        <section style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase', color: pale, marginBottom: 16, fontWeight: 500 }}>
+            Quand cette formule a du sens
+          </h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
+            {USAGES.map(u => (
+              <li key={u} style={{
+                fontSize: 14.5, color: doux, lineHeight: 1.6,
+                padding: '13px 16px', borderRadius: 11,
+                background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.12)',
+              }}>
+                {u}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ── Questions ───────────────────────────────────────────────── */}
+        <section style={{ padding: '0 20px 60px', maxWidth: 760, margin: '0 auto' }}>
+          <h2 style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 500, color: creme, margin: '0 0 22px',
+          }}>
+            Questions fréquentes
+          </h2>
+          {FAQ.map(f => (
+            <div key={f.q} style={{ borderTop: '1px solid rgba(201,168,76,.14)', padding: '18px 0' }}>
+              <h3 style={{ fontSize: 15.5, fontWeight: 600, color: creme, margin: '0 0 7px' }}>{f.q}</h3>
+              <p style={{ fontSize: 14.5, lineHeight: 1.7, color: doux, margin: 0 }}>{f.a}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* ── Pied ────────────────────────────────────────────────────── */}
+        <footer style={{
+          borderTop: '1px solid rgba(201,168,76,.16)', padding: '26px 20px 40px',
+          maxWidth: 940, margin: '0 auto', fontSize: 13, color: pale, lineHeight: 1.8,
+        }}>
+          <div style={{ marginBottom: 8 }}>
+            <Link href="/" style={{ color: or, textDecoration: 'none' }}>Owise</Link>
+            {' · '}
+            <Link href="/reserver" style={{ color: doux, textDecoration: 'none' }}>Réserver un transfert</Link>
+            {' · '}
+            <Link href="/mentions-legales" style={{ color: doux, textDecoration: 'none' }}>Mentions légales</Link>
+          </div>
+          <div>
+            <a href={`tel:${IDENTITE_OWISE.telephone}`} style={{ color: doux, textDecoration: 'none' }}>
+              {telephoneLisible(IDENTITE_OWISE.telephone)}
+            </a>
+            {' · '}
+            <a href={`mailto:${EMAIL_DEVIS}`} style={{ color: doux, textDecoration: 'none' }}>{EMAIL_DEVIS}</a>
+          </div>
+        </footer>
+      </main>
+    </>
+  )
+}

@@ -40,6 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
     { url: `${BASE}/faq`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/reserver`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+    /* Mise à disposition, ajoutée le 2026-11-13. Priorité 0.9 comme
+       /reserver : c'est une seconde porte d'entrée commerciale, pas une page
+       d'information. La demande est mesurée — « private chauffeur in paris
+       for a full day, how much » montrait le site en position 9,4 sans
+       qu'aucune page ne réponde. */
+    { url: `${BASE}/mise-a-disposition`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
     ...(posts.length > 0 ? [{ url: `${BASE}/blog`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.7 }] : []),
     ...DESTINATION_SLUGS.map(slug => ({
       url: `${BASE}/${slug}`,

@@ -8,6 +8,9 @@ type Tarif = {
   vehicule: string
   prise_en_charge: number
   prix_km: number
+  /* Mise a disposition, en euros par heure entamee. `null` = sur devis :
+     la page publique affiche alors « sur devis » au lieu d'un prix. */
+  prix_heure: number | null
 }
 
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -35,6 +38,44 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
   )
 }
 
+/**
+ * Comme NumField, mais le vide est une valeur : il signifie « sur devis ».
+ * Sans ce champ a part, saisir rien donnerait 0, et la page publique
+ * afficherait « 0 EUR de l'heure » — un prix faux vaut moins que pas de prix.
+ */
+function NumFieldVide({ label, value, onChange, aide }: {
+  label: string; value: number | null; onChange: (v: number | null) => void; aide?: string
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <label style={{ fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t3)', fontWeight: 500 }}>
+        {label}
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <input
+          type="number"
+          step="1"
+          min="0"
+          placeholder="sur devis"
+          defaultValue={value ?? ''}
+          onChange={e => {
+            const brut = e.target.value.trim()
+            onChange(brut === '' ? null : (parseFloat(brut) || 0))
+          }}
+          style={{
+            flex: 1, background: 'var(--elevated)', border: '1px solid var(--gb)',
+            borderRadius: 7, padding: '8px 10px', fontSize: 13,
+            color: 'var(--t1)', fontFamily: 'var(--font-jetbrains), monospace',
+            outline: 'none', width: '100%', boxSizing: 'border-box' as const,
+          }}
+        />
+        <span style={{ fontSize: 11, color: 'var(--t3)', flexShrink: 0 }}>€/h</span>
+      </div>
+      {aide && <div style={{ fontSize: 10, color: 'var(--t3)' }}>{aide}</div>}
+    </div>
+  )
+}
+
 function VehiculeCard({ tarif }: { tarif: Tarif }) {
   const [data, setData] = useState({ ...tarif })
   const [pending, startTransition] = useTransition()
@@ -54,6 +95,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
       const res = await updateTarifVehicule(tarif.id, {
         prise_en_charge: data.prise_en_charge,
         prix_km:         data.prix_km,
+        prix_heure:      data.prix_heure,
       })
       if (res.error) setError(res.error)
       else setSaved(true)
@@ -81,6 +123,22 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
           onChange={v => setData(d => ({ ...d, prise_en_charge: v }))} />
         <NumField label="Prix / km (€)" value={data.prix_km}
           onChange={v => setData(d => ({ ...d, prix_km: v }))} />
+      </div>
+
+      {/* MISE A DISPOSITION — ajoutee le 2026-11-13.
+          Separee des deux champs ci-dessus parce qu'elle ne sert pas au meme
+          calcul : un transfert se paie a la distance, une mise a disposition
+          a la duree. Les melanger dans la meme grille laisserait croire
+          qu'elles s'additionnent. */}
+      <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 12 }}>
+        <NumFieldVide
+          label="Mise à disposition (€ / heure)"
+          value={data.prix_heure}
+          onChange={v => setData(d => ({ ...d, prix_heure: v }))}
+          aide={data.prix_heure == null
+            ? 'Vide : ce véhicule sera affiché \u00ab sur devis \u00bb.'
+            : `4 h : ${data.prix_heure * 4} €  \u00b7  8 h : ${data.prix_heure * 8} €  \u00b7  12 h : ${data.prix_heure * 12} €`}
+        />
       </div>
 
       {/* Simulation */}

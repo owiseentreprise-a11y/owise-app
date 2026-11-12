@@ -170,7 +170,7 @@ const LONGUEUR_PRIX_SUR_SA_LIGNE = 20
 export default async function VitrinePage() {
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: zones }, { data: grille }, { data: params }] = await Promise.all([
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
     admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     chargerParametres(admin).then(d => ({ data: d })),

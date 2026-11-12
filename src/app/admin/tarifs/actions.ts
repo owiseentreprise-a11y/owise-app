@@ -10,11 +10,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 function revalidatePagesPubliques() {
   revalidatePath('/')
   revalidatePath('/[destination]', 'page')
+  /* La mise à disposition affiche le tarif horaire lu en base : sans ces deux
+     lignes, passer 60 € à 65 € dans cet écran laisserait les pages publiques
+     annoncer 60 € pendant une heure. Ajoutées le 2026-11-13 avec la page. */
+  revalidatePath('/mise-a-disposition')
+  revalidatePath('/en/private-chauffeur-paris')
 }
 
 export async function updateTarifVehicule(
   id: string,
-  data: { prise_en_charge: number; prix_km: number }
+  /* `prix_heure` peut valoir null, et c'est une valeur : elle signifie
+     « sur devis ». La rendre optionnelle laisserait un oubli passer
+     pour une absence de changement. */
+  data: { prise_en_charge: number; prix_km: number; prix_heure: number | null }
 ): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()

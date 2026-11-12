@@ -27,7 +27,7 @@ async function calculerPrixServeur(
   const admin = createAdminClient()
   const [grilleRes, tarifsRes, zonesRes, paramsRes] = await Promise.all([
     admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code','HORS').eq('active', true),
     chargerParametres(admin).then(d => ({ data: d })),
   ])
@@ -59,7 +59,7 @@ async function appliquerEtapes(
   if (etapes.length === 0) return prix
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: params }] = await Promise.all([
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     chargerParametres(admin).then(d => ({ data: d })),
   ])
   const mesure = await detourKm(depart, etapes, arrivee)
@@ -150,7 +150,7 @@ export async function createReservationCheckout(data: {
   if ((!prixServeur || prixServeur <= 0) && data.distance_km && data.distance_km > 0) {
     const admin = createAdminClient()
     const [{ data: tarifs }, { data: params }] = await Promise.all([
-      admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+      admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
       chargerParametres(admin).then(d => ({ data: d })),
     ])
     const dist = Math.min(Math.max(data.distance_km, 1), 600) // borne 1–600 km

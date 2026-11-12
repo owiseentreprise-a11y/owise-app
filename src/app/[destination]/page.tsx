@@ -1425,7 +1425,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
 
   const admin = createAdminClient()
   const [{ data: tarifs }, { data: zones }, { data: grille }, { data: tarifParams }] = await Promise.all([
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
     admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
     chargerParametres(admin).then(d => ({ data: d })),

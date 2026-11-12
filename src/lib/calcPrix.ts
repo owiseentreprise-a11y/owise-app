@@ -87,6 +87,8 @@ export type TarifCalc  = {
   cdg_fixe: number
   orly_fixe: number
   beauvais_fixe: number
+  /** Mise a disposition : euros par heure ENTAMEE. `null` = sur devis. */
+  prix_heure?: number | null
 }
 export type ParamsCalc = {
   /* Pas de `coef_berline` ici, et c'est voulu. Voir la note sous les replis. */
@@ -215,6 +217,51 @@ function nomTarifPour(vehiculeKey: string): string {
  * Le repli reproduit donc à l'identique l'ancien comportement : la ligne du
  * van, plus 0,10 EUR du kilomètre.
  */
+/* ════════════════════════════════════════════════════════════════════════
+   LA MISE A DISPOSITION — un chauffeur reserve a l'heure, sans destination
+   ════════════════════════════════════════════════════════════════════════
+   Ajoutee le 2026-11-12. Ce n'est pas un trajet : il n'y a ni distance, ni
+   zone, ni forfait aeroport. Le prix ne depend que du vehicule et de la
+   duree, et il n'emprunte RIEN au calcul kilometrique — les melanger serait
+   recreer la divergence que `calcPrix.ts` existe pour empecher.
+
+   « UNE HEURE ENTAMEE EST FACTUREE », regle de l'exploitant du 2026-11-12.
+   D'ou l'arrondi au superieur : 3 h 15 se facturent 4 h. Le client le lit en
+   toutes lettres sur la page, il n'y a pas de surprise a l'arrivee.
+
+   Les majorations de nuit et de week-end ne s'y appliquent PAS : le tarif
+   horaire est deja un tarif de disponibilite. L'y ajouter reviendrait a
+   compter deux fois la meme contrainte. Si l'exploitant veut l'inverse un
+   jour, ce sera une decision explicite, pas un effet de bord.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/** Le nombre d'heures reellement facturees pour une duree demandee. */
+export function heuresFacturees(heuresDemandees: number): number {
+  if (!Number.isFinite(heuresDemandees) || heuresDemandees <= 0) return 0
+  return Math.ceil(heuresDemandees - 1e-9)   // 4.0 reste 4, 4.01 devient 5
+}
+
+/**
+ * Le prix d'une mise a disposition, ou `null` quand le vehicule n'en a pas.
+ *
+ * `null` n'est pas un echec : le Grand Van 8 places n'a volontairement pas de
+ * tarif horaire, et la page doit alors afficher « sur devis » plutot qu'un
+ * prix invente. Ne jamais remplacer ce `null` par une valeur de repli.
+ */
+export function prixMiseADisposition(
+  vehiculeKey: string,
+  heuresDemandees: number,
+  tarifs: TarifCalc[],
+): { prix: number; heures: number; prixHeure: number } | null {
+  const tarif = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
+  const prixHeure = tarif?.prix_heure == null ? null : Number(tarif.prix_heure)
+  if (prixHeure == null || !Number.isFinite(prixHeure) || prixHeure <= 0) return null
+
+  const heures = heuresFacturees(heuresDemandees)
+  if (heures <= 0) return null
+  return { prix: Math.round(heures * prixHeure), heures, prixHeure }
+}
+
 export function tarifPourVehicule(
   vehiculeKey: string,
   tarifs: TarifCalc[],

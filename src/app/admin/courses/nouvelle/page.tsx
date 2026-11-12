@@ -18,7 +18,7 @@ export default async function NouvelleCourse() {
     supabase.from('sous_traitants').select('id, nom').eq('actif', true).order('nom'),
     supabase.from('zones').select('*').order('ordre'),
     supabase.from('grilles_tarifaires').select('*'),
-    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    supabase.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     chargerParametres(supabase).then(d => ({ data: d })),
     // Courses déjà assignées, pour signaler qu'un chauffeur est pris sur le créneau.
     supabase.from('courses')

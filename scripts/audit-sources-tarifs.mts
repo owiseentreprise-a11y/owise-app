@@ -105,6 +105,50 @@ if (aLaMain === 0) {
   ok(`aucune page ne cite ses colonnes tarifaires — ${parLeChargeur} fichier(s) passent par src/lib/tarification.ts`)
 }
 
+// ── 2 bis. La table « tarifs » aussi ───────────────────────────────────────
+console.log('\n\x1b[1m2 bis. Lectures de « tarifs » : la table entière ?\x1b[0m')
+/* POURQUOI CETTE SECTION EXISTE — trouvee le 2026-11-12.
+
+   La section precedente ne surveillait que `parametres`. Or `tarifs` porte
+   elle aussi des reglages par vehicule, et SEPT fichiers la lisaient en
+   citant six colonnes a la main. En ajoutant `prix_heure` (mise a
+   disposition), la colonne n'existait dans aucune de ces sept listes : elle
+   serait arrivee `undefined`, et le tarif horaire regle dans /admin/tarifs
+   n'aurait eu aucun effet nulle part — exactement le defaut
+   `supplement_etape` de septembre, dans une autre table.
+
+   `tarifs` ne contient aucune donnee privee : rien n'empeche `select('*')`,
+   meme sur une page qui passe le resultat au navigateur. */
+let tarifsALaMain = 0
+let tarifsEntiers = 0
+for (const f of tous) {
+  for (const m of lire(f).matchAll(/from\(\s*['"`]tarifs['"`]\s*\)\s*\.\s*select\(\s*([`'"])([^`'"]*)\1/g)) {
+    const liste = m[2].trim()
+    if (liste === '*') { tarifsEntiers++; continue }
+    tarifsALaMain++
+    ko(`${court(f)} cite ses colonnes de « tarifs » a la main — mettre select('*')`
+       + `\n         ${liste.slice(0, 110)}…`)
+  }
+}
+if (tarifsALaMain === 0) {
+  ok(`les ${tarifsEntiers} lecture(s) de « tarifs » prennent la table entiere`)
+}
+
+/* Et le tarif horaire est-il reellement lu quelque part ? Une colonne reglable
+   dans /admin/tarifs que personne ne lit est un bouton sans fil. */
+{
+  const { data } = await createAdminClient().from('tarifs').select('vehicule, prix_heure')
+  const regles = (data ?? []).filter((t: { prix_heure: number | null }) => t.prix_heure != null)
+  const lu = tous.some(f => /prixMiseADisposition|prix_heure/.test(lire(f)))
+  if (regles.length === 0) {
+    ok('aucun tarif horaire regle en base — rien a verifier')
+  } else if (lu) {
+    ok(`tarif horaire regle sur ${regles.length} vehicule(s), et lu par le code`)
+  } else {
+    ko(`tarif horaire regle sur ${regles.length} vehicule(s) mais LU PAR AUCUNE PAGE`)
+  }
+}
+
 // ── 3. Les replis du code correspondent-ils encore a la base ? ─────────────
 console.log('\n\x1b[1m3. Valeurs de repli du code, face à la base\x1b[0m')
 const calcPrix = lire(resolve('src/lib/calcPrix.ts'))

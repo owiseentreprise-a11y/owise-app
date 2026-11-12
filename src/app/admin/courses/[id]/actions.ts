@@ -340,7 +340,7 @@ export async function estimerSurcoutEtapesAction(
 
   const [{ data: course }, { data: tarifs }, { data: params }] = await Promise.all([
     supabase.from('courses').select('adresse_depart,adresse_arrivee,type_vehicule,date_prevue').eq('id', courseId).single(),
-    supabase.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    supabase.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     chargerParametres(supabase).then(d => ({ data: d })),
   ])
   if (!course) return { error: 'Course introuvable' }

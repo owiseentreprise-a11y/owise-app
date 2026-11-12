@@ -38,6 +38,14 @@ import { lienDevis, EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
    « Book now » menait au formulaire FRANÇAIS — y compris dans sa fiche
    structurée, c'est-à-dire dans la phrase qu'un assistant recopie. */
 import { JUMEAU_RESERVATION } from '@/lib/langue'
+/* La mise a disposition : les mots dans `mise-a-disposition.ts`, les prix
+   dans la table `tarifs`, le calcul dans `calcPrix.ts`. Cette page ne fait
+   que les montrer — elle n'ecrit ni prix ni regle. */
+import { GAMME } from '@/lib/gamme'
+import { formaterMontant } from '@/lib/montant'
+import { MENTION_TARIFS_EN, DEFINITION_EN, USAGES_EN } from '@/lib/mise-a-disposition'
+import DemandeMiseADisposition, { type VehiculeMAD }
+  from '@/app/mise-a-disposition/DemandeMiseADisposition'
 import { chargerParametres } from '@/lib/tarification'
 
 /* Même cadence que le reste du site : reconstruite au plus une fois par
@@ -75,7 +83,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: TITRE,
-    description: 'Fixed-price private chauffeur service in Paris: airports, stations, long distance, hourly hire on request.',
+    description: 'Fixed-price private chauffeur service in Paris: airports, stations, long distance, hourly hire at a published rate per hour.',
     url: URL_EN,
     locale: 'en_GB',
     siteName: 'Owise',
@@ -112,12 +120,28 @@ const VEHICULES: { cle: string; nom: string; places: string }[] = [
   { cle: 'van',             nom: 'Van',           places: 'up to 7 passengers · 7 bags' },
 ]
 
+/**
+ * Le nom anglais d'un vehicule, pour l'affichage SEULEMENT.
+ *
+ * `gamme.ts` reste la seule source du nom qui compte — celui qui relie un
+ * vehicule a sa ligne de la table `tarifs`, et qui ne doit jamais etre
+ * traduit. Ici on ne traduit que ce que le lecteur voit : ecrire
+ * « Van 7 places » sur une page anglaise, au milieu de « Sedan » et
+ * « Premium sedan », donnerait une page a moitie traduite.
+ */
+const NOM_EN: Record<string, string> = {
+  berline: 'Sedan',
+  berline_premium: 'Premium sedan',
+  van: 'Van, 7 seats',
+  grand_van: 'Large van, 8 seats',
+}
+
 async function lireDonnees() {
   const admin = createAdminClient()
   const [{ data: zones }, { data: grille }, { data: tarifs }, { data: params }] = await Promise.all([
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
     admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     chargerParametres(admin).then(d => ({ data: d })),
   ])
   const avis = await lireAvis(admin)
@@ -147,7 +171,25 @@ async function lireDonnees() {
     return { ...l, montant: brut === null ? null : Math.round(brut) }
   }).filter(l => l.montant !== null)
 
-  return { prix, liaisons, params, avis }
+  /* Les vehicules avec leur tarif horaire. L'ordre vient de GAMME, seule
+     source des noms et de l'ordre d'affichage. Un vehicule sans
+     `prix_heure` reste `null` : la page ecrit alors « on request » plutot
+     qu'un prix invente. */
+  const parHeure: VehiculeMAD[] = GAMME.map(v => {
+    const ligne = (tarifs ?? []).find((t: { vehicule: string }) => t.vehicule === v.nomTarif)
+    const brut = (ligne as { prix_heure?: number | null } | undefined)?.prix_heure
+    const ph = brut == null ? null : Number(brut)
+    return {
+      cle: v.cle,
+      nom: NOM_EN[v.cle] ?? v.nom,
+      places: v.capaciteMin === v.capaciteMax
+        ? `${v.capaciteMax} passengers`
+        : `up to ${v.capaciteMax} passengers`,
+      prixHeure: ph != null && Number.isFinite(ph) && ph > 0 ? ph : null,
+    }
+  })
+
+  return { prix, liaisons, params, avis, parHeure }
 }
 
 const FAQ = (cdg: number | null) => [
@@ -175,12 +217,12 @@ const FAQ = (cdg: number | null) => [
   },
   {
     q: 'Can I book in English?',
-    a: `Yes. The booking form is available in English at ${BASE_OWISE}${JUMEAU_RESERVATION.en} — you enter your addresses, see the price and confirm online. Hourly hire and private tours are not booked online: write to ${EMAIL_DEVIS} and we will quote your programme.`,
+    a: `Yes. The booking form is available in English at ${BASE_OWISE}${JUMEAU_RESERVATION.en} — you enter your addresses, see the price and confirm online. Hourly hire is also priced and requested on this page, lower down. Private tours are quoted case by case: write to ${EMAIL_DEVIS}.`,
   },
 ]
 
 export default async function Page() {
-  const { prix, liaisons, params, avis } = await lireDonnees()
+  const { prix, liaisons, params, avis, parHeure } = await lireDonnees()
   const base = prix.find(p => p.cle === 'berline')?.montant ?? null
 
   const ficheLd = {
@@ -188,7 +230,7 @@ export default async function Page() {
     '@type': ['LocalBusiness', 'TaxiService'],
     ...IDENTITE_OWISE,
     name: 'Owise — Private Chauffeur Service',
-    description: 'Fixed-price private chauffeur service in Paris: airport and station transfers, long-distance journeys, hourly hire on request.',
+    description: 'Fixed-price private chauffeur service in Paris: airport and station transfers, long-distance journeys, hourly hire at a published rate per hour.',
     url: URL_EN,
     areaServed: [
       { '@type': 'City', name: 'Paris', postalCode: '75000' },
@@ -213,7 +255,23 @@ export default async function Page() {
       /* Les prestations sur devis sont déclarées SANS prix. Une offre sans
        * montant est correcte en Schema.org ; inventer une fourchette ne le
        * serait pas. */
-      { '@type': 'Offer', name: 'Hourly or daily chauffeur hire in Paris', availability: 'https://schema.org/InStock' },
+      /* Jusqu'au 2026-11-13 cette offre etait declaree SANS prix, faute
+         d'en avoir un. Elle en a un maintenant, par vehicule et par heure :
+         l'unite `HUR` evite qu'un moteur la lise comme un forfait. */
+      ...parHeure.filter(v => v.prixHeure != null).map(v => ({
+        '@type': 'Offer',
+        name: `Hourly chauffeur hire in Paris \u2014 ${v.nom}`,
+        priceCurrency: 'EUR',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: String(v.prixHeure),
+          priceCurrency: 'EUR',
+          unitCode: 'HUR',
+          unitText: 'hour',
+          valueAddedTaxIncluded: true,
+        },
+        availability: 'https://schema.org/LimitedAvailability',
+      })),
       { '@type': 'Offer', name: 'Private tours of Paris with a chauffeur',  availability: 'https://schema.org/InStock' },
       { '@type': 'Offer', name: 'Business travel and executive transport',  availability: 'https://schema.org/InStock' },
     ],
@@ -292,7 +350,7 @@ export default async function Page() {
           </p>
 
           {/* ---- les trois prix réels, Paris → CDG ------------------- */}
-          <p style={{ fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(237,232,223,.45)', marginBottom: 12 }}>
+          <p style={{ fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(237,232,223,.60)', marginBottom: 12 }}>
             Paris → Charles de Gaulle airport
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 32 }}>
@@ -413,15 +471,71 @@ export default async function Page() {
         {/* ---- sur devis ---------------------------------------------- */}
         <section style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
           <h2 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 30, fontWeight: 500, color: creme, margin: '0 0 8px' }}>
-            On request: hourly hire, private tours, business travel
+            Hourly hire — a chauffeur for a few hours or a full day
           </h2>
+          <p style={{ fontSize: 14, color: doux, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.7 }}>
+            {DEFINITION_EN}
+          </p>
+          <p style={{ fontSize: 13, color: 'rgba(237,232,223,.55)', margin: '0 0 20px', maxWidth: 640, lineHeight: 1.7 }}>
+            {MENTION_TARIFS_EN}
+          </p>
+
+          {/* LES TARIFS HORAIRES, LUS EN BASE.
+              Ajoutes le 2026-11-13. Jusque-la cette page disait d'ecrire un
+              e-mail : la recherche « private chauffeur in paris for a full
+              day, how much » la montrait 29 fois en huit semaines, en
+              position 9,4, pour zero clic. */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 22 }}>
+            {parHeure.map(v => (
+              <div key={v.cle} style={{ border: '1px solid rgba(201,168,76,.16)', borderRadius: 12, padding: '16px 18px' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: creme, marginBottom: 3 }}>{v.nom}</div>
+                <div style={{ fontSize: 11.5, color: 'rgba(237,232,223,.60)', marginBottom: 10 }}>{v.places}</div>
+                <div style={{
+                  fontFamily: 'var(--font-jetbrains), monospace',
+                  fontSize: 19, fontWeight: 600, color: v.prixHeure == null ? doux : or, lineHeight: 1.1,
+                }}>
+                  {v.prixHeure == null ? 'on request' : `${formaterMontant(v.prixHeure)} / h`}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Le formulaire, en anglais : meme composant, meme calcul, deux
+              dictionnaires. Cette page s'excusait d'envoyer un anglophone
+              vers un formulaire francais ; elle n'a plus a le faire. */}
+          <div style={{
+            background: 'rgba(237,232,223,.025)', border: '1px solid rgba(201,168,76,.18)',
+            borderRadius: 16, padding: 'clamp(18px, 3.5vw, 28px)', marginBottom: 28,
+          }}>
+            <DemandeMiseADisposition vehicules={parHeure} langue="en" />
+          </div>
+
+          <h3 style={{ fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(237,232,223,.60)', margin: '0 0 12px', fontWeight: 500 }}>
+            When this makes sense
+          </h3>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 26px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
+            {USAGES_EN.map(u => (
+              <li key={u} style={{
+                fontSize: 13.5, color: doux, lineHeight: 1.6, padding: '12px 15px',
+                borderRadius: 11, background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.12)',
+              }}>
+                {u}
+              </li>
+            ))}
+          </ul>
+
+          <h3 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, fontWeight: 500, color: creme, margin: '0 0 8px' }}>
+            Private tours and business travel
+          </h3>
           <p style={{ fontSize: 14, color: doux, margin: '0 0 20px', maxWidth: 640, lineHeight: 1.7 }}>
-            These are not booked online — they depend on your programme, and the price
-            is quoted case by case.
+            These depend on your programme, and the price is quoted case by case.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 22 }}>
             {[
-              { t: 'Hourly or daily hire', d: 'A chauffeur and a car reserved for you, for a few hours or a full day. Your driver waits between stops.' },
+              /* La carte « Hourly or daily hire » a disparu d'ici le
+                 2026-11-13 : la section ci-dessus traite ce service, avec
+                 ses prix et son formulaire. La laisser ici renverrait vers
+                 un devis pour une prestation desormais chiffree. */
               { t: 'Private tours', d: 'Paris and its surroundings with a chauffeur, following the itinerary you choose.' },
               { t: 'Business travel', d: 'Successive meetings, welcoming a client or a partner, repeated journeys.' },
             ].map(p => (
@@ -460,7 +574,7 @@ export default async function Page() {
 
         {/* ---- liens ---------------------------------------------------- */}
         <section style={{ padding: '0 20px 64px', maxWidth: 940, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(237,232,223,.4)', marginBottom: 12 }}>
+          <p style={{ fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(237,232,223,.60)', marginBottom: 12 }}>
             Also on Owise
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>

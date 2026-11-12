@@ -104,7 +104,7 @@ async function lirePrix() {
   const [{ data: zones }, { data: grille }, { data: tarifs }, { data: params }] = await Promise.all([
     admin.from('zones').select('id,code,type,prefixes_postaux').neq('code', 'HORS').eq('active', true),
     admin.from('grilles_tarifaires').select(COLONNES_GRILLE),
-    admin.from('tarifs').select('vehicule,prise_en_charge,prix_km,cdg_fixe,orly_fixe,beauvais_fixe'),
+    admin.from('tarifs').select('*')   /* '*' et pas une liste : voir la note dans tarification.ts */,
     chargerParametres(admin).then(d => ({ data: d })),
   ])
   const avis = await lireAvis(admin)
