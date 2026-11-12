@@ -78,7 +78,12 @@
     height: var(--adm-barre-h);
     display: flex; align-items: center; gap: 10;
     padding: 0 6px 0 4px;
-    background: rgba(255, 255, 255, .92);
+    /* Verre depoli SOMBRE depuis le 2026-11-12 : en clair, « OWISE » en or
+       etait invisible sur cette barre. Defaut passe sous le nez de
+       `audit-contraste-admin.mjs`, qui ne mesurait qu'en 1500 px de large
+       et ne voyait donc jamais la barre du telephone. Il mesure les deux
+       largeurs depuis. */
+    background: rgba(17, 17, 40, .92);
     backdrop-filter: saturate(180%) blur(12px);
     -webkit-backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid rgba(201,168,76,.12);
@@ -108,7 +113,7 @@
     display: grid; grid-template-columns: repeat(5, 1fr);
     height: calc(var(--adm-nav-h) + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: rgba(255, 255, 255, .94);
+    background: rgba(17, 17, 40, .94);
     backdrop-filter: saturate(180%) blur(14px);
     -webkit-backdrop-filter: saturate(180%) blur(14px);
     border-top: 1px solid rgba(201,168,76,.12);
@@ -211,7 +216,7 @@
   .adm-carte {
     display: block !important;
     grid-template-columns: none !important;
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1px solid rgba(201,168,76,.12);
     border-radius: 14px;
     padding: 14px;

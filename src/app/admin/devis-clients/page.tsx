@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { jourParis, debutJourParis, aujourdhuiParis } from '@/lib/heure'
 import { formaterMontant } from '@/lib/montant'
 import { STATUTS, dateCourte, type DevisClient } from '@/lib/devis-client'
 import NouveauBouton from './NouveauBouton'
@@ -14,6 +15,24 @@ const TEINTE: Record<string, { fond: string; trait: string; encre: string }> = {
   accepte:   { fond: 'rgba(61,184,122,.12)',    trait: 'rgba(61,184,122,.32)',   encre: 'var(--grn)' },
   refuse:    { fond: 'rgba(217,84,84,.10)',     trait: 'rgba(217,84,84,.28)',    encre: 'var(--red-txt)' },
   expire:    { fond: 'rgba(201,168,76,.12)',         trait: 'rgba(201,168,76,.12)',        encre: 'var(--t3)' },
+}
+
+/**
+ * « il y a 3 jours » — depuis combien de temps la demande attend.
+ *
+ * L'APPELANT ne l'affiche que sur un devis encore en attente (brouillon ou
+ * envoye) : sur un devis accepte ou refuse, l'anciennete n'apprend rien et
+ * ferait du bruit. Le calcul se fait en JOURS DE PARIS, jamais en heures :
+ * deux instants a quelques heures d'ecart peuvent etre deux jours
+ * differents.
+ */
+function attente(cree: string): string {
+  const a = debutJourParis(jourParis(cree)).getTime()
+  const b = debutJourParis(aujourdhuiParis()).getTime()
+  const jours = Math.round((b - a) / 86400000)
+  if (jours <= 0) return "aujourd'hui"
+  if (jours === 1) return 'hier'
+  return `il y a ${jours} jours`
 }
 
 export default async function DevisClientsPage() {
@@ -90,7 +109,28 @@ export default async function DevisClientsPage() {
                   <span style={{ display: 'block', fontSize: 12, color: 'var(--t3)', marginTop: 2 }}>
                     {d.client_societe ? d.client_societe + ' · ' : ''}
                     {d.lignes.length} prestation{d.lignes.length > 1 ? 's' : ''}
-                    {d.date_prestation ? ' · ' + dateCourte(d.date_prestation) : ''}
+                    {/* « pour le », en face de « Créé le » dessous : deux dates
+                       nues l'une au-dessus de l'autre se confondent. */}
+                    {d.date_prestation ? ' · pour le ' + dateCourte(d.date_prestation) : ''}
+                  </span>
+                  {/* LA DATE DE RECEPTION, demandee par l'exploitant le
+                      2026-11-12 : « je vois le jour ou ça a été fait et le
+                      jour où la prestation a lieu ». Elle dit depuis quand la
+                      demande attend, ce que la date de prestation ne dit pas.
+
+                      `jourParis`, et surtout PAS `created_at.slice(0, 10)` :
+                      `created_at` est un INSTANT. Le serveur Vercel tourne en
+                      temps universel, le navigateur a Paris — un devis cree a
+                      00h30 serait date de la veille sur l'un et du jour sur
+                      l'autre. Regle du projet, src/lib/heure.ts. */}
+                  <span style={{ display: 'block', fontSize: 11, color: 'var(--t3)', marginTop: 3, opacity: .85 }}>
+                    Créé le{' '}
+                    <span style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>
+                      {dateCourte(jourParis(d.created_at))}
+                    </span>
+                    {(d.statut === 'brouillon' || d.statut === 'envoye') && (
+                      <span style={{ color: 'var(--amb)' }}> · {attente(d.created_at)}</span>
+                    )}
                   </span>
                 </span>
 

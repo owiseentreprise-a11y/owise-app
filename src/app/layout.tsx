@@ -1,41 +1,46 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Cormorant_Garamond, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import MesureVercel from '@/components/MesureVercel'
 import { PHProvider } from './providers'
 import CookieBanner from '@/components/CookieBanner'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import GAPageView from '@/components/GAPageView'
 import OrigineVisite from '@/components/OrigineVisite'
+/* AVANT globals.css : les @font-face et les variables --font-* doivent
+   exister quand le reste des styles s'en sert. Fichier ECRIT PAR
+   `recuperer-polices.mjs`, jamais a la main. */
+import './polices.css'
 import './globals.css'
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-})
+/* ── LES POLICES SONT DANS LE DEPOT, PAS CHEZ GOOGLE ──────────────────────
 
-const jakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-jakarta',
-  display: 'swap',
-})
+   Ce fichier employait `next/font/google`, qui ne declare pas une police :
+   il la TELECHARGE pendant la compilation. Quand ce telechargement echoue,
+   ou qu'un cache de construction en garde une trace incomplete, Vercel
+   s'arrete sur « Module not found: …/internal/font/google/<police> » et la
+   mise en ligne n'a pas lieu — sans que rien ne previenne. C'est arrive
+   CINQ fois entre le 2026-10-27 et le 2026-11-12, dont quatre envois perdus
+   d'affilee, production figee des heures.
 
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
-  display: 'swap',
-})
+   LES @font-face SONT ECRITS A LA MAIN, dans `globals.css`, et pointent sur
+   `public/fonts/`. Deux raisons de ne pas passer par `next/font/local` :
 
-const jetbrains = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-jetbrains',
-  display: 'swap',
-})
+   1. NEXT NOMME LA FAMILLE D'APRES LA VARIABLE JAVASCRIPT. `next/font/google`
+      la nommait « DM Sans » ou « Cormorant Garamond » ; `next/font/local`
+      l'aurait nommee « dmSans » ou « cormorant ». Or ce projet ecrit les
+      vrais noms EN CLAIR a une centaine d'endroits — 48 fois dans
+      `vitrine.css`, et tout le blog pose `fontFamily: "'Cormorant Garamond',
+      serif"` SANS variable. Ces pages seraient retombees sur le serif du
+      systeme, sur 140 articles, sans une erreur.
+   2. Ecrits a la main, les noms sont ceux du dessin, pas ceux d'une variable.
+      Plus rien ne peut les desaccorder.
+
+   Les familles « … Fallback » et leurs corrections de metriques viennent de
+   ce que Next produisait : meme comportement au chargement, meme absence de
+   saut de mise en page.
+
+   Pour ajouter une graisse : l'ajouter dans `recuperer-polices.mjs`, relancer
+   le script, puis ecrire son @font-face dans `globals.css`.
+   ──────────────────────────────────────────────────────────────────────── */
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.owise.fr'),
@@ -45,7 +50,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${cormorant.variable} ${jetbrains.variable} ${jakartaSans.variable} h-full`}>
+    <html lang="fr" className="h-full">
       <body className="h-full">
         <PHProvider>
           {children}
