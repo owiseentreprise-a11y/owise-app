@@ -1813,7 +1813,16 @@ html:has(.vt-palette-a) .bandeau-cookies {
      7,8. Vérifié en remettant l'ancienne valeur : les onze échecs
      reviennent, et eux seuls. */
   --gris-sombre:#C9BDAE;
-  --etiquette-champ:#AFA496;
+  /* #C5BBAF et non #AFA496 — mesuré le 2026-11-13, en ne regardant que
+     les pixels réellement couverts par les lettres. Les libellés de la
+     carte de réservation (« Destination », « Adresse de départ ») sont
+     posés sur une carte TRANSLUCIDE, au-dessus de la photographie de
+     nuit du bandeau : par endroits le fond remonte à #614133, et
+     l'ancien gris y tombait à 3,71 pour 4,5 exigés. #C5BBAF y donne
+     4,81, et reste très au-dessus du seuil sur les surfaces pleines
+     (8,04 sur `--papier`). Un texte posé sur une photo se juge à son
+     PIRE endroit, pas au centre : contrôle `audit-contraste-reel.mjs`. */
+  --etiquette-champ:#C5BBAF;
   --encre-sourde:#3A2D22;
   --encre-profonde:#2A2019;
   --gris-ardoise:#AFA496;
