@@ -2,6 +2,7 @@
 
 import { ANNULATION_COURTE, ANNULATION_PHRASE } from '@/lib/conditions'
 import { GAMME, capaciteTexte, exigeUnDevis, vehiculeParCle, vehiculeParDefaut, vehiculesPour } from '@/lib/gamme'
+import { PRESENTATION_VEHICULES, MENTION_ILLUSTRATION } from '@/lib/presentation-vehicules'
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import type { CSSProperties } from 'react'
@@ -188,32 +189,10 @@ function TrustIcon({ name }: { name: string }) {
    Grand Van — sa carte aurait affiche le tarif du van 7 places si elle avait
    affiche un prix. Mesure du 2026-11-03.
    ────────────────────────────────────────────────────────────────────────── */
-const PRESENTATION: Record<string, { feats: string[]; bg: string; badge: string | null; dark: boolean; img: string; alt: string }> = {
-  berline: {
-    feats: ['Berline récente, intérieur soigné', 'Climatisation bi-zone', 'WiFi embarqué'],
-    bg: 'var(--vignette-ciel)', badge: null, dark: false,
-    img: '/brand_assets/vehicle-berline.png',
-    alt: 'Illustration de la catégorie Berline Owise : berline blanche et chauffeur en costume',
-  },
-  berline_premium: {
-    feats: ['Berline haut de gamme', 'Eau minérale offerte', 'Chargeurs universels, WiFi'],
-    bg: 'var(--vignette-nuit)', badge: '4 passagers', dark: true,
-    img: '/brand_assets/vehicle-berline-premium.png',
-    alt: 'Illustration de la catégorie Berline Premium Owise : berline blanche aux finitions dorées, chauffeur ouvrant la portière arrière',
-  },
-  van: {
-    feats: ['Van récent, 7 places assises', 'Grand coffre, idéal aéroport', 'Transferts groupes & familles'],
-    bg: 'var(--vignette-sable)', badge: null, dark: false,
-    img: '/brand_assets/vehicle-van7.png',
-    alt: 'Illustration de la catégorie Van 7 places Owise : van blanc et une famille de quatre personnes',
-  },
-  grand_van: {
-    feats: ['Grand van, 8 places assises', "Séminaires, événements d'entreprise", 'Selon la disponibilité de nos partenaires'],
-    bg: 'var(--vignette-charbon)', badge: null, dark: true,
-    img: '/brand_assets/vehicle-grand-van.png',
-    alt: 'Illustration de la catégorie Grand Van 8 places Owise : grand van blanc, porte latérale ouverte, chauffeur en costume',
-  },
-}
+/* LES ILLUSTRATIONS ET LES ARGUMENTS VIVENT DANS `presentation-vehicules.ts`.
+   Ils etaient ecrits ici ; /mise-a-disposition en a eu besoin le 2026-11-13,
+   et les recopier aurait fait vivre deux listes d'images cote a cote. */
+const PRESENTATION = PRESENTATION_VEHICULES
 
 /* Les colonnes du tableau de tarifs public.
    Leurs libelles etaient ecrits DEUX FOIS dans le meme bloc JSX — l'en-tete
@@ -1327,7 +1306,14 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             d'impressions sur téléphone que sur ordinateur sur les requêtes
             villes, et un lien posé seulement dans la barre de bureau serait
             invisible pour la majorité des visiteurs. */}
-        <Link href="/mise-a-disposition" className="mm-link" onClick={()=>setMenuOpen(false)}>Chauffeur à l’heure</Link>
+        {/* MÊME LIBELLÉ QUE LA BARRE DE BUREAU. Ce lien disait « Chauffeur
+            à l'heure » quand la barre, elle, n'en portait aucun ; en lui
+            en donnant un le 2026-11-13, deux noms se sont retrouvés sur une
+            seule page. On garde « Mise à disposition » : c'est le titre de
+            la page, le terme du métier, et surtout celui que les gens
+            tapent — cette page est née d'une mesure Search Console sur
+            « mise à disposition chauffeur ». */}
+        <Link href="/mise-a-disposition" className="mm-link" onClick={()=>setMenuOpen(false)}>Mise à disposition</Link>
         <Link href={lienAnglais} className="mm-link" lang="en" hrefLang="en" prefetch={false} onClick={()=>setMenuOpen(false)}>English</Link>
         <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
         <div className="mm-sub">Chauffeur privé VTC · Paris & Oise</div>
@@ -1394,18 +1380,39 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           </div>
         </Link>
         <div className="nav-links">
-          {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
+          {/* « Comment ça marche » a quitté cette liste le 2026-11-13 pour
+              laisser la place à « Mise à disposition » — voir la note plus
+              bas. La section existe toujours, à son ancre `#comment`, et
+              reste atteignable en défilant et depuis le menu du téléphone,
+              qui n'a aucune contrainte de largeur. */}
+          {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
-          {/* PAS DE LIEN « mise a disposition » ICI, et c'est mesure.
-              La barre de bureau tenait sur une ligne jusqu'a 1280 px ; un
-              huitieme lien la fait casser des 1366 px, et a 1280 px le mot
-              « Blog » passe sous le bouton English. Mesure du 2026-11-13
-              par `mesurer-nav.mjs`, production servant de reference.
-              Le service est atteignable par le pied de page (rendu sur ~170
-              pages), par le menu du telephone (sans contrainte de largeur)
-              et par un bandeau sur l'accueil. Ne pas le remettre ici sans
-              remesurer. */}
+          {/* LE SERVICE A L'HEURE EST DANS LA BARRE, et il a fallu faire de
+              la place pour l'y mettre.
+
+              Le 2026-11-13 au matin, une premiere mesure avait conclu :
+              « un huitieme lien casse la barre des 1366 px ». C'etait vrai,
+              et la conclusion — ne pas l'y mettre — etait fausse. Le soir,
+              l'exploitant : « sur les onglets tout en haut, on n'est meme
+              pas fait reference, donc on risque pas d'y arriver ». Un
+              service que le visiteur ne peut pas trouver ne rapporte rien,
+              quelle que soit la largeur de la barre.
+
+              Ce qui a ete fait, plutot que d'ajouter un huitieme lien :
+              « Comment ca marche » (17 caracteres, qui menait a une section
+              de la MEME page, atteignable en defilant) cede sa place a
+              « Mise a disposition », une page a part entiere que rien
+              n'annoncait. La barre n'y gagne pas de largeur, elle y gagne
+              un service vendable.
+
+              Libelle : surtout pas « A l'heure ». Sur un site de VTC, cela
+              se lit « ponctuel », pas « a la duree » — le mot vante la
+              ponctualite au lieu de nommer le service.
+
+              Remesurer avec `node mesurer-nav.mjs <base>` apres toute
+              modification de cette liste. */}
+          <Link href="/mise-a-disposition" className="nav-link">Mise à disposition</Link>
           <Link href="/blog" className="nav-link">Blog</Link>
         </div>
         <div className="nav-r">
@@ -1822,7 +1829,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           textAlign: 'center', marginTop: 28, fontSize: 12,
           color: 'rgba(var(--t2-rvb),0.85)', letterSpacing: '.02em',
         }}>
-          Visuels d&apos;illustration. Le véhicule mis à disposition correspond à la catégorie réservée.
+          {MENTION_ILLUSTRATION}
           <br />
           À partir de 4 passagers, une berline plus grande est nécessaire : c&apos;est
           ce que couvre la Berline Premium. Au-delà de 7 passagers, le véhicule

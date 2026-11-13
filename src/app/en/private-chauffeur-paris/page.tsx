@@ -32,6 +32,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix, COLONNES_GRILLE } from '@/lib/calcPrix'
 import { IDENTITE_OWISE, BASE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
+import { presentationVehicule } from '@/lib/presentation-vehicules'
 import { lienDevis, EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
 /* La route anglaise de la réservation ne se recopie pas : elle vit dans
    `langue.ts`, avec son jumeau français. Cette page a dit pendant trois
@@ -195,6 +196,9 @@ async function lireDonnees() {
         const n = b == null ? null : Number(b)
         return n != null && Number.isFinite(n) && n > 0 ? n : null
       })(),
+      /* Meme illustration que la page francaise et que la flotte de
+         l'accueil : une image de vehicule n'a pas de langue. */
+      image: presentationVehicule(v.cle)?.img ?? null,
     }
   })
 

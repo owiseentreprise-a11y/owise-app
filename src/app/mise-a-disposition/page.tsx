@@ -25,11 +25,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { GAMME } from '@/lib/gamme'
-import { formaterMontant } from '@/lib/montant'
+import { presentationVehicule } from '@/lib/presentation-vehicules'
 import { BASE_OWISE, IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-owise'
 import { EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
 import {
-  DEFINITION, USAGES, MENTION_TARIFS, SOUS_RESERVE, HEURE_ENTAMEE,
+  DEFINITION, USAGES, SOUS_RESERVE, HEURE_ENTAMEE,
   MEME_ZONE, FRAIS_EN_SUS,
 } from '@/lib/mise-a-disposition'
 import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD } from '@/lib/calcPrix'
@@ -86,6 +86,9 @@ async function lireVehicules(): Promise<{ vehicules: VehiculeMAD[]; avis: { nomb
         const n = b == null ? null : Number(b)
         return n != null && Number.isFinite(n) && n > 0 ? n : null
       })(),
+      /* L'illustration vient de la MÊME source que la flotte de l'accueil.
+         Une clé inconnue rend `null`, et la carte s'affiche sans bulle. */
+      image: presentationVehicule(v.cle)?.img ?? null,
     }
   })
   return { vehicules, avis }
@@ -200,96 +203,232 @@ export default async function Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(filAriane) }} />
 
+      {/* LES TROIS RÈGLES QUI DEMANDENT UNE LARGEUR D'ÉCRAN.
+          Tout le reste de cette page est en style en ligne ; une requête
+          média ne s'y écrit pas. Ces trois-là ont été ajoutées après
+          MESURE sur un téléphone de 390 px, où l'en-tête prenait trois
+          lignes et où le simulateur commençait à 580 px du haut — « il
+          faut vraiment descendre pour le deviner », 2026-11-13.
+          Préfixe `mad-` : ces classes n'existent que sur cette page. */}
+      <style>{`
+        /* Sous 560 px, l'en-tête garde le logo, le téléphone et la langue.
+           « Réserver un transfert » disparaît : c'est un lien de rebond,
+           pas une urgence, et il reste dans le pied de page. */
+        @media (max-width: 560px) {
+          .mad-lien-transfert { display: none; }
+          .mad-entete { gap: 10px; padding-left: 16px; padding-right: 16px; }
+        }
+        /* Le panneau du simulateur chevauche le bandeau de 34 px sur grand
+           écran ; sur téléphone ce chevauchement mange le dernier repère. */
+        @media (max-width: 720px) {
+          .mad-panneau { margin-top: 0 !important; }
+        }
+      `}</style>
+
       <main className="vt vt-palette-a" style={{ minHeight: '100vh', fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}>
 
-        <header style={{
+        {/* ── En-tête ─────────────────────────────────────────────────
+            Il ne portait que le logo et « English version ». Un visiteur
+            arrivé ici par Google n'avait aucun moyen de joindre Owise ni
+            de revenir vers le reste du site : la page était un cul-de-sac.
+            On y met donc les trois choses qu'on cherche sur une page de
+            service — téléphoner, voir l'autre offre, changer de langue. */}
+        <header className="mad-entete" style={{
           background: 'var(--nuit)',
-          borderBottom: '1px solid rgba(var(--contraste-rvb),.08)', padding: '14px 20px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
+          borderBottom: '1px solid rgba(var(--contraste-rvb),.08)', padding: '13px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 14, flexWrap: 'wrap',
         }}>
           <Link href="/" style={{ color: or, textDecoration: 'none', fontSize: 17, fontWeight: 600, letterSpacing: '.14em' }}>
             OWISE
           </Link>
-          <Link href="/en/private-chauffeur-paris" hrefLang="en" style={{ color: pale, textDecoration: 'none', fontSize: 12.5, letterSpacing: '.04em' }}>
-            English version →
-          </Link>
+          {/* UN <div role="navigation">, ET SURTOUT PAS UN <nav>.
+              `vitrine.css` style l'ELEMENT `nav` lui-meme :
+              `nav{position:fixed;top:0;left:0;right:0;…}`, c'est la barre
+              du site. Un `<nav>` ecrit ici devient donc une barre fixe
+              pleine largeur posee par-dessus l'en-tete : mesure du
+              2026-11-13, « OWISE » et « Reserver un transfert » se
+              chevauchaient. Le role porte la meme semantique sans
+              declencher le selecteur. Regle generale dans ce fichier :
+              importer `vitrine.css`, c'est heriter de ses selecteurs
+              d'element — se mefier aussi de `header`, `section`, `h2`. */}
+          <div role="navigation" aria-label="Liens utiles"
+            style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', fontSize: 12.5 }}>
+            <Link href="/reserver" className="mad-lien-transfert" style={{ color: doux, textDecoration: 'none' }}>
+              Réserver un transfert
+            </Link>
+            {/* Le numéro en toutes lettres, cliquable : sur un téléphone,
+                c'est le chemin le plus court vers une réservation. */}
+            <a href={`tel:${IDENTITE_OWISE.telephone}`} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 36,
+              padding: '0 13px', borderRadius: 8, textDecoration: 'none',
+              color: creme, background: 'rgba(var(--contraste-rvb),.06)',
+              border: '1px solid rgba(var(--contraste-rvb),.12)', fontWeight: 500,
+            }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              {telephoneLisible(IDENTITE_OWISE.telephone)}
+            </a>
+            <Link href="/en/private-chauffeur-paris" hrefLang="en" style={{ color: pale, textDecoration: 'none' }}>
+              English →
+            </Link>
+          </div>
         </header>
 
         {/* ── Bandeau ─────────────────────────────────────────────────── */}
-        <section style={{ background: 'var(--nuit)', padding: '48px 20px 56px' }}>
+        <section style={{ background: 'var(--nuit)', padding: 'clamp(26px, 5vw, 48px) 20px clamp(38px, 6vw, 56px)' }}>
          <div style={{ maxWidth: 940, margin: '0 auto' }}>
           <p style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 18 }}>
             Chauffeur à l’heure · Paris &amp; Île-de-France
           </p>
           <h1 style={{
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 'clamp(34px, 6vw, 58px)', fontWeight: 500, lineHeight: 1.08,
+            fontSize: 'clamp(29px, 6.2vw, 58px)', fontWeight: 500, lineHeight: 1.08,
             color: creme, margin: '0 0 22px', textWrap: 'balance',
           }}>
             Un chauffeur à votre disposition, à l’heure ou à la journée
           </h1>
-          <p style={{ fontSize: 16.5, lineHeight: 1.75, color: doux, maxWidth: 660, margin: '0 0 10px' }}>
+          <p style={{ fontSize: 16.5, lineHeight: 1.75, color: doux, maxWidth: 660, margin: '0 0 22px' }}>
             {DEFINITION}
           </p>
-          <p style={{ fontSize: 14, lineHeight: 1.7, color: pale, maxWidth: 660, margin: 0 }}>
-            {MENTION_TARIFS} {FRAIS_EN_SUS} À partir de {DUREE_MIN_MAD} h.
-          </p>
+
+          {/* ── Les trois choses qu'on veut savoir avant de simuler ─────
+              Le bandeau enchaînait DEUX paragraphes, dont les mentions
+              légales sur les péages — du texte à lire avant d'atteindre le
+              moindre prix. Ces mentions n'ont pas disparu : elles sont sous
+              le simulateur, là où elles servent à décider. Ici ne restent
+              que les trois repères qui donnent envie d'essayer, chacun
+              calculé et non recopié. */}
+          <ul style={{
+            listStyle: 'none', padding: 0, margin: 0,
+            display: 'flex', flexWrap: 'wrap', gap: 10,
+          }}>
+            {[
+              `À partir de ${DUREE_MIN_MAD} h`,
+              `${KM_PAR_HEURE_MAD} km compris par heure`,
+              'Prix annoncé tout de suite',
+            ].map(t => (
+              <li key={t} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontSize: 13.5, color: creme, lineHeight: 1.4,
+                padding: '8px 14px', borderRadius: 999,
+                background: 'rgba(var(--contraste-rvb),.05)',
+                border: '1px solid rgba(var(--contraste-rvb),.10)',
+              }}>
+                <span aria-hidden="true" style={{
+                  width: 5, height: 5, borderRadius: '50%', background: 'var(--gold)', flexShrink: 0,
+                }} />
+                {t}
+              </li>
+            ))}
+          </ul>
          </div>
         </section>
 
-        {/* ── La grille des tarifs, lue en base ───────────────────────── */}
-        <section style={{ padding: '0 20px 48px', maxWidth: 940, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase', color: pale, marginBottom: 14, fontWeight: 500 }}>
-            Tarif horaire par véhicule
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-            {vehicules.map(v => (
-              <div key={v.cle} style={{
-                background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
-                borderLeft: '3px solid var(--gold)',
-                borderRadius: 13, padding: '18px 18px 16px',
-              }}>
-                <div style={{ fontSize: 14.5, fontWeight: 600, color: creme, marginBottom: 3 }}>{v.nom}</div>
-                <div style={{ fontSize: 11.5, color: pale, marginBottom: 12 }}>{v.places}</div>
-                <div style={{
-                  fontFamily: "var(--font-jetbrains), monospace",
-                  fontSize: 21, fontWeight: 600, color: v.prixHeure == null ? doux : or, lineHeight: 1.1,
-                }}>
-                  {v.prixHeure == null ? 'sur devis' : formaterMontant(v.prixHeure)}
-                </div>
-                {v.prixHeure != null && (
-                  <>
-                    <div style={{ fontSize: 11.5, color: pale, marginTop: 3 }}>de l’heure</div>
-                    {v.prixKmSup != null && (
-                      <div style={{ fontSize: 11.5, color: pale, marginTop: 8, lineHeight: 1.5 }}>
-                        {KM_PAR_HEURE_MAD} km compris par heure,<br />
-                        puis {formaterMontant(v.prixKmSup)} du km
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* ── Le simulateur, AUSSI HAUT QUE POSSIBLE ───────────────────
+            Il venait en troisième, après une grille « Tarif horaire par
+            véhicule » qui montrait déjà ces quatre véhicules et ces quatre
+            prix. Deux fois la même information, et le simulateur repoussé
+            sous la ligne de flottaison — l'exploitant, le 2026-11-13 :
+            « pour faire la simulation, c'est tout en bas, il faut vraiment
+            descendre pour le deviner ».
 
-        {/* ── Le simulateur et la demande ─────────────────────────────── */}
-        <section id="demande" style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
+            La grille est supprimée, pas son contenu : le prix horaire, la
+            capacité, le forfait kilométrique et l'illustration sont
+            maintenant portés par la carte qu'on clique pour choisir. On lit
+            et on agit au même endroit. */}
+        <section id="demande" className="mad-panneau" style={{ padding: '0 20px 56px', maxWidth: 940, margin: '-34px auto 0' }}>
           <div style={{
             background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
             borderRadius: 18, padding: 'clamp(20px, 4vw, 34px)',
+            /* Une ombre portée, pour que le panneau se détache du bandeau
+               qu'il chevauche. Teintée nuit, jamais un gris générique. */
+            boxShadow: '0 22px 50px -24px rgba(0,0,0,.55)',
           }}>
             <h2 style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 500, color: creme, margin: '0 0 6px',
+              fontSize: 'clamp(21px, 3.4vw, 32px)', fontWeight: 500, color: creme, margin: '0 0 5px',
             }}>
               Calculez votre mise à disposition
             </h2>
-            <p style={{ fontSize: 14, color: pale, margin: '0 0 26px' }}>
+            <p style={{ fontSize: 14, color: pale, margin: '0 0 clamp(16px, 2.6vw, 26px)' }}>
               Choisissez le véhicule et la durée : le prix s’affiche tout de suite.
             </p>
             <DemandeMiseADisposition vehicules={vehicules} />
           </div>
+        </section>
+
+        {/* ── Ce qui est compris, ce qui ne l'est pas ──────────────────
+            Ces phrases existaient déjà, enfouies dans un paragraphe de
+            mentions sous le bandeau et dans la FAQ. Un client qui hésite
+            ne lit pas un paragraphe : il cherche la frontière entre ce
+            qu'il paie et ce qui s'ajoutera. On la lui montre, en deux
+            colonnes, avec les MÊMES phrases — aucune réécriture, sinon
+            deux versions d'une règle finiraient par diverger. */}
+        <section style={{ padding: '0 20px 48px', maxWidth: 940, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase', color: pale, marginBottom: 16, fontWeight: 500 }}>
+            Ce que couvre le prix annoncé
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 12 }}>
+            {[
+              {
+                titre: 'Compris',
+                teinte: 'var(--vert-vif)',
+                signe: 'M5 13l4 4L19 7',
+                lignes: [
+                  'Le chauffeur et le véhicule, pour toute la durée réservée.',
+                  `${KM_PAR_HEURE_MAD} km par heure réservée, comptés sur le total.`,
+                  'Les changements de programme en cours de route, dans la durée prévue.',
+                ],
+              },
+              {
+                titre: 'En plus du prix annoncé',
+                teinte: 'var(--gold)',
+                signe: 'M12 5v14M5 12h14',
+                lignes: [
+                  FRAIS_EN_SUS,
+                  'Les kilomètres au-delà du forfait, au tarif de la carte du véhicule.',
+                  `${HEURE_ENTAMEE} Une prestation de 3 h 15 est facturée 4 h.`,
+                ],
+              },
+            ].map(bloc => (
+              <div key={bloc.titre} style={{
+                background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
+                borderRadius: 14, padding: '18px 20px 16px',
+              }}>
+                <div style={{
+                  fontSize: 13, fontWeight: 600, color: creme, marginBottom: 12,
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <span aria-hidden="true" style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 19, height: 19, borderRadius: '50%', flexShrink: 0,
+                    background: 'rgba(var(--contraste-rvb),.07)', color: bloc.teinte,
+                  }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d={bloc.signe} />
+                    </svg>
+                  </span>
+                  {bloc.titre}
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 9 }}>
+                  {bloc.lignes.map(l => (
+                    <li key={l} style={{ fontSize: 13.5, lineHeight: 1.6, color: doux, display: 'flex', gap: 9 }}>
+                      <span aria-hidden="true" style={{
+                        width: 4, height: 4, borderRadius: '50%', background: bloc.teinte,
+                        flexShrink: 0, marginTop: 8,
+                      }} />
+                      {l}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 12.5, lineHeight: 1.65, color: pale, margin: '14px 0 0', maxWidth: 680 }}>
+            {SOUS_RESERVE} {MEME_ZONE}
+          </p>
         </section>
 
         {/* ── Les occasions ───────────────────────────────────────────── */}

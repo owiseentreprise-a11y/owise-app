@@ -19,10 +19,12 @@
  * en dur ici serait un second barème, hors de portée d'/admin/tarifs.
  */
 
+import Image from 'next/image'
 import { useMemo, useState, useTransition } from 'react'
 import { prixMiseADisposition, type TarifCalc } from '@/lib/calcPrix'
 import { vehiculeParCle } from '@/lib/gamme'
 import { formaterMontant } from '@/lib/montant'
+import { MENTION_ILLUSTRATION, MENTION_ILLUSTRATION_EN } from '@/lib/presentation-vehicules'
 import {
   DUREES_PROPOSEES, MENTION_TARIFS, MENTION_TARIFS_EN, destinationPourDemande,
   phraseKilometres, MEME_ZONE, MEME_ZONE_EN, FRAIS_EN_SUS, FRAIS_EN_SUS_EN,
@@ -37,6 +39,9 @@ export type VehiculeMAD = {
   prixHeure: number | null
   /** Prix du km au-delà du forfait. `null` : aucun dépassement facturé. */
   prixKmSup: number | null
+  /** L'illustration de la catégorie, celle que la flotte affiche déjà sur
+      l'accueil. `null` : la carte s'affiche sans bulle, sans casser. */
+  image: string | null
 }
 
 /**
@@ -51,6 +56,16 @@ const MOTS = {
   fr: {
     vehicule: 'Votre véhicule',
     surDevis: 'sur devis',
+    /* SEULEMENT LE PRIX DU KM AU-DELA, sur la carte du vehicule.
+       La phrase complete disait aussi « 20 km compris par heure » — vrai,
+       mais IDENTIQUE pour les quatre vehicules, et deja ecrit dans les
+       reperes du bandeau. Sur un telephone, cette redite occupait trois
+       lignes par carte et portait leur hauteur a 217 px : le prix total
+       finissait 448 px sous le pli. Ne reste ici que ce qui DISTINGUE un
+       vehicule d'un autre. Le forfait complet, lui, s'affiche sous le prix
+       des qu'une duree est choisie. */
+    kmSup: (kmSup: number) => `+ ${formaterMontant(kmSup)} / km au-delà`,
+    illustration: MENTION_ILLUSTRATION,
     duree: 'Durée',
     heures: (h: number) => `${h} heures`,
     prix: 'Prix annoncé',
@@ -76,6 +91,8 @@ const MOTS = {
   en: {
     vehicule: 'Your vehicle',
     surDevis: 'on request',
+    kmSup: (kmSup: number) => `+ ${formaterMontant(kmSup)} / km beyond`,
+    illustration: MENTION_ILLUSTRATION_EN,
     duree: 'Duration',
     heures: (h: number) => `${h} hours`,
     prix: 'Quoted price',
@@ -240,7 +257,14 @@ export default function DemandeMiseADisposition(
         <p style={{ fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', color: PALE, marginBottom: 10 }}>
           {m.vehicule}
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 }}>
+        {/* 145 px ET NON 190 — mesuré. Sur un téléphone de 390 px, la
+            largeur utile à l'intérieur du panneau est de 310 px : avec
+            190 px de minimum, les quatre véhicules s'empilaient sur quatre
+            lignes et repoussaient le prix à 1292 px du haut, soit 448 px
+            sous le pli. À 145 px ils tiennent en 2 × 2. Sur grand écran,
+            `auto-fit` efface les colonnes vides : les quatre restent sur
+            une seule ligne. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 10 }}>
           {vehicules.map(v => {
             const actif = v.cle === cle
             return (
@@ -262,33 +286,110 @@ export default function DemandeMiseADisposition(
                   transition: 'border-color .15s',
                 }}
               >
-                <div style={{ fontSize: 14.5, fontWeight: 600, color: actif ? OR : CREME, marginBottom: 3 }}>
-                  {v.nom}
+                {/* LA BULLE : on reconnaît une catégorie de véhicule d'un
+                    coup d'œil, bien avant d'avoir lu son nom. Demande de
+                    l'exploitant le 2026-11-13 : « il faut faire une bulle
+                    pour illustrer la catégorie ». L'illustration est celle
+                    que la flotte affiche déjà sur l'accueil, lue dans
+                    `presentation-vehicules.ts` — pas un second jeu d'images.
+
+                    `aria-hidden` : le nom et la capacité sont juste à côté,
+                    en toutes lettres. Annoncer en plus « berline blanche et
+                    chauffeur en costume » ferait répéter la même chose à un
+                    lecteur d'écran. */}
+                {/* `flexWrap` : dans une colonne de 150 px, la bulle et le
+                    nom ne tiennent pas côte à côte. Plutôt qu'une requête
+                    média, on laisse le nom passer SOUS la bulle quand la
+                    place manque — la carte reste lisible à toute largeur. */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 9, flexWrap: 'wrap' }}>
+                  {/* `cover`, ET NON `contain`. Les quatre illustrations sont
+                      des PNG OPAQUES (type de couleur 2, verifie) : chacune
+                      porte deja son propre fond. Avec `contain`, l'image est
+                      posee en boite aux lettres et il reste, autour, des
+                      bandes de la couleur de la bulle — deux vignettes
+                      claires et deux sombres, cernees de gris. `cover` la
+                      laisse remplir la bulle : les quatre se lisent alors
+                      comme une meme serie. Le vehicule est centre dans chaque
+                      fichier, le rognage ne le coupe pas.
+
+                      (Le commentaire etait d'abord ECRIT A L'INTERIEUR du
+                      `{v.image && ( … )}` : une parenthese n'y attend qu'un
+                      seul element, et la compilation a echoue net.) */}
+                  {v.image && (
+                    <span aria-hidden="true" style={{
+                      position: 'relative', flexShrink: 0,
+                      width: 56, height: 42, borderRadius: 9, overflow: 'hidden',
+                      border: '1px solid rgba(var(--contraste-rvb, 237,232,223),.10)',
+                    }}>
+                      <Image
+                        src={v.image} alt="" fill sizes="56px"
+                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                      />
+                    </span>
+                  )}
+                  <span style={{ flex: '1 1 72px', minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600, color: actif ? OR : CREME }}>
+                      {v.nom}
+                    </span>
+                    <span style={{ display: 'block', fontSize: 11.5, color: PALE, marginTop: 2 }}>{v.places}</span>
+                  </span>
                 </div>
-                <div style={{ fontSize: 11.5, color: PALE, marginBottom: 8 }}>{v.places}</div>
                 <div style={{
                   fontFamily: "var(--font-jetbrains), monospace",
                   fontSize: 15, fontWeight: 600, color: v.prixHeure == null ? DOUX : OR,
                 }}>
                   {v.prixHeure == null ? m.surDevis : `${formaterMontant(v.prixHeure)} / h`}
                 </div>
+                {/* LE KILOMÉTRAGE EST ICI, ET PLUS DANS UNE GRILLE AU-DESSUS.
+                    La page affichait la même information deux fois : une
+                    grille « Tarif horaire par véhicule », puis ces mêmes
+                    quatre véhicules dans le simulateur. Le doublon repoussait
+                    le simulateur sous la ligne de flottaison — « pour faire la
+                    simulation, c'est tout en bas », 2026-11-13. Une seule
+                    écriture, à l'endroit où l'on choisit. */}
+                {v.prixHeure != null && v.prixKmSup != null && (
+                  <div style={{ fontSize: 11, color: PALE, marginTop: 6, lineHeight: 1.45 }}>
+                    {m.kmSup(v.prixKmSup)}
+                  </div>
+                )}
               </button>
             )
           })}
         </div>
+        {/* LA MÊME MENTION QUE SOUS LA FLOTTE DE L'ACCUEIL.
+            Owise n'a pas de photographies de son parc : ces quatre images
+            sont des illustrations, et le dire se fait à l'écran, pas
+            seulement dans un texte alternatif que personne ne lit. La
+            phrase vient de `presentation-vehicules.ts`, à côté des images
+            qu'elle concerne — recopiée ici, elle aurait fini par ne plus
+            exister que sur une des deux pages. */}
+        <p style={{ fontSize: 11.5, lineHeight: 1.5, color: PALE, margin: '10px 0 0' }}>
+          {m.illustration}
+        </p>
       </div>
 
-      {/* ── La durée, et le prix ────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) minmax(200px, 1fr)', gap: 14, alignItems: 'end' }}>
-        <Champ label={m.duree}>
-          <select value={heures} onChange={e => setHeures(Number(e.target.value))} style={champStyle}>
-            {DUREES_PROPOSEES.map(h => (
-              <option key={h} value={h}>{m.heures(h)}</option>
-            ))}
-          </select>
-        </Champ>
+      {/* ── La durée, et le prix ──────────────────────────────────────
+          UN FLEX QUI PASSE À LA LIGNE, ET PAS DEUX COLONNES FIXES.
+          C'était `minmax(200px, 1fr) minmax(200px, 1fr)` : deux colonnes
+          d'au moins 200 px plus 14 px d'écart, soit 414 px minimum. Sur un
+          téléphone de 390 px, l'encart du prix sortait de l'écran — mesuré
+          le 2026-11-13, il s'arrêtait à 455 px. `minmax` ne descend jamais
+          sous son minimum : il déborde.
+          Avec `flex: 1 1 220px`, les deux blocs se partagent la ligne quand
+          il y a la place et s'empilent quand il n'y en a plus. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-end' }}>
+        <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+          <Champ label={m.duree}>
+            <select value={heures} onChange={e => setHeures(Number(e.target.value))} style={champStyle}>
+              {DUREES_PROPOSEES.map(h => (
+                <option key={h} value={h}>{m.heures(h)}</option>
+              ))}
+            </select>
+          </Champ>
+        </div>
 
         <div style={{
+          flex: '1 1 220px', minWidth: 0,
           background: 'var(--nuit, #0D0D20)', border: '1px solid rgba(var(--contraste-rvb, 237,232,223),.14)',
           borderRadius: 12, padding: '13px 16px',
         }}>
