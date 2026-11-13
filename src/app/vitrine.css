@@ -65,7 +65,12 @@ html:has(.vt) {
   --ed-titre-2:#0A0A0A;           /* titres et texte courant des pages villes */
   --ed-texte:#6B6B6B;             /* texte secondaire, pages villes */
   --ed-texte-2:#848499;           /* texte secondaire, accueil */
-  --ed-texte-3:#999;              /* libellés discrets, pages villes */
+  /* #6D6D6D et non #999 — mesuré le 2026-11-13 : 2,66 sur le gris très
+     clair des encarts (#F7F7F7), pour 4,5 exigés. Ce sont « Prix »,
+     « Durée estimée », « Disponibilité » : les trois libellés qui disent
+     ce que le chiffre en dessous signifie. « Discret » ne veut pas dire
+     « illisible ». #6D6D6D y donne 4,86. */
+  --ed-texte-3:#6D6D6D;           /* libellés discrets, pages villes */
 
   /* Textes posés sur une surface sombre */
   --ed-sur-sombre:#EDE8DF;
@@ -131,7 +136,15 @@ html:has(.vt) .cookie-overlay {
      que celle de l'étape 147, et le faire par étourderie en recopiant la
      valeur de la palette A dégraderait 38 pages en production. */
   --sur-voile-or:var(--gold);
-  --t1:#09091A;--t2:#6B6B6B;--t3:#D0D0D0;
+  /* --t2 : #616161 et non #6B6B6B — mesuré le 2026-11-13. Sur `--elevated`
+     (#E8E4DE), l'ancien gris donnait 4,21 pour 4,5 exigés : les boutons du
+     nombre de passagers et les guillemets des avis. #616161 y donne 4,86,
+     et AMÉLIORE tous ses autres emplois sur fond clair (5,33 → 5,74 sur
+     blanc, 4,56 → 4,92 sur `--surface`). Si une section sombre devait un
+     jour réutiliser `--t2`, ce serait un défaut à part : un jeton pensé
+     pour le fond clair n'a rien à faire sur du bleu nuit — voir la section
+     « mise à disposition » de VitrineBody.tsx, corrigée le même jour. */
+  --t1:#09091A;--t2:#616161;--t3:#D0D0D0;
   --green:#16A34A;--amber:#D97706;--red:#DC2626;--blue:#2563EB;
 
   /* ── Encres et surfaces claires ──────────────────────────────────────── */
@@ -140,7 +153,11 @@ html:has(.vt) .cookie-overlay {
   --encre-douce:#333333;      /* survol d'un bouton noir */
   --encre-tiede:#444444;      /* palier de dégradé des grands chiffres */
   --gris-moyen:#888888;       /* palier clair du même dégradé */
-  --etiquette-champ:#9090AE;  /* libellé au-dessus d'un champ du formulaire ;
+  /* #6F6F86 et non #9090AE — mesuré le 2026-11-13 : 3,04 sur le blanc des
+     champs, pour 4,5 exigés. Ce sont « Prise en charge », « Destination »,
+     « Date » : les libellés qui disent au client ce qu'il doit saisir.
+     #6F6F86 y donne 4,81, en gardant le même ton bleuté. */
+  --etiquette-champ:#6F6F86;  /* libellé au-dessus d'un champ du formulaire ;
                                  ne correspond à aucun autre gris de la page */
   --papier:#FFFFFF;           /* surface claire d'une carte — s'inversera sur
                                  fond sombre */
@@ -199,9 +216,21 @@ html:has(.vt) .cookie-overlay {
 
   /* ── Ajoutés à l'étape 116, pour les couleurs qui vivaient dans
      VitrineBody.tsx. Valeurs relevées telles quelles, rien d'inventé. ──── */
-  --t2-rvb:107,107,107;       /* --t2 employé à 85 % d'opacité */
-  --gris-ardoise:#848499;     /* texte secondaire bleuté, étiquette « ville » */
-  --gris-ardoise-rvb:132,132,153;
+  /* 97,97,97 : SUIT --t2, qui est passé de #6B6B6B à #616161 le 2026-11-13.
+     Un triplet de canaux qui ne suit pas son jeton fait vivre deux gris
+     différents sous le même nom. */
+  --t2-rvb:97,97,97;          /* --t2 employé à 85 % d'opacité */
+  /* #6A6A7A et non #848499 — mesuré le 2026-11-13. Sur le blanc des cartes
+     de destination, #848499 donnait 3,66 pour 4,5 exigés, sur 24 libellés
+     (« Aéroport Charles de Gaulle », « Prix fixe berline »…).
+     Première valeur essayée, #707082 : 4,84 sur blanc, mais 4,38 sur les
+     fonds à peine grisés des encarts (#F3F3F5) — donc encore sous le
+     seuil, à deux endroits. #6A6A7A tient partout : 5,34 sur blanc,
+     4,81 sur #F3F3F5, 4,90 sur #F5F5F7. Le ton bleuté est conservé.
+     Contrôle :
+     MSYS_NO_PATHCONV=1 node audit-contraste-reel.mjs https://www.owise.fr /vtc-creil */
+  --gris-ardoise:#6A6A7A;     /* texte secondaire bleuté, étiquette « ville » */
+  --gris-ardoise-rvb:106,106,122;
   --gris-sombre:#555555;
   --encre-sourde:#222222;     /* détails des illustrations de véhicule */
   --encre-profonde:#111111;

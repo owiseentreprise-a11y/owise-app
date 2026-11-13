@@ -1847,18 +1847,49 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           ET ELLE ANNONCE UN PRIX. Un bandeau qui decrit un service sans
           chiffre ne declenche rien ; celui-ci porte le prix d'appel, la duree
           minimale et les kilometres compris, tous lus en base. */}
+      {/* CETTE SECTION FIXE SON FOND EN SOMBRE : SES TEXTES NE PEUVENT PAS
+          UTILISER `--t1` NI `--t2`.
+
+          Régression réelle, livrée le 2026-11-13 et corrigée le même jour.
+          Ce corps de page est rendu sous DEUX palettes :
+            · l'accueil et /mise-a-disposition portent `vt vt-palette-a`,
+              la palette chaude SOMBRE, où `--t1` vaut #F7F2EA — clair ;
+            · les 38 pages villes portent `vt` SEUL, la palette CLAIRE, où
+              `--t1` vaut #09091A… c'est-à-dire exactement `--nuit`, le fond
+              de cette section.
+
+          Résultat sur les 38 pages villes : le titre « Un chauffeur rien que
+          pour vous » était écrit en bleu nuit SUR du bleu nuit — contraste
+          1,00, purement invisible — et l'accroche au-dessus avec lui.
+          Mesuré, puis vu à l'écran : un grand vide sombre.
+
+          `--sur-fonce` et `--sur-fonce-rvb` sont faits pour ça : ils désignent
+          « ce qui se pose sur une surface DÉJÀ sombre » et restent clairs dans
+          les DEUX palettes (#FFFFFF ici, #F7F2EA là). Contrastes obtenus :
+          19,7 et 17,6 pour le titre, 12,5 et 11,3 pour le paragraphe.
+
+          Les cartes à l'intérieur gardent `--t2` : leur fond à elles est
+          `--papier`, blanc sur la palette claire. Redéfinir `--t2` pour toute
+          la section rendrait leurs libellés illisibles — c'est pourquoi la
+          correction vise les textes un par un, et non le jeton. */}
       <section style={{ background:'var(--nuit)', padding:'72px 24px' }}>
         <div className="reveal" style={{ maxWidth:1080, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:34 }}>
-            <div className="section-tag">À l’heure ou à la journée</div>
+            {/* `.section-tag` colore son texte ET ses deux filets avec
+                `--t2` ; on redéfinit donc le jeton sur ce seul élément,
+                une couleur en ligne n'atteindrait pas les pseudo-éléments. */}
+            <div className="section-tag"
+              style={{ ['--t2' as string]: 'rgba(var(--sur-fonce-rvb),.78)' } as CSSProperties}>
+              À l’heure ou à la journée
+            </div>
             <h2 style={{
               fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize:'clamp(28px, 4.2vw, 44px)', fontWeight:500, lineHeight:1.12,
-              margin:'14px 0 12px', color:'var(--t1)',
+              margin:'14px 0 12px', color:'var(--sur-fonce)',
             }}>
               Un chauffeur rien que pour vous,<br />le temps qu’il vous faut
             </h2>
-            <p style={{ fontSize:16, lineHeight:1.7, color:'var(--t2)', margin:'0 auto', maxWidth:580 }}>
+            <p style={{ fontSize:16, lineHeight:1.7, color:'rgba(var(--sur-fonce-rvb),.80)', margin:'0 auto', maxWidth:580 }}>
               Une journée de rendez-vous, un tournage, un mariage : le chauffeur
               reste avec vous et vous décidez du programme au fur et à mesure.
             </p>
@@ -1899,7 +1930,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             }}>
               Calculer ma mise à disposition
             </Link>
-            <div style={{ fontSize:13, color:'var(--t2)', marginTop:12 }}>
+            {/* Posé sur le fond sombre, comme le titre : voir le commentaire
+                en tête de section. */}
+            <div style={{ fontSize:13, color:'rgba(var(--sur-fonce-rvb),.72)', marginTop:12 }}>
               Prix affiché immédiatement, sans engagement.
             </div>
           </div>
