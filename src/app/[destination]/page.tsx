@@ -1498,7 +1498,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           <span style={{ fontSize: 11, color: 'rgba(var(--ed-accent-bandeau-rvb),.8)', letterSpacing: '.12em', textTransform: 'uppercase' }}>
             {dest.title}
           </span>
-          <span style={{ fontSize: 11, color: 'rgba(var(--ed-sur-sombre-rvb),.35)' }}>·</span>
+          {/* .52 et non .35 — mesuré le 2026-11-13. Sur le fond du bandeau
+              (#0E0B08 une fois composé), 35 % d'opacité donnent 2,95 pour
+              4,5 exigés ; 52 % donnent 5,22. Le point reste discret : c'est
+              sa TAILLE, 11 px, et non sa pâleur, qui en fait un séparateur.
+              Le texte voisin est à 50 % et passe déjà, à 4,90. */}
+          <span style={{ fontSize: 11, color: 'rgba(var(--ed-sur-sombre-rvb),.52)' }}>·</span>
           <span style={{ fontSize: 11, color: 'rgba(var(--ed-sur-sombre-rvb),.5)' }}>{dest.prix} · {dest.duree}</span>
         </div>
         <Link href="/" style={{ fontSize: 11, color: 'rgba(var(--ed-accent-bandeau-rvb),.7)', textDecoration: 'none', letterSpacing: '.08em' }}>
@@ -1511,7 +1516,30 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           est déjà la source dont dérivent le `hreflang` plus haut et le
           sitemap — on ne recopie pas une deuxième liste. Jusqu'au 2026-11-06
           ce jumeau n'était déclaré qu'à Google, jamais montré au visiteur. */}
-      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} lienAnglais={JUMEAUX_EN[dest.slug] ?? '/en/book'} />
+      {/* `palette="a"` — LES 39 PAGES VILLES REJOIGNENT LE RESTE DU SITE.
+
+          Mesure du 2026-11-13, page par page : owise.fr portait DEUX
+          identites visuelles. L'accueil, /reserver, /faq, /blog, /en/book
+          et /mise-a-disposition etaient en terracotta #E8713C sur fond
+          brun sombre ; les 39 pages villes, en or #C9A84C sur creme. Un
+          visiteur qui cliquait « VTC Chantilly » depuis l'accueil changeait
+          de site. Arbitrage de l'exploitant, qui avait demande de
+          travailler « la charte graphique, la coherence » : tout en
+          terracotta sombre.
+
+          Ce seul mot suffit, et c'est voulu : `.vt-palette-a` entre dans
+          le document, et `html:has(.vt-palette-a)` — ligne 1947 de
+          vitrine.css — redefinit aussi les jetons `--ed-*`. Les deux
+          sections editoriales de cette page sont des FRERES de ce
+          composant, hors de `.vt` ; elles lisent ces jetons depuis
+          `<html>` et suivent donc le changement. Sans cette portee, la
+          page serait sombre en haut et creme en bas.
+
+          Benefice mesure en plus de la coherence : l'or sur creme
+          plafonnait a 2,29 de contraste, tres en dessous des 4,5 exiges,
+          sur les pages qui travaillent le referencement. Le terracotta sur
+          fond sombre passe. */}
+      <VitrineBody tarifs={tarifs ?? []} zones={zones ?? []} grille={grille ?? []} params={paramsPourNavigateur(tarifParams)} heroTitle={dest.h1} lieuDestination={dest.lieuDestination} lienAnglais={JUMEAUX_EN[dest.slug] ?? '/en/book'} palette="a" />
 
       {/* Section intro SEO */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-editorial)', padding: '60px 24px', maxWidth: 860, margin: '0 auto' }}>
