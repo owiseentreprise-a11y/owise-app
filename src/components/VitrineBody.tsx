@@ -1314,6 +1314,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             d'impressions sur téléphone que sur ordinateur sur les requêtes
             villes, et un lien posé seulement dans la barre de bureau serait
             invisible pour la majorité des visiteurs. */}
+        <Link href="/mise-a-disposition" className="mm-link" onClick={()=>setMenuOpen(false)}>Chauffeur à l’heure</Link>
         <Link href={lienAnglais} className="mm-link" lang="en" hrefLang="en" prefetch={false} onClick={()=>setMenuOpen(false)}>English</Link>
         <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
         <div className="mm-sub">Chauffeur privé VTC · Paris & Oise</div>
@@ -1383,6 +1384,15 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           {[['#vehicules','Véhicules'],['#tarifs','Tarifs'],['#comment','Comment ça marche'],['#zones','Zones'],['#faq','FAQ'],['#contact','Contact']].map(([h,l])=>(
             <a key={h} href={h} className="nav-link" onClick={e=>{e.preventDefault();scrollTo(h)}}>{l}</a>
           ))}
+          {/* PAS DE LIEN « mise a disposition » ICI, et c'est mesure.
+              La barre de bureau tenait sur une ligne jusqu'a 1280 px ; un
+              huitieme lien la fait casser des 1366 px, et a 1280 px le mot
+              « Blog » passe sous le bouton English. Mesure du 2026-11-13
+              par `mesurer-nav.mjs`, production servant de reference.
+              Le service est atteignable par le pied de page (rendu sur ~170
+              pages), par le menu du telephone (sans contrainte de largeur)
+              et par un bandeau sur l'accueil. Ne pas le remettre ici sans
+              remesurer. */}
           <Link href="/blog" className="nav-link">Blog</Link>
         </div>
         <div className="nav-r">
@@ -2091,6 +2101,67 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
       </section>
 
+      {/* MISE A DISPOSITION — bandeau ajoute le 2026-11-13.
+
+          POURQUOI ICI. La page existait depuis la veille, etait au sitemap,
+          ses prix verifies sur 64 combinaisons — et AUCUNE page du site n'y
+          menait. L'exploitant l'a constate avant moi : « je vois pas ou on
+          peut reserver la mise a dispo ». Un sitemap n'est pas une
+          navigation.
+
+          POURQUOI PAS DANS LA BARRE DU HAUT. Un huitieme lien la fait casser
+          des 1366 px, et a 1280 px le mot « Blog » passe sous le bouton
+          English — mesure par `mesurer-nav.mjs`, la production servant de
+          reference. Un bandeau ne coute rien a la barre et se voit mieux.
+
+          PLACE ENTRE TARIFS ET ZONES : apres le prix des transferts, avant
+          les destinations. C'est le moment ou le visiteur se dit que son
+          besoin n'est peut-etre pas un trajet d'un point a un autre.
+
+          AUCUN PRIX ECRIT ICI : `audit-tarifs.mjs` relit ce fichier et un
+          montant en dur y serait un second bareme. Le tarif se lit sur la
+          page elle-meme, ou il vient de la base. */}
+      <section style={{ background:'var(--surface)', padding:'0 24px 80px' }}>
+        <div className="reveal" style={{
+          maxWidth:1080, margin:'0 auto',
+          display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between',
+          gap:24, padding:'30px 34px', borderRadius:18,
+          background:'rgba(201,168,76,.06)', border:'1px solid rgba(201,168,76,.22)',
+        }}>
+          <div style={{ flex:'1 1 420px', minWidth:0 }}>
+            <div className="section-tag" style={{ marginBottom:10 }}>Autre formule</div>
+            <h2 style={{
+              fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontSize:'clamp(23px, 3vw, 31px)', fontWeight:500, lineHeight:1.15,
+              margin:'0 0 10px', color:'var(--t1)',
+            }}>
+              Besoin d’un chauffeur plusieurs heures&nbsp;?
+            </h2>
+            <p style={{ fontSize:15, lineHeight:1.7, color:'var(--t2)', margin:0, maxWidth:560 }}>
+              Une journée de rendez-vous, un tournage, un mariage : le chauffeur
+              reste avec vous et vous décidez du programme au fur et à mesure.
+              Tarif à l’heure annoncé par véhicule.
+            </p>
+          </div>
+          {/* PAS la classe `nav-cta` : `vitrine.css` ligne 1137 la masque en
+              `display:none !important` sous 900 px, puisqu'elle appartient a
+              la barre de navigation. Reutilisee ici, le bouton disparaissait
+              purement et simplement sur telephone — vu sur une capture le
+              2026-11-13, invisible autrement. Une classe de composant ne se
+              recycle pas hors de son composant. */}
+          <Link href="/mise-a-disposition" style={{
+            textDecoration:'none', whiteSpace:'nowrap', flexShrink:0,
+            display:'inline-flex', alignItems:'center', justifyContent:'center',
+            minHeight:48, padding:'0 26px', borderRadius:9,
+            background:'var(--gold)', color:'var(--sur-or, #1A1008)',
+            fontSize:14, fontWeight:600,
+            transition:'background .15s, transform .1s',
+          }}>
+            Voir les tarifs à l’heure
+          </Link>
+        </div>
+      </section>
+
       {/* ZONES — Destinations avec prix réels */}
       <section id="zones" style={{ background:'var(--base)', padding:'80px 24px' }}>
         <div style={{ maxWidth:1080, margin:'0 auto' }}>
@@ -2750,6 +2821,11 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div className="footer-links">
               <button className="footer-link" style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}} onClick={()=>scrollTo('#devis')}>Réservation immédiate</button>
               <button className="footer-link" style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}} onClick={()=>scrollTo('#vehicules')}>Transferts aéroport</button>
+              {/* Un VRAI lien, pas un bouton qui fait defiler : la mise a
+                  disposition est une page a elle, et le pied de page est rendu
+                  sur ~170 pages publiques. C'est le chemin le plus sur pour
+                  qu'elle cesse d'etre orpheline. */}
+              <Link href="/mise-a-disposition" className="footer-link">Mise à disposition à l’heure</Link>
               <button className="footer-link" style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}} onClick={()=>scrollTo('#devis')}>Comptes entreprises</button>
               <button className="footer-link" style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}} onClick={()=>scrollTo('#devis')}>Événements & soirées</button>
             </div>
@@ -2758,6 +2834,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             <div className="footer-col-title">Informations</div>
             <div className="footer-links">
               <Link href="/blog" className="footer-link">Blog & Guides VTC</Link>
+              {/* /faq etait ORPHELINE elle aussi, et depuis bien plus
+                  longtemps : le menu porte une ancre #faq qui fait defiler
+                  l'accueil, mais la page autonome n'etait citee par aucun
+                  lien du site. Trouvee le 2026-11-13 par
+                  `audit-pages-orphelines.mjs`, en cherchant la mienne. */}
+              <Link href="/faq" className="footer-link">Questions fréquentes</Link>
               <Link href="/mentions-legales" className="footer-link">Conditions générales</Link>
               <Link href="/mentions-legales" className="footer-link">Politique de confidentialité</Link>
               <Link href="/mentions-legales" className="footer-link">Mentions légales</Link>
