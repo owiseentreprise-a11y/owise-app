@@ -25,6 +25,7 @@ import { vehiculeParCle } from '@/lib/gamme'
 import { formaterMontant } from '@/lib/montant'
 import {
   DUREES_PROPOSEES, MENTION_TARIFS, MENTION_TARIFS_EN, destinationPourDemande,
+  phraseKilometres, MEME_ZONE, MEME_ZONE_EN, FRAIS_EN_SUS, FRAIS_EN_SUS_EN,
 } from '@/lib/mise-a-disposition'
 import { soumettreDevis } from '@/app/vitrine/actions'
 
@@ -34,6 +35,8 @@ export type VehiculeMAD = {
   places: string
   /** `null` = sur devis. Jamais remplacé par une valeur de repli. */
   prixHeure: number | null
+  /** Prix du km au-delà du forfait. `null` : aucun dépassement facturé. */
+  prixKmSup: number | null
 }
 
 /**
@@ -52,6 +55,8 @@ const MOTS = {
     heures: (h: number) => `${h} heures`,
     prix: 'Prix annoncé',
     mention: MENTION_TARIFS,
+    memeZone: MEME_ZONE,
+    fraisEnSus: FRAIS_EN_SUS,
     adresse: 'Adresse de prise en charge',
     adressePlaceholder: 'Numéro, rue, ville',
     jour: 'Jour',
@@ -75,6 +80,8 @@ const MOTS = {
     heures: (h: number) => `${h} hours`,
     prix: 'Quoted price',
     mention: MENTION_TARIFS_EN,
+    memeZone: MEME_ZONE_EN,
+    fraisEnSus: FRAIS_EN_SUS_EN,
     adresse: 'Pick-up address',
     adressePlaceholder: 'Number, street, town',
     jour: 'Date',
@@ -164,6 +171,7 @@ export default function DemandeMiseADisposition(
     prise_en_charge: 0, prix_km: 0,
     cdg_fixe: 0, orly_fixe: 0, beauvais_fixe: 0,
     prix_heure: v.prixHeure,
+    prix_km_sup: v.prixKmSup,
   })), [vehicules])
 
   const calcul = useMemo(
@@ -283,8 +291,25 @@ export default function DemandeMiseADisposition(
         </div>
       </div>
 
+      {/* LE FORFAIT KILOMETRIQUE, SOUS LE PRIX ET PAS EN BAS DE PAGE.
+          Une limite qu'on decouvre a la facturation est une mauvaise
+          surprise ; lue a cote du montant, c'est une condition. */}
+      {calcul && (
+        <div style={{
+          background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.16)',
+          borderRadius: 11, padding: '12px 15px',
+        }}>
+          <div style={{ fontSize: 13.5, color: CREME, fontWeight: 600, marginBottom: 4 }}>
+            {phraseKilometres(calcul.kmInclus, calcul.prixKmSup, formaterMontant, langue === 'en')}
+          </div>
+          <div style={{ fontSize: 12.5, lineHeight: 1.6, color: PALE }}>
+            {m.memeZone}
+          </div>
+        </div>
+      )}
+
       <p style={{ fontSize: 12.5, lineHeight: 1.65, color: PALE, margin: 0 }}>
-        {m.mention}
+        {m.mention} {m.fraisEnSus}
       </p>
 
       {/* ── La prestation ───────────────────────────────────────────── */}

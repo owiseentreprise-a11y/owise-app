@@ -29,8 +29,15 @@
  * la règle tirée de l'incident du 2026-11-03.
  */
 
-/** Durées proposées au client, en heures. Au-delà, c'est un devis. */
-export const DUREES_PROPOSEES = [2, 3, 4, 5, 6, 8, 10, 12] as const
+/**
+ * Durées proposées au client, en heures.
+ *
+ * Elles commencent à 3 h : c'est l'entrée la plus courante des maisons
+ * parisiennes (Chabé démarre même à 5 h), et la décision de l'exploitant du
+ * 2026-11-13. `DUREE_MIN_MAD`, dans `calcPrix.ts`, porte la même valeur et
+ * fait foi pour le calcul ; `scripts/` vérifie que les deux concordent.
+ */
+export const DUREES_PROPOSEES = [3, 4, 5, 6, 8, 10, 12] as const
 
 /** Au-delà de cette durée, le site renvoie vers une demande de devis. */
 export const DUREE_MAX_EN_LIGNE = 12
@@ -57,6 +64,50 @@ export const HEURE_ENTAMEE_EN = 'Any hour started is charged in full.'
  */
 export const SOUS_RESERVE = 'Tarifs proposés sous réserve de disponibilité.'
 export const SOUS_RESERVE_EN = 'Rates offered subject to availability.'
+
+/**
+ * « 80 km compris, au-delà 2,00 € du kilomètre. »
+ *
+ * La limite doit être LUE avant la réservation, pas découverte à la
+ * facturation. Elle se construit ici pour que les deux pages, française et
+ * anglaise, disent exactement la même chose — et pour qu'ajouter une langue
+ * n'oblige pas à retrouver la phrase dans un composant.
+ */
+export function phraseKilometres(
+  kmInclus: number, prixKmSup: number | null, montant: (n: number) => string, en = false,
+): string {
+  if (en) {
+    return prixKmSup == null
+      ? `${kmInclus} km included.`
+      : `${kmInclus} km included, then ${montant(prixKmSup)} per extra kilometre.`
+  }
+  return prixKmSup == null
+    ? `${kmInclus} km compris.`
+    : `${kmInclus} km compris, puis ${montant(prixKmSup)} du kilomètre au-delà.`
+}
+
+/**
+ * « La prestation se termine dans la zone où elle a commencé. »
+ *
+ * Règle reprise de Blacklane, validée le 2026-11-13 : elle remplace tout
+ * rayon kilométrique. Une seule limite — le forfait de kilomètres — au lieu
+ * de deux géographies à maintenir. Si la course finit ailleurs, ce n'est
+ * plus une mise à disposition mais un transfert, qui a déjà son tarif.
+ */
+export const MEME_ZONE =
+  'La prestation se termine dans la zone où elle a commencé ; sinon il s’agit '
+  + 'd’un transfert, qui a son propre tarif.'
+
+export const MEME_ZONE_EN =
+  'The booking ends in the area where it started; otherwise it is a transfer, '
+  + 'which has its own fare.'
+
+/** Ce qui reste à la charge du client, comme partout sur le marché. */
+export const FRAIS_EN_SUS =
+  'Péages et stationnement ne sont pas compris : ils sont refacturés au réel.'
+
+export const FRAIS_EN_SUS_EN =
+  'Tolls and parking are not included: they are re-invoiced at cost.'
 
 /** La phrase complète, celle qui accompagne la grille de prix. */
 export const MENTION_TARIFS =

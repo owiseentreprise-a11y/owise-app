@@ -43,7 +43,10 @@ import { JUMEAU_RESERVATION } from '@/lib/langue'
    que les montrer — elle n'ecrit ni prix ni regle. */
 import { GAMME } from '@/lib/gamme'
 import { formaterMontant } from '@/lib/montant'
-import { MENTION_TARIFS_EN, DEFINITION_EN, USAGES_EN } from '@/lib/mise-a-disposition'
+import {
+  MENTION_TARIFS_EN, DEFINITION_EN, USAGES_EN, FRAIS_EN_SUS_EN,
+} from '@/lib/mise-a-disposition'
+import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD } from '@/lib/calcPrix'
 import DemandeMiseADisposition, { type VehiculeMAD }
   from '@/app/mise-a-disposition/DemandeMiseADisposition'
 import { chargerParametres } from '@/lib/tarification'
@@ -186,6 +189,11 @@ async function lireDonnees() {
         ? `${v.capaciteMax} passengers`
         : `up to ${v.capaciteMax} passengers`,
       prixHeure: ph != null && Number.isFinite(ph) && ph > 0 ? ph : null,
+      prixKmSup: (() => {
+        const b = (ligne as { prix_km_sup?: number | null } | undefined)?.prix_km_sup
+        const n = b == null ? null : Number(b)
+        return n != null && Number.isFinite(n) && n > 0 ? n : null
+      })(),
     }
   })
 
@@ -476,8 +484,8 @@ export default async function Page() {
           <p style={{ fontSize: 14, color: doux, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.7 }}>
             {DEFINITION_EN}
           </p>
-          <p style={{ fontSize: 13, color: 'rgba(237,232,223,.55)', margin: '0 0 20px', maxWidth: 640, lineHeight: 1.7 }}>
-            {MENTION_TARIFS_EN}
+          <p style={{ fontSize: 13, color: 'rgba(237,232,223,.60)', margin: '0 0 20px', maxWidth: 640, lineHeight: 1.7 }}>
+            {MENTION_TARIFS_EN} {FRAIS_EN_SUS_EN} From {DUREE_MIN_MAD} hours.
           </p>
 
           {/* LES TARIFS HORAIRES, LUS EN BASE.
@@ -496,6 +504,12 @@ export default async function Page() {
                 }}>
                   {v.prixHeure == null ? 'on request' : `${formaterMontant(v.prixHeure)} / h`}
                 </div>
+                {v.prixKmSup != null && (
+                  <div style={{ fontSize: 11.5, color: 'rgba(237,232,223,.60)', marginTop: 8, lineHeight: 1.5 }}>
+                    {KM_PAR_HEURE_MAD} km included per hour,<br />
+                    then {formaterMontant(v.prixKmSup)} per extra km
+                  </div>
+                )}
               </div>
             ))}
           </div>

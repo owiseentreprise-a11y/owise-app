@@ -137,15 +137,35 @@ if (tarifsALaMain === 0) {
 /* Et le tarif horaire est-il reellement lu quelque part ? Une colonne reglable
    dans /admin/tarifs que personne ne lit est un bouton sans fil. */
 {
-  const { data } = await createAdminClient().from('tarifs').select('vehicule, prix_heure')
-  const regles = (data ?? []).filter((t: { prix_heure: number | null }) => t.prix_heure != null)
-  const lu = tous.some(f => /prixMiseADisposition|prix_heure/.test(lire(f)))
-  if (regles.length === 0) {
-    ok('aucun tarif horaire regle en base — rien a verifier')
-  } else if (lu) {
-    ok(`tarif horaire regle sur ${regles.length} vehicule(s), et lu par le code`)
+  const { data } = await createAdminClient().from('tarifs').select('vehicule, prix_heure, prix_km_sup')
+  const lignes = (data ?? []) as { vehicule: string; prix_heure: number | null; prix_km_sup: number | null }[]
+  /* Chaque reglage de la mise a disposition : regle en base ET lu par le
+     code ? Un bouton sans fil est pire qu'un bouton absent. */
+  for (const [colonne, motif] of [
+    ['prix_heure', /prixMiseADisposition|prix_heure/],
+    ['prix_km_sup', /prix_km_sup|prixKmSup/],
+  ] as [string, RegExp][]) {
+    const regles = lignes.filter(t => (t as unknown as Record<string, number | null>)[colonne] != null)
+    const lu = tous.some(f => motif.test(lire(f)))
+    if (regles.length === 0) ok(`aucun « ${colonne} » regle en base — rien a verifier`)
+    else if (lu) ok(`« ${colonne} » regle sur ${regles.length} vehicule(s), et lu par le code`)
+    else ko(`« ${colonne} » regle sur ${regles.length} vehicule(s) mais LU PAR AUCUNE PAGE`)
+  }
+
+  /* La duree minimale et le forfait kilometrique sont des REGLES, pas des
+     tarifs : ils vivent dans calcPrix.ts. Mais la liste des durees proposees
+     vit ailleurs, dans mise-a-disposition.ts. Les deux doivent concorder,
+     sinon le site propose une duree que le calcul refuse. */
+  const calc = lire(resolve('src/lib/calcPrix.ts'))
+  const mots = lire(resolve('src/lib/mise-a-disposition.ts'))
+  const minCalc = Number(calc.match(/DUREE_MIN_MAD\s*=\s*(\d+)/)?.[1] ?? NaN)
+  const premiere = Number(mots.match(/DUREES_PROPOSEES\s*=\s*\[\s*(\d+)/)?.[1] ?? NaN)
+  if (!Number.isFinite(minCalc) || !Number.isFinite(premiere)) {
+    ko('duree minimale introuvable dans calcPrix.ts ou mise-a-disposition.ts')
+  } else if (minCalc === premiere) {
+    ok(`duree minimale : ${minCalc} h de part et d'autre`)
   } else {
-    ko(`tarif horaire regle sur ${regles.length} vehicule(s) mais LU PAR AUCUNE PAGE`)
+    ko(`duree minimale : ${minCalc} h dans calcPrix.ts, mais la premiere duree proposee est ${premiere} h`)
   }
 }
 

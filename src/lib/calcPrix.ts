@@ -89,6 +89,8 @@ export type TarifCalc  = {
   beauvais_fixe: number
   /** Mise a disposition : euros par heure ENTAMEE. `null` = sur devis. */
   prix_heure?: number | null
+  /** Mise a disposition : euros du km AU-DELA du forfait. `null` = non facture. */
+  prix_km_sup?: number | null
 }
 export type ParamsCalc = {
   /* Pas de `coef_berline` ici, et c'est voulu. Voir la note sous les replis. */
@@ -235,6 +237,31 @@ function nomTarifPour(vehiculeKey: string): string {
    jour, ce sera une decision explicite, pas un effet de bord.
    ════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Kilometres compris dans une mise a disposition, par heure RESERVEE.
+ *
+ * 20 km/h est le standard francais, mesure le 2026-11-13 sur le marche
+ * parisien (chauffeurs-vtc.fr 20, VTChal 25, Blacklane 40 mais c'est un
+ * acteur international haut de gamme). Valide par l'exploitant ce jour-la.
+ *
+ * Ils se COMPTENT SUR LE TOTAL, pas heure par heure : 4 h donnent 80 km a
+ * depenser comme on veut, et non 20 km a ne pas depasser chaque heure. C'est
+ * la pratique du marche, et la seule lisible pour un client.
+ *
+ * Ce nombre vit ICI, dans le moteur de prix, et pas dans la table `tarifs` :
+ * ce n'est pas un tarif par vehicule mais une regle commerciale unique. S'il
+ * devait un jour varier par vehicule, il deviendrait une colonne.
+ */
+export const KM_PAR_HEURE_MAD = 20
+
+/** Duree minimale d'une mise a disposition, en heures. */
+export const DUREE_MIN_MAD = 3
+
+/** Les kilometres compris pour une duree donnee. */
+export function kmInclusMAD(heures: number): number {
+  return heuresFacturees(heures) * KM_PAR_HEURE_MAD
+}
+
 /** Le nombre d'heures reellement facturees pour une duree demandee. */
 export function heuresFacturees(heuresDemandees: number): number {
   if (!Number.isFinite(heuresDemandees) || heuresDemandees <= 0) return 0
@@ -252,14 +279,31 @@ export function prixMiseADisposition(
   vehiculeKey: string,
   heuresDemandees: number,
   tarifs: TarifCalc[],
-): { prix: number; heures: number; prixHeure: number } | null {
+): {
+  prix: number
+  heures: number
+  prixHeure: number
+  kmInclus: number
+  /** Prix du km au-dela du forfait. `null` : le vehicule n'en facture pas. */
+  prixKmSup: number | null
+} | null {
   const tarif = tarifs.find(t => t.vehicule === nomTarifPour(vehiculeKey))
   const prixHeure = tarif?.prix_heure == null ? null : Number(tarif.prix_heure)
   if (prixHeure == null || !Number.isFinite(prixHeure) || prixHeure <= 0) return null
 
   const heures = heuresFacturees(heuresDemandees)
   if (heures <= 0) return null
-  return { prix: Math.round(heures * prixHeure), heures, prixHeure }
+
+  const brutSup = tarif?.prix_km_sup
+  const prixKmSup = brutSup == null ? null : Number(brutSup)
+
+  return {
+    prix: Math.round(heures * prixHeure),
+    heures,
+    prixHeure,
+    kmInclus: heures * KM_PAR_HEURE_MAD,
+    prixKmSup: prixKmSup != null && Number.isFinite(prixKmSup) && prixKmSup > 0 ? prixKmSup : null,
+  }
 }
 
 export function tarifPourVehicule(

@@ -30,7 +30,9 @@ import { BASE_OWISE, IDENTITE_OWISE, ficheAvis, lireAvis } from '@/lib/identite-
 import { EMAIL_DEVIS, telephoneLisible } from '@/lib/devis-et-tarifs'
 import {
   DEFINITION, USAGES, MENTION_TARIFS, SOUS_RESERVE, HEURE_ENTAMEE,
+  MEME_ZONE, FRAIS_EN_SUS,
 } from '@/lib/mise-a-disposition'
+import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD } from '@/lib/calcPrix'
 import DemandeMiseADisposition, { type VehiculeMAD } from './DemandeMiseADisposition'
 
 export const revalidate = 3600
@@ -71,6 +73,11 @@ async function lireVehicules(): Promise<{ vehicules: VehiculeMAD[]; avis: { nomb
         ? `${v.capaciteMax} passagers`
         : `${v.capaciteMin} à ${v.capaciteMax} passagers`,
       prixHeure: prixHeure != null && Number.isFinite(prixHeure) && prixHeure > 0 ? prixHeure : null,
+      prixKmSup: (() => {
+        const b = ligne?.prix_km_sup
+        const n = b == null ? null : Number(b)
+        return n != null && Number.isFinite(n) && n > 0 ? n : null
+      })(),
     }
   })
   return { vehicules, avis }
@@ -90,6 +97,23 @@ const FAQ = [
     q: 'Le prix annoncé est-il garanti ?',
     a: `Le tarif horaire affiché est celui qui s’applique. ${SOUS_RESERVE} `
        + `Nous confirmons la disponibilité du véhicule avant toute réservation ferme.`,
+  },
+  {
+    q: 'Combien de kilomètres sont compris ?',
+    /* Les chiffres se calculent, ils ne se recopient pas : changer
+       `KM_PAR_HEURE_MAD` doit changer cette réponse. En revanche on
+       n'appelle PAS `phraseKilometres` ici — elle rend une phrase finie,
+       ponctuation comprise, et l'enchâsser donnait « 80 km compris. pour
+       4 h ». Une fonction qui écrit une phrase ne s'imbrique pas dans une
+       autre phrase. */
+    a: `${KM_PAR_HEURE_MAD} km par heure réservée, comptés sur le total : `
+       + `${4 * KM_PAR_HEURE_MAD} km pour 4 h, ${8 * KM_PAR_HEURE_MAD} km pour 8 h. `
+       + `Au-delà, le kilomètre est facturé au tarif indiqué sur la carte du véhicule. `
+       + MEME_ZONE,
+  },
+  {
+    q: 'Les péages et le stationnement sont-ils compris ?',
+    a: FRAIS_EN_SUS,
   },
   {
     q: 'Puis-je changer de programme en cours de journée ?',
@@ -198,7 +222,7 @@ export default async function Page() {
             {DEFINITION}
           </p>
           <p style={{ fontSize: 14, lineHeight: 1.7, color: pale, maxWidth: 660, margin: 0 }}>
-            {MENTION_TARIFS}
+            {MENTION_TARIFS} {FRAIS_EN_SUS} À partir de {DUREE_MIN_MAD} h.
           </p>
         </section>
 
@@ -222,7 +246,15 @@ export default async function Page() {
                   {v.prixHeure == null ? 'sur devis' : formaterMontant(v.prixHeure)}
                 </div>
                 {v.prixHeure != null && (
-                  <div style={{ fontSize: 11.5, color: pale, marginTop: 3 }}>de l’heure</div>
+                  <>
+                    <div style={{ fontSize: 11.5, color: pale, marginTop: 3 }}>de l’heure</div>
+                    {v.prixKmSup != null && (
+                      <div style={{ fontSize: 11.5, color: pale, marginTop: 8, lineHeight: 1.5 }}>
+                        {KM_PAR_HEURE_MAD} km compris par heure,<br />
+                        puis {formaterMontant(v.prixKmSup)} du km
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}

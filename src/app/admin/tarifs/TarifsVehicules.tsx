@@ -11,6 +11,11 @@ type Tarif = {
   /* Mise a disposition, en euros par heure entamee. `null` = sur devis :
      la page publique affiche alors « sur devis » au lieu d'un prix. */
   prix_heure: number | null
+  /* Mise a disposition : le km AU-DELA du forfait (20 km par heure reservee).
+     Separe de `prix_km`, et c'est voulu : `prix_km` est le tarif d'un
+     transfert, celui-ci est une penalite de depassement. Le marche parisien
+     les separe franchement — 1,25 EUR/km contre 2,00 EUR/km. */
+  prix_km_sup: number | null
 }
 
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -43,8 +48,9 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
  * Sans ce champ a part, saisir rien donnerait 0, et la page publique
  * afficherait « 0 EUR de l'heure » — un prix faux vaut moins que pas de prix.
  */
-function NumFieldVide({ label, value, onChange, aide }: {
-  label: string; value: number | null; onChange: (v: number | null) => void; aide?: string
+function NumFieldVide({ label, value, onChange, aide, unite = '€/h' }: {
+  label: string; value: number | null; onChange: (v: number | null) => void
+  aide?: string; unite?: string
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -54,7 +60,7 @@ function NumFieldVide({ label, value, onChange, aide }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <input
           type="number"
-          step="1"
+          step="0.05"
           min="0"
           placeholder="sur devis"
           defaultValue={value ?? ''}
@@ -69,7 +75,7 @@ function NumFieldVide({ label, value, onChange, aide }: {
             outline: 'none', width: '100%', boxSizing: 'border-box' as const,
           }}
         />
-        <span style={{ fontSize: 11, color: 'var(--t3)', flexShrink: 0 }}>€/h</span>
+        <span style={{ fontSize: 11, color: 'var(--t3)', flexShrink: 0 }}>{unite}</span>
       </div>
       {aide && <div style={{ fontSize: 10, color: 'var(--t3)' }}>{aide}</div>}
     </div>
@@ -96,6 +102,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
         prise_en_charge: data.prise_en_charge,
         prix_km:         data.prix_km,
         prix_heure:      data.prix_heure,
+        prix_km_sup:     data.prix_km_sup,
       })
       if (res.error) setError(res.error)
       else setSaved(true)
@@ -130,14 +137,23 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
           calcul : un transfert se paie a la distance, une mise a disposition
           a la duree. Les melanger dans la meme grille laisserait croire
           qu'elles s'additionnent. */}
-      <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 12 }}>
+      <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <NumFieldVide
-          label="Mise à disposition (€ / heure)"
+          label="À disposition (€/h)"
           value={data.prix_heure}
           onChange={v => setData(d => ({ ...d, prix_heure: v }))}
           aide={data.prix_heure == null
             ? 'Vide : ce véhicule sera affiché \u00ab sur devis \u00bb.'
-            : `4 h : ${data.prix_heure * 4} €  \u00b7  8 h : ${data.prix_heure * 8} €  \u00b7  12 h : ${data.prix_heure * 12} €`}
+            : `4 h · ${data.prix_heure * 4} €    8 h · ${data.prix_heure * 8} €`}
+        />
+        <NumFieldVide
+          label="Km au-delà (€)"
+          value={data.prix_km_sup}
+          unite="€/km"
+          onChange={v => setData(d => ({ ...d, prix_km_sup: v }))}
+          aide={data.prix_km_sup == null
+            ? 'Vide : aucun dépassement facturé.'
+            : '20 km/h compris    4 h · 80 km'}
         />
       </div>
 

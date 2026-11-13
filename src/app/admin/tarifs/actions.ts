@@ -22,7 +22,10 @@ export async function updateTarifVehicule(
   /* `prix_heure` peut valoir null, et c'est une valeur : elle signifie
      « sur devis ». La rendre optionnelle laisserait un oubli passer
      pour une absence de changement. */
-  data: { prise_en_charge: number; prix_km: number; prix_heure: number | null }
+  data: {
+    prise_en_charge: number; prix_km: number
+    prix_heure: number | null; prix_km_sup: number | null
+  }
 ): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
