@@ -1114,7 +1114,10 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .cm-cat{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 0;border-bottom:1px solid rgba(var(--sur-fonce-rvb),.06)}
 .cm-cat:last-of-type{border-bottom:none}
 .cm-cat-name{font-size:13px;font-weight:600;color:var(--ivoire);margin-bottom:3px}
-.cm-cat-desc{font-size:11.5px;color:rgba(var(--ivoire-rvb),.42);line-height:1.6}
+/* .52 et non .42 : sur le fond de la fenêtre cookies (#1F1813 composé),
+   .42 donnait 3,79 pour 4,5 exigés. C'est le texte qui explique au
+   visiteur ce qu'il accepte — il doit se lire. */
+.cm-cat-desc{font-size:11.5px;color:rgba(var(--ivoire-rvb),.52);line-height:1.6}
 .cm-toggle{position:relative;width:38px;height:21px;flex-shrink:0;margin-top:3px;cursor:pointer}
 .cm-toggle input{opacity:0;width:0;height:0;position:absolute}
 .cm-track{position:absolute;inset:0;border-radius:11px;background:rgba(var(--sur-fonce-rvb),.1);transition:background .2s}
@@ -1437,7 +1440,12 @@ nav.scrolled{
 
 /* ── Nav — mode hero sombre (avant scroll) ── */
 nav:not(.scrolled) .nav-name{color:var(--ivoire)}
-nav:not(.scrolled) .nav-sub{color:rgba(var(--ivoire-rvb),.38)}
+/* .52 et non .38 — MESURÉ, pas choisi à l'œil. Sur le fond du hero
+   (#17120E une fois composé), .38 donne 3,32 là où la norme WCAG AA en
+   exige 4,5. Le minimum calculé est .48 (4,62) ; on prend .52 (5,15) pour
+   garder une marge si le fond fonce un peu. Contrôle : MSYS_NO_PATHCONV=1
+   node audit-contraste-page.mjs https://www.owise.fr / */
+nav:not(.scrolled) .nav-sub{color:rgba(var(--ivoire-rvb),.52)}
 nav:not(.scrolled) .nav-divider{background:rgba(var(--ivoire-rvb),.18)}
 nav:not(.scrolled) .nav-link{color:rgba(var(--ivoire-rvb),.5)}
 nav:not(.scrolled) .nav-link:hover{color:var(--ivoire)}
@@ -1449,7 +1457,8 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
 
 /* ── Scroll hint — adapté fond sombre ── */
 .scroll-hint .scroll-line{background:linear-gradient(to bottom,rgba(var(--ivoire-rvb),.35),transparent)}
-.scroll-hint .scroll-label{color:rgba(var(--ivoire-rvb),.38)}
+/* .52 : même mesure que .nav-sub. Sur #0E0B08, .38 donnait 3,29. */
+.scroll-hint .scroll-label{color:rgba(var(--ivoire-rvb),.52)}
 
 /* ── Mobile ── */
 @media(max-width:640px){
