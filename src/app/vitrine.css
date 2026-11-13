@@ -1574,6 +1574,55 @@ nav:not(.scrolled) .nav-hamburger span{background:var(--ivoire)}
 .vt .pm-nom-paris{font-size:18px}
 .vt .pm-apt{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.08em;
   text-transform:uppercase;fill:rgba(var(--sur-fonce-rvb),.7)}
+
+/* ── UN LISERÉ SOMBRE AUTOUR DE CHAQUE LETTRE ────────────────────────────
+   Mesuré le 2026-11-13, en production, six clichés par palette.
+
+   Le schéma porte un FLUX ANIMÉ : des traits lumineux peints en
+   `--or-clair` qui parcourent les liaisons sans fin. Les libellés sont
+   dessinés APRÈS le flux, donc au-dessus — mais rien ne les en détache.
+   Quand le flux passe dessous, la lettre claire se pose sur de l'orange
+   clair et disparaît. Puis le flux s'éloigne et elle revient.
+
+   C'est pour cela que le défaut avait échappé à tous les contrôles
+   précédents : un cliché unique répond « le flux était-il là à cet
+   instant ? », pas « ce libellé est-il lisible ? ». En échantillonnant :
+   « Aéroport » (Beauvais) illisible 4 fois sur 6 en palette claire,
+   « Paris » 3 fois sur 6, « Chantilly » et « Roissy CDG » 2 fois sur 6.
+   Le défaut est donc ANCIEN et commun aux deux palettes — la bascule des
+   pages villes du 2026-11-13 ne l'a pas créé, elle l'a seulement rendu
+   visible en le faisant tomber sous un audit.
+
+   La correction est celle de toutes les cartes imprimées : on cerne la
+   lettre. `paint-order:stroke fill` peint le contour D'ABORD, puis la
+   lettre par-dessus — le liseré ne mange donc pas le dessin du glyphe,
+   il l'entoure. La couleur est celle du panneau, `--nuit`, qui vaut
+   #09091A en palette claire et #0E0B08 en palette A : le liseré se fond
+   dans le fond du schéma partout où il n'y a pas de flux, et détache la
+   lettre partout où il y en a un.
+
+   L'épaisseur est en unités du dessin (viewBox 480 de large), pas en
+   pixels d'écran : elle suit donc l'échelle du schéma sur téléphone comme
+   sur grand écran, sans second réglage à tenir à jour. */
+.vt .pm-nom,.vt .pm-apt{
+  paint-order:stroke fill;
+  stroke:var(--nuit);
+  stroke-linejoin:round;
+  stroke-linecap:round}
+/* 3,6 — et la valeur a été cherchée, pas posée.
+   À 2,8 le liseré d'« AÉROPORT » sous Roissy restait trop mince : son
+   bord anticrénelé se mélangeait encore au flux, 4,47 pour 4,5 exigés.
+   À 3,2 le pire des dix libellés remontait à 4,77 — au-dessus du seuil,
+   mais de trois centièmes de marge sur un fond QUI BOUGE. Une marge de
+   cette taille n'en est pas une : le flux repasse toutes les quelques
+   secondes, et il suffit d'un rendu un peu différent pour redescendre.
+   À 3,6 le pire est à 7,62.
+   Les capitales espacées de `.pm-apt` ont des fûts plus fins que les
+   bas-de-casse de `.pm-nom` : elles ont besoin d'AUTANT de liseré, pas
+   de moins — d'où une valeur unique, et non deux proportionnelles aux
+   corps. */
+.vt .pm-nom,.vt .pm-apt{stroke-width:3.6px}
+
 .vt .pm-pt,.vt .pm-arc{transform-box:fill-box;transform-origin:center}
 
 /* ── La chorégraphie ─────────────────────────────────────────────────────
