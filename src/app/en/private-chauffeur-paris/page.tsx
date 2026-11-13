@@ -27,6 +27,7 @@
  * à une demande par e-mail, puisque celle-ci ne passe pas par le calculateur.
  */
 import type { Metadata } from 'next'
+import type React from 'react'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { calculerPrix, COLONNES_GRILLE } from '@/lib/calcPrix'
@@ -517,9 +518,30 @@ export default async function Page() {
           {/* Le formulaire, en anglais : meme composant, meme calcul, deux
               dictionnaires. Cette page s'excusait d'envoyer un anglophone
               vers un formulaire francais ; elle n'a plus a le faire. */}
+          {/* CETTE PAGE FOURNIT LES JETONS QUE LE COMPOSANT ATTEND.
+
+              `DemandeMiseADisposition` est partage avec /mise-a-disposition,
+              qui vit sous `.vt vt-palette-a` et y trouve toute la charte du
+              site. Cette page-ci garde sa propre identite bleu nuit et n'est
+              pas sous `.vt` : sans ces valeurs, le composant heritait du
+              `--t2` de `globals.css` (#7A7A96), trop sombre sur ses cartes —
+              dix lignes a 4,25 au lieu des 4,5 exiges, mesure le 2026-11-13.
+
+              Les replis ecrits dans le composant couvrent l'absence totale
+              d'un jeton ; ils ne peuvent rien contre un jeton PRESENT mais
+              inadapte. D'ou cette declaration explicite, ici, a cote de la
+              charte qu'elle sert. */}
           <div style={{
             background: 'rgba(237,232,223,.025)', border: '1px solid rgba(201,168,76,.18)',
             borderRadius: 16, padding: 'clamp(18px, 3.5vw, 28px)', marginBottom: 28,
+            ...({
+              '--t1': '#EDE8DF',
+              '--t2': 'rgba(237,232,223,.72)',
+              '--papier': 'rgba(237,232,223,.04)',
+              '--nuit': '#0D0D20',
+              '--sur-or': '#09091A',
+              '--contraste-rvb': '237,232,223',
+            } as React.CSSProperties),
           }}>
             <DemandeMiseADisposition vehicules={parHeure} langue="en" />
           </div>

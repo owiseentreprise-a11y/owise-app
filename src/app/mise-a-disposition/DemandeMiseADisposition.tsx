@@ -100,15 +100,21 @@ const MOTS = {
   },
 } as const
 
-const OR = '#C9A84C'
-const CREME = '#EDE8DF'
-const DOUX = 'rgba(237,232,223,.72)'
-const PALE = 'rgba(237,232,223,.60)'
+/* LES JETONS VIENNENT DE `vitrine.css`, SOUS `.vt` — ET CE COMPOSANT SERT
+   AUSSI LA PAGE ANGLAISE, qui n'est pas sous `.vt` et garde sa charte bleu
+   nuit. Chaque `var()` porte donc un repli. Sans lui, le 2026-11-13, le
+   bouton « Request this booking » s'est affiche en creme sur or :
+   contraste 1,87, illisible, alors que la page francaise etait parfaite.
+   Un composant partage ne doit dependre d'aucun jeton qu'il ne garantit pas. */
+const OR = 'var(--gold)'
+const CREME = 'var(--t1)'
+const DOUX = 'var(--t2)'
+const PALE = 'var(--t2)'
 
 const champStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
-  background: 'rgba(237,232,223,.04)',
-  border: '1px solid rgba(201,168,76,.22)',
+  background: 'var(--papier, rgba(237,232,223,.04))',
+  border: '1px solid rgba(var(--contraste-rvb, 237,232,223),.14)',
   borderRadius: 9, padding: '11px 13px',
   fontSize: 14, color: CREME,
   fontFamily: 'inherit', outline: 'none',
@@ -209,7 +215,7 @@ export default function DemandeMiseADisposition(
   if (envoye) {
     return (
       <div style={{
-        background: 'rgba(61,184,122,.08)', border: '1px solid rgba(61,184,122,.32)',
+        background: 'var(--papier, rgba(237,232,223,.04))', border: '1px solid var(--gold)',
         borderRadius: 14, padding: '28px 26px', color: CREME,
       }}>
         <div style={{
@@ -243,10 +249,17 @@ export default function DemandeMiseADisposition(
                 aria-pressed={actif}
                 style={{
                   textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
-                  background: actif ? 'rgba(201,168,76,.12)' : 'rgba(237,232,223,.03)',
-                  border: `1px solid ${actif ? 'rgba(201,168,76,.55)' : 'rgba(201,168,76,.16)'}`,
+                  /* MÊME FOND POUR LES QUATRE, et c'est mesuré. La carte
+                     active portait `--gm`, un voile doré : il éclaircit le
+                     fond juste assez pour que le prix en terracotta tombe à
+                     4,43 au lieu des 4,5 exigés. La sélection se lit au trait
+                     doré et à la bordure épaisse, qui ne changent rien au
+                     contraste du texte. */
+                  background: 'var(--papier, rgba(237,232,223,.04))',
+                  border: `1px solid ${actif ? 'var(--gold)' : 'rgba(var(--contraste-rvb, 237,232,223),.10)'}`,
+                  borderLeft: `3px solid ${actif ? 'var(--gold)' : 'rgba(var(--contraste-rvb, 237,232,223),.10)'}`,
                   borderRadius: 12, padding: '14px 15px', minHeight: 44,
-                  transition: 'border-color .15s, background .15s',
+                  transition: 'border-color .15s',
                 }}
               >
                 <div style={{ fontSize: 14.5, fontWeight: 600, color: actif ? OR : CREME, marginBottom: 3 }}>
@@ -276,7 +289,7 @@ export default function DemandeMiseADisposition(
         </Champ>
 
         <div style={{
-          background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.22)',
+          background: 'var(--nuit, #0D0D20)', border: '1px solid rgba(var(--contraste-rvb, 237,232,223),.14)',
           borderRadius: 12, padding: '13px 16px',
         }}>
           <div style={{ fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', color: PALE, marginBottom: 4 }}>
@@ -296,7 +309,7 @@ export default function DemandeMiseADisposition(
           surprise ; lue a cote du montant, c'est une condition. */}
       {calcul && (
         <div style={{
-          background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.16)',
+          background: 'var(--papier, rgba(237,232,223,.04))', border: '1px solid rgba(var(--contraste-rvb, 237,232,223),.08)',
           borderRadius: 11, padding: '12px 15px',
         }}>
           <div style={{ fontSize: 13.5, color: CREME, fontWeight: 600, marginBottom: 4 }}>
@@ -347,7 +360,7 @@ export default function DemandeMiseADisposition(
       </div>
 
       {erreur && (
-        <div style={{ fontSize: 13, color: '#F07070' }}>{erreur}</div>
+        <div style={{ fontSize: 13, color: 'var(--rouge, #F07070)' }}>{erreur}</div>
       )}
 
       <button
@@ -355,7 +368,7 @@ export default function DemandeMiseADisposition(
         style={{
           alignSelf: 'flex-start', minHeight: 48, padding: '13px 28px',
           borderRadius: 11, border: 'none', cursor: envoi ? 'wait' : 'pointer',
-          background: OR, color: '#09091A',
+          background: OR, color: 'var(--sur-or, #09091A)',
           fontSize: 14.5, fontWeight: 700, fontFamily: 'inherit',
           opacity: envoi ? .6 : 1, transition: 'opacity .15s',
         }}

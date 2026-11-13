@@ -51,7 +51,7 @@ import {
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { lireOrigine } from '@/lib/origine-visite'
 import { logFunnel } from '@/lib/funnel'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixFixePour, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixFixePour, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, KM_PAR_HEURE_MAD, DUREE_MIN_MAD, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
 /* ── vehicles ─────────────────────────────────────────── */
 /* `from` a disparu de cette table : le badge « dès … € » de l'étape 2 du devis
@@ -617,6 +617,19 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   const flottantsInertes = !showFloating || (devisVisible && etroit)
 
   const bcTarifs = tarifsProp
+
+  /* MISE A DISPOSITION : le prix d'appel, lu en base comme tout le reste.
+     AUCUN MONTANT N'EST ECRIT ICI — `audit-tarifs.mjs` relit ce fichier, et
+     un chiffre en dur y serait un second bareme, hors de portee
+     d'/admin/tarifs. Le `null` est un etat possible : si aucun vehicule n'a
+     de tarif horaire, le bandeau annonce le service sans prix plutot qu'un
+     prix invente. */
+  const madDepuis = useMemo(() => {
+    const heures = (bcTarifs as { prix_heure?: number | null }[])
+      .map(t => (t?.prix_heure == null ? null : Number(t.prix_heure)))
+      .filter((n): n is number => n != null && Number.isFinite(n) && n > 0)
+    return heures.length ? Math.min(...heures) : null
+  }, [bcTarifs])
 
   /* ── cookie banner ──────────────────────────────────────── */
   useEffect(() => {
@@ -1819,6 +1832,80 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </section>
 
       {/* PROCESS */}
+      {/* MISE A DISPOSITION — deplacee ici le 2026-11-13.
+
+          ELLE ETAIT ENTRE TARIFS ET ZONES, c'est-a-dire au milieu de la page.
+          L'exploitant : « la ou tu as positionne le service, c'est vraiment
+          en plein milieu du site, ce n'est pas coherent avec le reste », et
+          « tu ne donnes pas envie de faire une simulation ».
+
+          ELLE EST DESORMAIS JUSTE APRES LES VEHICULES. C'est le moment ou le
+          visiteur vient de voir les voitures et leur prix au trajet : la
+          question « et si j'en ai besoin toute la journee ? » se pose la, pas
+          trois sections plus bas.
+
+          ET ELLE ANNONCE UN PRIX. Un bandeau qui decrit un service sans
+          chiffre ne declenche rien ; celui-ci porte le prix d'appel, la duree
+          minimale et les kilometres compris, tous lus en base. */}
+      <section style={{ background:'var(--nuit)', padding:'72px 24px' }}>
+        <div className="reveal" style={{ maxWidth:1080, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:34 }}>
+            <div className="section-tag">À l’heure ou à la journée</div>
+            <h2 style={{
+              fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontSize:'clamp(28px, 4.2vw, 44px)', fontWeight:500, lineHeight:1.12,
+              margin:'14px 0 12px', color:'var(--t1)',
+            }}>
+              Un chauffeur rien que pour vous,<br />le temps qu’il vous faut
+            </h2>
+            <p style={{ fontSize:16, lineHeight:1.7, color:'var(--t2)', margin:'0 auto', maxWidth:580 }}>
+              Une journée de rendez-vous, un tournage, un mariage : le chauffeur
+              reste avec vous et vous décidez du programme au fur et à mesure.
+            </p>
+          </div>
+
+          <div style={{
+            display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(190px, 1fr))',
+            gap:14, marginBottom:30,
+          }}>
+            {[
+              madDepuis != null
+                ? { h:`${formaterMontant(madDepuis)} / h`, d:'Tarif d\u2019appel, Berline' }
+                : { h:'Sur devis', d:'Selon le v\u00e9hicule' },
+              { h:`${DUREE_MIN_MAD} heures`, d:'Dur\u00e9e minimale' },
+              { h:`${KM_PAR_HEURE_MAD} km / h`, d:'Kilom\u00e8tres compris' },
+              { h:'Vous d\u00e9cidez', d:'Le programme, au fil de la journ\u00e9e' },
+            ].map((c, i) => (
+              <div key={i} style={{
+                background:'var(--papier)', borderRadius:13, padding:'18px 20px',
+                border:'1px solid rgba(var(--contraste-rvb),.08)',
+                borderLeft:'3px solid var(--gold)',
+              }}>
+                <div style={{
+                  fontFamily:'var(--font-jetbrains), monospace',
+                  fontSize:19, fontWeight:600, color:'var(--gold)', lineHeight:1.15, marginBottom:5,
+                }}>{c.h}</div>
+                <div style={{ fontSize:12.5, color:'var(--t2)', lineHeight:1.5 }}>{c.d}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign:'center' }}>
+            <Link href="/mise-a-disposition" style={{
+              display:'inline-flex', alignItems:'center', justifyContent:'center',
+              minHeight:52, padding:'0 34px', borderRadius:9,
+              background:'var(--gold)', color:'var(--sur-or)',
+              fontSize:15.5, fontWeight:700, textDecoration:'none',
+            }}>
+              Calculer ma mise à disposition
+            </Link>
+            <div style={{ fontSize:13, color:'var(--t2)', marginTop:12 }}>
+              Prix affiché immédiatement, sans engagement.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="process-section" id="comment">
         <div className="section-header reveal" style={{maxWidth:900,margin:'0 auto 60px'}}>
           <div className="section-tag">Simple & rapide</div>
@@ -2098,67 +2185,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* MISE A DISPOSITION — bandeau ajoute le 2026-11-13.
-
-          POURQUOI ICI. La page existait depuis la veille, etait au sitemap,
-          ses prix verifies sur 64 combinaisons — et AUCUNE page du site n'y
-          menait. L'exploitant l'a constate avant moi : « je vois pas ou on
-          peut reserver la mise a dispo ». Un sitemap n'est pas une
-          navigation.
-
-          POURQUOI PAS DANS LA BARRE DU HAUT. Un huitieme lien la fait casser
-          des 1366 px, et a 1280 px le mot « Blog » passe sous le bouton
-          English — mesure par `mesurer-nav.mjs`, la production servant de
-          reference. Un bandeau ne coute rien a la barre et se voit mieux.
-
-          PLACE ENTRE TARIFS ET ZONES : apres le prix des transferts, avant
-          les destinations. C'est le moment ou le visiteur se dit que son
-          besoin n'est peut-etre pas un trajet d'un point a un autre.
-
-          AUCUN PRIX ECRIT ICI : `audit-tarifs.mjs` relit ce fichier et un
-          montant en dur y serait un second bareme. Le tarif se lit sur la
-          page elle-meme, ou il vient de la base. */}
-      <section style={{ background:'var(--surface)', padding:'0 24px 80px' }}>
-        <div className="reveal" style={{
-          maxWidth:1080, margin:'0 auto',
-          display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between',
-          gap:24, padding:'30px 34px', borderRadius:18,
-          background:'rgba(201,168,76,.06)', border:'1px solid rgba(201,168,76,.22)',
-        }}>
-          <div style={{ flex:'1 1 420px', minWidth:0 }}>
-            <div className="section-tag" style={{ marginBottom:10 }}>Autre formule</div>
-            <h2 style={{
-              fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize:'clamp(23px, 3vw, 31px)', fontWeight:500, lineHeight:1.15,
-              margin:'0 0 10px', color:'var(--t1)',
-            }}>
-              Besoin d’un chauffeur plusieurs heures&nbsp;?
-            </h2>
-            <p style={{ fontSize:15, lineHeight:1.7, color:'var(--t2)', margin:0, maxWidth:560 }}>
-              Une journée de rendez-vous, un tournage, un mariage : le chauffeur
-              reste avec vous et vous décidez du programme au fur et à mesure.
-              Tarif à l’heure annoncé par véhicule.
-            </p>
-          </div>
-          {/* PAS la classe `nav-cta` : `vitrine.css` ligne 1137 la masque en
-              `display:none !important` sous 900 px, puisqu'elle appartient a
-              la barre de navigation. Reutilisee ici, le bouton disparaissait
-              purement et simplement sur telephone — vu sur une capture le
-              2026-11-13, invisible autrement. Une classe de composant ne se
-              recycle pas hors de son composant. */}
-          <Link href="/mise-a-disposition" style={{
-            textDecoration:'none', whiteSpace:'nowrap', flexShrink:0,
-            display:'inline-flex', alignItems:'center', justifyContent:'center',
-            minHeight:48, padding:'0 26px', borderRadius:9,
-            background:'var(--gold)', color:'var(--sur-or, #1A1008)',
-            fontSize:14, fontWeight:600,
-            transition:'background .15s, transform .1s',
-          }}>
-            Voir les tarifs à l’heure
-          </Link>
         </div>
       </section>
 

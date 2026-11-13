@@ -34,6 +34,14 @@ import {
 } from '@/lib/mise-a-disposition'
 import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD } from '@/lib/calcPrix'
 import DemandeMiseADisposition, { type VehiculeMAD } from './DemandeMiseADisposition'
+/* LA CHARTE DU SITE, PAS UNE PALETTE A MOI.
+   `vitrine.css` porte les jetons de « Paris en mouvement » sous
+   `.vt.vt-palette-a` — les memes que l'accueil, les 39 pages villes, /faq et
+   /blog. Cette page avait d'abord ete dessinee avec ses propres couleurs
+   (bleu nuit et or), heritees des pages anglaises : elle ressemblait a un
+   autre site. Remarque de l'exploitant le 2026-11-13. On importe la feuille
+   plutot que d'en recopier les valeurs. */
+import '../vitrine.css'
 
 export const revalidate = 3600
 
@@ -181,10 +189,10 @@ export default async function Page() {
     ],
   }
 
-  const or = '#C9A84C'
-  const creme = '#EDE8DF'
-  const doux = 'rgba(237,232,223,.72)'
-  const pale = 'rgba(237,232,223,.60)'
+  const or = 'var(--gold)'
+  const creme = 'var(--t1)'
+  const doux = 'var(--t2)'
+  const pale = 'var(--t2)'
 
   return (
     <>
@@ -192,10 +200,11 @@ export default async function Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(filAriane) }} />
 
-      <main style={{ background: '#09091A', minHeight: '100vh', fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}>
+      <main className="vt vt-palette-a" style={{ minHeight: '100vh', fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}>
 
         <header style={{
-          borderBottom: '1px solid rgba(201,168,76,.16)', padding: '14px 20px',
+          background: 'var(--nuit)',
+          borderBottom: '1px solid rgba(var(--contraste-rvb),.08)', padding: '14px 20px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
         }}>
           <Link href="/" style={{ color: or, textDecoration: 'none', fontSize: 17, fontWeight: 600, letterSpacing: '.14em' }}>
@@ -207,8 +216,9 @@ export default async function Page() {
         </header>
 
         {/* ── Bandeau ─────────────────────────────────────────────────── */}
-        <section style={{ padding: '60px 20px 40px', maxWidth: 940, margin: '0 auto' }}>
-          <p style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(201,168,76,.85)', marginBottom: 18 }}>
+        <section style={{ background: 'var(--nuit)', padding: '48px 20px 56px' }}>
+         <div style={{ maxWidth: 940, margin: '0 auto' }}>
+          <p style={{ fontSize: 10.5, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 18 }}>
             Chauffeur à l’heure · Paris &amp; Île-de-France
           </p>
           <h1 style={{
@@ -224,6 +234,7 @@ export default async function Page() {
           <p style={{ fontSize: 14, lineHeight: 1.7, color: pale, maxWidth: 660, margin: 0 }}>
             {MENTION_TARIFS} {FRAIS_EN_SUS} À partir de {DUREE_MIN_MAD} h.
           </p>
+         </div>
         </section>
 
         {/* ── La grille des tarifs, lue en base ───────────────────────── */}
@@ -234,7 +245,8 @@ export default async function Page() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
             {vehicules.map(v => (
               <div key={v.cle} style={{
-                background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.16)',
+                background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
+                borderLeft: '3px solid var(--gold)',
                 borderRadius: 13, padding: '18px 18px 16px',
               }}>
                 <div style={{ fontSize: 14.5, fontWeight: 600, color: creme, marginBottom: 3 }}>{v.nom}</div>
@@ -264,7 +276,7 @@ export default async function Page() {
         {/* ── Le simulateur et la demande ─────────────────────────────── */}
         <section id="demande" style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
           <div style={{
-            background: 'rgba(237,232,223,.025)', border: '1px solid rgba(201,168,76,.18)',
+            background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
             borderRadius: 18, padding: 'clamp(20px, 4vw, 34px)',
           }}>
             <h2 style={{
@@ -290,7 +302,7 @@ export default async function Page() {
               <li key={u} style={{
                 fontSize: 14.5, color: doux, lineHeight: 1.6,
                 padding: '13px 16px', borderRadius: 11,
-                background: 'rgba(237,232,223,.03)', border: '1px solid rgba(201,168,76,.12)',
+                background: 'var(--papier)', border: '1px solid rgba(var(--contraste-rvb),.08)',
               }}>
                 {u}
               </li>
@@ -307,7 +319,7 @@ export default async function Page() {
             Questions fréquentes
           </h2>
           {FAQ.map(f => (
-            <div key={f.q} style={{ borderTop: '1px solid rgba(201,168,76,.14)', padding: '18px 0' }}>
+            <div key={f.q} style={{ borderTop: '1px solid rgba(var(--contraste-rvb),.08)', padding: '18px 0' }}>
               <h3 style={{ fontSize: 15.5, fontWeight: 600, color: creme, margin: '0 0 7px' }}>{f.q}</h3>
               <p style={{ fontSize: 14.5, lineHeight: 1.7, color: doux, margin: 0 }}>{f.a}</p>
             </div>
@@ -316,7 +328,7 @@ export default async function Page() {
 
         {/* ── Pied ────────────────────────────────────────────────────── */}
         <footer style={{
-          borderTop: '1px solid rgba(201,168,76,.16)', padding: '26px 20px 40px',
+          borderTop: '1px solid rgba(var(--contraste-rvb),.08)', padding: '26px 20px 40px',
           maxWidth: 940, margin: '0 auto', fontSize: 13, color: pale, lineHeight: 1.8,
         }}>
           <div style={{ marginBottom: 8 }}>
