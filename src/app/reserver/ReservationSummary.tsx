@@ -15,6 +15,26 @@ type ReservationSummaryProps = {
 }
 
 /**
+ * LA COULEUR DES MENTIONS DISCRÈTES DU RÉCAPITULATIF, ÉCRITE UNE FOIS.
+ *
+ * Les six libellés secondaires de ce panneau — « Trajet », « Date et
+ * heure », « Véhicule », « Prix », la ligne de trajet et la mention
+ * Stripe — portaient tous le même littéral recopié six fois :
+ * `rgba(var(--sur-fonce-rvb),.5)`. Mesuré en production le 2026-11-14,
+ * sur le fond réel du panneau (`--papier`, #2E241B, grain compris) :
+ * **4,37** pour 4,5 exigés. Six textes, un seul défaut, recopié.
+ *
+ * À .62 le contraste monte à 5,8 — la marge tient même si le grain du
+ * fond éclaircit un peu la surface. Le panneau garde sa hiérarchie : les
+ * VALEURS restent à `--sur-fonce` pleine, seules les étiquettes sont
+ * atténuées.
+ *
+ * Une constante, six emplois : la prochaine retouche se fait ici, et pas
+ * dans cinq endroits dont un qu'on oublie.
+ */
+const MENTION = 'rgba(var(--sur-fonce-rvb),.62)'
+
+/**
  * « sam. 18 mars » en français, « Sat 18 Mar » en anglais.
  *
  * La locale suit la langue de la page : laisser `fr-FR` en dur affichait un
@@ -59,7 +79,7 @@ export default function ReservationSummary({
       <div className="reservation-summary-detail">
         {hasTrajet ? (
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(var(--sur-fonce-rvb),.5)', marginBottom: 8 }}>{L.trajet}</div>
+            <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: MENTION, marginBottom: 8 }}>{L.trajet}</div>
             <div style={{ fontSize: 13, color: 'var(--t1)', lineHeight: 1.6 }}>
               {departLabel.split(',')[0]}
               <div style={{ color: 'var(--gold)', fontSize: 11, margin: '2px 0' }}>↓{allerRetour ? ` ${L.aller_retour_mention}` : ''}</div>
@@ -67,32 +87,32 @@ export default function ReservationSummary({
             </div>
           </div>
         ) : (
-          <div style={{ fontSize: 12, color: 'rgba(var(--sur-fonce-rvb),.5)', marginBottom: 18 }}>
+          <div style={{ fontSize: 12, color: MENTION, marginBottom: 18 }}>
             {L.recap_vide}
           </div>
         )}
 
         {dateAffichee && (
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(var(--sur-fonce-rvb),.5)', marginBottom: 6 }}>{L.date_et_heure}</div>
+            <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: MENTION, marginBottom: 6 }}>{L.date_et_heure}</div>
             <div style={{ fontSize: 13, color: 'var(--t1)' }}>{dateAffichee} · {timeOnly}</div>
           </div>
         )}
 
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(var(--sur-fonce-rvb),.5)', marginBottom: 6 }}>{L.vehicule}</div>
+          <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: MENTION, marginBottom: 6 }}>{L.vehicule}</div>
           <div style={{ fontSize: 13, color: 'var(--t1)' }}>{vehiculeLabel} · {passagers} {passagers > 1 ? L.passagers : L.passager}</div>
         </div>
       </div>
 
       <div style={{ borderTop: '1px solid rgba(var(--or-rvb),.2)', paddingTop: 18, marginBottom: 18 }}>
-        <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(var(--sur-fonce-rvb),.5)', marginBottom: 6 }}>{L.prix}</div>
+        <div style={{ fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', color: MENTION, marginBottom: 6 }}>{L.prix}</div>
         <div style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 32, fontWeight: 700, color: 'var(--gold)' }}>
           {prix !== null ? `${Math.round(prix)} €` : '—'}
         </div>
       </div>
 
-      <div style={{ fontSize: 10.5, color: 'rgba(var(--sur-fonce-rvb),.5)', lineHeight: 1.6 }}>
+      <div style={{ fontSize: 10.5, color: MENTION, lineHeight: 1.6 }}>
         {L.paiement_securise}
       </div>
     </div>

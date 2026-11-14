@@ -865,7 +865,17 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 border: `1px solid ${s <= step ? 'var(--t1)' : 'rgba(var(--contraste-rvb),.12)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 9, fontWeight: 700,
-                color: s <= step ? 'var(--sur-encre)' : 'var(--t2)',
+                /* L'ÉTAPE PAS ENCORE ATTEINTE SE LIT AUSSI.
+                   Mesuré en production le 2026-11-14 : le « 2 » en `--t2`
+                   (#AFA496) sur sa pastille — un voile clair à 8 % qui la
+                   remonte à #493F37 — donnait 4,18 pour 4,5 exigés. Le
+                   chiffre fait 9 px en gras : c'est du texte normal au
+                   sens de la règle, pas du grand texte.
+                   `--sur-fonce` à 72 % le porte à 6,3 sans éclaircir la
+                   pastille, donc sans effacer la différence entre une
+                   étape franchie et une étape à venir — c'est le FOND qui
+                   porte cette distinction, pas la pâleur du chiffre. */
+                color: s <= step ? 'var(--sur-encre)' : 'rgba(var(--sur-fonce-rvb),.72)',
                 transition: 'all .3s',
               }}>
                 {s < step ? '✓' : s}
@@ -1378,7 +1388,15 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 }}
               >
                 {L.plus_de_7_avant}{' '}
-                <strong style={{ color: 'var(--gold)' }}>{L.demandez_devis}</strong>
+                {/* `--gold-bright` et non `--gold`. Mesuré en production le
+                    2026-11-14 : le terracotta #E8713C sur cette carte
+                    (#352C24 une fois le grain composé) donne 4,46 pour 4,5
+                    exigés — un texte de 12 px en gras, donc jugé comme du
+                    texte normal. La variante claire #F08A5C monte à 5,53.
+                    Rien n'est perdu au survol : ce lien n'en changeait pas
+                    de couleur. On ne touche PAS `--gold` lui-même, qui est
+                    la couleur de la marque sur tout le site. */}
+                <strong style={{ color: 'var(--gold-bright)' }}>{L.demandez_devis}</strong>
                 {' '}{L.plus_de_7_apres}
               </Link>
 
