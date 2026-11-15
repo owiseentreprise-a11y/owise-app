@@ -116,7 +116,22 @@ function AddressInput({
     const q = e.target.value
     setQuery(q)
     setFocused(-1)
-    if (value.label && q !== value.label) onSelect({ label: q, codePostal: '' })
+    /* LA FRAPPE REMONTE TOUJOURS AU FORMULAIRE.
+       Cette ligne portait `if (value.label && q !== value.label)`. Tant que
+       le parent était vide — c'est-à-dire tant que le visiteur n'avait rien
+       choisi dans la liste — `value.label` valait `''`, la condition était
+       FAUSSE, et rien de ce qu'il tapait ne remontait. Le champ affichait
+       son adresse, le formulaire ne l'avait jamais reçue : aucun prix, et
+       au clic « Adresse de départ requise » sous un champ visiblement
+       rempli. Mesuré en production le 2026-11-15.
+       Les deux autres champs d'adresse du site (`AddressInput.tsx`,
+       `VitrineBody.tsx`) transmettent sans condition depuis toujours : seul
+       le tunnel qui encaisse perdait la saisie.
+       Le code postal est bien remis à vide : une adresse retouchée n'est
+       plus celle qu'on avait résolue, et garder son code postal ferait
+       chiffrer un trajet avec les coordonnées d'un autre. C'est l'effet de
+       re-résolution, plus bas, qui va la résoudre de nouveau. */
+    if (q !== value.label) onSelect({ label: q, codePostal: '' })
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => search(q), 280)
   }
@@ -336,9 +351,11 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   // au paiement pour permettre la remontée serveur de la conversion (voir actions.ts).
   const [gclid] = useState(() => searchParams.get('gclid') || '')
 
-  // Auto-résolution des adresses pré-remplies depuis l'URL
-  useEffect(() => {
-    async function resolve(label: string, setter: (v: AdresseVal) => void) {
+  /* `resolve` vit désormais au niveau du composant, et non plus enfermée
+     dans l'effet de pré-remplissage. Deux appelants en ont besoin : les
+     adresses venues de l'URL (ci-dessous) et les adresses TAPÉES À LA MAIN
+     (l'effet suivant). Une seule écriture de la règle de géocodage. */
+  const resolve = useCallback(async (label: string, setter: (v: AdresseVal) => void) => {
       if (label.length < 3) return
       // Géocodage Google en premier, liste locale seulement en secours.
       //
@@ -369,7 +386,10 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
            deuxième écriture d'une donnée qui existe déjà. */
         setter({ label: lieu.label, codePostal: lieu.codePostal, lat: lieu.lat, lng: lieu.lng })
       }
-    }
+  }, [])
+
+  // Auto-résolution des adresses pré-remplies depuis l'URL
+  useEffect(() => {
     const dep = searchParams.get('depart')
     const arr = searchParams.get('arrivee')
     const eta = searchParams.get('etape')
@@ -377,6 +397,49 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     if (arr) resolve(arr, setArrivee)
     if (eta) resolve(eta, v => setEtapes([v]))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── UNE ADRESSE NON RÉSOLUE EST RÉSOLUE, PAS DEVINÉE ──────────────────
+     LE DÉFAUT, mesuré en production le 2026-11-15. Le visiteur choisit
+     « 12 Rue de Paris, 60500 Chantilly » : code postal 60500, zone CHA,
+     forfait 59 €. Il ajoute « bis ». Le code postal est remis à vide — à
+     juste titre, l'adresse a changé — et `detectZone` n'a alors plus que
+     le libellé à lire. Il y voit le mot « Paris », conclut Paris
+     intra-muros, et le prix passe à 69 €. Le badge forfait disparaît, et
+     c'est ce prix-là qui part à l'étape suivante. +17 %, en silence, au
+     détriment du client.
+
+     POURQUOI ICI ET PAS AILLEURS. Le widget de l'accueil ne connaît pas ce
+     défaut, et le commentaire de l'estimation statistique plus bas dit
+     pourquoi : lui RÉSOUT l'adresse (`resoudreAdresse`) avant d'appeler
+     `detectZone`. Cette page-ci calculait la zone sur ce qu'elle avait en
+     mémoire, résolu ou non. On applique donc la règle qui existe déjà au
+     lieu d'en écrire une troisième.
+
+     Le même effet répare aussi la saisie libre : taper une adresse sans
+     la choisir dans la liste donne maintenant un vrai prix, puisque
+     l'adresse finit par être géocodée.
+
+     900 ms de calme avant d'appeler, et jamais deux fois le même libellé :
+     le géocodage est payant, et une frappe ne doit pas le déclencher à
+     chaque lettre. */
+  const dejaResolus = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    const aResoudre = ([
+      [depart,  setDepart],
+      [arrivee, setArrivee],
+    ] as const).filter(([v]) =>
+      v.label.trim().length >= 3 && !v.codePostal && v.lat == null
+      && !dejaResolus.current.has(v.label.trim()))
+    if (aResoudre.length === 0) return
+    const minuteur = setTimeout(() => {
+      for (const [v, set] of aResoudre) {
+        dejaResolus.current.add(v.label.trim())
+        resolve(v.label, set)
+      }
+    }, 900)
+    return () => clearTimeout(minuteur)
+  }, [depart.label, depart.codePostal, depart.lat, arrivee.label, arrivee.codePostal, arrivee.lat, resolve]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // Diagnostic tunnel : arrivée sur /reserver, avec ou sans trajet pré-rempli
   // depuis le widget devis (voir funnel_events — audit 2026-09-12).
@@ -537,6 +600,20 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
 
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
+
+  /* ── L'ERREUR S'EFFACE QUAND ON CORRIGE ────────────────────────────────
+     `setStep1Error(null)` n'existait qu'à l'intérieur du clic qui réussit
+     (`:673` était sa seule remise à zéro). Mesuré en production le
+     2026-11-15 : après avoir corrigé, « PRIX ESTIMÉ · Chantilly → CDG ·
+     59 € », « Adresse de départ requise » et « Continuer — 59 € »
+     cohabitaient sur le même écran, le message 141 px au-dessus du bouton.
+     Un message d'erreur qui survit à sa cause apprend au visiteur à ne
+     plus lire les messages.
+     Placé ici, et pas plus haut : il surveille des variables d'état qui
+     sont déclarées plus bas dans le composant. */
+  useEffect(() => {
+    setStep1Error(null) // eslint-disable-line react-hooks/set-state-in-effect
+  }, [depart.label, arrivee.label, dateOnly, timeOnly, vehicule])
 
   /* ── Estimation statistique ───────────────────────────────────────────
      Mesuré à l'étape 93, sur le code publié : un lien pré-rempli vers
