@@ -977,7 +977,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .footer-social-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(var(--contraste-rvb),.59);margin-top:14px;display:block}
 
 /* WHATSAPP FLOATING */
-.wa-float{position:fixed;bottom:calc(28px + var(--ow-cb,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.wa-float{position:fixed;bottom:calc(28px + var(--bandeau-cookies,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .wa-float.show{opacity:1;transform:translateY(0);pointer-events:all}
 .wa-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;border-radius:50px;background:var(--marque-whatsapp);font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 28px rgba(var(--marque-whatsapp-rvb),.38);transition:transform .15s,box-shadow .2s,background .15s}
 .wa-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(var(--marque-whatsapp-rvb),.48);background:var(--marque-whatsapp-sombre)}
@@ -985,16 +985,19 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 @keyframes waPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
 
 /* CALL FLOATING */
-.call-float{position:fixed;bottom:calc(88px + var(--ow-cb,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.call-float{position:fixed;bottom:calc(88px + var(--bandeau-cookies,0px));left:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .call-float.show{opacity:1;transform:translateY(0);pointer-events:all}
 .call-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;border-radius:50px;background:var(--gold);font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 28px rgba(var(--or-rvb),.38);transition:transform .15s,box-shadow .2s}
 .call-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(var(--or-rvb),.48)}
 /* L'ancienne règle mobile posait ici bottom:88px en dur, ce qui annulait le
-   décalage du bandeau cookies. Le décalage passe désormais par --ow-cb et la
+   décalage du bandeau cookies. Le décalage passe par --bandeau-cookies — la
+   MEME variable que le corps de page et la barre d'action du tunnel, posée
+   par `Consentement.tsx`. Elle remplace --ow-cb, qui nommait une deuxième
+   fois la même mesure, publiée par un style en ligne de VitrineBody. La
    disposition mobile est regroupée plus bas, après le bouton flottant noir. */
 
 /* FLOATING CTA */
-.float-cta{position:fixed;bottom:calc(28px + var(--ow-cb,0px));right:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
+.float-cta{position:fixed;bottom:calc(28px + var(--bandeau-cookies,0px));right:28px;z-index:800;opacity:0;transform:translateY(16px);transition:opacity .3s,transform .3s,bottom .3s ease;pointer-events:none}
 .float-cta.show{opacity:1;transform:translateY(0);pointer-events:all}
 .float-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:50px;background:var(--encre);font-size:12.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(var(--ombre-rvb),.25);transition:transform .15s,box-shadow .2s}
 .float-cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(var(--ombre-rvb),.35)}
@@ -1058,7 +1061,7 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
    Après : une seule rangée de 48 px collée en bas, deux pastilles rondes et
    le bouton d'action. */
 @media(max-width:640px){
-  .call-float,.wa-float,.float-cta{bottom:calc(10px + var(--ow-cb,0px))}
+  .call-float,.wa-float,.float-cta{bottom:calc(10px + var(--bandeau-cookies,0px))}
   .call-float{left:10px;right:auto}
   .wa-float{left:66px;right:auto}
   .float-cta{left:122px;right:10px}
@@ -1118,47 +1121,18 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
 .nav-link::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--gold);transition:width .25s cubic-bezier(.22,1,.36,1)}
 .nav-link.active::after,.nav-link:hover::after{width:100%}
 
-/* COOKIE BANNER */
-.cookie-banner{position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:18px 52px;background:var(--nuit);border-top:1px solid rgba(var(--or-rvb),.22);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;transform:translateY(100%);transition:transform .45s cubic-bezier(.22,1,.36,1);box-shadow:0 -12px 48px rgba(var(--ombre-rvb),.45)}
-.cookie-banner.visible{transform:translateY(0)}
-.cookie-text{flex:1;min-width:260px}
-.cookie-title{font-size:13px;font-weight:600;color:var(--ivoire);margin-bottom:3px}
-.cookie-desc{font-size:11.5px;color:rgba(var(--ivoire-rvb),.5);line-height:1.65}
-.cookie-desc a{color:var(--gold);cursor:pointer}
-.cookie-desc a:hover{text-decoration:underline}
-.cookie-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
-.c-btn-accept{padding:9px 20px;background:var(--gold);color:var(--sur-or);border:none;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;transition:background .18s,transform .15s}
-.c-btn-accept:hover{background:var(--gold-bright);transform:translateY(-1px)}
-.c-btn-refuse{padding:9px 16px;background:transparent;color:rgba(var(--ivoire-rvb),.65);border:1px solid rgba(var(--ivoire-rvb),.14);border-radius:8px;font-size:12.5px;cursor:pointer;transition:border-color .18s,color .18s}
-.c-btn-refuse:hover{border-color:rgba(var(--ivoire-rvb),.32);color:rgba(var(--ivoire-rvb),.9)}
-.c-btn-manage{font-size:11px;color:rgba(var(--ivoire-rvb),.54);cursor:pointer;background:none;border:none;letter-spacing:.02em;padding:0;transition:color .15s}
-.c-btn-manage:hover{color:rgba(var(--ivoire-rvb),.72)}
+/* COOKIE BANNER — LES REGLES SONT DANS `globals.css`.
+   Elles vivaient ici, et le bandeau riche ne se montrait que sur les
+   40 pages qui importent cette feuille. Depuis que les deux bandeaux du
+   site sont fusionnes en un seul composant (`Consentement.tsx`, monte dans
+   le layout), il s'affiche AUSSI sur l'espace client, le portail
+   sous-traitant et les pages de connexion — qui ne chargent pas ce
+   fichier. Les y laisser aurait rendu un bloc nu : present, mesurable, et
+   illisible.
+   Cette feuille ne garde que les JETONS DE PALETTE du bandeau, plus bas :
+   `html:has(.vt) .cookie-banner` et `html:has(.vt-palette-a) .cookie-banner`.
+   C'est ce qui lui fait suivre la couleur de la page. */
 
-/* Cookie Modal */
-.cookie-overlay{position:fixed;inset:0;z-index:9999;background:rgba(var(--ombre-rvb),.7);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
-.cookie-overlay.open{opacity:1;pointer-events:all}
-.cookie-modal{width:100%;max-width:540px;background:var(--nuit-modale);border-radius:20px 20px 0 0;padding:32px 36px 40px;transform:translateY(32px);transition:transform .4s cubic-bezier(.22,1,.36,1)}
-.cookie-overlay.open .cookie-modal{transform:translateY(0)}
-.cm-title{font-size:17px;font-weight:700;color:var(--ivoire);margin-bottom:6px}
-.cm-sub{font-size:12.5px;color:rgba(var(--ivoire-rvb),.48);line-height:1.7;margin-bottom:24px}
-.cm-cat{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 0;border-bottom:1px solid rgba(var(--sur-fonce-rvb),.06)}
-.cm-cat:last-of-type{border-bottom:none}
-.cm-cat-name{font-size:13px;font-weight:600;color:var(--ivoire);margin-bottom:3px}
-/* .52 et non .42 : sur le fond de la fenêtre cookies (#1F1813 composé),
-   .42 donnait 3,79 pour 4,5 exigés. C'est le texte qui explique au
-   visiteur ce qu'il accepte — il doit se lire. */
-.cm-cat-desc{font-size:11.5px;color:rgba(var(--ivoire-rvb),.52);line-height:1.6}
-.cm-toggle{position:relative;width:38px;height:21px;flex-shrink:0;margin-top:3px;cursor:pointer}
-.cm-toggle input{opacity:0;width:0;height:0;position:absolute}
-.cm-track{position:absolute;inset:0;border-radius:11px;background:rgba(var(--sur-fonce-rvb),.1);transition:background .2s}
-.cm-toggle input:checked+.cm-track{background:var(--gold)}
-.cm-thumb{position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:var(--sur-fonce);transition:transform .2s;pointer-events:none}
-.cm-toggle input:checked~.cm-thumb{transform:translateX(17px)}
-.cm-footer{margin-top:24px;display:flex;gap:10px;justify-content:flex-end}
-.cm-save{padding:11px 24px;background:var(--gold);color:var(--sur-or);border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:background .18s}
-.cm-save:hover{background:var(--gold-bright)}
-.cm-cancel{padding:11px 16px;background:transparent;color:rgba(var(--ivoire-rvb),.48);border:1px solid rgba(var(--ivoire-rvb),.1);border-radius:9px;font-size:13px;cursor:pointer;transition:border-color .18s}
-.cm-cancel:hover{border-color:rgba(var(--ivoire-rvb),.28)}
 
 /* RESPONSIVE */
 @media(max-width:1100px){.hero-inner{grid-template-columns:1fr}.hero-right{max-width:520px}.vehicles-grid{grid-template-columns:repeat(2,1fr)}.stats-inner{grid-template-columns:repeat(2,1fr);gap:32px}.stat-item:nth-child(2)::after{display:none}}
@@ -1327,20 +1301,6 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
   .bc-body{padding:14px 16px 16px;gap:8px}
   .binput{padding:10px 12px 10px 28px;font-size:16px}
 
-  .cookie-banner{padding:11px 16px calc(11px + env(safe-area-inset-bottom,0px));
-    flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
-  .cookie-text{flex:1 1 100%;min-width:0}
-  /* Le titre « Gestion des cookies » disparaît sur téléphone : la phrase
-     qui suit le dit déjà, et chaque ligne gardée ici est une ligne prise
-     au bouton de réservation. Le texte complet reste accessible par
-     « Gérer », qui ouvre la fenêtre détaillée. */
-  .cookie-title{display:none}
-  .cookie-desc{font-size:11.5px;line-height:1.4;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .cookie-actions button{padding:9px 10px;font-size:12px}
-  .cookie-actions{flex:1 1 100%;display:flex;gap:8px}
-  .cookie-actions button{flex:1;white-space:nowrap}
-  .cookie-modal{padding:26px 20px 36px}
 }
 /* LES PASSAGERS SUR UNE SEULE LIGNE SOUS 380 px.
    Mesure du 2026-11-15 : 8 pastilles de 34 px et 7 espaces de 5 px font
@@ -2013,13 +1973,14 @@ html:has(.vt-palette-a) body { background: var(--pa-fond-page); }
 
 /* ── jetons .vt (80 couleurs) ── */
 .vt.vt-palette-a,
+/* Le bandeau de consentement vit dans le LAYOUT, hors du `.vt` : sans ces
+   deux lignes il garderait le bleu nuit pendant que la page passe au
+   charbon. `html:has()` regarde le document entier, donc il les attrape
+   depuis la racine.
+   `.bandeau-cookies` etait un TROISIEME selecteur ici — le second bandeau
+   du site, aujourd'hui supprime au profit d'un composant unique. */
 html:has(.vt-palette-a) .cookie-banner,
-html:has(.vt-palette-a) .cookie-overlay,
-/* Le bandeau de consentement global (`CookieBanner.tsx`) vit dans le layout,
-   hors du `.vt` : sans cette ligne il garde le bleu nuit pendant que la page
-   passe au charbon. Il ne coexiste jamais avec `.cookie-banner` — l'un est
-   rendu par la vitrine, l'autre par le layout — donc l'accueil ne bouge pas. */
-html:has(.vt-palette-a) .bandeau-cookies {
+html:has(.vt-palette-a) .cookie-overlay {
 
   /* ── Surfaces : la page s'assombrit par paliers, en chaud ───────────── */
   --base:#17120E;             /* le fond de la page */

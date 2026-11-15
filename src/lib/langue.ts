@@ -267,6 +267,28 @@ const TEXTES = {
   cookies_en_savoir:      { fr: 'En savoir plus',                      en: 'Learn more' },
   cookies_refuser:        { fr: 'Refuser',                             en: 'Decline' },
   cookies_accepter:       { fr: 'Accepter',                            en: 'Accept' },
+  /* Le titre du bandeau et le panneau de préférences. Ils n'existaient
+     qu'en français, écrits en clair dans `VitrineBody` : le bandeau riche
+     — celui qui porte le panneau — ne se montrait que sur l'accueil et les
+     39 pages villes, donc jamais sur une page anglaise. Depuis la fusion
+     des deux bandeaux en un seul composant, il s'affiche partout, et il
+     lui faut les deux langues. */
+  cookies_titre:          { fr: 'Gestion des cookies',                 en: 'Cookie settings' },
+  cookies_gerer:          { fr: 'Gérer',                               en: 'Manage' },
+  cookies_panneau_titre:  { fr: 'Préférences de cookies',              en: 'Cookie preferences' },
+  cookies_panneau_sous:   { fr: 'Choisissez les catégories de cookies que vous acceptez.',
+                            en: 'Choose which categories of cookies you accept.' },
+  cookies_cat_essentiels: { fr: 'Essentiels',                          en: 'Essential' },
+  cookies_cat_essentiels_desc: { fr: 'Nécessaires au bon fonctionnement du site. Ne peuvent pas être désactivés.',
+                            en: 'Required for the site to work. These cannot be turned off.' },
+  cookies_cat_mesure:     { fr: 'Analytiques',                         en: 'Analytics' },
+  /* « données anonymisées » était inexact : Google Analytics et PostHog
+     attribuent chacun un identifiant de visiteur et déposent un cookie.
+     Le panneau doit le dire. */
+  cookies_cat_mesure_desc: { fr: 'Mesure d’audience (Google Analytics, PostHog, Meta Pixel). Déposent un cookie et un identifiant de visiteur. Désactivés tant que vous n’avez pas accepté.',
+                            en: 'Audience measurement (Google Analytics, PostHog, Meta Pixel). These set a cookie and a visitor ID. Off until you accept.' },
+  cookies_annuler:        { fr: 'Annuler',                             en: 'Cancel' },
+  cookies_enregistrer:    { fr: 'Enregistrer',                         en: 'Save' },
 
   // ── Parrainage ───────────────────────────────────────────────────────
   verifier:               { fr: 'Vérifier',                           en: 'Check' },

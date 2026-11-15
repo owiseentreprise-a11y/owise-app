@@ -44,11 +44,16 @@ async function resoudreAdresse(addr: BcAddr): Promise<BcAddr> {
   return gc ? { label: addr.label, lat: gc.lat, lng: gc.lng, cp: gc.cp } : addr
 }
 import { soumettreDevis } from '@/app/vitrine/actions'
-import { fbLead, fbContact, initFbPixel } from '@/lib/pixel'
-import { gtagEvent, initGA } from '@/lib/ga'
-import {
-  lireConsentement, ecrireConsentement, EVENEMENT_OUVRIR_PANNEAU,
-} from '@/lib/consentement'
+import { fbLead, fbContact } from '@/lib/pixel'
+import { gtagEvent } from '@/lib/ga'
+/* LE CONSENTEMENT N'EST PLUS GERE ICI. Cette page rendait son propre
+   bandeau — le riche, celui qui porte le panneau de preferences — et le
+   site en avait donc DEUX, avec un aiguillage qui devinait lequel montrer.
+   Il se trompait : `/mise-a-disposition` n'en recevait aucun. Tout vit
+   desormais dans `Consentement.tsx`, monte une fois dans le layout. Ici il
+   ne reste que le lien du pied de page, qui DEMANDE l'ouverture du panneau
+   sans savoir qui l'affichera. */
+import { demanderPanneauConsentement } from '@/lib/consentement'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { lireOrigine } from '@/lib/origine-visite'
 import { logFunnel } from '@/lib/funnel'
@@ -444,15 +449,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
      bouton visible qu'on ne peut plus atteindre est pire. */
   const [etroit,          setEtroit]           = useState(false)
   const [faqOpen,         setFaqOpen]          = useState<number|null>(null)
-  const [cookieVisible,   setCookieVisible]    = useState(false)
-  const [cookieModalOpen, setCookieModalOpen]  = useState(false)
-  /* L'absence de choix n'est pas une acceptation : l'interrupteur part donc
-     à l'arrêt, et non à « activé » comme avant l'étape 88. Il est remis à la
-     valeur enregistrée dès qu'on sait ce que le visiteur a déjà répondu. */
-  const [analyticsOn,     setAnalyticsOn]      = useState(false)
-  const [cookieDone,      setCookieDone]       = useState(false)
-  const [cookieBannerH,   setCookieBannerH]    = useState(0)
-  const cookieBannerRef   = useRef<HTMLDivElement>(null)
 
   /* exit intent */
   const [exitVisible, setExitVisible] = useState(false)
@@ -566,43 +562,12 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* ── hauteur bandeau cookies : évite que les boutons flottants (Appeler,
-     WhatsApp, Réserver) se retrouvent masqués derrière le bandeau ── */
-  useEffect(() => {
-    if (!cookieVisible) return
-    const measure = () => setCookieBannerH(cookieBannerRef.current?.offsetHeight || 0)
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [cookieVisible])
-  // Valeur effective : 0 tant que le bandeau n'est pas visible, même si une
-  // mesure précédente est restée en mémoire.
-  const cookieOffset = cookieVisible ? cookieBannerH : 0
-
-  /* ── LE BANDEAU RÉSERVE SA PLACE, IL NE SE POSE PLUS DESSUS ────────────
-     Mesuré en production le 2026-11-15, à 390 × 844 : le bandeau fait
-     189 px de haut — 22 % de l'écran — et il RECOUVRAIT le bouton
-     « Confirmer la réservation » (y = 710) ainsi que les trois seuls gages
-     de confiance du premier écran (Stripe, VTC certifié, annulation 24 h).
-     Sur l'accueil et les 39 pages villes, soit 40 pages.
-
-     La hauteur était pourtant déjà mesurée juste au-dessus — mais elle ne
-     servait qu'à soulever les boutons flottants. Le CONTENU de la page
-     restait dessous.
-
-     On ne crée donc pas de mécanisme : `globals.css` fait déjà
-     `body { padding-bottom: var(--bandeau-cookies, 0px) }`, et c'est ainsi
-     que `/reserver` réserve correctement ses 189 px depuis toujours. Cette
-     page-ci ne publiait simplement jamais la valeur. Même règle, même
-     variable, un seul endroit où elle est écrite.
-
-     Le nettoyage remet 0 au démontage : une valeur oubliée laisserait un
-     vide en bas de page après l'acceptation. */
-  useEffect(() => {
-    const racine = document.documentElement
-    racine.style.setProperty('--bandeau-cookies', cookieOffset ? `${Math.ceil(cookieOffset)}px` : '0px')
-    return () => { racine.style.setProperty('--bandeau-cookies', '0px') }
-  }, [cookieOffset])
+  /* La hauteur du bandeau de consentement est publiee par
+     `Consentement.tsx` dans `--bandeau-cookies`, lue par le CSS des trois
+     boutons flottants (`.call-float`, `.wa-float`, `.float-cta`). Elle
+     etait mesuree DEUX fois, sous deux noms — `--ow-cb` en style en ligne
+     pour les boutons, `--bandeau-cookies` pour le corps de page — alors
+     que c'est la meme mesure du meme element. */
 
   /* ── les boutons flottants et le clavier ────────────────────
      Ils valent `opacity:0` dans deux cas : avant d'être apparus, et —
@@ -635,40 +600,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     return heures.length ? Math.min(...heures) : null
   }, [bcTarifs])
 
-  /* ── cookie banner ──────────────────────────────────────── */
-  useEffect(() => {
-    const consent = lireConsentement()
-    if (consent === null) {
-      // Re-vérifier au déclenchement du timer (pas seulement au montage) : la
-      // bannière globale (CookieBanner.tsx, montée dans layout.tsx) peut avoir
-      // déjà obtenu une réponse entre-temps — sans ça, une deuxième bannière
-      // s'affichait même après que l'utilisateur ait déjà répondu à la première.
-      const t = setTimeout(() => {
-        if (lireConsentement() === null) setCookieVisible(true)
-        else setCookieDone(true)
-      }, 2500)
-      return () => clearTimeout(t)
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCookieDone(true)
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAnalyticsOn(consent === 'accepted')
-      if (consent === 'accepted') { initFbPixel(); initGA() }
-    }
-  }, [])
-
-  /* Revenir sur son choix. Le lien « Gérer mes cookies » du pied de page, et
-     le même lien sur la page Mentions légales, émettent cet événement.
-     Avant l'étape 88, une fois la bannière refermée, plus rien ne permettait
-     de rouvrir le panneau de préférences. */
-  useEffect(() => {
-    const ouvrir = () => {
-      setAnalyticsOn(lireConsentement() === 'accepted')
-      setCookieModalOpen(true)
-    }
-    window.addEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
-    return () => window.removeEventListener(EVENEMENT_OUVRIR_PANNEAU, ouvrir)
-  }, [])
 
   /* ── scroll reveal + countup ────────────────────────────── */
   useEffect(() => {
@@ -1137,30 +1068,6 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
     setPaxN(1); setSuppls({}); setEtapeOpen(false); setAllerRetour(false)
   }
 
-  /* « Accepter » du bandeau = tout accepter. */
-  function acceptCookie() {
-    ecrireConsentement('accepted')
-    setAnalyticsOn(true)
-    setCookieVisible(false); setCookieDone(true)
-    initFbPixel(); initGA()
-  }
-  /* « Refuser » du bandeau = tout refuser. `ecrireConsentement` lève le
-     drapeau ga-disable-<ID> et efface les cookies de mesure déjà déposés :
-     refuser après avoir accepté arrête réellement le suivi, sans
-     rechargement. */
-  function refuseCookie() {
-    ecrireConsentement('refused')
-    setAnalyticsOn(false)
-    setCookieVisible(false); setCookieDone(true)
-  }
-  /* « Enregistrer » du panneau de préférences. Avant l'étape 88, ce bouton
-     appelait acceptCookie() quelle que soit la position de l'interrupteur :
-     il était impossible de refuser depuis le panneau. */
-  function enregistrerPreferences() {
-    if (analyticsOn) acceptCookie()
-    else refuseCookie()
-    setCookieModalOpen(false)
-  }
 
   /* Descendre jusqu'au formulaire de devis.
      Un seul `scrollIntoView` ne suffit pas : la page fait 13 135 px et son
@@ -1366,7 +1273,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Call float */}
-      <div className={`call-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`call-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes}>
         <a href="tel:+33619106356" className="call-btn" aria-label="Appeler Owise">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           <span className="fb-txt">Appeler</span>
@@ -1374,7 +1281,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* WhatsApp float */}
-      <div className={`wa-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`wa-float${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes}>
         <a href="https://wa.me/33619106356" className="wa-btn" target="_blank" rel="noopener" aria-label="WhatsApp" style={{position:'relative'}}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.118 1.524 5.847L.053 23.693a.5.5 0 00.612.67l5.988-1.568A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.6 9.6 0 01-4.975-1.381l-.354-.21-3.684.964.984-3.59-.23-.37A9.6 9.6 0 1112 21.6z"/></svg>
           <span className="fb-txt">WhatsApp</span>
@@ -1383,7 +1290,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       </div>
 
       {/* Floating CTA */}
-      <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
+      <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes}>
         {/* « RÉSERVER MAINTENANT » MÈNE À LA RÉSERVATION.
             Ce bouton — le plus visible des 40 pages, flottant et toujours
             à portée du pouce — pointait sur `#devis` : il faisait défiler
@@ -2989,7 +2896,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
           <button
             type="button"
             className="lien-cookies"
-            onClick={() => { setAnalyticsOn(lireConsentement() === 'accepted'); setCookieModalOpen(true) }}
+            onClick={demanderPanneauConsentement}
           >
             Gérer mes cookies
           </button>
@@ -2997,50 +2904,9 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         </div>
       </footer>
 
-      {/* COOKIE BANNER */}
-      {!cookieDone && (
-        <div ref={cookieBannerRef} className={`cookie-banner${cookieVisible?' visible':''}`}>
-          <div className="cookie-text">
-            <div className="cookie-title">Gestion des cookies</div>
-            <div className="cookie-desc">
-              {/* Étape 89 : le texte doit dire ce que le code fait. Les
-                  mesures ne démarrent qu'après « Accepter ». */}
-              Les cookies de mesure d&apos;audience (Google Analytics, PostHog, Meta Pixel) ne sont
-              activés qu&apos;après votre acceptation. Sans réponse de votre part, aucune statistique
-              n&apos;est collectée. Consultez notre{' '}
-              <Link href="/mentions-legales">politique de confidentialité</Link>.
-            </div>
-          </div>
-          <div className="cookie-actions">
-            <button className="c-btn-accept" onClick={acceptCookie}>Accepter</button>
-            <button className="c-btn-refuse" onClick={refuseCookie}>Refuser</button>
-            <button className="c-btn-manage" onClick={()=>setCookieModalOpen(true)}>Gérer</button>
-          </div>
-        </div>
-      )}
-
-      {/* COOKIE MODAL */}
-      <div className={`cookie-overlay${cookieModalOpen?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setCookieModalOpen(false)}}>
-        <div className="cookie-modal">
-          <div className="cm-title">Préférences de cookies</div>
-          <div className="cm-sub">Choisissez les catégories de cookies que vous acceptez.</div>
-          <div className="cm-cat">
-            <div><div className="cm-cat-name">Essentiels</div><div className="cm-cat-desc">Nécessaires au bon fonctionnement du site. Ne peuvent pas être désactivés.</div></div>
-            <label className="cm-toggle"><input type="checkbox" checked readOnly/><div className="cm-track"/><div className="cm-thumb"/></label>
-          </div>
-          <div className="cm-cat">
-            {/* « données anonymisées » était inexact : Google Analytics et
-                PostHog attribuent chacun un identifiant de visiteur et
-                déposent un cookie. Le panneau doit le dire. */}
-            <div><div className="cm-cat-name">Analytiques</div><div className="cm-cat-desc">Mesure d&apos;audience (Google Analytics, PostHog, Meta Pixel). Déposent un cookie et un identifiant de visiteur. Désactivés tant que vous n&apos;avez pas accepté.</div></div>
-            <label className="cm-toggle"><input type="checkbox" checked={analyticsOn} onChange={e=>setAnalyticsOn(e.target.checked)}/><div className="cm-track"/><div className="cm-thumb"/></label>
-          </div>
-          <div className="cm-footer">
-            <button className="cm-cancel" onClick={()=>setCookieModalOpen(false)}>Annuler</button>
-            <button className="cm-save" onClick={enregistrerPreferences}>Enregistrer</button>
-          </div>
-        </div>
-      </div>
+      {/* Le bandeau de consentement et son panneau de preferences etaient
+          ici. Ils vivent dans `Consentement.tsx`, monte dans le layout, donc
+          sur TOUTES les pages — y compris celles qui n'en recevaient aucun. */}
     </div>
   )
 }

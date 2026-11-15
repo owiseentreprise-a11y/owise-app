@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import MesureVercel from '@/components/MesureVercel'
 import { PHProvider } from './providers'
-import CookieBanner from '@/components/CookieBanner'
+import Consentement from '@/components/Consentement'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import GAPageView from '@/components/GAPageView'
 import OrigineVisite from '@/components/OrigineVisite'
@@ -62,7 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             page d'arrivée manquante ferait passer du trafic Google ou ChatGPT
             pour du trafic direct. */}
         <OrigineVisite />
-        <CookieBanner />
+        {/* LA SEULE SURFACE DE CONSENTEMENT DU SITE. Il y en avait deux —
+            celle-ci et une seconde rendue par `VitrineBody` — et un
+            aiguillage qui DEVINAIT laquelle montrer. Il se trompait :
+            `/mise-a-disposition` n'en recevait aucune. Voir Consentement.tsx. */}
+        <Consentement />
         {/* Étape 90 : les deux mesures Vercel passent par un composant qui
             attend le consentement. Voir MesureVercel.tsx pour le détail des
             constats — l'hébergement et le déploiement ne sont pas touchés. */}
