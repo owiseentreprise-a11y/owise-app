@@ -1258,6 +1258,43 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
    Réserver la place ne suffisait pas, et c'est la leçon : `body` a bien
    son `padding-bottom`, mais cela ne déplace pas un bandeau FIXE posé sur
    le premier écran. Il fallait le raccourcir. */
+/* ── LA BARRE D'ACTION DU TUNNEL, SUR TÉLÉPHONE ────────────────────────
+   Mesuré le 2026-11-15 : « Continuer » est à 1 475 px sous la ligne de
+   flottaison à 390 px. Le prix, lui, remonte bien en tête dès que les
+   deux adresses sont résolues — c'est l'ACTION qui était enterrée, pas
+   l'argument.
+
+   Elle n'existe que sur téléphone, et seulement tant que le vrai bouton
+   n'est pas à l'écran (le composant s'en charge).
+
+   `bottom: var(--bandeau-cookies, 0px)` : la même variable que le reste
+   du site, pour se poser AU-DESSUS du bandeau de consentement au lieu de
+   disparaître dessous. Le repli à 0 px vaut pour les visiteurs qui ont
+   déjà répondu. */
+.res-barre-action{display:none}
+@media(max-width:640px){
+  .res-barre-action{
+    display:flex;align-items:center;gap:12px;
+    position:fixed;left:0;right:0;bottom:var(--bandeau-cookies,0px);z-index:9990;
+    padding:10px max(14px,env(safe-area-inset-left,0px))
+            calc(10px + env(safe-area-inset-bottom,0px))
+            max(14px,env(safe-area-inset-right,0px));
+    background:var(--papier);
+    border-top:1px solid rgba(var(--contraste-rvb),.14);
+    box-shadow:0 -10px 30px rgba(var(--ombre-rvb),.28)}
+  .rba-prix{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .rba-montant{font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:19px;font-weight:700;color:var(--t1);line-height:1.1}
+  .rba-mention{font-size:10.5px;color:var(--t2);line-height:1.2;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rba-btn{flex:0 0 auto;padding:13px 20px;border-radius:10px;border:none;
+    background:var(--encre);color:var(--sur-encre);
+    font-size:14px;font-weight:700;letter-spacing:.03em;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:background .15s,transform .15s}
+  .rba-btn:active{transform:scale(.98)}
+}
+
 /* ── L'ACTION REMONTE DE 48 PX SUR TÉLÉPHONE ───────────────────────────
    Suite de la correction du bandeau. Celui-ci est descendu de 189 à
    101 px, ce qui dégage l'accueil — mais pas les 39 pages villes, qui

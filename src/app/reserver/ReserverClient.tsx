@@ -601,6 +601,37 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])
 
+  /* ── UNE BARRE D'ACTION SOUS LE POUCE, SUR TÉLÉPHONE ───────────────────
+     Mesuré le 2026-11-15 : le bouton « Continuer » est à 1 475 px sous la
+     ligne de flottaison à 390 px — 1 423 px même en arrivant avec un
+     trajet pré-rempli. Le visiteur remplit, voit son prix remonter en
+     tête (ça, c'est bien fait), puis doit faire défiler deux écrans pour
+     trouver le bouton qui le fait avancer.
+
+     La barre n'apparaît QUE si le vrai bouton n'est pas déjà visible :
+     deux boutons identiques à l'écran seraient une hésitation de plus,
+     pas un service. D'où l'observateur ci-dessous.
+
+     Par défaut la barre est MONTRÉE (`false`), et c'est voulu : si
+     l'observateur ne se déclenchait jamais — navigateur ancien, bouton
+     non rendu — mieux vaut une barre en trop qu'une action introuvable.
+     Un repli doit dégrader, jamais supprimer. */
+  const boutonEtape1Ref = useRef<HTMLButtonElement>(null)
+  const [actionDejaVisible, setActionDejaVisible] = useState(false)
+  useEffect(() => {
+    const cible = boutonEtape1Ref.current
+    if (!cible || typeof IntersectionObserver === 'undefined') return
+    const obs = new IntersectionObserver(
+      ([e]) => setActionDejaVisible(e.isIntersecting),
+      /* Une marge négative en bas : le bouton ne compte comme « vu » que
+         s'il est franchement dans l'écran, pas s'il affleure derrière la
+         barre elle-même. */
+      { rootMargin: '0px 0px -90px 0px', threshold: 0.6 },
+    )
+    obs.observe(cible)
+    return () => obs.disconnect()
+  }, [step])
+
   /* ── L'ERREUR S'EFFACE QUAND ON CORRIGE ────────────────────────────────
      `setStep1Error(null)` n'existait qu'à l'intérieur du clic qui réussit
      (`:673` était sa seule remise à zéro). Mesuré en production le
@@ -1545,7 +1576,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                 </span>
               ))}
             </div>
-            <button type="button" onClick={handleStep1} className="pay-btn"
+            <button type="button" onClick={handleStep1} className="pay-btn" ref={boutonEtape1Ref}
               style={{ width: '100%', padding: '14px', borderRadius: 10, background: 'var(--encre)', color: 'var(--sur-encre)', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', letterSpacing: '.04em', transition: 'background .15s, transform .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <span>{L.continuer}</span>
               {prixTotal !== null && (
@@ -1771,6 +1802,28 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
           />
         </div>
       </div>
+
+      {/* La barre est posée ici, à la racine du rendu : un `position:fixed`
+          placé à l'intérieur d'un ancêtre qui porte `transform` ou
+          `filter` se positionnerait par rapport à CET ancêtre, et non par
+          rapport à l'écran. Elle s'appuie sur `--bandeau-cookies`, la même
+          variable que partout ailleurs, pour rester au-dessus du bandeau
+          de consentement plutôt que dessous. */}
+      {step === 1 && !actionDejaVisible && (
+        <div className="res-barre-action">
+          <div className="rba-prix">
+            {prixTotal !== null ? (
+              <><span className="rba-montant">{Math.round(prixTotal)} €</span>
+                <span className="rba-mention">{L.tarif_fixe_garanti}</span></>
+            ) : (
+              <span className="rba-mention">{L.prix_estime}</span>
+            )}
+          </div>
+          <button type="button" onClick={handleStep1} className="rba-btn">
+            {L.continuer} <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
