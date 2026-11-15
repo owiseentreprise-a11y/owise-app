@@ -47,7 +47,7 @@ export default function TarifsReference({ forfaits, langue = 'fr' }: { forfaits:
         <h2
           id="titre-forfaits"
           style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 34, lineHeight: 1.15, color: ENCRE,
             fontWeight: 500, margin: '0 0 10px',
           }}

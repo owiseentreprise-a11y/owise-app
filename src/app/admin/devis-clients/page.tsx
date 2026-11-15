@@ -50,7 +50,7 @@ export default async function DevisClientsPage() {
 
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 500, color: 'var(--t1)', margin: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 26, fontWeight: 500, color: 'var(--t1)', margin: 0 }}>
             Devis clients
           </h1>
           <p style={{ fontSize: 12, color: 'var(--t3)', marginTop: 4 }}>

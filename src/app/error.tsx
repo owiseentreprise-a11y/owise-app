@@ -60,7 +60,7 @@ export default function ErreurPublique({
         </div>
 
         <h1 style={{
-          fontFamily: 'Georgia, serif', fontSize: 30, lineHeight: 1.2,
+          fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 30, lineHeight: 1.2,
           margin: '0 0 16px', color: '#EDE8DF', fontWeight: 400,
         }}>
           Cette page n’a pas pu s’afficher

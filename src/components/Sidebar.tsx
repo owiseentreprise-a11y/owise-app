@@ -225,7 +225,7 @@ export default function Sidebar() {
           </svg>
         </button>
         <span style={{
-          fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 500,
+          fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 15, fontWeight: 500,
           letterSpacing: '.12em', color: 'var(--t1)',
         }}>OWISE</span>
         <span style={{
@@ -278,12 +278,12 @@ export default function Sidebar() {
                transparent, et la mesure retombait à 1,04. */
             background: '#C9A84C linear-gradient(135deg, #DDB95A, #C9A84C)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#120E02',
+            fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 17, fontWeight: 600, color: '#120E02',
             boxShadow: '0 4px 14px rgba(201,168,76,.25)',
           }}>O</div>
           <div>
             <div style={{
-              fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 500,
+              fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 18, fontWeight: 500,
               letterSpacing: '.1em', color: 'var(--t1)', lineHeight: 1,
             }}>OWISE</div>
             <div style={{

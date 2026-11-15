@@ -593,7 +593,7 @@ export default function DemanderCourseClient({
                         background: active ? 'rgba(201,168,76,.1)' : 'var(--elevated)',
                         color: active ? '#C9A84C' : 'var(--t2)',
                         fontSize: 12, fontFamily: 'inherit', fontWeight: active ? 600 : 400,
-                        transition: 'all .15s',
+                        transition: 'background-color.15s, border-color.15s, color.15s, transform.15s',
                       }}>
                       <span>{meta.icon}</span> {meta.label}
                     </button>
@@ -637,7 +637,7 @@ export default function DemanderCourseClient({
             {/* Boutons */}
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" onClick={() => { setStep(1); setStepErr('') }}
-                style={{ background: 'var(--elevated)', color: 'var(--t2)', border: '1px solid var(--gb)', padding: '11px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}>
+                style={{ background: 'var(--elevated)', color: 'var(--t2)', border: '1px solid var(--gb)', padding: '11px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'transform.15s' }}>
                 ← Modifier
               </button>
               <button type="button" onClick={handleConfirm} disabled={pending || !payMode}

@@ -52,12 +52,12 @@ export default function LoginPage({
             background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
             borderRadius: 12,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 24, fontWeight: 600, color: '#fff',
             margin: '0 auto 12px',
             boxShadow: '0 8px 24px rgba(201,168,76,.25)',
           }}>O</div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 26, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
+          <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 26, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
           <div style={{ fontSize: 11, color: L.t2, marginTop: 4, letterSpacing: '.08em' }}>Espace d&apos;administration</div>
         </div>
 

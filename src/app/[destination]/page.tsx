@@ -1757,7 +1757,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ed-accent-sur-sombre)', marginBottom: 12 }}>
             Avis clients
           </div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 34, fontWeight: 500, color: 'var(--ed-sur-sombre)', margin: '0 0 8px' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 34, fontWeight: 500, color: 'var(--ed-sur-sombre)', margin: '0 0 8px' }}>
             Ils nous font confiance
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 40 }}>

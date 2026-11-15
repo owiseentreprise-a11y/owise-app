@@ -827,7 +827,7 @@ export default function NouvelleCourseForm({
                 </div>
               </div>
               {passagerEmail && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', background: creerCompte ? 'rgba(61,184,122,.08)' : 'rgba(201,168,76,.04)', borderRadius: 8, border: `1px solid ${creerCompte ? 'rgba(61,184,122,.3)' : 'rgba(201,168,76,.15)'}`, transition: 'all .15s' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', background: creerCompte ? 'rgba(61,184,122,.08)' : 'rgba(201,168,76,.04)', borderRadius: 8, border: `1px solid ${creerCompte ? 'rgba(61,184,122,.3)' : 'rgba(201,168,76,.15)'}`, transition: 'background-color.15s, border-color.15s, border-radius.15s' }}>
                   <input
                     type="checkbox" checked={creerCompte} onChange={e => setCreerCompte(e.target.checked)}
                     style={{ width: 16, height: 16, accentColor: 'var(--grn)', cursor: 'pointer' }}

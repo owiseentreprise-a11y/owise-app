@@ -32,9 +32,9 @@ export default async function DesinscriptionPage({
           <div style={{
             width: 36, height: 36, background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
             borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 600, color: '#09091A',
+            fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 600, color: '#09091A',
           }}>O</div>
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 500, letterSpacing: '.1em', color: '#09091A' }}>
+          <span style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 20, fontWeight: 500, letterSpacing: '.1em', color: '#09091A' }}>
             OWISE
           </span>
         </div>

@@ -95,7 +95,7 @@ export default function ParrainageWidget({
               padding: '10px 18px', borderRadius: 10, cursor: 'pointer', border: 'none',
               background: copied ? 'rgba(61,184,122,.15)' : 'rgba(201,168,76,.12)',
               color: copied ? 'var(--grn)' : 'var(--gold)',
-              fontSize: 12, fontWeight: 600, transition: 'all .2s', flexShrink: 0,
+              fontSize: 12, fontWeight: 600, transition: 'background-color.2s, color.2s, transform.2s', flexShrink: 0,
             }}>
               {copied ? '✓ Copié' : 'Copier'}
             </button>

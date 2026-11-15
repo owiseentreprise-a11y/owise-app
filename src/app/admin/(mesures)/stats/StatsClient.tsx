@@ -232,7 +232,7 @@ export default function StatsClient({
     background: period === p ? 'var(--gold)' : 'var(--elevated)',
     color:      period === p ? 'var(--base)' : 'var(--t2)',
     border:     period === p ? 'none' : '1px solid var(--t3)',
-    transition: 'all .12s',
+    transition: 'background-color.12s, border-color.12s, color.12s, transform.12s',
   })
 
   return (

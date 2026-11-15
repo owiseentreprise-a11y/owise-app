@@ -69,7 +69,7 @@ export default async function BackupsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, color: 'var(--t1)', letterSpacing: '.02em', marginBottom: 6 }}>
+          <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 24, fontWeight: 500, color: 'var(--t1)', letterSpacing: '.02em', marginBottom: 6 }}>
             Sauvegardes
           </h1>
           <p style={{ fontSize: 12, color: 'var(--t3)' }}>

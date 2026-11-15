@@ -83,7 +83,7 @@ export default async function EstimationsPage() {
     // Table n'existe pas encore
     return (
       <div style={{ padding: 40, maxWidth: 700 }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--t1)', marginBottom: 16 }}>
+        <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 22, color: 'var(--t1)', marginBottom: 16 }}>
           Simulations de prix
         </h1>
         <div style={{
@@ -185,7 +185,7 @@ export default async function EstimationsPage() {
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
-          fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
+          fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 24, fontWeight: 500,
           color: 'var(--t1)', letterSpacing: '.02em', lineHeight: 1.2, marginBottom: 6,
         }}>
           Simulations de prix

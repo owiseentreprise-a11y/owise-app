@@ -1215,7 +1215,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
       )}
 
       {/* scroll progress */}
-      <div className="scroll-progress" id="scrollProgress" />
+      {/* LA BARRE DE PROGRESSION DE LECTURE A ETE RETIREE.
+          Elle etait rendue ici depuis le debut, avec un identifiant et un
+          degrade dore, mais RIEN n'a jamais pose sa largeur : mesuree en
+          production le 2026-11-16, elle faisait 0 px de large en haut de
+          page comme apres 6 845 px de defilement — tout en faisant tourner
+          une animation infinie (`shimmerBtn`) sur les 40 pages de la
+          vitrine. Un element qui n'affiche rien et qui coute a chaque
+          image.
+          Pour la remettre : rendre ce div et poser sa largeur dans le
+          `onScroll` deja present plus haut dans ce fichier. */}
 
       {/* mobile menu
           `inert` tant qu'il est fermé : sans lui, ses six liens, son bouton
@@ -2599,7 +2608,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
                 {/* aller-retour */}
                 <div style={{marginBottom:16}}>
-                  <button type="button" onClick={()=>setAllerRetour(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',borderRadius:8,border:'1px solid rgba(var(--contraste-rvb),0.12)',background:'transparent',fontFamily:'inherit',fontSize:12,color:'var(--t2)',cursor:'pointer',transition:'all .15s'}}>
+                  <button type="button" onClick={()=>setAllerRetour(v=>!v)} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',borderRadius:8,border:'1px solid rgba(var(--contraste-rvb),0.12)',background:'transparent',fontFamily:'inherit',fontSize:12,color:'var(--t2)',cursor:'pointer',transition:'transform .15s'}}>
                     <span>↩</span> Aller-Retour
                     <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:allerRetour?'rgba(var(--or-rvb),0.15)':'rgba(var(--contraste-rvb),0.06)',color:allerRetour?'var(--gold)':'var(--t2)',fontWeight:700,letterSpacing:'.04em',border:allerRetour?'1px solid rgba(var(--or-rvb),0.3)':'none'}}>
                       {allerRetour?'ON':'OFF'}

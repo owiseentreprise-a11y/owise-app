@@ -70,7 +70,7 @@ function EmailField({ clientId, email }: { clientId: string; email: string }) {
           display: 'flex', alignItems: 'center',
           background: saved ? 'rgba(61,184,122,.05)' : 'rgba(201,168,76,.05)',
           border: `1px solid ${saved ? 'rgba(61,184,122,.2)' : 'rgba(201,168,76,.18)'}`,
-          borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'all .3s',
+          borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'background-color.3s, border-color.3s',
         }}>
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? 'var(--grn)' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -278,7 +278,7 @@ export function DeleteClientButton({ clientId, nomAffiche }: { clientId: string;
                   fontSize: 12, fontWeight: 600,
                   cursor: confirm === nomAffiche && !pending ? 'pointer' : 'not-allowed',
                   fontFamily: 'var(--font-dm-sans), sans-serif',
-                  transition: 'all .15s',
+                  transition: 'background-color.15s, color.15s, opacity.15s, transform.15s',
                   opacity: pending ? .7 : 1,
                 }}
               >
@@ -449,7 +449,7 @@ export default function ClientEditActions({ clientId, email, profile: initProfil
                   border: `1.5px solid ${factMode === mode ? 'rgba(201,168,76,.5)' : 'var(--gb)'}`,
                   background: factMode === mode ? 'rgba(201,168,76,.06)' : 'transparent',
                   textAlign: 'left', fontFamily: 'var(--font-dm-sans), sans-serif',
-                  transition: 'all .15s',
+                  transition: 'background-color.15s, border-color.15s, transform.15s',
                 }}
               >
                 <div style={{

@@ -101,10 +101,10 @@ export default function ClientUpdatePasswordPage() {
             background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
             borderRadius: 12, margin: '0 auto 12px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'Georgia, serif',
+            fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-cormorant, Georgia), serif',
             boxShadow: '0 8px 24px rgba(201,168,76,.25)',
           }}>O</div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
+          <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
           <div style={{ fontSize: 11, color: L.t2, marginTop: 4 }}>Nouveau mot de passe</div>
         </div>
 

@@ -698,7 +698,7 @@ export default function PlanningCalendar({
     background: active ? 'var(--gold)' : 'var(--elevated)',
     color:      active ? 'var(--base)' : 'var(--t2)',
     border:     active ? 'none' : '1px solid var(--t3)',
-    transition: 'all .12s',
+    transition: 'background-color.12s, border-color.12s, color.12s, transform.12s',
   })
 
   return (

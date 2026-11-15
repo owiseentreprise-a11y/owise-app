@@ -52,10 +52,10 @@ export default function SousTraitantLoginPage() {
             width: 36, height: 36, borderRadius: 9,
             background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Georgia, serif', fontSize: 18, fontWeight: 600, color: '#fff',
+            fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 18, fontWeight: 600, color: '#fff',
           }}>O</div>
           <div>
-            <div style={{ fontFamily: 'Georgia, serif', fontSize: 17, letterSpacing: '.1em', color: '#0A0A0A' }}>OWISE</div>
+            <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 17, letterSpacing: '.1em', color: '#0A0A0A' }}>OWISE</div>
             <div style={{ fontSize: 9, letterSpacing: '.18em', textTransform: 'uppercase', color: '#999', marginTop: 1 }}>Espace partenaire</div>
           </div>
         </div>

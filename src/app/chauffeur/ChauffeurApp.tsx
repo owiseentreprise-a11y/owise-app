@@ -326,7 +326,7 @@ export default function ChauffeurApp({
               width: 32, height: 32, borderRadius: 8, flexShrink: 0,
               background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#fff',
+              fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 17, fontWeight: 600, color: '#fff',
               boxShadow: '0 4px 12px rgba(201,168,76,.25)',
             }}>O</div>
             <div style={{ width: 1, height: 28, background: 'var(--t3)', opacity: .4 }} />
@@ -336,7 +336,7 @@ export default function ChauffeurApp({
                 background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05))',
                 border: '1.5px solid rgba(201,168,76,.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-cormorant), Georgia, serif',
+                fontFamily: 'var(--font-cormorant, Georgia), serif',
                 fontSize: 15, fontWeight: 600, color: 'var(--gold)',
               }}>{initials}</div>
               <div>
@@ -361,7 +361,7 @@ export default function ChauffeurApp({
                 width: 34, height: 34, borderRadius: 9,
                 background: 'var(--elevated)', border: '1px solid var(--t3)',
                 color: 'var(--t2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0, transition: 'all .15s',
+                cursor: 'pointer', flexShrink: 0, transition: 'transform.15s',
               }}
             >
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -755,7 +755,7 @@ export default function ChauffeurApp({
             borderRadius: 16, padding: '40px 24px',
             textAlign: 'center', marginBottom: 12,
             boxShadow: dispo === 'disponible' ? '0 0 32px rgba(60,196,124,.06)' : 'none',
-            transition: 'all .3s',
+            transition: 'border-color.3s, box-shadow.3s',
           }}>
             <div style={{
               width: 60, height: 60, borderRadius: '50%', margin: '0 auto 14px',
@@ -1364,7 +1364,7 @@ export default function ChauffeurApp({
             border: `1px solid ${soundEnabled ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
             color: soundEnabled ? 'var(--gold)' : 'var(--t3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', transition: 'all .15s',
+            cursor: 'pointer', transition: 'background-color.15s, border-color.15s, color.15s, transform.15s',
           }}
         >
           {soundEnabled ? (
@@ -1388,7 +1388,7 @@ export default function ChauffeurApp({
             flex: 1, padding: '14px', borderRadius: 14, fontSize: 14, fontWeight: 700,
             fontFamily: 'var(--font-dm-sans), sans-serif',
             cursor: (dispo === 'en_course' && !!activeCourse) ? 'default' : 'pointer',
-            transition: 'all .2s',
+            transition: 'background-color.2s, border-color.2s, box-shadow.2s, color.2s, transform.2s',
             ...(dispo === 'disponible' ? {
               background: 'linear-gradient(135deg,#3DB87A,#2a9e62)', border: 'none', color: '#fff',
               boxShadow: '0 4px 16px rgba(60,196,124,.3)',
@@ -1414,7 +1414,7 @@ export default function ChauffeurApp({
             border: `1px solid ${nightMode ? 'rgba(201,168,76,.35)' : 'var(--t3)'}`,
             color: 'var(--gold)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', transition: 'all .15s',
+            cursor: 'pointer', transition: 'background-color.15s, border-color.15s, transform.15s',
           }}
         >
           {nightMode ? (

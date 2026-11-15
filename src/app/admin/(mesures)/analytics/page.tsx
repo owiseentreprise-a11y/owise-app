@@ -223,7 +223,7 @@ export default async function AnalyticsPage() {
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
-          fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500,
+          fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 24, fontWeight: 500,
           color: 'var(--t1)', letterSpacing: '.02em', marginBottom: 6,
         }}>
           Analytics

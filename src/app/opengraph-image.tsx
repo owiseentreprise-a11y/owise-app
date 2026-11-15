@@ -1,5 +1,20 @@
 import { ImageResponse } from 'next/og'
 
+/* ── POURQUOI CE FICHIER ECRIT ENCORE `Georgia, serif` ──────────────────
+   Partout ailleurs dans le projet, la police d'affichage s'ecrit
+   `var(--font-cormorant, Georgia), serif` — une seule forme, 44 ecritures.
+   ICI, NON, ET CE N'EST PAS UN OUBLI.
+
+   Cette image est produite par Satori (`next/og`), qui ne charge AUCUNE
+   feuille de style et ne resout AUCUNE variable CSS. Une `var()` y serait
+   ignoree en silence et la police retomberait sur le defaut de Satori.
+   Les sept `Georgia, serif` de ce fichier sont donc deliberes.
+
+   Pour y obtenir reellement Cormorant Garamond, il faudrait passer la
+   fonte a `ImageResponse` dans son option `fonts` — ce qui n'est pas fait
+   aujourd'hui. Ne pas « uniformiser » ce fichier avec les autres sans
+   faire ce travail-la d'abord. */
+
 export const runtime = 'edge'
 export const alt = 'Owise — Chauffeur Privé VTC · Paris & IDF'
 export const size = { width: 1200, height: 630 }

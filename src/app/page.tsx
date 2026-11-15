@@ -201,7 +201,7 @@ export default async function VitrinePage() {
       {/* Section maillage interne — server-rendered, visible par Google */}
       <section className="ed-section ed-claire" style={{ background: 'var(--ed-fond-clair)', padding: '64px 24px 48px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 36, fontWeight: 500, color: 'var(--ed-titre)', marginBottom: 8, textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 36, fontWeight: 500, color: 'var(--ed-titre)', marginBottom: 8, textAlign: 'center' }}>
             Nos zones desservies
           </h2>
           <p style={{ textAlign: 'center', color: 'var(--ed-texte-2)', fontSize: 15, marginBottom: 40, maxWidth: 560, margin: '0 auto 40px' }}>

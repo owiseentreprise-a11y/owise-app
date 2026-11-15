@@ -128,7 +128,7 @@ export default function SousTraitantPortal({
               width: 32, height: 32, borderRadius: 8,
               background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Georgia, serif', fontSize: 17, fontWeight: 600, color: '#fff',
+              fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 17, fontWeight: 600, color: '#fff',
             }}>O</div>
             <div style={{ width: 1, height: 26, background: 'rgba(0,0,0,.1)' }} />
             <div>

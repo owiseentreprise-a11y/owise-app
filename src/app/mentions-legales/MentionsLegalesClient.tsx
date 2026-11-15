@@ -154,7 +154,7 @@ export default function MentionsLegalesClient() {
                 borderRight: i < TABS.length - 1 ? '1px solid rgba(0,0,0,.08)' : 'none',
                 background: active === tab.id ? 'rgba(201,168,76,.08)' : 'transparent',
                 color: active === tab.id ? '#C9A84C' : '#6B6B6B',
-                transition: 'all .15s',
+                transition: 'background-color.15s, color.15s, transform.15s',
               }}
             >
               {tab.label}

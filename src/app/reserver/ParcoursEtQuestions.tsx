@@ -135,7 +135,7 @@ export default function ParcoursEtQuestions({ langue = 'fr' }: { langue?: Langue
         <h2
           id="titre-parcours"
           style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 34, lineHeight: 1.15, color: ENCRE,
             fontWeight: 500, margin: '0 0 10px',
           }}
@@ -193,7 +193,7 @@ export default function ParcoursEtQuestions({ langue = 'fr' }: { langue?: Langue
         <h2
           id="titre-questions"
           style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-cormorant, Georgia), serif',
             fontSize: 34, lineHeight: 1.15, color: ENCRE,
             fontWeight: 500, margin: '0 0 28px',
           }}

@@ -59,11 +59,11 @@ export default async function ClientLoginPage({
               background: 'linear-gradient(135deg,#C9A84C,#8B6A1A)',
               borderRadius: 12, margin: '0 auto 12px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'Georgia, serif',
+              fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-cormorant, Georgia), serif',
               boxShadow: '0 8px 24px rgba(201,168,76,.25)',
             }}>O</div>
           </Link>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
+          <div style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 24, fontWeight: 500, letterSpacing: '.1em', color: L.t1 }}>OWISE</div>
           <div style={{ fontSize: 11, color: L.t2, marginTop: 4, letterSpacing: '.06em' }}>Espace client</div>
         </div>
 
@@ -84,7 +84,7 @@ export default async function ClientLoginPage({
               background: tab === t.key ? '#fff' : 'transparent',
               color: tab === t.key ? L.t1 : L.t3,
               boxShadow: tab === t.key ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
-              transition: 'all .15s',
+              transition: 'background-color.15s, box-shadow.15s, color.15s',
             }}>{t.label}</a>
           ))}
         </div>

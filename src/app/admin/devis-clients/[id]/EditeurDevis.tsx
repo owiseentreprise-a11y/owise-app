@@ -125,7 +125,7 @@ export default function EditeurDevis({ devis }: { devis: DevisClient }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 22 }}>
         <div>
           <Link href="/admin/devis-clients" style={{ fontSize: 12.5, color: '#C9A84C', textDecoration: 'none' }}>← Tous les devis</Link>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 25, fontWeight: 500, color: 'var(--t1)', margin: '8px 0 2px' }}>
+          <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 25, fontWeight: 500, color: 'var(--t1)', margin: '8px 0 2px' }}>
             {form.client_nom || 'Nouveau devis'}
           </h1>
           <div style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#C9A84C' }}>

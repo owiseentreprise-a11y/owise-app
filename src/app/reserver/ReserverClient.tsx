@@ -984,7 +984,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                    étape franchie et une étape à venir — c'est le FOND qui
                    porte cette distinction, pas la pâleur du chiffre. */
                 color: s <= step ? 'var(--sur-encre)' : 'rgba(var(--sur-fonce-rvb),.72)',
-                transition: 'all .3s',
+                transition: 'background-color.3s, border-color.3s, color.3s',
               }}>
                 {s < step ? '✓' : s}
               </div>
@@ -1225,7 +1225,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
                     fontFamily: 'inherit',
                     border: `1.5px solid ${allerRetour ? 'var(--gold)' : 'rgba(var(--or-rvb),.25)'}`,
                     background: allerRetour ? 'rgba(var(--or-rvb),.08)' : 'rgba(var(--or-rvb),.03)',
-                    transition: 'all .15s',
+                    transition: 'background-color.15s, border-color.15s, box-shadow.15s, transform.15s',
                     boxShadow: allerRetour ? '0 0 0 3px rgba(var(--or-rvb),.1)' : 'none',
                   }}>
                   {/* Gauche */}
@@ -1625,7 +1625,7 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
               {L.modifier_trajet}
             </button>
 
-            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 500, color: 'var(--t1)', margin: '0 0 6px' }}>
+            <h1 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 30, fontWeight: 500, color: 'var(--t1)', margin: '0 0 6px' }}>
               {L.vos_informations}
             </h1>
             <p style={{ fontSize: 13, color: 'var(--t2)', margin: '0 0 28px' }}>{L.email_confirmation}</p>

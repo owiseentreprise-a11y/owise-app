@@ -163,7 +163,7 @@ function EmailField({ chauffeurId, email }: { chauffeurId: string; email: string
           display: 'flex', alignItems: 'center',
           background: saved ? 'rgba(61,184,122,.05)' : 'rgba(201,168,76,.05)',
           border: `1px solid ${saved ? 'rgba(61,184,122,.2)' : 'rgba(201,168,76,.18)'}`,
-          borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'all .3s',
+          borderRadius: 8, padding: '8px 10px 8px 12px', gap: 8, transition: 'background-color.3s, border-color.3s',
         }}>
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke={saved ? 'var(--grn)' : '#C9A84C'} strokeWidth={1.8} style={{ flexShrink: 0 }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -177,7 +177,7 @@ function EmailField({ chauffeurId, email }: { chauffeurId: string; email: string
             background: copied ? 'rgba(61,184,122,.12)' : 'transparent',
             border: 'none', borderRadius: 4, padding: '3px 6px', cursor: 'pointer',
             fontSize: 10, color: copied ? '#2E9E5E' : 'var(--t3)',
-            flexShrink: 0, transition: 'all .15s',
+            flexShrink: 0, transition: 'background-color.15s, color.15s, transform.15s',
           }}>
             {copied ? '✓' : <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path strokeLinecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>}
           </button>

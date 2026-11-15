@@ -63,7 +63,7 @@ export default function ErreurAdmin({
         </div>
 
         <h1 style={{
-          fontFamily: 'Georgia, serif', fontSize: 23, color: 'var(--t1)',
+          fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 23, color: 'var(--t1)',
           margin: '0 0 12px', lineHeight: 1.25,
         }}>
           Cette page n’a pas pu se charger
