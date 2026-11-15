@@ -320,3 +320,33 @@ html:has(.vt) textarea:focus-visible {
   outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--focus-halo);
 }
+
+/* ── LE BANDEAU DE CONSENTEMENT : SES TAILLES ──────────────────────────
+   Ces valeurs vivaient en STYLE EN LIGNE dans CookieBanner.tsx, donc
+   hors de portée de toute règle de media. Conséquence mesurée le
+   2026-11-15 : le bandeau de la vitrine avait été compacté de 189 à
+   101 px sur téléphone, mais celui-ci — le même bandeau, rendu par le
+   layout sur /reserver, l'administration et l'espace client — restait au
+   grand format, environ 170 px. Deux écritures de la même règle, une
+   seule des deux corrigée. C'est exactement ce que l'audit annonçait.
+
+   Les COULEURS restent en ligne dans le composant : elles portent des
+   valeurs de repli pour les pages qui ne chargent pas la charte de la
+   vitrine. Seules les tailles passent ici. */
+.bandeau-cookies { padding: 16px 24px; gap: 16px; }
+.bandeau-cookies .bc-texte { font-size: 13px; line-height: 1.6; }
+.bandeau-cookies .bc-actions { gap: 10px; }
+.bandeau-cookies .bc-bouton { padding: 9px 18px; font-size: 12px; }
+
+@media (max-width: 640px) {
+  /* Même traitement que `.cookie-banner` : le texte se replie à deux
+     lignes, les boutons passent sur une ligne pleine largeur, à portée
+     du pouce. Le texte complet reste lisible par « En savoir plus ». */
+  .bandeau-cookies { padding: 11px 16px calc(11px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  .bandeau-cookies .bc-texte {
+    font-size: 11.5px; line-height: 1.4; flex: 1 1 100%;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .bandeau-cookies .bc-actions { flex: 1 1 100%; gap: 8px; }
+  .bandeau-cookies .bc-bouton { flex: 1; padding: 9px 10px; white-space: nowrap; }
+}

@@ -131,12 +131,19 @@ export default function CookieBanner() {
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
       background: 'var(--nuit, #09091A)',
       borderTop: '1px solid rgba(var(--or-rvb, 201,168,76),.2)',
-      padding: '16px 24px',
+      /* Le REMBOURRAGE et les TAILLES vivent desormais dans globals.css,
+         sous `.bandeau-cookies`. Un style en ligne ne peut pas etre
+         repris par une regle de media : ce bandeau restait au grand
+         format sur telephone, 170 px, alors que celui de la vitrine
+         avait deja ete compacte a 101 px. Deux ecritures de la meme
+         regle, et une seule des deux corrigee. Les COULEURS restent ici :
+         elles portent des valeurs de repli pour les pages hors vitrine
+         (administration, espace client, portail sous-traitant). */
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 16, flexWrap: 'wrap',
+      flexWrap: 'wrap',
       boxShadow: '0 -4px 32px rgba(var(--ombre-rvb, 0,0,0),.3)',
     }}>
-      <p style={{ fontSize: 13, color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.7)', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
+      <p className="bc-texte" style={{ color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.7)', margin: 0, maxWidth: 700 }}>
         {/* Étape 89 : l'ancienne phrase « En continuant, vous acceptez leur
             utilisation » annonçait un consentement tacite que le code ne
             pratique plus — et ne pratiquait d'ailleurs plus correctement
@@ -147,18 +154,18 @@ export default function CookieBanner() {
           {L.cookies_en_savoir}
         </a>
       </p>
-      <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-        <button onClick={refuse} style={{
-          padding: '9px 18px', borderRadius: 8, border: '1px solid rgba(var(--sur-fonce-rvb, 237,232,223),.2)',
+      <div className="bc-actions" style={{ display: 'flex', flexShrink: 0 }}>
+        <button onClick={refuse} className="bc-bouton" style={{
+          borderRadius: 8, border: '1px solid rgba(var(--sur-fonce-rvb, 237,232,223),.2)',
           background: 'transparent', color: 'rgba(var(--sur-fonce-rvb, 237,232,223),.6)',
-          fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+          cursor: 'pointer', fontFamily: 'inherit',
         }}>
           {L.cookies_refuser}
         </button>
-        <button onClick={accept} style={{
-          padding: '9px 18px', borderRadius: 8, border: 'none',
+        <button onClick={accept} className="bc-bouton" style={{
+          borderRadius: 8, border: 'none',
           background: 'var(--gold, #C9A84C)', color: 'var(--sur-or, #09091A)',
-          fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
         }}>
           {L.cookies_accepter}
         </button>
