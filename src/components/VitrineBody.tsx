@@ -1340,6 +1340,16 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
             « mise à disposition chauffeur ». */}
         <Link href="/mise-a-disposition" className="mm-link" onClick={()=>setMenuOpen(false)}>Mise à disposition</Link>
         <Link href={lienAnglais} className="mm-link" lang="en" hrefLang="en" prefetch={false} onClick={()=>setMenuOpen(false)}>English</Link>
+        {/* RÉSERVER — IL N'Y AVAIT AUCUN CHEMIN.
+            Mesuré le 2026-11-15 : ce menu portait douze entrées, et pas une
+            seule ne menait à `/reserver`. Le bouton « Obtenir un devis » de
+            la barre de bureau est masqué sous 1050 px (`.nav-cta`), et le
+            premier lien vers la réservation dans le corps de la page est à
+            3 549 px. Sur téléphone — la majorité des visiteurs — le tunnel
+            qui encaisse n'était atteignable par aucun geste depuis le menu.
+            Posé juste avant « Espace client », en bas de liste, là où le
+            pouce arrive. */}
+        <Link href="/reserver" className="mm-link" onClick={()=>setMenuOpen(false)}>Réserver</Link>
         <Link href="/espace-client" className="mm-cta" onClick={()=>setMenuOpen(false)}>Espace client</Link>
         <div className="mm-sub">Chauffeur privé VTC · Paris & Oise</div>
         <div style={{display:'flex',gap:12,marginTop:28}}>
