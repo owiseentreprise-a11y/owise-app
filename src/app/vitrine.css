@@ -1240,7 +1240,40 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
   .nav-cta{padding:8px 15px}
 }
 @media(max-width:768px){nav{padding:0 20px}.hero{padding:100px 20px 60px}.hero.hero-with-bar{padding-top:136px}.hero-title{font-size:clamp(44px,10vw,70px)}.vehicles-grid,.testimonials-grid,.process-steps{grid-template-columns:1fr}.process-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(var(--contraste-rvb),.08);padding-bottom:36px;margin-bottom:36px}.zones-grid,.enterprise-inner,.footer-inner{grid-template-columns:1fr}.ent-actions{align-items:flex-start}.footer-inner{grid-template-columns:1fr 1fr;gap:28px}.bg2{grid-template-columns:1fr}.stats-section{padding:60px 20px}.stats-inner{grid-template-columns:1fr 1fr;gap:16px}.stat-item{padding:16px 8px}.stat-item::after{display:none}.stat-num{font-size:46px}.devis-body{padding:20px 20px}.vehicles-section,.process-section,.testimonials-section,.enterprise-section,.zones-section,.devis-section,.faq-section{padding:60px 20px}.marquee-section{height:40px}.services-section{padding:50px 20px 60px}}
-@media(max-width:640px){.cookie-banner{padding:18px 20px;flex-direction:column;align-items:flex-start}.cookie-modal{padding:26px 20px 36px}}
+/* ── LE BANDEAU DE CONSENTEMENT NE MANGE PLUS UN CINQUIÈME DE L'ÉCRAN ───
+   Mesuré en production le 2026-11-15, à 390 × 844 : 189 px de haut, soit
+   22 % du premier écran (26 % à 360 × 740), et il RECOUVRAIT le bouton
+   « Confirmer la réservation » (y = 710) ainsi que les trois gages de
+   confiance du premier écran. Sur l'accueil et les 39 pages villes.
+
+   La cause est ici : `flex-direction:column` empilait le titre, un
+   paragraphe de quatre lignes et trois boutons les uns sous les autres.
+
+   On garde TOUT le texte — le consentement doit rester lisible et
+   complet — mais on le replie à deux lignes, avec le reste accessible
+   par « Gérer », qui ouvre la fenêtre détaillée déjà écrite. Les trois
+   boutons reviennent sur une ligne, à pleine largeur et à portée du
+   pouce. Objectif tenu : moins de 100 px.
+
+   Réserver la place ne suffisait pas, et c'est la leçon : `body` a bien
+   son `padding-bottom`, mais cela ne déplace pas un bandeau FIXE posé sur
+   le premier écran. Il fallait le raccourcir. */
+@media(max-width:640px){
+  .cookie-banner{padding:11px 16px calc(11px + env(safe-area-inset-bottom,0px));
+    flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .cookie-text{flex:1 1 100%;min-width:0}
+  /* Le titre « Gestion des cookies » disparaît sur téléphone : la phrase
+     qui suit le dit déjà, et chaque ligne gardée ici est une ligne prise
+     au bouton de réservation. Le texte complet reste accessible par
+     « Gérer », qui ouvre la fenêtre détaillée. */
+  .cookie-title{display:none}
+  .cookie-desc{font-size:11.5px;line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cookie-actions button{padding:9px 10px;font-size:12px}
+  .cookie-actions{flex:1 1 100%;display:flex;gap:8px}
+  .cookie-actions button{flex:1;white-space:nowrap}
+  .cookie-modal{padding:26px 20px 36px}
+}
 @media(max-width:480px){.footer-inner{grid-template-columns:1fr}.hero-trust{gap:0;overflow:hidden}.trust-item{padding:0 10px}.hero-trust>span:nth-child(n+3){display:none !important}.hero{overflow-x:hidden}.hero-sub{padding-right:0}}
 
 @keyframes spin{to{transform:rotate(360deg)}}

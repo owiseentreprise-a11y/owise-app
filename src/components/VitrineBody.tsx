@@ -579,6 +579,31 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
   // mesure précédente est restée en mémoire.
   const cookieOffset = cookieVisible ? cookieBannerH : 0
 
+  /* ── LE BANDEAU RÉSERVE SA PLACE, IL NE SE POSE PLUS DESSUS ────────────
+     Mesuré en production le 2026-11-15, à 390 × 844 : le bandeau fait
+     189 px de haut — 22 % de l'écran — et il RECOUVRAIT le bouton
+     « Confirmer la réservation » (y = 710) ainsi que les trois seuls gages
+     de confiance du premier écran (Stripe, VTC certifié, annulation 24 h).
+     Sur l'accueil et les 39 pages villes, soit 40 pages.
+
+     La hauteur était pourtant déjà mesurée juste au-dessus — mais elle ne
+     servait qu'à soulever les boutons flottants. Le CONTENU de la page
+     restait dessous.
+
+     On ne crée donc pas de mécanisme : `globals.css` fait déjà
+     `body { padding-bottom: var(--bandeau-cookies, 0px) }`, et c'est ainsi
+     que `/reserver` réserve correctement ses 189 px depuis toujours. Cette
+     page-ci ne publiait simplement jamais la valeur. Même règle, même
+     variable, un seul endroit où elle est écrite.
+
+     Le nettoyage remet 0 au démontage : une valeur oubliée laisserait un
+     vide en bas de page après l'acceptation. */
+  useEffect(() => {
+    const racine = document.documentElement
+    racine.style.setProperty('--bandeau-cookies', cookieOffset ? `${Math.ceil(cookieOffset)}px` : '0px')
+    return () => { racine.style.setProperty('--bandeau-cookies', '0px') }
+  }, [cookieOffset])
+
   /* ── les boutons flottants et le clavier ────────────────────
      Ils valent `opacity:0` dans deux cas : avant d'être apparus, et —
      sous 1 024 px seulement — quand le formulaire de devis est à l'écran.
