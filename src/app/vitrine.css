@@ -7,8 +7,30 @@ html:has(.vt) body {
   color: #0A0A0A;
   font-family: 'DM Sans', var(--font-dm-sans), sans-serif;
   overflow-x: hidden;
-  cursor: none;
 }
+
+/* ── ON NE CACHE LA FLECHE QUE LA OU ON LA REMPLACE ────────────────────
+   Cette regle disait `html:has(.vt) body { cursor: none }` : la fleche du
+   systeme disparaissait sur toute page portant `.vt`. Mais le remplacant
+   — le rond dore `.cursor` et son anneau — n'est rendu que par
+   `VitrineBody`, soit l'accueil et les 39 pages villes.
+
+   Or SEPT fichiers posent `.vt`. Mesure en production le 2026-11-15 :
+   sur /reserver, /en/book, /blog, les 140 articles, /faq et
+   /mise-a-disposition, la fleche etait cachee et RIEN ne la remplacait.
+   Environ 145 pages ou le visiteur deplace une souris qu'il ne voit pas
+   — y compris dans le tunnel de reservation, pendant qu'il remplit un
+   formulaire et vise un bouton de paiement.
+
+   Invisible pour qui developpe au clavier ou teste sur telephone : la
+   regle ne s'applique qu'a une souris, et aucune capture d'ecran ne
+   montre un curseur.
+
+   La condition porte desormais sur la PRESENCE du remplacant, pas sur une
+   liste de pages. S'il est la, on cache la fleche ; sinon on la laisse.
+   Rien a tenir a jour, donc rien a oublier.
+   Controle : `node test-curseur-visible.mjs [url]`. */
+html:has(.cursor) body { cursor: none; }
 html:has(.vt) body::after { display: none !important; }
 
 /* ── Les sections éditoriales, hors de `.vt` ──────────────────────────────
@@ -1549,14 +1571,34 @@ nav.scrolled{
   margin-bottom:20px;
   animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both;
 }
+/* ── L'ONDE DU POINT VERT, SANS REPEINDRE ──────────────────────────────
+   Elle animait `box-shadow`, que le navigateur ne sait pas composer : il
+   doit REPEINDRE a chaque image, 60 fois par seconde, EN BOUCLE INFINIE
+   tant que la page est ouverte — et elle est dans le hero des 40 pages de
+   la vitrine, donc toujours a l'ecran. La charte du projet est explicite :
+   « animations : uniquement sur transform et opacity ».
+
+   Le meme effet passe par un anneau en pseudo-element qui grandit et
+   s'efface. Il est COMPOSE : le navigateur le confie a la carte
+   graphique et ne repeint rien. Meme modele que `.wa-pulse`, deja dans ce
+   fichier — une seule facon de faire une onde, pas deux.
+
+   `--vert-vif-rvb` et non une couleur en dur : l'onde suit la palette.
+   Controle : `node test-charte-vitrine.mjs [url]`. */
 .live-dot{
   width:6px;height:6px;border-radius:50%;
   background:var(--vert-vif);flex-shrink:0;
+  position:relative;
+}
+.live-dot::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:rgba(var(--vert-vif-rvb),.4);
   animation:liveGreen 2s ease infinite;
+  pointer-events:none;
 }
 @keyframes liveGreen{
-  0%,100%{box-shadow:0 0 0 0 rgba(var(--vert-vif-rvb),.4)}
-  50%{box-shadow:0 0 0 7px rgba(var(--vert-vif-rvb),0)}
+  0%,100%{transform:scale(1);opacity:.55}
+  50%{transform:scale(3.3);opacity:0}
 }
 
 /* Titre hero */
@@ -1923,7 +1965,7 @@ html:has(.vt .devis-card :focus) .carte-pm .pm-halo{animation-play-state:paused}
 
   /* Pastilles et icônes */
   .wa-pulse{animation:none}
-  .live-dot{animation:none}            /* le point reste vert et visible */
+  .live-dot::after{animation:none;opacity:0}  /* le point reste vert, l'onde s'efface */
   .process-icon{animation:none}
 
   /* Reflets et balayages de boutons */

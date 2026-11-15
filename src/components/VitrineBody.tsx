@@ -2027,8 +2027,17 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                         <div className="tar-lab">{COLONNES_TARIFS[j] ? `${COLONNES_TARIFS[j].emoji} ${COLONNES_TARIFS[j].label}` : ''}</div>
                         {prix != null ? (
                           <div>
+                            {/* JetBrains Mono, comme TOUS les chiffres du site.
+                                Ces deux montants — ici et sur les cartes de
+                                destination — etaient les seuls ecrits en
+                                Courier New, une police de machine a ecrire :
+                                14 prix par page ville, « 69 € », « 59 € »,
+                                « 1,25 €/km », dans un dessin qui n'est celui
+                                d'aucun autre chiffre du site. Trouve par
+                                `test-charte-vitrine.mjs`, qui lit les polices
+                                du projet dans `polices.css`. */}
                             <span style={{
-                              fontFamily:"'Courier New',monospace",
+                              fontFamily:"'JetBrains Mono',monospace",
                               fontSize:20, fontWeight:700, color:'var(--gold)',
                             }}>{Math.round(Number(prix))}</span>
                             <span style={{ fontSize:12, color:'var(--t2)', marginLeft:2 }}>€</span>
@@ -2377,7 +2386,7 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
                       }}>
                         <div>
                           {d.prix ? (
-                            <div style={{ fontFamily:"'Courier New',monospace", fontSize:22, fontWeight:700, color:'var(--gold)', lineHeight:1 }}>
+                            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color:'var(--gold)', lineHeight:1 }}>
                               {d.prix}
                             </div>
                           ) : (
