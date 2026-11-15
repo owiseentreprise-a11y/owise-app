@@ -1384,10 +1384,22 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
 
       {/* Floating CTA */}
       <div className={`float-cta${showFloating?' show':''}${devisVisible?' sur-formulaire':''}`} inert={flottantsInertes} style={{ '--ow-cb': `${cookieOffset}px` } as CSSProperties}>
-        <a href="#devis" className="float-cta-btn" onClick={e=>{e.preventDefault();scrollTo('#devis')}}>
+        {/* « RÉSERVER MAINTENANT » MÈNE À LA RÉSERVATION.
+            Ce bouton — le plus visible des 40 pages, flottant et toujours
+            à portée du pouce — pointait sur `#devis` : il faisait défiler
+            jusqu'au formulaire de DEVIS. Le libellé promettait une chose,
+            le lien en faisait une autre. Mesuré le 2026-11-15, en même
+            temps que l'absence de toute entrée « Réserver » dans le menu
+            replié : sur téléphone, le tunnel qui encaisse n'était
+            atteignable par aucun geste direct.
+            Décision de l'exploitant, le 2026-11-15 : il mène à
+            `/reserver`. Le formulaire de devis reste accessible par son
+            propre lien, et par le lien « Pas encore prêt à réserver ? »
+            du tunnel lui-même. */}
+        <Link href="/reserver" className="float-cta-btn">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
           <span className="fb-txt">Réserver maintenant</span>
-        </a>
+        </Link>
       </div>
 
       {/* NAV */}
