@@ -319,7 +319,25 @@ function VtAddressInput({ value, onSelect, placeholder, className, style }: {
         onBlur={handleBlur}
         placeholder={placeholder}
         autoComplete="off"
-        style={style}
+        /* ── LA LARGEUR APPARTIENT AU COMPOSANT, PAS A L'APPELANT ──────
+           Un `<input>` sans largeur declaree ne s'etire PAS : il prend
+           sa largeur par defaut du navigateur, environ 218 px avec nos
+           marges interieures. L'enveloppe juste au-dessus est bien en
+           `width:100%`, mais c'est un bloc ordinaire — elle n'etire pas
+           ce qu'elle contient.
+
+           Jusqu'ici la largeur venait de la CLASSE passee par l'appelant :
+           le widget du hero passait `className="binput"`, qui contient
+           `width:100%` ; le formulaire de devis ne passait rien. Le meme
+           composant, deux comportements. Mesure en production le
+           2026-11-16 : enveloppe 788 px, champ 218 px, « Adresse de
+           depart, hot… » coupe en plein mot a cote de champs Date et
+           Heure de 386 px. Sur les 40 pages de la vitrine.
+
+           `width` est pose AVANT `...style` : un appelant qui aurait une
+           vraie raison de donner une autre largeur peut toujours le faire.
+           Controle : `node test-champs-remplissent.mjs [url]`. */
+        style={{ width: '100%', ...style }}
       />
       {open && sugg.length > 0 && (
         <div style={{

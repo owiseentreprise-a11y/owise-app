@@ -179,12 +179,26 @@ There is currently no night or weekend surcharge: the amount shown before bookin
 - [Accueil & estimateur](https://www.owise.fr/): présentation générale, calcul de prix instantané, réservation en ligne.
 - [Réserver](https://www.owise.fr/reserver): formulaire de réservation avec paiement immédiat.
 - [FAQ](https://www.owise.fr/faq): questions fréquentes sur le service VTC Owise.
+- [Mise à disposition](https://www.owise.fr/mise-a-disposition): un chauffeur et un véhicule réservés à l'heure, à la demi-journée ou à la journée, à Paris et en Île-de-France. Tarif horaire annoncé par véhicule sur la page, 20 km compris par heure réservée, toute heure entamée est due.
+- [Blog](https://www.owise.fr/blog): guides et comparatifs sur les trajets, les aéroports et les tarifs.
 
 ## Transferts aéroport
 
 - [VTC Aéroport CDG](https://www.owise.fr/vtc-aeroport-cdg): transferts vers/depuis Charles de Gaulle (Roissy). Dès 59 € depuis Chantilly, Creil ou Senlis.
 - [VTC Aéroport Orly](https://www.owise.fr/vtc-aeroport-orly): transferts vers/depuis Orly. 139 € depuis Chantilly ou Senlis, 145 € depuis Creil, 59 € depuis Paris.
 - [VTC Aéroport Beauvais-Tillé](https://www.owise.fr/vtc-aeroport-beauvais): transferts vers/depuis Beauvais-Tillé (Ryanair, Wizzair). 69 € depuis Creil, 79 € depuis Chantilly ou Senlis.
+- [VTC Chantilly → CDG](https://www.owise.fr/vtc-chantilly-cdg): tarif fixe **59 €**, 25–40 min.
+- [VTC Creil → CDG](https://www.owise.fr/vtc-creil-cdg): tarif fixe **59 €**, 30–35 min.
+- [VTC Senlis → CDG](https://www.owise.fr/vtc-senlis-cdg): dès **59 €**, 25–30 min.
+- [VTC Compiègne → CDG](https://www.owise.fr/vtc-compiegne-cdg): tarif fixe **115 €**, 45–55 min.
+- [VTC Chantilly → Orly](https://www.owise.fr/vtc-chantilly-orly): dès **139 €**, 60–80 min.
+- [VTC Creil → Orly](https://www.owise.fr/vtc-creil-orly): dès **145 €**, 65–85 min.
+- [VTC Senlis → Orly](https://www.owise.fr/vtc-senlis-orly): dès **139 €**, 50–85 min.
+- [VTC Compiègne → Orly](https://www.owise.fr/vtc-compiegne-orly): tarif fixe **149 €**, 80–100 min.
+- [VTC Chantilly → Beauvais-Tillé](https://www.owise.fr/vtc-chantilly-beauvais): dès **79 €**, 40–55 min.
+- [VTC Creil → Beauvais-Tillé](https://www.owise.fr/vtc-creil-beauvais): dès **69 €**, 30–40 min.
+- [VTC Aéroport de Charleroi (Bruxelles Sud)](https://www.owise.fr/vtc-aeroport-charleroi): dès **459 €**, 2h05–2h50 selon le lieu de départ.
+- [VTC Aéroport de Bruxelles-Zaventem](https://www.owise.fr/vtc-aeroport-bruxelles): dès **539 €**, 2h20–3h05 selon le lieu de départ.
 
 ## Destinations Oise — communes desservies
 
@@ -203,11 +217,18 @@ There is currently no night or weekend surcharge: the amount shown before bookin
 - [VTC Goussainville & Roissy Pays de France](https://www.owise.fr/vtc-goussainville): Goussainville, Louvres, Fosses, Survilliers, Marly-la-Ville, Saint-Witz, Vémars, Puiseux-en-France, Plailly, Mortefontaine. CDG : **59 €**, 12 à 18 minutes — le secteur le plus proche de l'aéroport.
 - [VTC Clermont](https://www.owise.fr/vtc-clermont): Clermont-de-l'Oise, Agnetz, Breuil-le-Vert, Breuil-le-Sec. Tarif via estimateur.
 - [VTC Liancourt](https://www.owise.fr/vtc-liancourt): Liancourt, Rantigny, Cauffry, Laigneville. Tarif via estimateur.
+- [VTC Saint-Maximin](https://www.owise.fr/vtc-saint-maximin): Saint-Maximin et ses environs. CDG : dès **59 €**, 35–40 min.
+- [VTC Beauvais](https://www.owise.fr/vtc-beauvais): Beauvais. CDG : **125 €**, Orly : **169 €**. 50–65 min vers CDG selon le trafic.
+- [VTC Chambly](https://www.owise.fr/vtc-chambly): Chambly, Bornel et l'Oise sud-ouest. 30–45 min vers CDG, prix calculé selon l'adresse.
+- [VTC Méru](https://www.owise.fr/vtc-meru): Méru, Noailles et l'Oise ouest. 35–45 min vers CDG, prix calculé selon l'adresse.
+- [VTC Verberie](https://www.owise.fr/vtc-verberie): Verberie, Longueil-Sainte-Marie et la vallée de l'Oise. 35–45 min vers CDG, prix calculé selon l'adresse.
+- [VTC Noyon](https://www.owise.fr/vtc-noyon): Noyon et l'Oise nord. 55–70 min vers CDG, prix calculé selon l'adresse.
 
 ## Destinations Île-de-France
 
 - [VTC Versailles](https://www.owise.fr/vtc-versailles): Versailles, Le Chesnay, Viroflay, Yvelines. Château de Versailles, entreprises. Tarif via estimateur.
 - [VTC Pontoise](https://www.owise.fr/vtc-pontoise): Pontoise, Cergy, Osny, Saint-Ouen-l'Aumône, Val-d'Oise. Tarif via estimateur.
+- [Chauffeur privé à Paris](https://www.owise.fr/vtc-paris): courses dans Paris et au départ de Paris. Dès **29 €** dans Paris, 24h/24.
 
 ## Articles blog — guides et comparatifs
 
