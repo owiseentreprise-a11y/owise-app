@@ -1258,7 +1258,37 @@ footer{background:var(--surface);border-top:1px solid rgba(var(--contraste-rvb),
    Réserver la place ne suffisait pas, et c'est la leçon : `body` a bien
    son `padding-bottom`, mais cela ne déplace pas un bandeau FIXE posé sur
    le premier écran. Il fallait le raccourcir. */
+/* ── L'ACTION REMONTE DE 48 PX SUR TÉLÉPHONE ───────────────────────────
+   Suite de la correction du bandeau. Celui-ci est descendu de 189 à
+   101 px, ce qui dégage l'accueil — mais pas les 39 pages villes, qui
+   portent 45 px de bandeau de référencement en plus. Mesure exacte à
+   390 × 844 : le bouton « Confirmer la réservation » occupe 746–791, le
+   bandeau commence à 743. Il manquait 48 px.
+
+   On ne les prend pas au bandeau : le dégager demanderait de descendre à
+   53 px, impossible avec un texte de consentement lisible. On les prend
+   donc à la page, là où ils ne coûtent rien :
+
+     bandeau de référencement, marge au-dessus du héros   136 → 124   (12 px)
+     en-tête de la carte                                   20/18 → 14/12 (12 px)
+     corps de la carte                                     20/24 → 14/16 (14 px)
+     écart entre les champs                                10 → 8        (10 px)
+
+   124 px laissent encore 7 px de jeu au-dessus de la barre fixe (72 px de
+   navigation + 45 px de bandeau = 117).
+
+   LE CHAMP PASSE À 16 PX, et ce n'est pas un détail d'espacement : Safari
+   sur iPhone ZOOME automatiquement sur tout champ dont le texte fait
+   moins de 16 px. À chaque fois que le client touchait un champ, la page
+   sautait. Les 22 champs du site étaient en 14 px. Le rembourrage
+   vertical passe de 12 à 10 px pour que la hauteur du champ ne bouge
+   presque pas. */
 @media(max-width:640px){
+  .hero.hero-with-bar{padding-top:124px}
+  .bc-header{padding:14px 16px 12px}
+  .bc-body{padding:14px 16px 16px;gap:8px}
+  .binput{padding:10px 12px 10px 28px;font-size:16px}
+
   .cookie-banner{padding:11px 16px calc(11px + env(safe-area-inset-bottom,0px));
     flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
   .cookie-text{flex:1 1 100%;min-width:0}
