@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { COLONNES_GRILLE } from '@/lib/calcPrix'
 import { SUJETS, genererContenu } from '@/lib/blogGenerator'
 import { Resend } from 'resend'
+import { revalidatePath } from 'next/cache'
 
 export const dynamic    = 'force-dynamic'
 export const maxDuration = 60
@@ -137,6 +138,14 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
       throw new Error(error.message)
     }
   }
+
+  /* ── LE FICHIER LU PAR LES ASSISTANTS IA SE MET À JOUR TOUT DE SUITE ──
+     `/llms-full.txt` assemble les articles lus en direct dans la base. Sans
+     cet appel il les rattraperait dans l'heure ; avec, il les a dès la
+     publication. Jusqu'au 2026-11-16 c'était un fichier statique, régénéré
+     à la main : il prenait un article de retard à chaque publication.
+     Non bloquant : un échec ici ne doit pas faire échouer la publication. */
+  try { revalidatePath('/llms-full.txt') } catch { /* rattrapé dans l'heure */ }
 
   // Notifier par email
   try {

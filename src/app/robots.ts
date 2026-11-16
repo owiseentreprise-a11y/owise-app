@@ -39,24 +39,27 @@ const LLM_BOTS = [
  * ci-dessous, et personne ne peut l'oublier dans un groupe.
  * Contrôle : `node test-pages-pour-ia.mjs [url]`.
  */
-/* ── SANS BARRE OBLIQUE FINALE ─────────────────────────────────────────
-   `Disallow: /espace-client/` n'interdit QUE ce qui commence par
-   `/espace-client/`. `/espace-client` tout court n'etait donc PAS
-   interdit — et c'est pourtant l'adresse liee depuis 40 pages du site.
-   Googlebot suivait le lien, recevait une redirection 307 vers
-   `/client-login`, qui est interdit : il classait la page « Bloquee par
-   le fichier robots.txt ». C'est le second motif signale par Search
-   Console le 2026-11-16.
+/* ── ON NE BLOQUE QUE CE QUI N'A AUCUNE RAISON D'ETRE EXPLORE ───────────
+   Cette liste a contenu les huit zones privees du site. C'etait le mauvais
+   outil, et Search Console l'a montre le 2026-11-16 : `/client-login`,
+   bloquee ici mais liee depuis 40 pages, est devenue « Indexee malgre le
+   blocage par le fichier robots.txt ». Une page bloquee ne peut pas faire
+   lire son `noindex` : Google la connait par ses liens, ne peut pas la
+   visiter, et l'indexe a l'aveugle.
 
-   Sans barre finale, chaque regle couvre les deux formes. Verifie :
-   aucune page publique ne commence par ces huit prefixes — les pages
-   villes commencent toutes par `/vtc-`, et `/sous-traitant` couvre aussi
-   `/sous-traitant-login`.
-   Controle : `node test-liens-internes.mjs [url]`. */
-const ZONES_PRIVEES = [
-  '/admin', '/espace-client', '/chauffeur', '/sous-traitant', '/api',
-  '/login', '/client-login', '/paiement',
-]
+   Les zones privees sortent donc de l'index par l'en-tete `X-Robots-Tag:
+   noindex` pose dans `next.config.ts`, et restent EXPLORABLES pour que cet
+   en-tete soit lu. Elles n'exposent rien : un visiteur anonyme est
+   redirige vers une page de connexion par `src/proxy.ts`.
+
+   Il ne reste ici que `/api` : des points d'entree techniques, jamais
+   lies comme des pages, qui n'ont rien a montrer a un robot.
+
+   (Cette meme liste avait d'abord oublie `/espace-client` sans barre
+   finale, puis l'avait ajoute le matin du 16 — ce qui l'exposait au meme
+   sort que `/client-login`. Corrige le soir meme.)
+   Controle : `node test-noindex-prive.mjs [url]`. */
+const ZONES_PRIVEES = ['/api']
 
 export default function robots(): MetadataRoute.Robots {
   return {
