@@ -39,9 +39,23 @@ const LLM_BOTS = [
  * ci-dessous, et personne ne peut l'oublier dans un groupe.
  * Contrôle : `node test-pages-pour-ia.mjs [url]`.
  */
+/* ── SANS BARRE OBLIQUE FINALE ─────────────────────────────────────────
+   `Disallow: /espace-client/` n'interdit QUE ce qui commence par
+   `/espace-client/`. `/espace-client` tout court n'etait donc PAS
+   interdit — et c'est pourtant l'adresse liee depuis 40 pages du site.
+   Googlebot suivait le lien, recevait une redirection 307 vers
+   `/client-login`, qui est interdit : il classait la page « Bloquee par
+   le fichier robots.txt ». C'est le second motif signale par Search
+   Console le 2026-11-16.
+
+   Sans barre finale, chaque regle couvre les deux formes. Verifie :
+   aucune page publique ne commence par ces huit prefixes — les pages
+   villes commencent toutes par `/vtc-`, et `/sous-traitant` couvre aussi
+   `/sous-traitant-login`.
+   Controle : `node test-liens-internes.mjs [url]`. */
 const ZONES_PRIVEES = [
-  '/admin/', '/espace-client/', '/chauffeur/', '/sous-traitant/', '/api/',
-  '/login', '/client-login', '/sous-traitant-login', '/paiement/',
+  '/admin', '/espace-client', '/chauffeur', '/sous-traitant', '/api',
+  '/login', '/client-login', '/paiement',
 ]
 
 export default function robots(): MetadataRoute.Robots {

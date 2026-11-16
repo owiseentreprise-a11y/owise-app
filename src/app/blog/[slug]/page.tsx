@@ -970,6 +970,27 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound()
 
+  /* ── AUCUN LIEN VERS UN ARTICLE QUI N'EXISTE PAS ───────────────────────
+     La table `DESTINATIONS` ci-dessus est ecrite A LA MAIN — 404 liens —
+     et rien ne garantissait que ses cibles existent. Mesure du 2026-11-16 :
+     trois d'entre elles rendaient 404 (`/blog/meilleur-vtc-creil`,
+     `/blog/vtc-reservation-anticipee-cdg`, `/blog/vtc-entreprise-creil-cdg`).
+     Search Console l'a remonte sous « Introuvable (404) », et le visiteur
+     qui cliquait tombait dans le vide.
+
+     Plutot que de retirer ces trois entrees, on filtre a l'affichage sur
+     la liste REELLE des articles publies : la table ne peut plus produire
+     un lien mort, et depublier un article ne laisse plus de trace. Les
+     liens hors blog (pages villes, aeroports) ne sont pas filtres — ils
+     ne dependent pas de la base.
+     Controle : `node test-liens-internes.mjs [url]`. */
+  const { data: publies } = await supabase
+    .from('blog_posts').select('slug').eq('statut', 'publie')
+  const slugsPublies = new Set((publies ?? []).map((a: { slug: string }) => a.slug))
+  const liensAssocies = (DESTINATIONS[slug] ?? []).filter(
+    d => !d.href.startsWith('/blog/') || slugsPublies.has(d.href.slice('/blog/'.length)),
+  )
+
   const paragraphes: { titre: string; texte: string }[] = post.paragraphes ?? []
   const faq: { question: string; reponse: string }[]    = post.faq         ?? []
   const mots: string[]                                  = post.mots_cles   ?? []
@@ -1086,13 +1107,13 @@ export default async function BlogPostPage({ params }: Props) {
         )}
 
         {/* Pages associées */}
-        {(DESTINATIONS[slug] ?? []).length > 0 && (
+        {liensAssocies.length > 0 && (
           <div style={{ marginTop: 40, padding: '20px 22px', background: 'var(--papier)', borderRadius: 10, border: '1px solid rgba(var(--contraste-rvb),.08)' }}>
             <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--t2)', marginBottom: 12 }}>
               Pages associées
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {(DESTINATIONS[slug] ?? []).map(d => (
+              {liensAssocies.map(d => (
                 <Link key={d.href} href={d.href} style={{
                   fontSize: 12, fontWeight: 500, color: 'var(--t1)',
                   background: 'var(--elevated)', border: '1px solid rgba(var(--or-rvb),.26)',
