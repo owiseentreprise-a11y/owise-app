@@ -41,8 +41,18 @@ export const PALIERS_ANNULATION: { delai: string; penalite: string }[] = [
   { delai: 'Passager absent, chauffeur sur place', penalite: '100 % du montant' },
 ]
 
-/** Une ligne, pour un bouton ou une accroche. */
-export const ANNULATION_COURTE = 'Annulation gratuite jusqu à 24 h avant la course'
+/**
+ * Une ligne, pour un bouton ou une accroche.
+ *
+ * Jusqu'au 2026-11-16 elle s'écrivait « jusqu à » : une ESPACE INSÉCABLE
+ * (U+00A0) à la place de l'apostrophe, sans doute pour ne pas fermer la
+ * chaîne entre apostrophes droites. Invisible à la relecture du code — un
+ * caractère blanc en remplace un autre —, la faute s'affichait sur
+ * /reserver, sur l'accueil et les 39 pages villes (deux fois chacune), dans
+ * les publications Google et dans chaque nouvel article. Les guillemets
+ * doubles laissent écrire l'apostrophe, comme `ANNULATION_PHRASE` plus bas.
+ */
+export const ANNULATION_COURTE = "Annulation gratuite jusqu'à 24 h avant la course"
 
 /**
  * La ligne courte en anglais, pour /en/book.

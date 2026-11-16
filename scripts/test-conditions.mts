@@ -58,6 +58,16 @@ const ABANDONNE: { motif: RegExp; quoi: string }[] = [
   { motif: /frais d.annulation de [38]\s*€/i,                 quoi: 'les frais de 3 € ou 8 €' },
   { motif: /attente_tarif_heure\s*:\s*\d/,                    quoi: 'un tarif d\'attente horaire en dur' },
   { motif: /70[,.]00?\s*€\s*par heure/i,                      quoi: 'le tarif inventé de 70 €/h' },
+  /* Reprises de `test-annulation.mjs`, retiré le 2026-11-16 : il imposait
+     l'ANCIENNE politique et ne pouvait plus passer. Ces quatre formulations
+     ont été réellement trouvées sur le site lors de l'inventaire du
+     2026-10-28 ; elles sont fausses sous la règle actuelle aussi, et on ne
+     veut pas les revoir. (Ses autres motifs — « gratuite 24 h avant »,
+     « empreinte bancaire » — sont devenus VRAIS : ils ne sont pas repris.) */
+  { motif: /gratuite\s+jusqu.à\s+2\s+heures/i,                 quoi: '« gratuite jusqu’à 2 heures avant »' },
+  { motif: /(?:annulation|annuler)[^.]{0,60}jusqu.à\s+l.arrivée\s+du\s+chauffeur/i, quoi: '« annulation jusqu’à l’arrivée du chauffeur »' },
+  { motif: /gratuite\s+jusqu.à\s+l.arrivée\s+de\s+votre\s+chauffeur/i, quoi: '« gratuite jusqu’à l’arrivée de votre chauffeur »' },
+  { motif: /[Mm]odification\s+gratuite\s+jusqu.à\s+2h/i,         quoi: '« modification gratuite jusqu’à 2h avant »' },
 ]
 
 function sansCommentaires(texte: string): string {
@@ -74,6 +84,27 @@ for (const { motif, quoi } of ABANDONNE) {
     .filter(f => motif.test(sansCommentaires(readFileSync(f, 'utf8'))))
     .map(f => relative('.', f).replace(/\\/g, '/'))
   dire(`aucune trace de ${quoi}`, coupables.length === 0, coupables.join(', '))
+}
+
+/* ── Une espace insécable à la place d'une apostrophe ─────────────────────
+   « jusqu à » : jusqu'au 2026-11-16, `ANNULATION_COURTE` portait une
+   ESPACE INSÉCABLE (U+00A0) là où devait figurer l'apostrophe. Invisible à
+   la relecture du code, elle s'affichait sur /reserver, l'accueil, les
+   39 pages villes et les publications Google. Le contrôle ci-dessus
+   n'aurait rien vu : il ignore `conditions.ts`, la source elle-même.
+   Celui-ci la lit. « jusqu », « lorsqu », « puisqu », « quoiqu » ne sont
+   jamais des mots isolés : suivis d'une espace, c'est toujours une
+   apostrophe perdue. */
+{
+  /* Espace insécable OU ordinaire : le générateur du socle de
+     `/llms-full.txt` normalise les blancs, et y écrivait donc « jusqu à »
+     avec une espace ordinaire — invisible à un motif qui n'aurait cherché
+     que l'insécable. */
+  const ELISION_PERDUE = /\b(?:jusqu|lorsqu|puisqu|quoiqu)[\u00a0 ]/i
+  const coupables = tous
+    .filter(f => ELISION_PERDUE.test(sansCommentaires(readFileSync(f, 'utf8'))))
+    .map(f => relative('.', f).replace(/\\/g, '/'))
+  dire('aucune apostrophe remplacée par une espace insécable', coupables.length === 0, coupables.join(', '))
 }
 
 // ── 2. Chaque surface doit lire la source ───────────────────────────────────
@@ -150,6 +181,26 @@ if (BASE) {
     dire(`${chemin} n'annonce plus l'ancienne règle`,
          !/gratuite?\s+(tant qu|avant)[^.]{0,25}attribu/i.test(texte),
          'la page servie parle encore d\'attribution du chauffeur')
+  }
+
+  /* ── LES ARTICLES DÉJÀ PUBLIÉS ─────────────────────────────────────────
+     Ce contrôle lisait le GÉNÉRATEUR d'articles, jamais les articles. Or un
+     article est écrit en base une fois pour toutes : corriger le générateur
+     ne corrige pas les articles déjà publiés. Mesuré le 2026-11-16 :
+     14 articles sur 153, publiés du 16 septembre au 30 octobre, portaient
+     encore « gratuite tant qu'aucun chauffeur n'a été attribué … 3 € de 3 à
+     10 minutes, 8 € au-delà » — et les assistants IA les lisaient.
+     `/llms-full.txt` sert TOUS les articles, lus en direct dans la base :
+     c'est donc là qu'on les juge. */
+  let llms = ''
+  try {
+    const r = await fetch(BASE + '/llms-full.txt', { headers: { 'User-Agent': 'Mozilla/5.0 (contrôle Owise)' } })
+    llms = await r.text()
+  } catch { /* dit ci-dessous */ }
+  dire('/llms-full.txt est lisible', llms.length > 100000, `${llms.length} caractères`)
+  for (const { motif, quoi } of ABANDONNE) {
+    const n = (llms.match(new RegExp(motif.source, 'gi')) ?? []).length
+    dire(`les articles publiés ne portent plus ${quoi}`, n === 0, `${n} occurrence(s) dans /llms-full.txt`)
   }
 }
 
