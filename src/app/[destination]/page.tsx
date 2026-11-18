@@ -94,6 +94,19 @@ export const DESTINATIONS: Record<string, {
    * pas de fiche — les pré-remplir obligerait à en inventer une. */
   /** Libellé exact d'une fiche de `lieux.ts` à pré-remplir en destination. */
   lieuDestination?: string
+
+  /* ── Contenu propre à la page, ajouté le 2026-11-18 ──────────────────────
+   *
+   * Mesure du 2026-11-18 : 91 % du texte de /vtc-chantilly se retrouvait mot
+   * pour mot sur les autres pages villes (ressemblance 79 % avec Versailles).
+   * Sur « vtc chantilly », Google classait la page à la 28e place, derrière
+   * /vtc-chantilly-beauvais (11,7e) et un article de blog unique à 94 %
+   * (9,6e). `guide` porte ce que SEULE cette page peut dire — des faits
+   * vérifiables, jamais une formule qui irait sur n'importe quelle ville. */
+  /** Nom du départ dans les titres des tableaux. Par défaut « Paris ». */
+  depuis?: string
+  /** Paragraphes propres à la page : lieux, trajets mesurés, communes. */
+  guide?: { titre: string; texte: string }[]
 }> = {
   'vtc-paris': {
     slug: 'vtc-paris',
@@ -412,16 +425,56 @@ export const DESTINATIONS: Record<string, {
     title: 'VTC Chantilly — Aéroport & Paris',
     metaTitle: 'VTC Chantilly → CDG 59€, Paris 119€ | Owise',
     metaDesc: 'Chauffeur VTC depuis Chantilly. Forfaits CDG 59€, Paris 119€, Orly 139€. Véhicule premium, 24h/24. Château de Chantilly, hippodrome, événements.',
-    keywords: ['vtc chantilly','chauffeur privé chantilly','vtc chantilly cdg','taxi chantilly aéroport','vtc chantilly paris'],
+    keywords: ['vtc chantilly','chauffeur privé chantilly','vtc chantilly cdg','taxi chantilly aéroport','vtc chantilly paris',
+      'vtc auberge du jeu de paume','chauffeur hôtel chantilly','vtc intercontinental chantilly','vtc montvillargenne gouvieux',
+      'vtc hippodrome chantilly','vtc prix de diane','vtc prix du jockey club','vtc journées des plantes chantilly','vtc musée du cheval chantilly'],
     h1: 'VTC Chantilly — Chauffeur Privé',
     intro: 'Chauffeur VTC depuis Chantilly et ses environs vers Charles de Gaulle (CDG), Orly, Paris et toute l\'Île-de-France. Idéal pour le Château de Chantilly, l\'hippodrome, les hôtels de luxe et les événements.',
     prix: 'dès 59€ vers CDG',
-    duree: '25–40 min vers CDG',
+    duree: '27–33 min vers CDG',
+    /* Aucun montant écrit ici : les tableaux lisent la grille CHA au rendu.
+       Lignes vérifiées dans `grilles_tarifaires` le 2026-11-18 : CDG 59,
+       BVA 79, Z1 119, ORY 139, CHR 525, BEL 606. Les gares parisiennes
+       (GARE) n'ont pas de forfait — le texte le dit au lieu d'un chiffre. */
+    zoneCode: 'CHA',
+    depuis: 'Chantilly',
+    tarifsDepuis: [
+      { zone: 'Z1',  libelle: 'Paris intramuros' },
+      { zone: 'BEL', libelle: 'Bruxelles et la Belgique' },
+    ],
+    aeroports: [
+      { zone: 'CDG', nom: 'Roissy-Charles de Gaulle (CDG)', note: '26 km par l\'A1 : 27 minutes avant 6 h, 33 minutes vers 8 h. Le chauffeur suit votre numéro de vol à l\'arrivée.' },
+      { zone: 'BVA', nom: 'Beauvais-Tillé (BVA)', note: 'L\'aéroport des vols Ryanair et Wizz Air, sans passer par Paris.' },
+      { zone: 'ORY', nom: 'Orly (ORY)', note: 'Tous terminaux. Orly est au sud de Paris : le trajet traverse l\'agglomération.' },
+      { zone: 'CHR', nom: 'Charleroi (Bruxelles-Sud)', note: 'Pour les vols au départ de Belgique.' },
+      { nom: 'Paris-Le Bourget', note: 'Aviation d\'affaires. Pas de forfait : le prix est calculé à l\'adresse exacte et confirmé avant le départ.' },
+    ],
+    guide: [
+      /* Lieux et événements vérifiés le 2026-11-18 (France Galop, ministère
+         de la Culture, office de tourisme Chantilly-Senlis). Zones lues dans
+         `zones` : Asnières-sur-Oise 95270 → CHA ; Senlis 60300 → SEN ;
+         Plailly 60128 → RPF ; Ermenonville 60950 → aucune (prix au km).
+         Aucune date à l'année : elles changent, la page ne vieillirait pas. */
+      { titre: 'Le Domaine de Chantilly', texte: 'Le château et le musée Condé, les Grandes Écuries qui abritent le Musée du Cheval et ses spectacles équestres sous le dôme, le Potager des Princes : le Domaine attire des visiteurs de Paris et de l\'étranger toute l\'année. Deux fois par an, en mai et en octobre, les Journées des Plantes de Chantilly réunissent pépiniéristes et jardiniers dans le parc du château. Pour revenir, choisissez l\'aller-retour en réservant et indiquez l\'heure du retour.' },
+      { titre: 'L\'hippodrome : le Jockey Club et le Prix de Diane', texte: 'L\'hippodrome de Chantilly accueille les deux grandes courses de la saison : le Qatar Prix du Jockey Club, fin mai ou début juin, et le Prix de Diane Longines en juin — plus de 23 000 spectateurs pour le Prix de Diane 2025, selon France Galop. Ces jours-là, réservez à l\'avance, à l\'aller comme au retour.' },
+      { titre: 'Autour de Chantilly', texte: 'Les étangs de Commelles à Coye-la-Forêt et l\'abbaye de Royaumont à Asnières-sur-Oise sont dans la même zone tarifaire que Chantilly : mêmes forfaits. Senlis et sa cathédrale dépendent de la zone de Senlis, le Parc Astérix à Plailly de celle de Roissy, et la Mer de Sable à Ermenonville n\'a pas de forfait : pour ces trois destinations, le prix est calculé à l\'adresse et affiché avant la réservation.' },
+      /* Hôtels vérifiés le 2026-11-18 (Relais & Châteaux, site de l'hôtel,
+         IHG). La Chapelle-en-Serval (60520) est dans la zone SEN, pas CHA :
+         l'InterContinental n'a donc PAS les forfaits de ce tableau. Aucun
+         partenariat n'est affirmé — seulement la prise en charge. */
+      { titre: 'Les hôtels de Chantilly et des environs', texte: 'Le chauffeur vous attend devant votre hôtel, à l\'heure convenue : l\'Auberge du Jeu de Paume, au cœur du Domaine de Chantilly ; le Château de Montvillargenne, aujourd\'hui Jeanne & The Forest, à Gouvieux ; ou tout autre hôtel de la zone, aux tarifs ci-dessous. L\'InterContinental Chantilly Château Mont Royal se trouve à La Chapelle-en-Serval, qui dépend de la zone tarifaire de Senlis : depuis cet hôtel, le prix est calculé à l\'adresse exacte et affiché avant la réservation.' },
+      { titre: 'Chantilly → Roissy-CDG : 26 km, une demi-heure', texte: 'Chantilly rejoint l\'A1 sans traverser de zone dense, et le temps de trajet varie peu : mesuré, 27 minutes avant 6 h et 33 minutes vers 8 h. Pour un vol tôt le matin, indiquez l\'heure de votre vol à la réservation ; le prix, lui, est fixé d\'avance et ne dépend pas de la circulation.' },
+      { titre: 'Train ou voiture depuis Chantilly ?', texte: 'Le RER D et les TER relient la gare de Chantilly-Gouvieux à Paris-Gare du Nord. La voiture prend le relais quand le train ne convient pas : départ avant les premiers trains, bagages lourds, enfants, ou destination qui n\'est pas une gare — un aéroport, un hôtel, une adresse en banlieue. Vers les gares parisiennes, il n\'y a pas de forfait : le prix est calculé à l\'adresse exacte et affiché avant toute réservation.' },
+      { titre: 'Le même tarif pour Chantilly et les communes voisines', texte: 'La zone tarifaire de Chantilly comprend aussi Gouvieux, Lamorlaye, Coye-la-Forêt, Saint-Maximin, Saint-Leu-d\'Esserent, Précy-sur-Oise et Boran-sur-Oise. Depuis chacune de ces communes, les forfaits ci-dessous s\'appliquent tels quels, avec prise en charge à votre adresse.' },
+    ],
     faq: [
       { q: 'Quel est le prix d\'un VTC Chantilly → CDG ?', a: 'Le forfait Chantilly → CDG est de 59€ en berline, prix fixe garanti. Obtenez votre estimation exacte avec notre calculateur en ligne.' },
       { q: 'Proposez-vous des transferts pour le Château de Chantilly ?', a: 'Oui. Nous sommes disponibles pour les événements privés, séminaires et visites du Château et du Domaine de Chantilly. Tarif sur devis pour les groupes.' },
       { q: 'Desservez-vous l\'hippodrome de Chantilly ?', a: 'Oui, pour les jours de course et les événements. Réservez à l\'avance, surtout pour le Prix de Diane et le Prix du Jockey Club.' },
-      { q: 'Puis-je réserver un aller-retour Chantilly–Paris ?', a: 'Absolument. L\'option aller-retour est disponible dès la réservation avec un tarif préférentiel. Indiquez votre heure de retour souhaitée.' },
+      /* « avec un tarif préférentiel » retiré le 2026-11-18 : un aller-retour
+         est facturé deux fois le trajet simple (ReserverClient, « aller × 2 »).
+         La page promettait une remise qui n'existe pas. */
+      { q: 'Puis-je réserver un aller-retour Chantilly–Paris ?', a: 'Oui. Choisissez l\'aller-retour en réservant et indiquez l\'heure du retour : les deux trajets sont réglés en une seule fois, chacun au tarif du trajet simple.' },
     ],
   },
   'vtc-aeroport-beauvais': {
@@ -1587,6 +1640,21 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           ))}
         </div>
 
+        {/* ── Ce que seule cette page peut dire ───────────────────────────
+            Bloc conditionnel : une page sans `guide` s'affiche comme avant. */}
+        {dest.guide && dest.guide.length > 0 && (
+          <div style={{ display: 'grid', gap: 28, marginBottom: 48 }}>
+            {dest.guide.map((g, i) => (
+              <div key={i}>
+                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 10 }}>
+                  {g.titre}
+                </h3>
+                <p style={{ fontSize: 16, color: 'var(--ed-texte)', lineHeight: 1.8, maxWidth: 680 }}>{g.texte}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Grille zones desservies */}
         {dest.zones && dest.zones.length > 0 && (
           <>
@@ -1627,7 +1695,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
           return (
             <>
               <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 8 }}>
-                Tarifs fixes au départ de Paris
+                Tarifs fixes au départ de {dest.depuis ?? 'Paris'}
               </h3>
               <p style={{ fontSize: 13, color: 'var(--ed-texte)', marginBottom: 16, lineHeight: 1.7 }}>
                 Prix pour la voiture entière, dans les deux sens. Berline ; les catégories
@@ -1659,7 +1727,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ de
         {dest.aeroports && dest.aeroports.length > 0 && dest.zoneCode && (
           <>
             <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--ed-titre-2)', marginBottom: 20 }}>
-              Transferts aéroports au départ de Paris
+              Transferts aéroports au départ de {dest.depuis ?? 'Paris'}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 48 }}>
               {dest.aeroports.map((a, i) => {

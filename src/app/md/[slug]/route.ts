@@ -28,6 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     metaDesc: string
     zones?: { nom: string; cp: string; km?: string }[]
     faq?: { q: string; a: string }[]
+    guide?: { titre: string; texte: string }[]
   }>)[slug]
 
   if (!d) return new NextResponse('Not found', { status: 404 })
@@ -48,6 +49,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   l.push('')
 
   l.push('## Présentation', '', d.intro, '')
+
+  // Le contenu propre à la page — le même que la version HTML.
+  for (const g of d.guide ?? []) l.push(`## ${g.titre}`, '', g.texte, '')
 
   if (d.zones?.length) {
     l.push('## Communes desservies au même tarif', '')
