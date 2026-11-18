@@ -252,13 +252,36 @@ export default async function CourseDetailPage({
             #{courseRef}
           </div>
         </div>
-        <span style={{
-          fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600,
-          color: s.color, background: s.bg,
-          border: `1px solid ${s.border}`,
-        }}>
-          {STATUT_COURSE_LABEL[statut]}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* ── LA FACTURE DE CETTE COURSE, À UN CLIC ──
+              L'exploitant, le 2026-11-19 : une course terminée et payée de
+              Mme Rivere, impossible à facturer « parce que je la trouve nulle
+              part ». Rien sur cette page ne menait à la facturation : il
+              fallait savoir aller dans Facturation → Nouvelle facture, choisir
+              la cliente, retrouver la course, cocher « déjà réglée » et le
+              moyen de paiement. Le lien ouvre ce même formulaire DÉJÀ REMPLI :
+              il n'existe toujours qu'une seule façon de créer une facture. */}
+          {course.facture_id ? (
+            <Link href={`/admin/facturation/${course.facture_id}`} className="lien-facture-course" style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 8,
+              color: 'var(--gold)', background: 'var(--gm)', border: '1px solid var(--gb)',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+            }}>Voir la facture</Link>
+          ) : statut === 'terminee' ? (
+            <Link href={`/admin/facturation/nouvelle?course=${course.id}`} className="lien-facture-course" style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 12px', borderRadius: 8,
+              color: 'var(--base)', background: 'var(--gold)', border: '1px solid var(--gold)',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+            }}>Créer la facture</Link>
+          ) : null}
+          <span style={{
+            fontSize: 10, padding: '4px 10px', borderRadius: 20, fontWeight: 600,
+            color: s.color, background: s.bg,
+            border: `1px solid ${s.border}`,
+          }}>
+            {STATUT_COURSE_LABEL[statut]}
+          </span>
+        </div>
       </div>
 
       {/* Body */}

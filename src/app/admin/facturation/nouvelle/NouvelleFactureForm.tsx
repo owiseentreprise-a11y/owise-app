@@ -51,17 +51,20 @@ export default function NouvelleFactureForm({
   courses,
   tauxTva,
   delaiPaiement,
+  initial = null,
 }: {
   clients: ClientOption[]
   courses: CourseOption[]
   tauxTva: number
   delaiPaiement: number
+  /** Pré-remplissage depuis la page d'une course : rien d'autre ne change. */
+  initial?: { clientId: string; courseId: string; dejaReglee: boolean; modePaiement: string } | null
 }) {
-  const [clientId, setClientId] = useState('')
-  const [checked, setChecked] = useState<Set<string>>(new Set())
+  const [clientId, setClientId] = useState(initial?.clientId ?? '')
+  const [checked, setChecked] = useState<Set<string>>(new Set(initial ? [initial.courseId] : []))
   /** Course déjà encaissée : la facture est un justificatif, pas un appel à paiement. */
-  const [dejaReglee, setDejaReglee]   = useState(false)
-  const [modePaiement, setModePaiement] = useState('')
+  const [dejaReglee, setDejaReglee]   = useState(initial?.dejaReglee ?? false)
+  const [modePaiement, setModePaiement] = useState(initial?.modePaiement ?? '')
   /* Lignes saisies a la main, pour une prestation qui n'a aucune course
      enregistree — reservee par telephone, par exemple. Elles ne coexistent
      jamais avec des courses cochees : l'action le refuse, et l'ecran ne les
