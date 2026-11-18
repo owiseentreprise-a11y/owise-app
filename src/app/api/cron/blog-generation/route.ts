@@ -4,6 +4,7 @@ import { COLONNES_GRILLE } from '@/lib/calcPrix'
 import { SUJETS, genererContenu } from '@/lib/blogGenerator'
 import { Resend } from 'resend'
 import { revalidatePath } from 'next/cache'
+import { signalerAIndexNow } from '@/lib/indexnow'
 
 export const dynamic    = 'force-dynamic'
 export const maxDuration = 60
@@ -122,13 +123,15 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
     .select('id, slug')
     .single()
 
+  let slugPublie: string | null = data?.slug ?? null
   if (error) {
     // Slug déjà existant : ajouter un suffixe date
     if (error.code === '23505') {
       const dateStr = new Date().toISOString().slice(0, 10)
+      slugPublie = `${post.slug}-${dateStr}`
       await supabase.from('blog_posts').insert({
         ...post,
-        slug: `${post.slug}-${dateStr}`,
+        slug: slugPublie,
         paragraphes: post.paragraphes,
         faq: post.faq,
         statut: 'publie',
@@ -146,6 +149,11 @@ async function genererEtSauvegarder(supabase: ReturnType<typeof createAdminClien
      à la main : il prenait un article de retard à chaque publication.
      Non bloquant : un échec ici ne doit pas faire échouer la publication. */
   try { revalidatePath('/llms-full.txt') } catch { /* rattrapé dans l'heure */ }
+
+  /* ── BING (ET DONC CHATGPT) EST PRÉVENU LE JOUR MÊME ──
+     L'article, la liste du blog et le fichier des IA ont changé. Non
+     bloquant : `signalerAIndexNow` ne lève jamais. */
+  if (slugPublie) await signalerAIndexNow([`/blog/${slugPublie}`, '/blog', '/llms-full.txt'])
 
   // Notifier par email
   try {
