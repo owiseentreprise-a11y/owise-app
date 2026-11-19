@@ -23,7 +23,7 @@ const V = '\x1b[32m', R = '\x1b[31m', B = '\x1b[1m', Z = '\x1b[0m'
 const verifier = (c: boolean, m: string) => { if (c) { ok++; console.log(`${V}✓${Z} ${m}`) } else { ko++; console.log(`${R}✗ ${m}${Z}`) } }
 
 console.log(`${B}Relances de devis — cas fabriqués${Z}`)
-const d = (id: string, email: string | null, tel: string | null, created_at: string) => ({ id, email, tel, created_at })
+const d = (id: string, email: string | null, tel: string | null, created_at: string) => ({ id, email, tel, created_at });
 {
   const t = trierRelances([d('a', 'Marie@x.fr', null, '2026-11-11T08:57:00+00:00'), d('b', 'marie@x.fr ', null, '2026-11-11T09:01:00+00:00')], [])
   verifier(t.aRelancer.length === 1 && t.aRelancer[0].id === 'b' && t.doublons.map(x => x.id).join() === 'a',
