@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { StatutCourse } from '@/lib/types'
+import { courseAAnnoncerAuChauffeur } from '@/lib/notifications-chauffeur'
 import { envoyerNotificationChauffeur, envoyerRecuClient, envoyerAnnulation, envoyerNotificationST, envoyerLienPaiement, envoyerInfosCourseEmail, envoyerConfirmationClient, envoyerRefusDevis } from '@/lib/email'
 import { getUserEmail } from '@/lib/supabase/admin'
 import { envoyerNotifChauffeur } from '@/lib/fcm'
@@ -44,7 +45,7 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
   if (chauffeurId) {
     const [courseRes, chauffeurProfileRes, chauffeurEmail, fcmRes] = await Promise.all([
       supabase.from('courses')
-        .select('adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, notes, passager_prenom, passager_nom, passager_tel, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
+        .select('statut, adresse_depart, adresse_arrivee, etapes, date_prevue, nb_passagers, notes, passager_prenom, passager_nom, passager_tel, clients(type_compte, entreprise_nom, profiles(prenom, nom, telephone))')
         .eq('id', courseId).single(),
       supabase.from('profiles').select('prenom').eq('id', chauffeurId).single(),
       getUserEmail(chauffeurId),
@@ -54,7 +55,8 @@ export async function assignerChauffeur(courseId: string, chauffeurId: string | 
     const chauffeurProfile = chauffeurProfileRes.data
     const fcmToken: string | null = (fcmRes.data as any)?.fcm_token ?? null
 
-    if (course && chauffeurEmail) {
+    // Une course passée ou close s'affecte sans rien annoncer — voir notifications-chauffeur.ts.
+    if (course && chauffeurEmail && courseAAnnoncerAuChauffeur(course)) {
       const client = (course as any).clients
       const clientNomCompte = client?.type_compte === 'entreprise'
         ? (client.entreprise_nom ?? '')

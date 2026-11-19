@@ -182,8 +182,9 @@ export async function creerCourseAction(formData: FormData): Promise<{ error?: s
 
   const refCourse = (newCourse?.id ?? '').slice(-6).toUpperCase()
 
-  // Notifier le chauffeur si assigné à la création
-  if (chauffeur_id && !sous_traitant_id) {
+  // Notifier le chauffeur si assigné à la création — sauf course déjà effectuée,
+  // comme pour le client plus bas (voir notifications-chauffeur.ts, 2026-11-19).
+  if (chauffeur_id && !sous_traitant_id && !deja_effectuee) {
     const adminClient = createAdminClient()
     const [chauffeurEmail, chauffeurProfileRes] = await Promise.all([
       getUserEmail(chauffeur_id),
