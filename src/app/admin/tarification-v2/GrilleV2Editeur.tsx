@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { prixV2, type CleVehiculeV2, type GrilleV2, type MesuresTrajet } from '@/lib/tarification-v2/grille'
 import { VEHICULES_V2, NOM_VEHICULE_V2, type TarificationEnService } from '@/lib/tarification-v2/grille-db'
 import { formaterMontant } from '@/lib/montant'
+import { lieuCourt } from '@/lib/tarification-v2/lieu-court'
 import { enregistrerGrilleV2 } from './actions'
 
 export type CoursePassee = {
@@ -57,7 +58,20 @@ function versGrille(c: ReturnType<typeof versChamps>): GrilleV2 | null {
   return { vehicules, bases }
 }
 
-const court = (a: string) => a.split(',')[0].replace(/^(Aéroport|Aeroport)\s+/i, '').slice(0, 34)
+/* Une adresse sur deux lignes : la ville (ou l'aéroport, la gare) en clair,
+   la rue en dessous ; l'adresse complète au survol. Avant le 2026-11-21, seul
+   le premier morceau était gardé — souvent la rue : 23 adresses sur 41
+   n'affichaient aucune ville. */
+function Lieu({ adresse }: { adresse: string }) {
+  const l = lieuCourt(adresse)
+  return (
+    <span className="v2-lieu" title={adresse}>
+      <span className="p">{l.principal}</span>
+      {l.detail && <span className="d">{l.detail}</span>}
+    </span>
+  )
+}
+const ville = (a: string) => lieuCourt(a).principal
 const pct = (n: number) => `${n > 0 ? '+' : ''}${n.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`
 
 function calculer(courses: CoursePassee[], g: GrilleV2) {
@@ -134,6 +148,9 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses 
         .v2-tuile .l { font-size: 11.5px; color: var(--t2); }
         .v2-tuile .v { font-family: var(--font-jetbrains), monospace; font-size: 20px; color: var(--t1); }
         .v2-tuile .s { font-size: 11px; color: var(--t2); }
+        .v2-lieu { display: flex; flex-direction: column; gap: 1px; min-width: 150px; max-width: 240px; }
+        .v2-lieu .p { font-weight: 500; color: var(--t1); }
+        .v2-lieu .d { font-size: 11.5px; color: var(--t2); overflow-wrap: anywhere; }
         .plus { color: var(--amber, #E8A030); } .moins { color: var(--green, #3DB87A); }
         .v2 summary { cursor: pointer; color: var(--t2); font-size: 12.5px; }
         .v2 summary:hover { color: var(--t1); }
@@ -232,13 +249,14 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses 
           </div>
           <p className="v2-aide" style={{ margin: 0 }}>Sans commission. Distances et durées mesurées par Google (durée normale, sans bouchons) ; péages non comptés.</p>
           <div className="v2-tw">
-            <table style={{ minWidth: 760 }}>
-              <thead><tr><th>Date</th><th>Trajet</th><th>Véhicule</th><th>Base</th><th className="n">Km facturés</th><th className="n">Encaissé</th><th className="n">Prix v2</th><th className="n">Écart</th></tr></thead>
+            <table style={{ minWidth: 900 }}>
+              <thead><tr><th>Date</th><th>Départ</th><th>Arrivée</th><th>Véhicule</th><th>Base</th><th className="n">Km facturés</th><th className="n">Encaissé</th><th className="n">Prix v2</th><th className="n">Écart</th></tr></thead>
               <tbody>
                 {r.retenues.map(({ c, d }) => (
                   <tr key={c.id}>
                     <td className="n" style={{ textAlign: 'left' }}>{c.date}</td>
-                    <td>{court(c.depart)} → {court(c.arrivee)}</td>
+                    <td><Lieu adresse={c.depart} /></td>
+                    <td><Lieu adresse={c.arrivee} /></td>
                     <td>{c.vehicule ? NOM_VEHICULE_V2[c.vehicule] : `${c.vehiculeBrut} (compté berline)`}</td>
                     <td>{d.base ?? 'aucune'}{d.auMinimum ? ' · minimum' : ''}</td>
                     <td className="n">{Math.round(d.kmFactures)} km</td>
@@ -255,7 +273,7 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses 
               <summary>{r.lignes.filter(l => l.c.miseDeCote).length} courses mises de côté (hors normes), non comptées</summary>
               <ul style={{ margin: '10px 0 0', paddingLeft: 18, fontSize: 12.5, color: 'var(--t2)', display: 'grid', gap: 4 }}>
                 {r.lignes.filter(l => l.c.miseDeCote).map(({ c, d }) => (
-                  <li key={c.id}>{c.date} · {court(c.depart)} → {court(c.arrivee)} · encaissé {formaterMontant(c.encaisse)}, v2 {formaterMontant(d.prix)} — {c.miseDeCote}</li>
+                  <li key={c.id}>{c.date} · {ville(c.depart)} → {ville(c.arrivee)} ·encaissé {formaterMontant(c.encaisse)}, v2 {formaterMontant(d.prix)} — {c.miseDeCote}</li>
                 ))}
               </ul>
             </details>
