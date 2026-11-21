@@ -76,8 +76,14 @@ console.log(`\n${B}Rien n'est branché dans le site${Z}`)
   const fichiers: string[] = []
   const parcourir = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) parcourir(p); else if (/\.(ts|tsx)$/.test(f)) fichiers.push(p) } }
   parcourir(resolve('src'))
-  const branches = fichiers.filter(f => !f.includes('tarification-v2') && /tarification-v2/.test(readFileSync(f, 'utf8')))
-  verifier(branches.length === 0, `aucun fichier du site n’utilise la grille v2 (${branches.length})`)
+  /* Hors des dossiers du projet, AUCUN fichier ne doit IMPORTER le code v2.
+     Un simple lien (le menu de l'administration) n'est pas un branchement. */
+  const branches = fichiers.filter(f => !/[\\/]tarification-v2[\\/]/.test(f) && /from\s+['"][^'"]*tarification-v2/.test(readFileSync(f, 'utf8')))
+  verifier(branches.length === 0, `aucun fichier du site n’importe le calcul v2 (${branches.length}${branches.length ? ' : ' + branches.join(', ') : ''})`)
+  /* Et le code v2 n'importe rien du calcul actuel (règle 1 de la charte). */
+  const v2 = fichiers.filter(f => /[\\/]tarification-v2[\\/]/.test(f))
+  const versActuel = v2.filter(f => /from\s+['"][^'"]*(calcPrix|tarification['"]|devis-et-tarifs|affichagePrix)/.test(readFileSync(f, 'utf8')))
+  verifier(v2.length >= 5 && versActuel.length === 0, `le code v2 (${v2.length} fichiers) n’importe rien du calcul actuel (${versActuel.length})`)
 }
 
 console.log(`\n${ko ? R : V}${B}${ok} contrôle(s) réussi(s), ${ko} échec(s)${Z}`)

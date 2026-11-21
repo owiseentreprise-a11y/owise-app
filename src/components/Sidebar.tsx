@@ -69,6 +69,9 @@ const navItems = [
     section: 'Réglages',
     items: [
       { href: '/admin/tarifs',     label: 'Tarifs',      icon: 'tag'      },
+      /* Projet « Tarification v2 » : la nouvelle grille, EN ESSAI — aucun
+         prix du site n'en dépend (c:\websitebuilding\TARIFICATION-V2.md). */
+      { href: '/admin/tarification-v2', label: 'Tarifs v2 (essai)', icon: 'tag' },
       { href: '/admin/parametres', label: 'Paramètres',  icon: 'settings' },
       { href: '/admin/backups',    label: 'Sauvegardes', icon: 'backup'   },
     ],
