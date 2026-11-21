@@ -5,7 +5,7 @@
  * LECTURE SEULE : la base est lue, Google est interrogé, RIEN n'est écrit
  * (ni en base, ni dans le code). Voir c:\websitebuilding\TARIFICATION-V2.md.
  *
- * La règle (journal des décisions, 2026-11-18) :
+ * La règle : celle de la grille unique, src/lib/tarification-v2/grille.ts (journal, 2026-11-18 et 2026-11-21) :
  *   · aller-retour depuis le point de départ du client (étapes comprises à l'aller,
  *     retour direct), durée NORMALE de Google, aucune majoration ;
  *   · 0,40 €/km et 25 €/h ; AUCUNE commission ;
@@ -18,15 +18,10 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
+import { prixV2, cleVehiculeV2, GRILLE_DE_DEPART } from '../../src/lib/tarification-v2/grille'
 
-export const REGLE = {
-  coutKm: 0.40, coutHeure: 25, minimumBerline: 59,
-  ratio: { berline: 1, berline_premium: 1.3, van: 1.5, van_7: 1.5, grand_van: 1.8, grand_van_8: 1.8 } as Record<string, number>,
-  bases: [
-    { nom: 'Roissy-CDG', adresse: 'Aéroport Paris-Charles de Gaulle, France', km: 35, min: 35 },
-    { nom: 'Paris Châtelet', adresse: 'Châtelet, 75001 Paris, France', km: 30, min: 30 },
-  ],
-}
+/* Une seule façon de calculer : la grille unique (src/lib/tarification-v2/grille.ts). */
+const GRILLE = GRILLE_DE_DEPART
 
 const env: Record<string, string> = {}
 for (const l of readFileSync(resolve('.env.local'), 'utf8').split('\n')) { const i = l.indexOf('='); if (i > 0) env[l.slice(0, i).trim()] = l.slice(i + 1).trim().replace(/^["'](.*)["']$/, '$1') }
@@ -60,31 +55,23 @@ for (const c of courses ?? []) {
   const encaisse = Number(c.prix_final ?? c.prix_estime ?? 0)
   if (manque || !retour) { lignes.push({ id: c.id, date: c.date_prevue, depart: c.adresse_depart, arrivee: c.adresse_arrivee, vehicule: c.type_vehicule, encaisse, erreur: 'distance introuvable' }); continue }
 
-  const coutAR = (km + retour.km) * REGLE.coutKm + ((min + retour.min) / 60) * REGLE.coutHeure
-  const parBase = []
-  for (const b of REGLE.bases) {
-    const ap = await trajet(b.adresse, c.adresse_depart)
-    if (!ap) continue
-    const eloignement = Math.max(0, ap.km - b.km) * REGLE.coutKm + (Math.max(0, ap.min - b.min) / 60) * REGLE.coutHeure
-    parBase.push({ base: b.nom, approcheKm: ap.km, approcheMin: ap.min, eloignement })
-  }
-  const meilleure = parBase.sort((a, b) => a.eloignement - b.eloignement)[0]
-  const ratio = REGLE.ratio[c.type_vehicule] ?? 1
-  const berline = Math.max(REGLE.minimumBerline, Math.ceil(coutAR + (meilleure?.eloignement ?? 0)))
-  const nouveau = Math.ceil(berline * ratio)
+  const approches: Record<string, { km: number; min: number } | null> = {}
+  for (const base of GRILLE.bases) approches[base.nom] = await trajet(base.adresse, c.adresse_depart)
+  const cle = cleVehiculeV2(c.type_vehicule) ?? 'berline'
+  const d = prixV2(cle, { trajet: { km, min }, retour, approches }, GRILLE)
+  const nouveau = d.prix
   lignes.push({
     id: c.id, date: c.date_prevue, depart: c.adresse_depart, arrivee: c.adresse_arrivee, etapes: etapes.length,
     vehicule: c.type_vehicule, encaisse,
     km: +km.toFixed(1), min: Math.round(min), retourKm: +retour.km.toFixed(1), retourMin: Math.round(retour.min),
-    coutAR: +coutAR.toFixed(2), base: meilleure?.base, approcheKm: +(meilleure?.approcheKm ?? 0).toFixed(1),
-    eloignement: +(meilleure?.eloignement ?? 0).toFixed(2), berline, nouveau, ecart: +(nouveau - encaisse).toFixed(2),
+    base: d.base, eloignementKm: +d.eloignementKm.toFixed(1), auMinimum: d.auMinimum, nouveau, ecart: +(nouveau - encaisse).toFixed(2),
   })
 }
 
 const ok = lignes.filter(l => !l.erreur)
 const total = (k: string) => ok.reduce((s, l) => s + l[k], 0)
 const resume = {
-  regle: REGLE, nbCourses: lignes.length, nbCalculees: ok.length, erreurs: lignes.filter(l => l.erreur).length,
+  grille: GRILLE, nbCourses: lignes.length, nbCalculees: ok.length, erreurs: lignes.filter(l => l.erreur).length,
   totalEncaisse: total('encaisse'), totalNouveau: total('nouveau'),
   sousLeCout: ok.filter(l => l.encaisse < l.nouveau).length,
   appelsGoogle: memo.size,
