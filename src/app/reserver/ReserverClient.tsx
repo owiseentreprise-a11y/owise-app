@@ -15,6 +15,7 @@ import { logFunnel } from '@/lib/funnel'
 import { codeErreur } from '@/lib/funnel-confidentialite'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { lireOrigine } from '@/lib/origine-visite'
+import { memoriserEstimation } from '@/lib/contact-clic'
 import ReservationSummary from './ReservationSummary'
 import { verifierReservation, verifierTrajet } from '@/lib/validationReservation'
 import { textes, messageDansLaLangue, JUMEAU_RESERVATION, type Langue } from '@/lib/langue'
@@ -700,6 +701,8 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
          et la commune. Les adresses complètes dont la course a réellement
          besoin partent au moment de la réservation, par un autre chemin. */
       const org = lireOrigine()
+      /* Le dernier prix vu, joint au clic « Appeler » / WhatsApp s'il suit (contact-clic.ts). */
+      memoriserEstimation({ depart: lieuDep, arrivee: lieuArr, vehicule, prix: montant })
       fetch('/api/estimations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

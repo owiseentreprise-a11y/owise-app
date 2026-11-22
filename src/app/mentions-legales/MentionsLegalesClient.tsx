@@ -353,6 +353,7 @@ export default function MentionsLegalesClient() {
                 ['Courses', 'Historique des trajets, montants, évaluations'],
                 ['Navigation', 'Adresse IP, type de navigateur (si cookies analytiques acceptés)'],
                 ['Simulations de prix', 'Adresses de départ et de destination saisies dans le simulateur, prix affiché, véhicule, page consultée et site d’origine de la visite — sans nom ni coordonnées, et sans lien avec un compte'],
+                ['Contacts', 'Lorsque vous touchez un bouton pour nous appeler, nous écrire sur WhatsApp ou par e-mail : le bouton, la page, les pages vues pendant la visite, le site d’origine, le dernier prix affiché (commune seulement), le type d’appareil et la langue — sans nom, sans numéro, sans adresse IP et sans cookie'],
               ]} />
             </Section>
 
@@ -373,6 +374,7 @@ export default function MentionsLegalesClient() {
                 ['Données de connexion', '12 mois (logs de sécurité)'],
                 ['Cookies analytiques', '13 mois maximum'],
                 ['Simulations de prix', '12 mois, puis effacement automatique des adresses saisies (la statistique anonyme — commune, véhicule, prix — est conservée)'],
+                ['Contacts', '12 mois, puis effacement automatique du site d’origine (la statistique anonyme — page, bouton, appareil — est conservée)'],
                 ['Après suppression', 'Anonymisation immédiate des données non légalement archivées'],
               ]} />
             </Section>

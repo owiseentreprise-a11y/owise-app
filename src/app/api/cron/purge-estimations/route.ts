@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { MOIS_CONSERVATION_SIMULATIONS } from '@/lib/conservation'
+import { MOIS_CONSERVATION_SIMULATIONS, MOIS_CONSERVATION_CONTACTS } from '@/lib/conservation'
 
 /**
  * Efface le détail nominatif des vieilles estimations.
@@ -54,5 +54,21 @@ export async function GET(req: Request) {
 
   const effacees = data?.length ?? 0
   console.log(`[purge-estimations] ${effacees} estimation(s) anonymisée(s), limite ${limite.toISOString()}`)
-  return NextResponse.json({ ok: true, effacees, mois: MOIS_CONSERVATION_SIMULATIONS })
+
+  /* Clics vers nos coordonnées (contacts_clics, 2026-11-22) : le site
+     d'origine s'efface à la même échéance ; le reste est déjà anonyme. */
+  const limiteContacts = new Date()
+  limiteContacts.setMonth(limiteContacts.getMonth() - MOIS_CONSERVATION_CONTACTS)
+  const c = await supabase.from('contacts_clics')
+    .update({ referent: null, utm_source: null, utm_campaign: null })
+    .lt('created_at', limiteContacts.toISOString())
+    .not('referent', 'is', null)
+    .select('id')
+  if (c.error) {
+    console.error('[purge-estimations] contacts_clics :', c.error.message)
+    return NextResponse.json({ error: c.error.message }, { status: 500 })
+  }
+  const contactsEffaces = c.data?.length ?? 0
+
+  return NextResponse.json({ ok: true, effacees, contactsEffaces, mois: MOIS_CONSERVATION_SIMULATIONS })
 }

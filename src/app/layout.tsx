@@ -5,6 +5,7 @@ import Consentement from '@/components/Consentement'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import GAPageView from '@/components/GAPageView'
 import OrigineVisite from '@/components/OrigineVisite'
+import MesureContacts from '@/components/MesureContacts'
 /* AVANT globals.css : les @font-face et les variables --font-* doivent
    exister quand le reste des styles s'en sert. Fichier ECRIT PAR
    `recuperer-polices.mjs`, jamais a la main. */
@@ -62,6 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             page d'arrivée manquante ferait passer du trafic Google ou ChatGPT
             pour du trafic direct. */}
         <OrigineVisite />
+        {/* Clics vers le téléphone, WhatsApp, e-mail d'Owise (2026-11-22) : src/lib/contact-clic.ts */}
+        <MesureContacts />
         {/* LA SEULE SURFACE DE CONSENTEMENT DU SITE. Il y en avait deux —
             celle-ci et une seconde rendue par `VitrineBody` — et un
             aiguillage qui DEVINAIT laquelle montrer. Il se trompait :

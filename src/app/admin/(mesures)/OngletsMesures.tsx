@@ -23,6 +23,7 @@ const ONGLETS = [
   { href: '/admin/analytics',   label: 'Visiteurs',   aide: 'D’où viennent les gens, ce qu’ils regardent' },
   { href: '/admin/estimations', label: 'Estimations', aide: 'Les prix que les visiteurs ont simulés' },
   { href: '/admin/funnel',      label: 'Tunnel',      aide: 'De la visite à la réservation' },
+  { href: '/admin/contacts',    label: 'Appels & WhatsApp', aide: 'Qui a touché « Appeler » ou WhatsApp, et d’où il venait' },
 ]
 
 export default function OngletsMesures() {

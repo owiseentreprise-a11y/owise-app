@@ -137,7 +137,7 @@ verifier('la page ne prétend plus que la mesure est anonymisée',
 /* L'écran d'administration l'annonçait aussi — « Estimations anonymes »,
    « sans saisie d'informations personnelles ». Un écran qui se décrit à
    l'envers finit par être cru sur parole. */
-const ecran = lire('src/app/admin/estimations/page.tsx')
+const ecran = lire('src/app/admin/(mesures)/estimations/page.tsx')
 verifier('l\'écran ne s\'annonce plus anonyme',
   !/Estimations anonymes/.test(ecran), 'le titre dit encore « Estimations anonymes »')
 verifier('l\'écran ne promet plus l\'absence d\'informations personnelles',

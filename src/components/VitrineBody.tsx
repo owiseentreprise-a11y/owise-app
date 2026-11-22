@@ -56,6 +56,7 @@ import { gtagEvent } from '@/lib/ga'
 import { demanderPanneauConsentement } from '@/lib/consentement'
 import { lieuPourStatistique } from '@/lib/estimation-anonyme'
 import { lireOrigine } from '@/lib/origine-visite'
+import { memoriserEstimation } from '@/lib/contact-clic'
 import { logFunnel } from '@/lib/funnel'
 import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, prixFixePour, prixAPartirDe, prixAffiche, BASE_AFFICHAGE_VITRINE, KM_PAR_HEURE_MAD, DUREE_MIN_MAD, type TarifCalc as TarifRow2, type GrilleCalc, type ParamsCalc } from '@/lib/calcPrix'
 
@@ -803,6 +804,8 @@ export default function VitrineBody({ tarifs: tarifsProp = [], zones: zonesProp 
         const zDep = detectZone(bcDepart.cp ?? '', zonesProp, bcDepart.label)
         const zArr = detectZone(bcArrivee.cp ?? '', zonesProp, bcArrivee.label)
         const org = lireOrigine()
+        /* Le dernier prix vu, joint au clic « Appeler » / WhatsApp s'il suit (contact-clic.ts). */
+        memoriserEstimation({ depart: lieuPourStatistique(dep, bcDepart.cp, zDep?.code), arrivee: lieuPourStatistique(arr, bcArrivee.cp, zArr?.code), vehicule: vh, prix: prixFinal })
         fetch('/api/estimations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

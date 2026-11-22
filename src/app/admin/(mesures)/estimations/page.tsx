@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NOM_PAR_CLE } from '@/lib/gamme'
+import { LIBELLE_CANAL as CANAL_LABEL, CANAUX_ASSISTANTS } from '@/lib/origine-visite'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,15 +23,6 @@ type Estimation = {
   utm_campaign: string | null
 }
 
-/** Le canal d'arrivée, écrit pour un humain. */
-const CANAL_LABEL: Record<string, string> = {
-  direct: 'Direct', google: 'Google', google_ads: 'Google Ads', recherche: 'Autre moteur',
-  chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini',
-  copilot: 'Copilot', reseaux: 'Réseaux sociaux', message: 'Messagerie',
-  fiche_google: 'Fiche Google', interne: 'Navigation interne',
-}
-/* Les assistants ressortent en or : c'est le canal qui amène des clients. */
-const CANAUX_ASSISTANTS = new Set(['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'])
 
 /* Derive de `gamme.ts`, jamais reecrite ici. Le projet portait CINQ
    orthographes du van (« Van », « Van 7 places », « Van 7 pl. ») et QUATRE du

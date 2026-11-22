@@ -17,3 +17,10 @@
  * conservant la statistique anonyme (commune, zone, véhicule, prix).
  */
 export const MOIS_CONSERVATION_SIMULATIONS = 12
+
+/**
+ * Clics vers le téléphone / WhatsApp / e-mail d'Owise (table `contacts_clics`,
+ * 2026-11-22) : même durée. Au-delà, la même tâche efface le site d'origine
+ * (référent, UTM) ; page, bouton, appareil et commune du dernier prix restent.
+ */
+export const MOIS_CONSERVATION_CONTACTS = MOIS_CONSERVATION_SIMULATIONS

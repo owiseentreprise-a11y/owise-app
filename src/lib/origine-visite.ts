@@ -87,6 +87,16 @@ export function canalDepuisReferent(
   return hote.slice(0, 40)
 }
 
+/** Le canal d'arrivée, écrit pour un humain (écrans « Estimations » et « Appels & WhatsApp »). */
+export const LIBELLE_CANAL: Record<string, string> = {
+  direct: 'Direct', google: 'Google', google_ads: 'Google Ads', recherche: 'Autre moteur',
+  chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini',
+  copilot: 'Copilot', reseaux: 'Réseaux sociaux', message: 'Messagerie',
+  fiche_google: 'Fiche Google', interne: 'Navigation interne',
+}
+/* Les assistants ressortent en or : c'est le canal qui amène des clients. */
+export const CANAUX_ASSISTANTS = new Set(['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'])
+
 /* ── Côté navigateur ─────────────────────────────────────────────────── */
 
 /**
