@@ -387,7 +387,9 @@ export default async function Page() {
           <p style={{ fontSize: 16.5, lineHeight: 1.75, color: doux, maxWidth: 640, margin: '0 0 36px' }}>
             Owise drives you within Paris and from Paris: airport and railway station
             transfers, connections to the Oise region, long-distance journeys, and
-            hourly hire or private tours on request. The price is agreed and confirmed
+            hourly hire for a few hours or a full day at a published rate per hour
+            (<a href="#hourly-hire" style={{ color: or, textDecoration: 'none', fontWeight: 600 }}>see the rates</a>).
+            The price is agreed and confirmed
             before departure — it does not change with traffic, nor with waiting time
             at the airport. The fare is for the whole car, not per passenger.
           </p>
@@ -435,10 +437,12 @@ export default async function Page() {
             fontSize: 13.5, lineHeight: 1.7, color: 'rgba(237,232,223,.8)', maxWidth: 640,
           }}>
             The booking form is available in English: you enter your addresses, see
-            the price and confirm online. Hourly hire, private tours and business
-            travel are not booked online — write to{' '}
+            the price and confirm online. For hourly hire, the rates per hour are
+            listed <a href="#hourly-hire" style={{ color: or, textDecoration: 'none', fontWeight: 600 }}>below</a> and
+            you send your request from this page. Private tours and business travel
+            depend on your programme — write to{' '}
             <a href={`mailto:${EMAIL_DEVIS}`} style={{ color: or, textDecoration: 'none', fontWeight: 600 }}>{EMAIL_DEVIS}</a>
-            {' '}and we will quote your programme.
+            {' '}and we will quote them.
           </p>
         </section>
 
@@ -511,9 +515,9 @@ export default async function Page() {
           )}
         </section>
 
-        {/* ---- sur devis ---------------------------------------------- */}
-        <section style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto' }}>
-          <h2 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 30, fontWeight: 500, color: creme, margin: '0 0 8px' }}>
+        {/* ---- à l'heure (ancre visée par l'introduction) ----------- */}
+        <section id="hourly-hire" style={{ padding: '0 20px 56px', maxWidth: 940, margin: '0 auto', scrollMarginTop: 24 }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant, Georgia), serif', fontSize: 30, fontWeight: 500, color: creme, margin: '0 0 8px' }}>
             Hourly hire — a chauffeur for a few hours or a full day
           </h2>
           <p style={{ fontSize: 14, color: doux, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.7 }}>
