@@ -30,9 +30,9 @@ export default async function TarificationV2Page() {
     lireGrilleV2(sb),
     lireTarificationEnService(sb),
     chargerTarificationActuelle(sb),
-    sb.from('v2_trajets_types').select('id, groupe, ordre, depart, arrivee, depart_cp, arrivee_cp, distance_km, trajet_km, trajet_min, retour_km, retour_min, approches').order('ordre'),
+    sb.from('v2_trajets_types').select('id, groupe, ordre, depart, arrivee, depart_cp, arrivee_cp, distance_km, trajet_km, trajet_min, retour_km, retour_min, approches, retours_base').order('ordre'),
     sb.from('v2_mesures_courses')
-      .select('course_id, trajet_km, trajet_min, retour_km, retour_min, approches, mise_de_cote, courses(date_prevue, adresse_depart, adresse_arrivee, type_vehicule, prix_final, prix_estime)'),
+      .select('course_id, trajet_km, trajet_min, retour_km, retour_min, approches, retours_base, mise_de_cote, courses(date_prevue, adresse_depart, adresse_arrivee, type_vehicule, prix_final, prix_estime)'),
   ])
   if (mesuresRes.error) throw new Error('v2_mesures_courses : ' + mesuresRes.error.message)
   if (trajetsRes.error) throw new Error('v2_trajets_types : ' + trajetsRes.error.message)

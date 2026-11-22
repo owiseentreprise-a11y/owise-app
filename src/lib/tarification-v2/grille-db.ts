@@ -56,6 +56,12 @@ export type LigneMesure = {
 }
 
 export function mesuresDepuisLigne(l: LigneMesure): MesuresTrajet {
+  /* Une colonne oubliée dans un `select` ne donne pas d'erreur : elle donne
+     `undefined`, et le calcul retombait sans bruit sur « base : aucune ».
+     Arrivé le 2026-11-22, vu au navigateur (Beauvais → CDG 130 € au lieu de
+     133 €). On s'arrête donc net : `null` = pas encore mesuré (permis),
+     absent = pas chargé (interdit). */
+  if (!('retours_base' in l)) throw new Error('v2 : la colonne retours_base n’a pas été chargée — l’ajouter au select')
   return {
     trajet: { km: Number(l.trajet_km), min: Number(l.trajet_min) },
     retour: { km: Number(l.retour_km), min: Number(l.retour_min) },
