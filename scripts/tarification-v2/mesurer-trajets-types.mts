@@ -92,7 +92,7 @@ for (const [groupe, arrivee] of ARRIVEES) {
     const { error } = await sb.from('v2_trajets_types').upsert({
       groupe, ordre, depart, arrivee, depart_cp: m.depart.cp, arrivee_cp: m.arrivee.cp,
       distance_km: m.distanceKm, trajet_km: m.mesures.trajet.km, trajet_min: m.mesures.trajet.min,
-      retour_km: m.mesures.retour.km, retour_min: m.mesures.retour.min, approches: m.mesures.approches,
+      retour_km: m.mesures.retour.km, retour_min: m.mesures.retour.min, approches: m.mesures.approches, retours_base: m.mesures.retoursBase,
       mesure_le: new Date().toISOString(),
     }, { onConflict: 'depart,arrivee' })
     if (error) { echecs++; console.log(`✗ ${depart} → ${arrivee} : ${error.message}`) } else ecrits++

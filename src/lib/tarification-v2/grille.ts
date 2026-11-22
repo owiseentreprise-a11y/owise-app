@@ -12,13 +12,20 @@
  * trajets. Une sorte de compteur de voiture […] on lève le pied, tout lève
  * le pied. » Pas de forfait pour l'instant.
  *
- * LA RÈGLE (journal du 2026-11-18) :
- *   km facturés    = trajet du client + retour à son point de départ
- *                    + part de l'approche AU-DELÀ de ce qu'inclut la base
+ * LA RÈGLE — « circuit réel », décidée par l'exploitant le 2026-11-22
+ * (remplace celle du 2026-11-18, qui facturait le retour au départ du client
+ * EN PLUS de l'approche : Beauvais → CDG 166 € contre CDG → Beauvais 133 €,
+ * alors que le chauffeur fait le même chemin) :
+ *   km facturés    = base → départ du client  (l'approche)
+ *                  + départ → (étapes) → arrivée  (le trajet du client)
+ *                  + arrivée → base  (le retour du chauffeur chez lui)
  *   temps facturé  = idem, en minutes (durée normale, sans bouchons)
  *   prix           = prise en charge + km × prix du km + heures × prix de l'heure
  *                    jamais sous le minimum du véhicule, arrondi à l'euro supérieur
  *   base retenue   = celle qui donne le prix le plus bas au client
+ * La règle est GLOBALE : la même pour tous les trajets et tous les véhicules ;
+ * seules les lignes de la grille diffèrent d'un véhicule à l'autre.
+ * Plus de « km inclus » : le circuit complet est payé, donc rien n'est offert.
  *
  * FONCTION PURE : aucun accès à la base, à Google ou au réseau. Les distances
  * lui sont fournies. Contrôle : scripts/tarification-v2/test-grille.mts.
@@ -42,9 +49,6 @@ export type BaseV2 = {
   nom: string
   /** Adresse que Google sait mesurer. */
   adresse: string
-  /** Approche incluse dans le prix, en km et en minutes. */
-  kmInclus: number
-  minInclus: number
   active: boolean
 }
 
@@ -57,7 +61,7 @@ export type GrilleV2 = {
  * La grille de départ : les décisions du journal (0,40 €/km et 25 €/h pour la
  * berline, minimum 59 €), et pour les autres véhicules les rapports retenus
  * (Premium ×1,3, Van ×1,5, Grand van ×1,8) traduits EN LIGNES DE GRILLE —
- * chacune se règle ensuite seule. Prise en charge à 0 : la règle aller-retour
+ * chacune se règle ensuite seule. Prise en charge à 0 : le circuit réel
  * paie déjà l'approche ; le champ existe pour que l'exploitant s'en serve.
  */
 export const GRILLE_DE_DEPART: GrilleV2 = {
@@ -68,8 +72,8 @@ export const GRILLE_DE_DEPART: GrilleV2 = {
     grand_van:       { priseEnCharge: 0, prixKm: 0.72, prixHeure: 45,   minimum: 107 },
   },
   bases: [
-    { nom: 'Roissy-CDG',     adresse: 'Aéroport Paris-Charles de Gaulle, France', kmInclus: 35, minInclus: 35, active: true },
-    { nom: 'Paris Châtelet', adresse: 'Châtelet, 75001 Paris, France',            kmInclus: 30, minInclus: 30, active: true },
+    { nom: 'Roissy-CDG',     adresse: 'Aéroport Paris-Charles de Gaulle, France', active: true },
+    { nom: 'Paris Châtelet', adresse: 'Châtelet, 75001 Paris, France',            active: true },
   ],
 }
 
@@ -87,10 +91,12 @@ export type Mesure = { km: number; min: number }
 export type MesuresTrajet = {
   /** Départ → (étapes) → arrivée. */
   trajet: Mesure
-  /** Arrivée → départ du client. */
-  retour: Mesure
+  /** Arrivée → départ du client. Gardé pour information ; n'entre PAS dans le prix depuis le 2026-11-22. */
+  retour?: Mesure
   /** De chaque base au départ du client, par nom de base. */
   approches: Record<string, Mesure | null>
+  /** De l'arrivée à chaque base, par nom de base (retour du chauffeur). */
+  retoursBase: Record<string, Mesure | null>
 }
 
 export type DetailPrix = {
@@ -98,30 +104,33 @@ export type DetailPrix = {
   base: string | null
   kmFactures: number
   minFactures: number
-  eloignementKm: number
-  eloignementMin: number
+  /** Approche (base → client) et retour (arrivée → base), en km. */
+  approcheKm: number
+  retourBaseKm: number
   auMinimum: boolean
 }
 
 export function prixV2(vehicule: CleVehiculeV2, m: MesuresTrajet, g: GrilleV2): DetailPrix {
   const l = g.vehicules[vehicule]
-  const candidats: DetailPrix[] = []
-  const bases = g.bases.filter(b => b.active && m.approches[b.nom])
-  // Sans base mesurable, le prix couvre l'aller-retour seul (et une ligne « base : aucune » le dit).
-  const essais: { base: string | null; ek: number; em: number }[] = bases.length
-    ? bases.map(b => {
-        const a = m.approches[b.nom]!
-        return { base: b.nom, ek: Math.max(0, a.km - b.kmInclus), em: Math.max(0, a.min - b.minInclus) }
-      })
-    : [{ base: null, ek: 0, em: 0 }]
-  for (const e of essais) {
-    const km = m.trajet.km + m.retour.km + e.ek
-    const min = m.trajet.min + m.retour.min + e.em
+  const tarif = (km: number, min: number) => {
     const brut = l.priseEnCharge + km * l.prixKm + (min / 60) * l.prixHeure
-    const prix = Math.ceil(Math.max(l.minimum, brut) - 1e-9)
-    candidats.push({ prix, base: e.base, kmFactures: km, minFactures: min, eloignementKm: e.ek, eloignementMin: e.em, auMinimum: brut < l.minimum })
+    return { prix: Math.ceil(Math.max(l.minimum, brut) - 1e-9), auMinimum: brut < l.minimum }
   }
-  // À prix égal (souvent au minimum), la base la plus proche : c'est elle que
-  // l'administration affichera, et elle doit dire vrai.
-  return candidats.sort((a, b) => a.prix - b.prix || (a.eloignementKm + a.eloignementMin) - (b.eloignementKm + b.eloignementMin))[0]
+  const candidats: DetailPrix[] = []
+  for (const b of g.bases) {
+    const a = m.approches[b.nom], r = m.retoursBase?.[b.nom]
+    if (!b.active || !a || !r) continue
+    const km = a.km + m.trajet.km + r.km
+    const min = a.min + m.trajet.min + r.min
+    candidats.push({ ...tarif(km, min), base: b.nom, kmFactures: km, minFactures: min, approcheKm: a.km, retourBaseKm: r.km })
+  }
+  // Aucune base active ou mesurable : l'aller-retour du trajet seul, et
+  // « base : aucune » le dit à l'écran. Jamais un prix silencieusement faux.
+  if (!candidats.length) {
+    const km = 2 * m.trajet.km, min = 2 * m.trajet.min
+    return { ...tarif(km, min), base: null, kmFactures: km, minFactures: min, approcheKm: 0, retourBaseKm: 0 }
+  }
+  // À prix égal (souvent au minimum), le circuit le plus court : c'est la base
+  // que l'administration affiche, et elle doit dire vrai.
+  return candidats.sort((x, y) => x.prix - y.prix || x.kmFactures - y.kmFactures)[0]
 }

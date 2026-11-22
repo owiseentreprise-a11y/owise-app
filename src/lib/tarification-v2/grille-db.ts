@@ -23,7 +23,7 @@ export type TarificationEnService = 'actuelle' | 'v2'
 export async function lireGrilleV2(sb: SupabaseClient): Promise<GrilleV2> {
   const [v, b] = await Promise.all([
     sb.from('v2_grille_vehicules').select('vehicule, prise_en_charge, prix_km, prix_heure, minimum'),
-    sb.from('v2_bases').select('nom, adresse, km_inclus, min_inclus, active, ordre').order('ordre'),
+    sb.from('v2_bases').select('nom, adresse, active, ordre').order('ordre'),
   ])
   if (v.error) throw new Error('v2_grille_vehicules : ' + v.error.message)
   if (b.error) throw new Error('v2_bases : ' + b.error.message)
@@ -35,7 +35,7 @@ export async function lireGrilleV2(sb: SupabaseClient): Promise<GrilleV2> {
   }
   return {
     vehicules,
-    bases: b.data.map(r => ({ nom: r.nom, adresse: r.adresse, kmInclus: Number(r.km_inclus), minInclus: Number(r.min_inclus), active: r.active })),
+    bases: b.data.map(r => ({ nom: r.nom, adresse: r.adresse, active: r.active })),
   }
 }
 
@@ -50,6 +50,8 @@ export type LigneMesure = {
   trajet_km: number | string; trajet_min: number | string
   retour_km: number | string; retour_min: number | string
   approches: Record<string, Mesure | null>
+  /** Arrivée → chaque base (règle du circuit réel, 2026-11-22). null si pas encore mesuré. */
+  retours_base: Record<string, Mesure | null> | null
   mise_de_cote: string | null
 }
 
@@ -58,5 +60,6 @@ export function mesuresDepuisLigne(l: LigneMesure): MesuresTrajet {
     trajet: { km: Number(l.trajet_km), min: Number(l.trajet_min) },
     retour: { km: Number(l.retour_km), min: Number(l.retour_min) },
     approches: l.approches,
+    retoursBase: l.retours_base ?? {},
   }
 }

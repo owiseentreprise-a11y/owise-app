@@ -24,14 +24,14 @@ export type CoursePassee = {
 }
 
 type ChampsVehicule = { priseEnCharge: string; prixKm: string; prixHeure: string; minimum: string }
-type ChampsBase = { nom: string; adresse: string; kmInclus: string; minInclus: string; active: boolean }
+type ChampsBase = { nom: string; adresse: string; active: boolean }
 
 const versChamps = (g: GrilleV2) => ({
   vehicules: Object.fromEntries(VEHICULES_V2.map(v => [v, {
     priseEnCharge: String(g.vehicules[v].priseEnCharge), prixKm: String(g.vehicules[v].prixKm),
     prixHeure: String(g.vehicules[v].prixHeure), minimum: String(g.vehicules[v].minimum),
   }])) as Record<CleVehiculeV2, ChampsVehicule>,
-  bases: g.bases.map(b => ({ nom: b.nom, adresse: b.adresse, kmInclus: String(b.kmInclus), minInclus: String(b.minInclus), active: b.active })) as ChampsBase[],
+  bases: g.bases.map(b => ({ nom: b.nom, adresse: b.adresse, active: b.active })) as ChampsBase[],
 })
 
 /** « 0,45 » comme « 0.45 » ; vide, négatif ou illisible → null. */
@@ -50,13 +50,7 @@ function versGrille(c: ReturnType<typeof versChamps>): GrilleV2 | null {
     if (p === null || k === null || h === null || m === null) return null
     vehicules[v] = { priseEnCharge: p, prixKm: k, prixHeure: h, minimum: m }
   }
-  const bases = []
-  for (const b of c.bases) {
-    const [k, m] = [lire(b.kmInclus), lire(b.minInclus)]
-    if (k === null || m === null) return null
-    bases.push({ nom: b.nom, adresse: b.adresse, kmInclus: k, minInclus: m, active: b.active })
-  }
-  return { vehicules, bases }
+  return { vehicules, bases: c.bases.map(b => ({ nom: b.nom, adresse: b.adresse, active: b.active })) }
 }
 
 /* Une adresse sur deux lignes : la ville (ou l'aéroport, la gare) en clair,
@@ -185,7 +179,7 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses,
       {/* La grille */}
       <section className="v2-section" aria-labelledby="v2-grille">
         <div className="v2-titre" id="v2-grille">La grille v2 — une ligne par véhicule</div>
-        <p className="v2-aide" style={{ margin: 0 }}>Prix d’un trajet = prise en charge + kilomètres × prix du km + heures × prix de l’heure, arrondi à l’euro supérieur, jamais sous le minimum. Kilomètres et heures comptent l’aller ET le retour au point de départ du client, plus l’approche au-delà de ce qu’inclut la base. Changer une case change tous les trajets de ce véhicule.</p>
+        <p className="v2-aide" style={{ margin: 0 }}>Prix d’un trajet = prise en charge + kilomètres × prix du km + heures × prix de l’heure, arrondi à l’euro supérieur, jamais sous le minimum. Kilomètres et heures comptent le circuit réel du chauffeur : de sa base jusqu’au client, le trajet du client, puis le retour de l’arrivée jusqu’à sa base. La règle est la même pour tous les trajets et tous les véhicules ; changer une case change tous les trajets de ce véhicule.</p>
         <div className="v2-tw">
           <table style={{ minWidth: 640 }}>
             <thead><tr><th>Véhicule</th><th>Prise en charge</th><th>Prix du km</th><th>Prix de l’heure</th><th>Minimum</th></tr></thead>
@@ -211,16 +205,15 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses,
         </div>
 
         <div className="v2-titre" style={{ marginTop: 8 }}>Les bases</div>
-        <p className="v2-aide" style={{ margin: 0 }}>L’approche jusqu’au client est incluse dans le rayon de la base. Au-delà, elle est facturée. Pour chaque trajet, on retient la base qui donne le prix le plus bas.</p>
+        <p className="v2-aide" style={{ margin: 0 }}>Les bases d’où partent et où rentrent les chauffeurs. Pour chaque trajet, on retient la base qui donne le prix le plus bas. Une base désactivée n’est plus proposée.</p>
         <div className="v2-tw">
-          <table style={{ minWidth: 520 }}>
-            <thead><tr><th>Base</th><th>Distance incluse</th><th>Durée incluse</th><th>Active</th></tr></thead>
+          <table style={{ minWidth: 360 }}>
+            <thead><tr><th>Base</th><th>Adresse</th><th>Active</th></tr></thead>
             <tbody>
               {champs.bases.map((b, i) => (
                 <tr key={b.nom}>
                   <td style={{ fontWeight: 500 }}>{b.nom}</td>
-                  <td><label className="v2-champ"><input type="text" inputMode="decimal" value={b.kmInclus} className={lire(b.kmInclus) === null ? 'faux' : ''} aria-label={`${b.nom} — distance incluse`} onChange={e => majBase(i, { kmInclus: e.target.value })} /><span>km</span></label></td>
-                  <td><label className="v2-champ"><input type="text" inputMode="decimal" value={b.minInclus} className={lire(b.minInclus) === null ? 'faux' : ''} aria-label={`${b.nom} — durée incluse`} onChange={e => majBase(i, { minInclus: e.target.value })} /><span>min</span></label></td>
+                  <td className="v2-gris">{b.adresse}</td>
                   <td><label className="v2-champ"><input type="checkbox" checked={b.active} onChange={e => majBase(i, { active: e.target.checked })} /><span>{b.active ? 'Oui' : 'Non'}</span></label></td>
                 </tr>
               ))}

@@ -48,7 +48,7 @@ function DetailV2({ d }: { d: DetailPrix }) {
   return (
     <span className="v2-gris" style={{ fontSize: 11.5 }}>
       {Math.round(d.kmFactures)} km · {minutes(d.minFactures)} facturés · base {d.base ?? 'aucune'}
-      {d.eloignementKm > 0 ? ` (+${Math.round(d.eloignementKm)} km d’approche)` : ''}{d.auMinimum ? ' · au minimum' : ''}
+      {d.base ? ` (approche ${Math.round(d.approcheKm)} km, retour ${Math.round(d.retourBaseKm)} km)` : ''}{d.auMinimum ? ' · au minimum' : ''}
     </span>
   )
 }
@@ -128,7 +128,7 @@ export default function Simulations({ grille, trajetsTypes }: { grille: GrilleV2
                     <span className="v2-fleche" aria-hidden="true">→</span>
                     <span className="v2-lieu" title={s.arrivee.libelleGoogle}><span className="p">{lieuCourt(s.arrivee.libelleGoogle).principal}</span><span className="d">{s.arrivee.saisie}</span></span>
                   </div>
-                  <span className="v2-gris" style={{ fontSize: 11.5 }}>Trajet {Math.round(s.mesures.trajet.km)} km · {minutes(s.mesures.trajet.min)} — retour au départ {Math.round(s.mesures.retour.km)} km · {minutes(s.mesures.retour.min)}</span>
+                  <span className="v2-gris" style={{ fontSize: 11.5 }}>Trajet du client {Math.round(s.mesures.trajet.km)} km · {minutes(s.mesures.trajet.min)}</span>
                   <DetailV2 d={det} />
                 </div>
                 <button type="button" className="v2-retirer" onClick={() => setSims(x => x.filter(y => y.cle !== s.cle))}>Retirer</button>

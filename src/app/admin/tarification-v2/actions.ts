@@ -60,7 +60,7 @@ export async function enregistrerGrilleV2(g: GrilleV2): Promise<{ error?: string
     if (!l || ![l.priseEnCharge, l.prixKm, l.prixHeure, l.minimum].every(valide)) return { error: `Valeur invalide pour ${cle}` }
   }
   for (const b of g.bases ?? []) {
-    if (![b.kmInclus, b.minInclus].every(valide) || typeof b.active !== 'boolean') return { error: `Valeur invalide pour la base ${b.nom}` }
+    if (typeof b.active !== 'boolean') return { error: `Valeur invalide pour la base ${b.nom}` }
   }
 
   const maintenant = new Date().toISOString()
@@ -76,7 +76,7 @@ export async function enregistrerGrilleV2(g: GrilleV2): Promise<{ error?: string
   }
   for (const b of g.bases ?? []) {
     const { data, error } = await sb.from('v2_bases')
-      .update({ km_inclus: b.kmInclus, min_inclus: b.minInclus, active: b.active, updated_at: maintenant })
+      .update({ active: b.active, updated_at: maintenant })
       .eq('nom', b.nom).select('nom')
     if (error) return { error: error.message }
     if (!data?.length) return { error: `Base ${b.nom} introuvable` }

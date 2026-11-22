@@ -14,20 +14,28 @@ const verifier = (c: boolean, m: string) => { if (c) { ok++; console.log(`${V}�
 const copie = (g: GrilleV2): GrilleV2 => JSON.parse(JSON.stringify(g))
 const VEH: CleVehiculeV2[] = ['berline', 'berline_premium', 'van', 'grand_van'];
 
-/* Un éventail de trajets, du très court au très long, proches et loin des bases. */
-const T = (km: number, min: number, roissy: [number, number] | null, paris: [number, number] | null): MesuresTrajet => ({
-  trajet: { km, min }, retour: { km, min },
-  approches: { 'Roissy-CDG': roissy && { km: roissy[0], min: roissy[1] }, 'Paris Châtelet': paris && { km: paris[0], min: paris[1] } },
+/* Un éventail de trajets, du très court au très long, proches et loin des bases.
+   T(trajet km, min, approche Roissy, approche Paris, retour→Roissy, retour→Paris) */
+type P = [number, number] | null
+const M = (x: P) => x && { km: x[0], min: x[1] }
+const T = (km: number, min: number, ar: P, ap: P, rr: P, rp: P): MesuresTrajet => ({
+  trajet: { km, min },
+  approches: { 'Roissy-CDG': M(ar), 'Paris Châtelet': M(ap) },
+  retoursBase: { 'Roissy-CDG': M(rr), 'Paris Châtelet': M(rp) },
 })
 const TRAJETS = [
-  T(4, 15, [30, 35], [3, 10]),       // petit trajet dans Paris
-  T(22, 34, [31, 39], [5, 17]),      // Paris → Orly
-  T(26, 30, [27, 31], [55, 62]),     // Chantilly → CDG
-  T(77, 59, [76, 55], [104, 85]),    // Beauvais → Saint-Ouen
-  T(185, 126, [158, 114], [132, 97]),// Orléans → Provins
-  T(215, 136, [25, 25], [54, 55]),   // Luzarches → Lille
-  T(197, 131, [810, 465], [776, 451]),// Marseille → Nice
+  T(4, 15, [30, 35], [3, 10], [31, 36], [5, 12]),              // petit trajet dans Paris
+  T(22, 34, [31, 39], [5, 17], [20, 25], [17, 25]),            // Paris → Orly
+  T(26, 30, [27, 31], [55, 62], [0, 2], [30, 35]),             // Chantilly → CDG
+  T(77, 59, [76, 55], [104, 85], [20, 22], [8, 15]),           // Beauvais → Saint-Ouen
+  T(185, 126, [158, 114], [132, 97], [95, 80], [80, 70]),      // Orléans → Provins
+  T(215, 136, [25, 25], [54, 55], [220, 140], [230, 145]),     // Luzarches → Lille
+  T(197, 131, [810, 465], [776, 451], [770, 450], [790, 455]), // Marseille → Nice
 ]
+/* Le cas trouvé par l'exploitant le 2026-11-22 (mesures Google réelles) :
+   le même chemin pour le chauffeur dans les deux sens. */
+const BEAUVAIS_CDG = T(73, 50, [76, 55], [85, 70], [0, 1], [30, 35])
+const CDG_BEAUVAIS = T(76, 55, [0, 1], [30, 35], [73, 50], [85, 70])
 const tous = (g: GrilleV2, v: CleVehiculeV2) => TRAJETS.map(t => prixV2(v, t, g).prix)
 
 console.log(`${B}L'accélérateur${Z}`)
@@ -55,17 +63,19 @@ console.log(`\n${B}Le minimum et l'arrondi${Z}`)
 verifier(prixV2('berline', TRAJETS[0], GRILLE_DE_DEPART).prix === 59 && prixV2('berline', TRAJETS[0], GRILLE_DE_DEPART).auMinimum, 'petit trajet dans Paris → minimum de la berline (59 €), signalé « au minimum »')
 verifier(VEH.every(v => tous(GRILLE_DE_DEPART, v).every(p => p >= GRILLE_DE_DEPART.vehicules[v].minimum && Number.isInteger(p))), 'tous les prix sont des euros entiers, jamais sous le minimum de leur véhicule')
 
-console.log(`\n${B}Les bases${Z}`)
+console.log(`\n${B}Le circuit réel (règle du 2026-11-22)${Z}`)
 {
+  const d = prixV2('berline', TRAJETS[2], GRILLE_DE_DEPART)
+  verifier(d.base === 'Roissy-CDG' && Math.abs(d.kmFactures - (27 + 26 + 0)) < 1e-9, 'Chantilly → CDG : base Roissy, km = approche 27 + trajet 26 + retour 0')
+  const a = prixV2('berline', BEAUVAIS_CDG, GRILLE_DE_DEPART), b = prixV2('berline', CDG_BEAUVAIS, GRILLE_DE_DEPART)
+  verifier(a.prix === b.prix && Math.abs(a.kmFactures - b.kmFactures) < 1e-9, `Beauvais → CDG (${a.prix} €) = CDG → Beauvais (${b.prix} €) : le même chemin coûte le même prix`)
   const t = TRAJETS[1]
   verifier(prixV2('berline', t, GRILLE_DE_DEPART).base === 'Paris Châtelet', 'départ à Paris → base Paris (la moins chère)')
   const g = copie(GRILLE_DE_DEPART); g.bases[1].active = false
   verifier(prixV2('berline', t, g).base === 'Roissy-CDG', 'base Paris désactivée → Roissy prend le relais')
-  verifier(prixV2('berline', TRAJETS[2], GRILLE_DE_DEPART).eloignementKm === 0, 'approche de 27 km depuis Roissy (35 km inclus) → aucun éloignement')
-  const loin = prixV2('berline', TRAJETS[4], GRILLE_DE_DEPART)
-  verifier(loin.base === 'Paris Châtelet' && Math.abs(loin.eloignementKm - 102) < 1e-9, 'Orléans → base Paris, 132 − 30 = 102 km d’éloignement facturés')
-  const g2 = copie(GRILLE_DE_DEPART); g2.bases[0].kmInclus = 50; g2.bases[0].minInclus = 50
-  verifier(prixV2('berline', TRAJETS[3], g2).prix <= prixV2('berline', TRAJETS[3], GRILLE_DE_DEPART).prix, 'élargir le rayon d’une base ne fait jamais monter un prix')
+  const g0 = copie(GRILLE_DE_DEPART); g0.bases.forEach(x => (x.active = false))
+  const sans = prixV2('berline', TRAJETS[4], g0)
+  verifier(sans.base === null && Math.abs(sans.kmFactures - 2 * 185) < 1e-9, 'aucune base active → aller-retour du trajet seul, et « base : aucune »')
 }
 
 console.log(`\n${B}Les noms de véhicule de la base${Z}`)

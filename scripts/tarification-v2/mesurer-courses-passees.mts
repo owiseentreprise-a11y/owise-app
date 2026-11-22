@@ -4,7 +4,8 @@
  * Projet « Tarification v2 » (c:\websitebuilding\TARIFICATION-V2.md), étape 2.
  * Mesure une fois, par Google (durée NORMALE, sans heure de départ), les
  * distances de chaque course terminée : trajet (étapes comprises), retour au
- * départ du client, approche depuis chaque base de v2_bases. La page
+ * départ du client (information), approche depuis chaque base de v2_bases et
+ * retour de l'arrivée à chaque base (règle du circuit réel, 2026-11-22). La page
  * /admin/tarification-v2 recalcule ensuite les prix à chaque réglage sans
  * rappeler Google.
  *
@@ -62,9 +63,11 @@ for (const c of courses ?? []) {
   if (manque || !retour) { echecs++; console.log(`✗ ${c.id} : distance introuvable`); continue }
   const approches: Record<string, Mesure | null> = {}
   for (const b of bases) approches[b.nom] = await trajet(b.adresse, c.adresse_depart)
+  const retoursBase: Record<string, Mesure | null> = {}
+  for (const b of bases) retoursBase[b.nom] = await trajet(c.adresse_arrivee, b.adresse)
   const { error: ew } = await sb.from('v2_mesures_courses').upsert({
     course_id: c.id, trajet_km: km, trajet_min: min, retour_km: retour.km, retour_min: retour.min,
-    approches, mise_de_cote: raisonMiseDeCote(c.adresse_depart, km), mesure_le: new Date().toISOString(),
+    approches, retours_base: retoursBase, mise_de_cote: raisonMiseDeCote(c.adresse_depart, km), mesure_le: new Date().toISOString(),
   })
   if (ew) { echecs++; console.log(`✗ ${c.id} : ${ew.message}`) } else ecrites++
 }
