@@ -22,10 +22,17 @@
  *   temps facturé  = idem, en minutes (durée normale, sans bouchons)
  *   prix           = prise en charge + km × prix du km + heures × prix de l'heure
  *                    jamais sous le minimum du véhicule, arrondi à l'euro supérieur
- *   base retenue   = celle qui donne le prix le plus bas au client
+ *   base retenue   = celle qui donne le prix le plus bas au client, parmi les
+ *                    bases actives dont la zone d'action (si elle en a une)
+ *                    contient le départ ou l'arrivée du client
  * La règle est GLOBALE : la même pour tous les trajets et tous les véhicules ;
  * seules les lignes de la grille diffèrent d'un véhicule à l'autre.
- * Plus de « km inclus » : le circuit complet est payé, donc rien n'est offert.
+ * APPROCHE OFFERTE (rétablie à la demande de l'exploitant le 2026-11-22, pour
+ * régler les prix) : chaque base peut offrir une partie de l'APPROCHE —
+ * `kmInclus` km et `minInclus` minutes sont retirés de l'approche facturée
+ * (jamais en dessous de zéro). Le trajet du client et le retour du chauffeur
+ * restent payés en entier. 0 = rien d'offert. La zone d'action se juge sur
+ * l'approche RÉELLE, pas sur l'approche facturée.
  *
  * FONCTION PURE : aucun accès à la base, à Google ou au réseau. Les distances
  * lui sont fournies. Contrôle : scripts/tarification-v2/test-grille.mts.
@@ -50,6 +57,13 @@ export type BaseV2 = {
   /** Adresse que Google sait mesurer. */
   adresse: string
   active: boolean
+  /** Zone d'action (km, route) : la base ne sert que si le client part OU
+   *  arrive à moins de cette distance. null = aucune limite. Ce n'est PAS un
+   *  nombre de km offerts : le circuit réel reste payé en entier. (2026-11-22) */
+  zoneKm: number | null
+  /** Approche offerte : km et minutes retirés de l'approche facturée (0 = rien). */
+  kmInclus: number
+  minInclus: number
 }
 
 export type GrilleV2 = {
@@ -72,8 +86,8 @@ export const GRILLE_DE_DEPART: GrilleV2 = {
     grand_van:       { priseEnCharge: 0, prixKm: 0.72, prixHeure: 45,   minimum: 107 },
   },
   bases: [
-    { nom: 'Roissy-CDG',     adresse: 'Aéroport Paris-Charles de Gaulle, France', active: true },
-    { nom: 'Paris Châtelet', adresse: 'Châtelet, 75001 Paris, France',            active: true },
+    { nom: 'Roissy-CDG',     adresse: 'Aéroport Paris-Charles de Gaulle, France', active: true, zoneKm: null, kmInclus: 0, minInclus: 0 },
+    { nom: 'Paris Châtelet', adresse: 'Châtelet, 75001 Paris, France',            active: true, zoneKm: null, kmInclus: 0, minInclus: 0 },
   ],
 }
 
@@ -104,8 +118,10 @@ export type DetailPrix = {
   base: string | null
   kmFactures: number
   minFactures: number
-  /** Approche (base → client) et retour (arrivée → base), en km. */
+  /** Approche RÉELLE (base → client) et retour (arrivée → base), en km. */
   approcheKm: number
+  /** Part de l'approche offerte par la base, en km (déjà retirée de kmFactures). */
+  approcheOfferteKm: number
   retourBaseKm: number
   auMinimum: boolean
 }
@@ -120,15 +136,17 @@ export function prixV2(vehicule: CleVehiculeV2, m: MesuresTrajet, g: GrilleV2): 
   for (const b of g.bases) {
     const a = m.approches[b.nom], r = m.retoursBase?.[b.nom]
     if (!b.active || !a || !r) continue
-    const km = a.km + m.trajet.km + r.km
-    const min = a.min + m.trajet.min + r.min
-    candidats.push({ ...tarif(km, min), base: b.nom, kmFactures: km, minFactures: min, approcheKm: a.km, retourBaseKm: r.km })
+    if (b.zoneKm != null && a.km > b.zoneKm && r.km > b.zoneKm) continue // client hors de la zone d'action
+    const offertKm = Math.min(a.km, b.kmInclus), offertMin = Math.min(a.min, b.minInclus)
+    const km = a.km - offertKm + m.trajet.km + r.km
+    const min = a.min - offertMin + m.trajet.min + r.min
+    candidats.push({ ...tarif(km, min), base: b.nom, kmFactures: km, minFactures: min, approcheKm: a.km, approcheOfferteKm: offertKm, retourBaseKm: r.km })
   }
   // Aucune base active ou mesurable : l'aller-retour du trajet seul, et
   // « base : aucune » le dit à l'écran. Jamais un prix silencieusement faux.
   if (!candidats.length) {
     const km = 2 * m.trajet.km, min = 2 * m.trajet.min
-    return { ...tarif(km, min), base: null, kmFactures: km, minFactures: min, approcheKm: 0, retourBaseKm: 0 }
+    return { ...tarif(km, min), base: null, kmFactures: km, minFactures: min, approcheKm: 0, approcheOfferteKm: 0, retourBaseKm: 0 }
   }
   // À prix égal (souvent au minimum), le circuit le plus court : c'est la base
   // que l'administration affiche, et elle doit dire vrai.

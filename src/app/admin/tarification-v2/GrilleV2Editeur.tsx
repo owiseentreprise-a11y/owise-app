@@ -24,14 +24,17 @@ export type CoursePassee = {
 }
 
 type ChampsVehicule = { priseEnCharge: string; prixKm: string; prixHeure: string; minimum: string }
-type ChampsBase = { nom: string; adresse: string; active: boolean }
+type ChampsBase = { nom: string; adresse: string; active: boolean; zoneKm: string; kmInclus: string; minInclus: string }
 
 const versChamps = (g: GrilleV2) => ({
   vehicules: Object.fromEntries(VEHICULES_V2.map(v => [v, {
     priseEnCharge: String(g.vehicules[v].priseEnCharge), prixKm: String(g.vehicules[v].prixKm),
     prixHeure: String(g.vehicules[v].prixHeure), minimum: String(g.vehicules[v].minimum),
   }])) as Record<CleVehiculeV2, ChampsVehicule>,
-  bases: g.bases.map(b => ({ nom: b.nom, adresse: b.adresse, active: b.active })) as ChampsBase[],
+  bases: g.bases.map(b => ({
+    nom: b.nom, adresse: b.adresse, active: b.active,
+    zoneKm: b.zoneKm == null ? '' : String(b.zoneKm), kmInclus: String(b.kmInclus), minInclus: String(b.minInclus),
+  })) as ChampsBase[],
 })
 
 /** « 0,45 » comme « 0.45 » ; vide, négatif ou illisible → null. */
@@ -50,7 +53,15 @@ function versGrille(c: ReturnType<typeof versChamps>): GrilleV2 | null {
     if (p === null || k === null || h === null || m === null) return null
     vehicules[v] = { priseEnCharge: p, prixKm: k, prixHeure: h, minimum: m }
   }
-  return { vehicules, bases: c.bases.map(b => ({ nom: b.nom, adresse: b.adresse, active: b.active })) }
+  const bases: GrilleV2['bases'] = []
+  for (const b of c.bases) {
+    // Zone d'action : vide = aucune limite. Approche offerte : vide ou invalide = case en rouge.
+    const zone = b.zoneKm.trim() === '' ? null : lire(b.zoneKm)
+    const [ki, mi] = [lire(b.kmInclus), lire(b.minInclus)]
+    if ((b.zoneKm.trim() !== '' && zone === null) || ki === null || mi === null) return null
+    bases.push({ nom: b.nom, adresse: b.adresse, active: b.active, zoneKm: zone, kmInclus: ki, minInclus: mi })
+  }
+  return { vehicules, bases }
 }
 
 /* Une adresse sur deux lignes : la ville (ou l'aéroport, la gare) en clair,
@@ -170,7 +181,7 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses,
               <h3>Tarification v2</h3>
               <span className={`v2-pastille ${enService === 'v2' ? 'v2-service' : 'v2-essai'}`}>{enService === 'v2' ? 'En service' : 'En essai'}</span>
             </div>
-            <p className="v2-aide" style={{ margin: 0 }}>Une seule grille par véhicule, aller-retour depuis le départ du client. <strong>Aucun client ne voit ces prix</strong> : vous pouvez la régler librement.</p>
+            <p className="v2-aide" style={{ margin: 0 }}>Une seule grille par véhicule, sur le circuit réel du chauffeur. <strong>Aucun client ne voit ces prix</strong> : vous pouvez la régler librement.</p>
             <p className="v2-aide" style={{ margin: 0 }}>La mise en service se fera sur votre décision, à l’étape 5 du projet. Le bouton pour basculer de l’une à l’autre sera ajouté à ce moment-là.</p>
           </div>
         </div>
@@ -206,15 +217,27 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses,
 
         <div className="v2-titre" style={{ marginTop: 8 }}>Les bases</div>
         <p className="v2-aide" style={{ margin: 0 }}>Les bases d’où partent et où rentrent les chauffeurs. Pour chaque trajet, on retient la base qui donne le prix le plus bas. Une base désactivée n’est plus proposée.</p>
+        <p className="v2-aide" style={{ margin: 0 }}><strong>Approche offerte</strong> : les premiers kilomètres et les premières minutes entre la base et le client ne sont pas facturés (0 = rien d’offert). Le trajet du client et le retour du chauffeur restent payés en entier. <strong>Zone d’action</strong> : la base ne sert que si le client part ou arrive à moins de cette distance ; laissez vide pour aucune limite.</p>
         <div className="v2-tw">
-          <table style={{ minWidth: 360 }}>
-            <thead><tr><th>Base</th><th>Adresse</th><th>Active</th></tr></thead>
+          <table style={{ minWidth: 760 }}>
+            <thead><tr><th>Base</th><th>Adresse</th><th>Active</th><th>Approche offerte</th><th>Minutes offertes</th><th>Zone d’action</th></tr></thead>
             <tbody>
               {champs.bases.map((b, i) => (
                 <tr key={b.nom}>
                   <td style={{ fontWeight: 500 }}>{b.nom}</td>
                   <td className="v2-gris">{b.adresse}</td>
                   <td><label className="v2-champ"><input type="checkbox" checked={b.active} onChange={e => majBase(i, { active: e.target.checked })} /><span>{b.active ? 'Oui' : 'Non'}</span></label></td>
+                  {([['kmInclus', 'km', false], ['minInclus', 'min', false], ['zoneKm', 'km', true]] as const).map(([k, u, videPermis]) => (
+                    <td key={k}>
+                      <label className="v2-champ">
+                        <input type="text" inputMode="decimal" value={b[k]} placeholder={videPermis ? 'aucune' : ''}
+                          className={(videPermis && b[k].trim() === '') || lire(b[k]) !== null ? '' : 'faux'}
+                          aria-label={`${b.nom} — ${k === 'kmInclus' ? 'approche offerte en km' : k === 'minInclus' ? 'minutes offertes' : 'zone d’action en km'}`}
+                          onChange={e => majBase(i, { [k]: e.target.value })} />
+                        <span>{u}</span>
+                      </label>
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

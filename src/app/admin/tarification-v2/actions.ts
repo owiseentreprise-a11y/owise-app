@@ -3,7 +3,8 @@
 /**
  * Enregistrement de la grille v2 (projet « Tarification v2 », étape 2).
  *
- * N'écrit QUE dans v2_grille_vehicules et v2_bases. Ne touche ni `tarifs`, ni
+ * N'écrit QUE dans v2_grille_vehicules et v2_bases (dont la zone d'action et
+ * l'approche offerte de chaque base). Ne touche ni `tarifs`, ni
  * `grilles_tarifaires`, ni `parametres` : les prix du site ne bougent pas.
  * Aucune page publique n'est revalidée, puisqu'aucune ne lit ces tables.
  */
@@ -60,7 +61,9 @@ export async function enregistrerGrilleV2(g: GrilleV2): Promise<{ error?: string
     if (!l || ![l.priseEnCharge, l.prixKm, l.prixHeure, l.minimum].every(valide)) return { error: `Valeur invalide pour ${cle}` }
   }
   for (const b of g.bases ?? []) {
-    if (typeof b.active !== 'boolean') return { error: `Valeur invalide pour la base ${b.nom}` }
+    if (typeof b.active !== 'boolean' || !valide(b.kmInclus) || !valide(b.minInclus) || !(b.zoneKm === null || valide(b.zoneKm))) {
+      return { error: `Valeur invalide pour la base ${b.nom}` }
+    }
   }
 
   const maintenant = new Date().toISOString()
@@ -76,7 +79,7 @@ export async function enregistrerGrilleV2(g: GrilleV2): Promise<{ error?: string
   }
   for (const b of g.bases ?? []) {
     const { data, error } = await sb.from('v2_bases')
-      .update({ active: b.active, updated_at: maintenant })
+      .update({ active: b.active, zone_km: b.zoneKm, km_inclus: b.kmInclus, min_inclus: b.minInclus, updated_at: maintenant })
       .eq('nom', b.nom).select('nom')
     if (error) return { error: error.message }
     if (!data?.length) return { error: `Base ${b.nom} introuvable` }

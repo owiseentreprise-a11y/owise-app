@@ -52,7 +52,7 @@ function DetailV2({ d }: { d: DetailPrix }) {
   return (
     <span className="v2-gris" style={{ fontSize: 11.5 }}>
       {Math.round(d.kmFactures)} km · {minutes(d.minFactures)} facturés · base {d.base ?? 'aucune'}
-      {d.base ? ` (approche ${Math.round(d.approcheKm)} km, retour ${Math.round(d.retourBaseKm)} km)` : ''}{d.auMinimum ? ' · au minimum' : ''}
+      {d.base ? ` (approche ${Math.round(d.approcheKm)} km${d.approcheOfferteKm > 0 ? ` dont ${Math.round(d.approcheOfferteKm)} offerts` : ''}, retour ${Math.round(d.retourBaseKm)} km)` : ''}{d.auMinimum ? ' · au minimum' : ''}
     </span>
   )
 }

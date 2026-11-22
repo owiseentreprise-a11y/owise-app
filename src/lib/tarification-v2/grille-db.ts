@@ -23,7 +23,7 @@ export type TarificationEnService = 'actuelle' | 'v2'
 export async function lireGrilleV2(sb: SupabaseClient): Promise<GrilleV2> {
   const [v, b] = await Promise.all([
     sb.from('v2_grille_vehicules').select('vehicule, prise_en_charge, prix_km, prix_heure, minimum'),
-    sb.from('v2_bases').select('nom, adresse, active, ordre').order('ordre'),
+    sb.from('v2_bases').select('nom, adresse, active, zone_km, km_inclus, min_inclus, ordre').order('ordre'),
   ])
   if (v.error) throw new Error('v2_grille_vehicules : ' + v.error.message)
   if (b.error) throw new Error('v2_bases : ' + b.error.message)
@@ -35,7 +35,7 @@ export async function lireGrilleV2(sb: SupabaseClient): Promise<GrilleV2> {
   }
   return {
     vehicules,
-    bases: b.data.map(r => ({ nom: r.nom, adresse: r.adresse, active: r.active })),
+    bases: b.data.map(r => ({ nom: r.nom, adresse: r.adresse, active: r.active, zoneKm: r.zone_km == null ? null : Number(r.zone_km), kmInclus: Number(r.km_inclus), minInclus: Number(r.min_inclus) })),
   }
 }
 

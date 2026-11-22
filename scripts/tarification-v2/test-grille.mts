@@ -78,6 +78,24 @@ console.log(`\n${B}Le circuit réel (règle du 2026-11-22)${Z}`)
   verifier(sans.base === null && Math.abs(sans.kmFactures - 2 * 185) < 1e-9, 'aucune base active → aller-retour du trajet seul, et « base : aucune »')
 }
 
+console.log(`\n${B}Zone d'action et approche offerte (2026-11-22)${Z}`)
+{
+  const t = TRAJETS[4] // Orléans → Provins : approche Paris 132 km / 97 min (base retenue)
+  const ref = prixV2('berline', t, GRILLE_DE_DEPART)
+  const g = copie(GRILLE_DE_DEPART); g.bases[1].kmInclus = 25; g.bases[1].minInclus = 30
+  const d = prixV2('berline', t, g)
+  verifier(ref.base === 'Paris Châtelet' && d.base === 'Paris Châtelet' && Math.abs(d.kmFactures - (ref.kmFactures - 25)) < 1e-9 && Math.abs(d.minFactures - (ref.minFactures - 30)) < 1e-9 && d.approcheOfferteKm === 25,
+    'base Paris, 25 km et 30 min d’approche offerts → 25 km et 30 min de moins facturés')
+  verifier(d.prix < ref.prix, `… et le prix baisse (${ref.prix} € → ${d.prix} €)`)
+  const g2 = copie(GRILLE_DE_DEPART); g2.bases[1].kmInclus = 25; g2.bases[1].minInclus = 30
+  const c = prixV2('berline', TRAJETS[0], g2) // approche Paris 3 km / 10 min, trajet 4 km, retour 5 km
+  verifier(c.approcheOfferteKm === 3 && Math.abs(c.kmFactures - (4 + 5)) < 1e-9, 'approche plus courte que l’offert → approche gratuite, jamais négative ; trajet et retour restent payés')
+  const g3 = copie(GRILLE_DE_DEPART); g3.bases[0].zoneKm = 10; g3.bases[0].kmInclus = 1000; g3.bases[0].minInclus = 1000
+  verifier(prixV2('berline', t, g3).base === 'Paris Châtelet', 'zone d’action jugée sur l’approche RÉELLE : Roissy (zone 10 km) reste écartée même avec 1000 km offerts')
+  const g4 = copie(GRILLE_DE_DEPART); g4.bases[1].zoneKm = 10
+  verifier(prixV2('berline', TRAJETS[1], g4).base === 'Paris Châtelet' && prixV2('berline', t, g4).base === 'Roissy-CDG', 'zone de 10 km sur Paris : gardée pour un départ à 5 km, écartée pour Orléans → Provins')
+}
+
 console.log(`\n${B}Les noms de véhicule de la base${Z}`)
 verifier(cleVehiculeV2('grand_van_8') === 'grand_van' && cleVehiculeV2('van_7') === 'van' && cleVehiculeV2('berline_premium') === 'berline_premium' && cleVehiculeV2('inconnu') === null, 'grand_van_8 → grand_van, van_7 → van, inconnu → aucun')
 
