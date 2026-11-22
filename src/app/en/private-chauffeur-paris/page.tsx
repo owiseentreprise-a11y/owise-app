@@ -46,9 +46,9 @@ import { JUMEAU_RESERVATION } from '@/lib/langue'
 import { GAMME } from '@/lib/gamme'
 import { formaterMontant } from '@/lib/montant'
 import {
-  MENTION_TARIFS_EN, DEFINITION_EN, USAGES_EN, FRAIS_EN_SUS_EN,
+  MENTION_TARIFS_EN, DEFINITION_EN, USAGES_EN, FRAIS_EN_SUS_EN, HEURE_ENTAMEE_EN,
 } from '@/lib/mise-a-disposition'
-import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD } from '@/lib/calcPrix'
+import { KM_PAR_HEURE_MAD, DUREE_MIN_MAD, prixMiseADisposition } from '@/lib/calcPrix'
 import DemandeMiseADisposition, { type VehiculeMAD }
   from '@/app/mise-a-disposition/DemandeMiseADisposition'
 import { chargerParametres } from '@/lib/tarification'
@@ -61,45 +61,68 @@ export const revalidate = 3600
 const CHEMIN = '/en/private-chauffeur-paris'
 const URL_EN = `${BASE_OWISE}${CHEMIN}`
 const URL_FR = `${BASE_OWISE}/vtc-paris`
-const TITRE  = 'Private Chauffeur in Paris — Fixed Fares from €29'
+/* Le titre répond à la recherche qui a mis cette page en 1re page de Google :
+ * « private chauffeur in paris for a full day, how much » (57 affichages,
+ * position 9,4, AUCUN clic — Search Console, 25/08 → 19/11/2026). L'ancien
+ * titre parlait de « Fixed Fares from €29 » : il ne répondait pas à la
+ * question posée. Le prix vient de `prixMiseADisposition()` et de la table
+ * `tarifs` (réglable dans /admin/tarifs), jamais d'un nombre écrit ici.
+ * Sans tarif horaire, le titre reste juste, simplement sans montant. */
+const JOURNEE_H = 8
 
-export const metadata: Metadata = {
-  title:       `${TITRE} | Owise`,
-  description: 'Private chauffeur in Paris: CDG, Orly and Beauvais-Tillé airports, stations, long distance. Fixed price per car, confirmed before departure.',
-  keywords: [
-    'private chauffeur paris',
-    'paris airport transfer price',
-    'paris to cdg private car',
-    'chauffeur hire paris day',
-    'private driver paris',
-    'paris le bourget transfer',
-  ],
-  alternates: {
-    canonical: URL_EN,
-    /* hreflang dans les DEUX sens : la page française déclare celle-ci via
-     * JUMEAUX_EN, celle-ci renvoie vers elle. Un hreflang unilatéral est
-     * ignoré par Google. `x-default` désigne le français, qui reste la
-     * version servie par défaut. */
-    languages: {
-      'en':        URL_EN,
-      'fr-FR':     URL_FR,
-      'x-default': URL_FR,
+/** Le prix d'une journée et de l'heure en berline, lus dans la table `tarifs`. */
+async function prixJournee() {
+  const { data: tarifs } = await createAdminClient().from('tarifs').select('*')
+  const jour = prixMiseADisposition('berline', JOURNEE_H, tarifs ?? [])
+  return jour ? { jour: jour.prix, heure: jour.prixHeure, km: jour.kmInclus } : null
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const p = await prixJournee()
+  const titre = p
+    ? `Private Chauffeur in Paris: Full Day €${p.jour}, €${p.heure}/Hour`
+    : 'Private Chauffeur in Paris by the Hour or for a Full Day'
+  const description = p
+    ? `Hire a private chauffeur in Paris by the hour or for a full day: sedan €${p.heure} per hour, ${JOURNEE_H} hours €${p.jour} with ${p.km} km included, ${DUREE_MIN_MAD}-hour minimum. Fixed-price airport transfers too. Book in English.`
+    : `Hire a private chauffeur in Paris by the hour or for a full day, ${DUREE_MIN_MAD}-hour minimum. Fixed-price airport transfers too. Book in English.`
+  return {
+    title:       `${titre} | Owise`,
+    description,
+    keywords: [
+      'private chauffeur paris full day',
+      'chauffeur paris hourly rate',
+      'private chauffeur paris',
+      'paris airport transfer price',
+      'private driver paris',
+      'chauffeur hire paris day',
+    ],
+    alternates: {
+      canonical: URL_EN,
+      /* hreflang dans les DEUX sens : la page française déclare celle-ci via
+       * JUMEAUX_EN, celle-ci renvoie vers elle. Un hreflang unilatéral est
+       * ignoré par Google. `x-default` désigne le français, qui reste la
+       * version servie par défaut. */
+      languages: {
+        'en':        URL_EN,
+        'fr-FR':     URL_FR,
+        'x-default': URL_FR,
+      },
     },
-  },
-  openGraph: {
-    title: TITRE,
-    description: 'Fixed-price private chauffeur service in Paris: airports, stations, long distance, hourly hire at a published rate per hour.',
-    url: URL_EN,
-    locale: 'en_GB',
-    siteName: 'Owise',
-    images: [{ url: `${BASE_OWISE}/brand_assets/hero-paris-night.webp`, width: 1920, height: 1080, alt: 'Private chauffeur in Paris' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: TITRE,
-    description: 'Fixed-price private chauffeur service in Paris.',
-    images: [`${BASE_OWISE}/brand_assets/hero-paris-night.webp`],
-  },
+    openGraph: {
+      title: titre,
+      description,
+      url: URL_EN,
+      locale: 'en_GB',
+      siteName: 'Owise',
+      images: [{ url: `${BASE_OWISE}/brand_assets/hero-paris-night.webp`, width: 1920, height: 1080, alt: 'Private chauffeur in Paris' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titre,
+      description,
+      images: [`${BASE_OWISE}/brand_assets/hero-paris-night.webp`],
+    },
+  }
 }
 
 type Prix = { cle: string; nom: string; places: string; montant: number | null }
@@ -205,7 +228,9 @@ async function lireDonnees() {
   return { prix, liaisons, params, avis, parHeure }
 }
 
-const FAQ = (cdg: number | null) => [
+type PrixJournee = { jour: number; heure: number; km: number } | null
+
+const FAQ = (cdg: number | null, mad: PrixJournee) => [
   {
     q: 'How much is a private car from Paris to CDG airport?',
     a: cdg
@@ -226,7 +251,11 @@ const FAQ = (cdg: number | null) => [
   },
   {
     q: 'Can I hire a chauffeur for a few hours or a full day?',
-    a: 'Yes, on request. The price depends on the duration and the itinerary — write to us with the date, the start time, roughly how long you need the car and the pick-up point.',
+    /* Disait « on request » jusqu'au 2026-11-22, alors que les prix à l'heure
+       sont publiés plus bas sur cette page depuis le 13/11. */
+    a: mad
+      ? `Yes. A sedan with its chauffeur is €${mad.heure} per hour, with a ${DUREE_MIN_MAD}-hour minimum; a full day of ${JOURNEE_H} hours is €${mad.jour}, ${mad.km} km included. Prices for the other vehicles are shown on this page, and you can request your booking below. ${HEURE_ENTAMEE_EN}`
+      : `Yes, from ${DUREE_MIN_MAD} hours. Hourly rates are shown on this page and you can request your booking below.`,
   },
   {
     q: 'Can I book in English?',
@@ -237,6 +266,7 @@ const FAQ = (cdg: number | null) => [
 export default async function Page() {
   const { prix, liaisons, params, avis, parHeure } = await lireDonnees()
   const base = prix.find(p => p.cle === 'berline')?.montant ?? null
+  const mad = await prixJournee()
 
   const ficheLd = {
     '@context': 'https://schema.org',
@@ -307,7 +337,7 @@ export default async function Page() {
   const faqLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: FAQ(base).map(f => ({
+    mainEntity: FAQ(base, mad).map(f => ({
       '@type': 'Question',
       name: f.q,
       acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -603,7 +633,7 @@ export default async function Page() {
             Questions
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {FAQ(base).map(f => (
+            {FAQ(base, mad).map(f => (
               <div key={f.q} style={{ border: '1px solid rgba(201,168,76,.12)', borderRadius: 11, padding: '16px 19px' }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: creme, marginBottom: 6 }}>{f.q}</div>
                 <div style={{ fontSize: 13, color: 'rgba(237,232,223,.62)', lineHeight: 1.7 }}>{f.a}</div>
