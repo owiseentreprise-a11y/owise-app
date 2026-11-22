@@ -2,7 +2,9 @@
  * mesurer-trajets-types.mts — REMPLIT v2_trajets_types.
  *
  * Projet « Tarification v2 » (c:\websitebuilding\TARIFICATION-V2.md).
- * Chaque commune d'une page ville du site → Roissy-CDG, Orly, Beauvais, Paris.
+ * Chaque commune d'une page ville du site → Roissy-CDG, Orly, Beauvais, Paris ;
+ * puis chaque lieu clé vers chacun des autres, dans les deux sens (Paris,
+ * Roissy-CDG, Orly, Le Bourget, Beauvais, Chantilly — points-cles.ts).
  * Mesuré UNE fois par Google (mêmes fonctions que le simulateur :
  * src/lib/tarification-v2/mesures-google.ts) ; les prix sont recalculés à
  * l'affichage.
@@ -23,6 +25,7 @@ process.env.GOOGLE_MAPS_KEY = env.GOOGLE_MAPS_KEY
 const { createClient } = await import('@supabase/supabase-js')
 const { mesurerTrajet } = await import('../../src/lib/tarification-v2/mesures-google')
 const { lireGrilleV2 } = await import('../../src/lib/tarification-v2/grille-db')
+const { POINTS_CLES } = await import('../../src/lib/tarification-v2/points-cles')
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
 const remesurer = process.argv.includes('--remesurer')
 
@@ -82,21 +85,23 @@ const { data: deja } = await sb.from('v2_trajets_types').select('depart, arrivee
 const present = new Set((deja ?? []).map(d => d.depart + '→' + d.arrivee))
 
 let ecrits = 0, sautes = 0, echecs = 0, ordre = 0
-for (const [groupe, arrivee] of ARRIVEES) {
-  for (const depart of Object.values(COMMUNES)) {
-    ordre++
-    if (!remesurer && present.has(depart + '→' + arrivee)) { sautes++; continue }
-    const m = await mesurerTrajet(depart, arrivee, grille.bases)
-    if ('erreur' in m) { echecs++; console.log(`✗ ${depart} → ${arrivee} : ${m.erreur}`); continue }
-    if (m.distanceKm === null) { echecs++; console.log(`✗ ${depart} → ${arrivee} : distance du site introuvable`); continue }
-    const { error } = await sb.from('v2_trajets_types').upsert({
-      groupe, ordre, depart, arrivee, depart_cp: m.depart.cp, arrivee_cp: m.arrivee.cp,
-      distance_km: m.distanceKm, trajet_km: m.mesures.trajet.km, trajet_min: m.mesures.trajet.min,
-      retour_km: m.mesures.retour.km, retour_min: m.mesures.retour.min, approches: m.mesures.approches, retours_base: m.mesures.retoursBase,
-      mesure_le: new Date().toISOString(),
-    }, { onConflict: 'depart,arrivee' })
-    if (error) { echecs++; console.log(`✗ ${depart} → ${arrivee} : ${error.message}`) } else ecrits++
-  }
+async function mesurerEtEcrire(groupe: string, depart: string, arrivee: string) {
+  ordre++
+  if (!remesurer && present.has(depart + '→' + arrivee)) { sautes++; return }
+  const m = await mesurerTrajet(depart, arrivee, grille.bases)
+  if ('erreur' in m) { echecs++; console.log(`✗ ${depart} → ${arrivee} : ${m.erreur}`); return }
+  if (m.distanceKm === null) { echecs++; console.log(`✗ ${depart} → ${arrivee} : distance du site introuvable`); return }
+  const { error } = await sb.from('v2_trajets_types').upsert({
+    groupe, ordre, depart, arrivee, depart_cp: m.depart.cp, arrivee_cp: m.arrivee.cp,
+    distance_km: m.distanceKm, trajet_km: m.mesures.trajet.km, trajet_min: m.mesures.trajet.min,
+    retour_km: m.mesures.retour.km, retour_min: m.mesures.retour.min, approches: m.mesures.approches, retours_base: m.mesures.retoursBase,
+    mesure_le: new Date().toISOString(),
+  }, { onConflict: 'depart,arrivee' })
+  if (error) { echecs++; console.log(`✗ ${depart} → ${arrivee} : ${error.message}`) } else { ecrits++; present.add(depart + '→' + arrivee) }
 }
+for (const [groupe, arrivee] of ARRIVEES) for (const depart of Object.values(COMMUNES)) await mesurerEtEcrire(groupe, depart, arrivee)
+/* Les lieux clés deux à deux, dans les deux sens. Le groupe est le lieu
+   d'arrivée : « Chantilly → Roissy-CDG » reste dans « Roissy-CDG ». */
+for (const a of POINTS_CLES) for (const d of POINTS_CLES) if (a !== d) await mesurerEtEcrire(a.nom, d.libelle, a.libelle)
 console.log(`${ecrits} trajet(s) écrit(s), ${sautes} déjà présent(s), ${echecs} échec(s)`)
 process.exit(echecs ? 1 : 0)

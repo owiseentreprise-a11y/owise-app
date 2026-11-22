@@ -10,8 +10,9 @@
  *  · Simulateur : un trajet quelconque, mesuré par Google à la demande
  *    (simulerTrajet, n'écrit rien). Prix actuel du site pour les 4 véhicules,
  *    prix v2 recalculé en direct quand la grille bouge.
- *  · Banc : chaque commune d'une page ville → CDG, Orly, Beauvais, Paris
- *    (table v2_trajets_types, mesurée une fois). Même principe.
+ *  · Banc : chaque commune d'une page ville → CDG, Orly, Beauvais, Paris, et
+ *    les lieux clés deux à deux (Paris, CDG, Orly, Le Bourget, Beauvais,
+ *    Chantilly — points-cles.ts), table v2_trajets_types mesurée une fois.
  *
  * Le prix v2 vient de `prixV2` (grille.ts) ; le prix actuel, du serveur
  * (prix-actuel.ts, chemin de la vitrine). Rien n'est recopié ici.
@@ -23,6 +24,7 @@ import type { PrixActuel } from '@/lib/tarification-v2/prix-actuel'
 import { lieuCourt } from '@/lib/tarification-v2/lieu-court'
 import { formaterMontant } from '@/lib/montant'
 import { simulerTrajet, type ResultatSimulation } from './actions'
+import { estEntrePointsCles, nomPointCle, nomGroupe, POINTS_CLES } from '@/lib/tarification-v2/points-cles'
 
 export type TrajetType = {
   id: string; groupe: string; depart: string; arrivee: string
@@ -30,10 +32,12 @@ export type TrajetType = {
 }
 type Simulation = Extract<ResultatSimulation, { mesures: MesuresTrajet }> & { cle: number }
 
+/* « Paris & aéroports » : les lieux clés deux à deux, dans les deux sens. */
+const PAIRES = 'Paris & aéroports'
 const pct = (n: number) => `${n > 0 ? '+' : ''}${n.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`
 const minutes = (m: number) => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? `${h} h ${String(r).padStart(2, '0')}` : `${r} min` }
 /* « Creil 60100, France » → « Creil » : libellé du banc, écrit comme une saisie client. */
-const commune = (s: string) => s.replace(/\s+\d{5}\s*,?\s*France\s*$/i, '').replace(/,\s*France\s*$/i, '')
+const commune = (s: string) => nomPointCle(s) ?? s.replace(/\s+\d{5}\s*,?\s*France\s*$/i, '').replace(/,\s*France\s*$/i, '')
 
 function Ecart({ actuel, v2 }: { actuel: number | null | undefined; v2: number }) {
   if (actuel == null) return <span className="v2-gris">—</span>
@@ -74,7 +78,7 @@ export default function Simulations({ grille, trajetsTypes }: { grille: GrilleV2
   const groupes = useMemo(() => [...new Set(trajetsTypes.map(t => t.groupe))], [trajetsTypes])
   const [groupe, setGroupe] = useState<string>('Tous')
   const banc = useMemo(() => trajetsTypes
-    .filter(t => groupe === 'Tous' || t.groupe === groupe)
+    .filter(t => groupe === 'Tous' || (groupe === PAIRES ? estEntrePointsCles(t.depart, t.arrivee) : t.groupe === groupe))
     .map(t => ({ t, a: t.actuel[vehicule], d: prixV2(vehicule, t.mesures, grille) })), [trajetsTypes, groupe, vehicule, grille])
   const comparables = banc.filter(l => l.a)
   const totA = comparables.reduce((s, l) => s + l.a!.prix, 0)
@@ -151,13 +155,13 @@ export default function Simulations({ grille, trajetsTypes }: { grille: GrilleV2
       {/* Banc de trajets types */}
       <section className="v2-section" aria-labelledby="v2-banc">
         <div className="v2-titre" id="v2-banc">Toutes vos destinations — {trajetsTypes.length} trajets types</div>
-        <p className="v2-aide" style={{ margin: 0 }}>Chaque commune de vos pages villes vers Roissy-CDG, Orly, Beauvais et Paris (Châtelet). Prix actuel = celui que le site affiche aujourd’hui (sans majoration de nuit ni de week-end). Prix v2 = la grille au-dessus, en direct.</p>
+        <p className="v2-aide" style={{ margin: 0 }}>Chaque commune de vos pages villes vers Roissy-CDG, Orly, Beauvais et Paris (Châtelet), et « Paris & aéroports » : {POINTS_CLES.map(p => p.court).join(', ')} deux à deux, dans les deux sens. Prix actuel = celui que le site affiche aujourd’hui (sans majoration de nuit ni de week-end). Prix v2 = la grille au-dessus, en direct.</p>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div className="v2-puces" role="group" aria-label="Véhicule">
             {VEHICULES_V2.map(v => <button key={v} type="button" className="v2-puce" aria-pressed={vehicule === v} onClick={() => setVehicule(v)}>{NOM_VEHICULE_V2[v]}</button>)}
           </div>
           <div className="v2-puces" role="group" aria-label="Destination">
-            {['Tous', ...groupes].map(g => <button key={g} type="button" className="v2-puce" aria-pressed={groupe === g} onClick={() => setGroupe(g)}>{g === 'Tous' ? 'Toutes destinations' : g}</button>)}
+            {['Tous', PAIRES, ...groupes].map(g => <button key={g} type="button" className="v2-puce" aria-pressed={groupe === g} onClick={() => setGroupe(g)}>{g === 'Tous' ? 'Toutes destinations' : g === PAIRES ? g : nomGroupe(g)}</button>)}
           </div>
         </div>
         <div className="v2-tuiles">
@@ -173,7 +177,7 @@ export default function Simulations({ grille, trajetsTypes }: { grille: GrilleV2
               {banc.map(({ t, a, d }) => (
                 <tr key={t.id}>
                   <td style={{ fontWeight: 500 }}>{commune(t.depart)}</td>
-                  <td>{t.groupe}</td>
+                  <td>{commune(t.arrivee)}</td>
                   <td className="n"><Actuel p={a} /></td>
                   <td className="n">{formaterMontant(d.prix)}</td>
                   <td className="n"><Ecart actuel={a?.prix} v2={d.prix} /></td>

@@ -1,8 +1,8 @@
 /**
  * test-prix-actuel.mts — LE « PRIX ACTUEL » DU SIMULATEUR EST-IL CELUI DU SITE ?
  *
- * Contrôle de src/lib/tarification-v2/prix-actuel.ts, sur les 92 trajets de
- * v2_trajets_types et les tarifs réels en base. Lecture seule.
+ * Contrôle de src/lib/tarification-v2/prix-actuel.ts, sur tous les trajets de
+ * v2_trajets_types (92 « commune → destination » + les lieux clés deux à deux) et les tarifs réels en base. Lecture seule.
  *  1. Les forfaits publiés sur les pages du site (meta « CDG 59€, Paris 125€,
  *     Orly 145€ » de la page Creil ; Chantilly → CDG 59 € de CLAUDE.md).
  *  2. Les trajets au km : recalculés ICI, sans calcPrix — prise en charge +
@@ -16,6 +16,7 @@ import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import { prixActuel, chargerTarificationActuelle } from '../../src/lib/tarification-v2/prix-actuel'
 import { VEHICULES_V2 } from '../../src/lib/tarification-v2/grille-db'
+import { POINTS_CLES } from '../../src/lib/tarification-v2/points-cles'
 
 let ok = 0, ko = 0
 const V = '\x1b[32m', R = '\x1b[31m', B = '\x1b[1m', Z = '\x1b[0m'
@@ -47,7 +48,10 @@ verifier(auKm.length > 0 && fauxKm.length === 0, `${auKm.length} trajets berline
 
 console.log(`\n${B}Couverture${Z}`)
 const sansPrix = trajets!.flatMap(tr => VEHICULES_V2.filter(v => !prix(tr, v)).map(v => `${tr.depart} → ${tr.arrivee} (${v})`))
-verifier(trajets!.length === 92 && sansPrix.length === 0, `${trajets!.length} trajets × 4 véhicules : tous ont un prix actuel (${sansPrix.length} sans prix${sansPrix.length ? ' : ' + sansPrix.slice(0, 5).join(', ') : ''})`)
+verifier(trajets!.length >= 92 && sansPrix.length === 0, `${trajets!.length} trajets × 4 véhicules : tous ont un prix actuel (${sansPrix.length} sans prix${sansPrix.length ? ' : ' + sansPrix.slice(0, 5).join(', ') : ''})`)
+const paires = POINTS_CLES.flatMap(a => POINTS_CLES.filter(b => b !== a).map(b => [a.libelle, b.libelle]))
+const manquantes = paires.filter(([d, a]) => !trajets!.some(t => t.depart === d && t.arrivee === a && t.retours_base))
+verifier(paires.length === 30 && manquantes.length === 0, `lieux clés deux à deux : ${paires.length - manquantes.length}/${paires.length} trajets mesurés, retour à la base compris${manquantes.length ? ' — manquent : ' + manquantes.map(x => x.join(' → ')).join(' | ') : ''}`)
 const nbForfaits = trajets!.filter(tr => prix(tr, 'berline')?.mode === 'forfait').length
 console.log(`  berline : ${nbForfaits} forfaits, ${trajets!.length - nbForfaits} au km`)
 
