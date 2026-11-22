@@ -15,6 +15,7 @@ import { VEHICULES_V2, NOM_VEHICULE_V2, type TarificationEnService } from '@/lib
 import { formaterMontant } from '@/lib/montant'
 import { lieuCourt } from '@/lib/tarification-v2/lieu-court'
 import { enregistrerGrilleV2 } from './actions'
+import Simulations, { type TrajetType } from './Simulations'
 
 export type CoursePassee = {
   id: string; instant: string; date: string; depart: string; arrivee: string
@@ -82,8 +83,8 @@ function calculer(courses: CoursePassee[], g: GrilleV2) {
   return { lignes, retenues, encaisse, v2, plusCheres: retenues.filter(l => l.d.prix > l.c.encaisse).length }
 }
 
-export default function GrilleV2Editeur({ grilleEnregistree, enService, courses }: {
-  grilleEnregistree: GrilleV2; enService: TarificationEnService; courses: CoursePassee[]
+export default function GrilleV2Editeur({ grilleEnregistree, enService, courses, trajetsTypes }: {
+  grilleEnregistree: GrilleV2; enService: TarificationEnService; courses: CoursePassee[]; trajetsTypes: TrajetType[]
 }) {
   const [champs, setChamps] = useState(() => versChamps(grilleEnregistree))
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null)
@@ -235,6 +236,10 @@ export default function GrilleV2Editeur({ grilleEnregistree, enService, courses 
           {message && <span role="status" style={{ fontSize: 12.5, color: message.ok ? 'var(--green, #3DB87A)' : 'var(--red, #D95454)' }}>{message.texte}</span>}
         </div>
       </section>
+
+      {/* Simulateur et banc de trajets : la grille en cours de saisie si elle est
+          valide, sinon la grille enregistrée (une case vide ne vide pas l'écran). */}
+      <Simulations grille={grille ?? grilleEnregistree} trajetsTypes={trajetsTypes} />
 
       {/* L'effet sur les courses passées */}
       {r && (

@@ -80,10 +80,14 @@ console.log(`\n${B}Rien n'est branché dans le site${Z}`)
      Un simple lien (le menu de l'administration) n'est pas un branchement. */
   const branches = fichiers.filter(f => !/[\\/]tarification-v2[\\/]/.test(f) && /from\s+['"][^'"]*tarification-v2/.test(readFileSync(f, 'utf8')))
   verifier(branches.length === 0, `aucun fichier du site n’importe le calcul v2 (${branches.length}${branches.length ? ' : ' + branches.join(', ') : ''})`)
-  /* Et le code v2 n'importe rien du calcul actuel (règle 1 de la charte). */
+  /* Et le code v2 ne lit le calcul actuel que par UN fichier : prix-actuel.ts,
+     autorisé par l'exploitant le 2026-11-21 pour afficher le prix actuel à
+     côté du prix v2 (déclaré aussi dans controle-prod-intacte.mjs). */
   const v2 = fichiers.filter(f => /[\\/]tarification-v2[\\/]/.test(f))
-  const versActuel = v2.filter(f => /from\s+['"][^'"]*(calcPrix|tarification['"]|devis-et-tarifs|affichagePrix)/.test(readFileSync(f, 'utf8')))
-  verifier(v2.length >= 5 && versActuel.length === 0, `le code v2 (${v2.length} fichiers) n’importe rien du calcul actuel (${versActuel.length})`)
+  const versActuel = v2.filter(f => /from\s+['"][^'"]*(calcPrix|tarification['"]|devis-et-tarifs|affichagePrix)['"]/.test(readFileSync(f, 'utf8')))
+  const autorise = (f: string) => /[\\/]src[\\/]lib[\\/]tarification-v2[\\/]prix-actuel\.ts$/.test(f)
+  verifier(v2.length >= 5 && versActuel.length === 1 && versActuel.every(autorise),
+    `le code v2 (${v2.length} fichiers) ne lit le calcul actuel que par prix-actuel.ts (${versActuel.length} lecteur(s)${versActuel.filter(f => !autorise(f)).length ? ' — NON autorisé : ' + versActuel.filter(f => !autorise(f)).join(', ') : ''})`)
 }
 
 console.log(`\n${ko ? R : V}${B}${ok} contrôle(s) réussi(s), ${ko} échec(s)${Z}`)

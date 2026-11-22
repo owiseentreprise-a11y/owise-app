@@ -6,15 +6,19 @@
  * EN ESSAI — et permet de régler la v2 en voyant aussitôt l'effet sur les
  * courses passées. Aucun prix du site ne dépend de cette page.
  *
- * Ce fichier n'importe RIEN du calcul actuel (calcPrix, tarification…) : la
- * règle 1 de la charte, vérifiée par controle-prod-intacte.mjs.
+ * Le prix ACTUEL des trajets types est lu par prix-actuel.ts, seul fichier v2
+ * autorisé à lire le calcul actuel (accord du 2026-11-21, déclaré dans
+ * controle-prod-intacte.mjs). Ce fichier n'importe pas calcPrix directement.
  */
 import { requireAdminClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { lireGrilleV2, lireTarificationEnService, mesuresDepuisLigne, type LigneMesure } from '@/lib/tarification-v2/grille-db'
-import { cleVehiculeV2 } from '@/lib/tarification-v2/grille'
+import { cleVehiculeV2, type CleVehiculeV2 } from '@/lib/tarification-v2/grille'
+import { VEHICULES_V2 } from '@/lib/tarification-v2/grille-db'
+import { prixActuel, chargerTarificationActuelle, type PrixActuel } from '@/lib/tarification-v2/prix-actuel'
 import { dateCourse } from '@/lib/heure'
 import GrilleV2Editeur, { type CoursePassee } from './GrilleV2Editeur'
+import type { TrajetType } from './Simulations'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,13 +26,26 @@ export default async function TarificationV2Page() {
   await requireAdminClient()
   const sb = createAdminClient()
 
-  const [grille, enService, mesuresRes] = await Promise.all([
+  const [grille, enService, tarification, trajetsRes, mesuresRes] = await Promise.all([
     lireGrilleV2(sb),
     lireTarificationEnService(sb),
+    chargerTarificationActuelle(sb),
+    sb.from('v2_trajets_types').select('id, groupe, ordre, depart, arrivee, depart_cp, arrivee_cp, distance_km, trajet_km, trajet_min, retour_km, retour_min, approches').order('ordre'),
     sb.from('v2_mesures_courses')
       .select('course_id, trajet_km, trajet_min, retour_km, retour_min, approches, mise_de_cote, courses(date_prevue, adresse_depart, adresse_arrivee, type_vehicule, prix_final, prix_estime)'),
   ])
   if (mesuresRes.error) throw new Error('v2_mesures_courses : ' + mesuresRes.error.message)
+  if (trajetsRes.error) throw new Error('v2_trajets_types : ' + trajetsRes.error.message)
+
+  /* Le prix actuel de chaque trajet type, avec les tarifs DU MOMENT : un
+     forfait modifié dans « Tarifs » se voit ici au prochain chargement. */
+  const trajetsTypes: TrajetType[] = (trajetsRes.data ?? []).map((t: any) => ({
+    id: t.id, groupe: t.groupe, depart: t.depart, arrivee: t.arrivee,
+    mesures: mesuresDepuisLigne({ ...t, course_id: t.id, mise_de_cote: null } as LigneMesure),
+    actuel: Object.fromEntries(VEHICULES_V2.map(v => [v,
+      prixActuel({ label: t.depart, cp: t.depart_cp }, { label: t.arrivee, cp: t.arrivee_cp }, Number(t.distance_km), v, tarification),
+    ])) as Record<CleVehiculeV2, PrixActuel>,
+  }))
 
   const courses: CoursePassee[] = (mesuresRes.data ?? [])
     .map((l: any) => {
@@ -58,7 +75,7 @@ export default async function TarificationV2Page() {
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--t1)' }}>Tarification v2</div>
         <span className="v2-pastille v2-essai">En essai</span>
       </div>
-      <GrilleV2Editeur grilleEnregistree={grille} enService={enService} courses={courses} />
+      <GrilleV2Editeur grilleEnregistree={grille} enService={enService} courses={courses} trajetsTypes={trajetsTypes} />
     </>
   )
 }
