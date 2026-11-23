@@ -22,6 +22,7 @@ import { textes, messageDansLaLangue, JUMEAU_RESERVATION, type Langue } from '@/
 import {
   calculerPrix,
   calculerPrixKm,
+  allerRetourMemeJour,
   calculerPrixEtapes,
   detectZone,
   isForfaitZone,
@@ -592,12 +593,22 @@ export default function ReserverClient({ avis, zones, grille, tarifs, params, pr
     return () => { vivant = false }
   }, [etapes, depart, arrivee, vehicule, date, tarifs, params])
 
+  /* Aller-retour LE MÊME JOUR au kilomètre : le chauffeur ne rentre pas à
+     vide, chaque trajet est au prix normal, sans la règle longue distance
+     (calcPrix.ts, décision du 2026-11-23). Les forfaits ne sont pas concernés.
+     Même règle côté serveur dans actions.ts — les deux doivent rester d'accord. */
+  const prixTrajetAllerRetour = useMemo(() => {
+    if (prix === null) return null
+    if (useForfait || distanceKm === null || !allerRetourMemeJour(date, dateRetour)) return prix
+    return calculerPrixKm(distanceKm, vehicule, date, tarifs, params, { sansRetourAVide: true }) ?? prix
+  }, [prix, useForfait, distanceKm, date, dateRetour, vehicule, tarifs, params])
+
   // Prix total : aller × 2 si aller-retour activé, puis les arrêts une seule fois
   const prixTotal = useMemo(() => {
     if (prix === null) return null
-    const base = allerRetour ? Math.round(prix * 2 * 100) / 100 : prix
+    const base = allerRetour && prixTrajetAllerRetour !== null ? Math.round(prixTrajetAllerRetour * 2 * 100) / 100 : prix
     return Math.round((base + surcoutEtapes) * 100) / 100
-  }, [prix, allerRetour, surcoutEtapes])
+  }, [prix, prixTrajetAllerRetour, allerRetour, surcoutEtapes])
 
   // Prix avec réduction parrainage -10%
   const prixFinal = useMemo(() => prixTotal === null ? null : codeValide ? Math.round(prixTotal * 0.9) : prixTotal, [prixTotal, codeValide])

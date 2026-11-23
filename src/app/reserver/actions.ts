@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, partRetour, COLONNES_GRILLE } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, partRetour, allerRetourMemeJour, COLONNES_GRILLE } from '@/lib/calcPrix'
 import { detourKm } from '@/lib/geo'
 import { capiLead } from '@/lib/capi'
 import { nettoyerCleEnv } from '@/lib/stripe'
@@ -154,7 +154,10 @@ export async function createReservationCheckout(data: {
       chargerParametres(admin).then(d => ({ data: d })),
     ])
     const dist = Math.min(Math.max(data.distance_km, 1), 600) // borne 1–600 km
-    prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [], params)
+    /* Aller-retour le même jour : pas de retour à vide, donc pas de règle
+       longue distance (calcPrix.ts, 2026-11-23). Même règle que la page. */
+    const sansRetourAVide = !!(data.aller_retour && data.date_retour && allerRetourMemeJour(data.date_prevue, data.date_retour))
+    prixServeur = calculerPrixKm(dist, data.type_vehicule, data.date_prevue, tarifs ?? [], params, { sansRetourAVide })
   }
   if (!prixServeur || prixServeur <= 0) {
     console.error('[createReservation] prix serveur introuvable', {

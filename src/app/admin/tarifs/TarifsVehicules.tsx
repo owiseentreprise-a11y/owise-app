@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateTarifVehicule } from './actions'
+import { formaterMontant } from '@/lib/montant'
 
 type Tarif = {
   id: string
@@ -16,6 +17,9 @@ type Tarif = {
      transfert, celui-ci est une penalite de depassement. Le marche parisien
      les separe franchement — 1,25 EUR/km contre 2,00 EUR/km. */
   prix_km_sup: number | null
+  /* Longue distance (2026-11-23) : le km AU-DELA du seuil regle dans les
+     parametres (100 km). `null` = pas de regle pour ce vehicule. */
+  prix_km_longue_distance: number | null
 }
 
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -48,8 +52,8 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
  * Sans ce champ a part, saisir rien donnerait 0, et la page publique
  * afficherait « 0 EUR de l'heure » — un prix faux vaut moins que pas de prix.
  */
-function NumFieldVide({ label, value, onChange, aide, unite = '€/h' }: {
-  label: string; value: number | null; onChange: (v: number | null) => void
+function NumFieldVide({ label, value, onChange, aide, unite = '€/h', vide = 'sur devis' }: {
+  label: string; value: number | null; onChange: (v: number | null) => void; vide?: string
   aide?: string; unite?: string
 }) {
   return (
@@ -62,7 +66,7 @@ function NumFieldVide({ label, value, onChange, aide, unite = '€/h' }: {
           type="number"
           step="0.05"
           min="0"
-          placeholder="sur devis"
+          placeholder={vide}
           defaultValue={value ?? ''}
           onChange={e => {
             const brut = e.target.value.trim()
@@ -103,6 +107,7 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
         prix_km:         data.prix_km,
         prix_heure:      data.prix_heure,
         prix_km_sup:     data.prix_km_sup,
+        prix_km_longue_distance: data.prix_km_longue_distance,
       })
       if (res.error) setError(res.error)
       else setSaved(true)
@@ -154,6 +159,21 @@ function VehiculeCard({ tarif }: { tarif: Tarif }) {
           aide={data.prix_km_sup == null
             ? 'Vide : aucun dépassement facturé.'
             : '20 km/h compris    4 h · 80 km'}
+        />
+      </div>
+
+      {/* LONGUE DISTANCE — ajoutee le 2026-11-23. Le seuil (100 km) est un
+          reglage commun, dans « Parametres globaux » plus bas. */}
+      <div style={{ borderTop: '1px solid var(--gb)', paddingTop: 12 }}>
+        <NumFieldVide
+          label="Km longue distance (€)"
+          value={data.prix_km_longue_distance}
+          unite="€/km"
+          vide="aucun"
+          onChange={v => setData(d => ({ ...d, prix_km_longue_distance: v }))}
+          aide={data.prix_km_longue_distance == null
+            ? 'Vide : le prix du km reste le même quelle que soit la distance.'
+            : `Au-delà du seuil longue distance, chaque km coûte ${formaterMontant(data.prix_km_longue_distance)} (aller + retour à vide). Sauf aller-retour le même jour.`}
         />
       </div>
 

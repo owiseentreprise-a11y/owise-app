@@ -166,6 +166,18 @@ export default function GlobalParamsForm({ p }: { p: any }) {
         )}
       </Section>
 
+      {/* Longue distance — ajoutee le 2026-11-23 */}
+      <Section title="Longue distance">
+        <Row
+          label="Seuil longue distance"
+          desc="Au-delà de ce nombre de km, chaque km se paie au « km longue distance » de chaque véhicule (réglé plus haut, véhicule par véhicule) : le chauffeur rentre à vide. En dessous, et pour tous les forfaits, rien ne change. Un aller-retour le même jour n'est pas concerné. 0 = règle coupée."
+          name="seuil_longue_distance_km"
+          unit="km"
+          value={p?.seuil_longue_distance_km ?? 0}
+          isActive={Number(p?.seuil_longue_distance_km ?? 0) > 0}
+        />
+      </Section>
+
       {/* Suppléments */}
       <Section title="Suppléments horaires (% ajouté au prix de base)">
         <Row

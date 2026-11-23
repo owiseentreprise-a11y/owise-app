@@ -70,6 +70,7 @@ export const CLES_PARAMS_CALC = [
   'coef_berline_premium', 'coef_van',
   'supplement_grand_van', 'surcout_km_grand_van',
   'supplement_nuit', 'supplement_weekend', 'supplement_etape',
+  'seuil_longue_distance_km',
   'tarif_pec_actif', 'tarif_frais_pec',
   'supplement_bagages_actif', 'supplement_bagages_prix',
   'supplement_panneau_actif', 'supplement_panneau_prix',

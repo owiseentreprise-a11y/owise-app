@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { creerCourseAction } from './actions'
 import { searchLieux } from '@/lib/lieux'
 import { searchAddresses, fetchPlaceDetails, getSuggestionIcon } from '@/lib/addressSearch'
-import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, isForfaitZone, type ParamsCalc } from '@/lib/calcPrix'
+import { calculerPrix, calculerPrixKm, calculerPrixEtapes, detectZone, isForfaitZone, allerRetourMemeJour, type ParamsCalc } from '@/lib/calcPrix'
 import { lireHeureCourse, instantDepuisSaisieParis, formaterAParis } from '@/lib/heure'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -303,11 +303,13 @@ export default function NouvelleCourseForm({
 
   const prixAuto = useMemo(() => {
     const direct = useForfait ? forfaitPrix
-      : distanceKm ? calculerPrixKm(distanceKm, vehicule, dateHeure, tarifs, params)
+      /* Aller-retour le même jour : chaque trajet sans la règle longue distance (2026-11-23). */
+      : distanceKm ? calculerPrixKm(distanceKm, vehicule, dateHeure, tarifs, params,
+          { sansRetourAVide: allerRetour && allerRetourMemeJour(dateHeure, dateRetour) })
       : null
     if (direct === null) return null
     return Math.round((direct + surcoutEtapes) * 100) / 100
-  }, [useForfait, forfaitPrix, vehicule, distanceKm, dateHeure, tarifs, params, surcoutEtapes])
+  }, [useForfait, forfaitPrix, vehicule, distanceKm, dateHeure, tarifs, params, surcoutEtapes, allerRetour, dateRetour])
 
   // Fetch OSRM distance when in km mode
   useEffect(() => {

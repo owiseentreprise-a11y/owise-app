@@ -1,4 +1,4 @@
-import { heureMuraleParis } from './heure'
+import { heureMuraleParis, jourParis } from './heure'
 import { NOM_PAR_CLE, CLE_PAR_NOM, vehiculeParCle } from './gamme'
 export type ZoneCalc   = { id: string; code: string; type: string; prefixes_postaux: string[] }
 /**
@@ -91,6 +91,9 @@ export type TarifCalc  = {
   prix_heure?: number | null
   /** Mise a disposition : euros du km AU-DELA du forfait. `null` = non facture. */
   prix_km_sup?: number | null
+  /** Longue distance : euros du km AU-DELA du seuil `seuil_longue_distance_km`.
+   *  `null` = pas de regle longue distance pour ce vehicule (prix_km partout). */
+  prix_km_longue_distance?: number | null
 }
 export type ParamsCalc = {
   /* Pas de `coef_berline` ici, et c'est voulu. Voir la note sous les replis. */
@@ -103,6 +106,9 @@ export type ParamsCalc = {
   supplement_nuit?: number | null
   supplement_weekend?: number | null
   supplement_etape?: number | null
+  /** Longue distance : au-dela de ce nombre de km, chaque km se paie
+   *  `prix_km_longue_distance`. 0 ou vide = regle coupee. (2026-11-23) */
+  seuil_longue_distance_km?: number | null
   tarif_pec_actif?: boolean | null
   tarif_frais_pec?: number | null
   // Options du formulaire de devis (bagages/panneau/animaux/siège enfant) —
@@ -698,6 +704,50 @@ export function calculerPrixEtapes(
   return Math.round((prixDirect + prixDetour + nbEtapes * frais) * 100) / 100
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * LA LONGUE DISTANCE — decision de l'exploitant du 2026-11-23.
+ *
+ * Au-dela d'un seuil (100 km), le chauffeur rentre a vide : chaque km
+ * supplementaire se paie donc aller ET retour. « Chaque kilometre doit etre
+ * comptabilise 2 EUR : 1 EUR pour l'aller et 1 EUR pour le retour. » C'est la
+ * logique du taxi traditionnel (tarif C/D, « retour a vide »), en restant
+ * sous son prix. Prix decides : berline 2,00 · Premium 2,40 · Van 2,50 ·
+ * Grand Van 2,65 EUR/km au-dela du seuil ; en dessous, rien ne change.
+ *
+ *   prix = prise en charge + min(km, seuil) x prix_km
+ *                          + max(0, km - seuil) x prix_km_longue_distance
+ *
+ * Une seule ecriture : ici. Les forfaits de la grille ne sont PAS concernes
+ * (ils sont calcules par `calculerPrix`). Les km d'un detour par une etape
+ * restent au prix normal (`calculerPrixEtapes`).
+ *
+ * EXCEPTION : un aller-retour LE MEME JOUR ne laisse pas le chauffeur rentrer
+ * a vide — chaque trajet est alors au prix normal (`sansRetourAVide`). Sur
+ * deux jours differents, chaque trajet paie son retour a vide (exploitant,
+ * 2026-11-23). Voir `allerRetourMemeJour`.
+ * Controle : scripts/test-longue-distance.mts.
+ * ──────────────────────────────────────────────────────────────────────── */
+export function regleLongueDistance(
+  vehiculeKey: string,
+  tarifs: TarifCalc[],
+  params?: ParamsCalc | null,
+): { seuilKm: number; prixKm: number } | null {
+  const seuil = Number(params?.seuil_longue_distance_km ?? 0)
+  if (!Number.isFinite(seuil) || seuil <= 0) return null
+  const { tarif, surcoutKm } = tarifPourVehicule(vehiculeKey, tarifs, params)
+  const brut = tarif?.prix_km_longue_distance
+  const prix = brut == null ? NaN : Number(brut)
+  if (!Number.isFinite(prix) || prix <= 0) return null
+  return { seuilKm: seuil, prixKm: prix + surcoutKm }
+}
+
+/** Vrai si l'aller et le retour ont lieu le meme jour, a Paris. */
+export function allerRetourMemeJour(dateAller: string, dateRetour: string): boolean {
+  if (!dateAller || !dateRetour) return false
+  const a = jourParis(dateAller), r = jourParis(dateRetour)
+  return a !== '' && a === r
+}
+
 /** Calcule le prix au kilomètre — utilisé quand aucun forfait n'est disponible */
 export function calculerPrixKm(
   distanceKm: number,
@@ -705,6 +755,8 @@ export function calculerPrixKm(
   dateHeure: string,
   tarifs: TarifCalc[],
   params?: ParamsCalc | null,
+  /** `sansRetourAVide` : aller-retour le meme jour, pas de regle longue distance. */
+  options?: { sansRetourAVide?: boolean },
 ): number | null {
   /* Une seule porte pour trouver le tarif, repli du grand van compris —
      voir `tarifPourVehicule`. Sans elle, la recherche échouait pour le grand
@@ -716,7 +768,10 @@ export function calculerPrixKm(
   // Arrondir la distance à l'entier le plus proche pour absorber les
   // écarts de géocodage entre sources (BAN, LIEUX_CONNUS, Google Maps)
   const dist  = Math.round(distanceKm)
-  let prix = base + dist * km
+  const ld = options?.sansRetourAVide ? null : regleLongueDistance(vehiculeKey, tarifs, params)
+  let prix = ld && dist > ld.seuilKm
+    ? base + ld.seuilKm * km + (dist - ld.seuilKm) * ld.prixKm
+    : base + dist * km
   if (params?.tarif_pec_actif) prix += params.tarif_frais_pec ?? 0
   return Math.round(appliquerSupplements(prix, dateHeure, params) * 100) / 100
 }

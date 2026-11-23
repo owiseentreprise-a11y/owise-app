@@ -25,10 +25,13 @@ export async function updateTarifVehicule(
   data: {
     prise_en_charge: number; prix_km: number
     prix_heure: number | null; prix_km_sup: number | null
+    prix_km_longue_distance: number | null
   }
 ): Promise<{ error?: string }> {
   await requireAdminClient()
   const supabase = createAdminClient()
+  const ld = data.prix_km_longue_distance
+  if (ld != null && (!Number.isFinite(ld) || ld <= 0)) return { error: 'Prix du km longue distance invalide (laisser vide pour aucun).' }
   const { error } = await supabase.from('tarifs').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/tarifs')
@@ -124,6 +127,8 @@ export async function updateParametresTarifs(formData: FormData): Promise<{ erro
     supplement_etape:       Number(formData.get('supplement_etape')),
     supplement_nuit:        Number(formData.get('supplement_nuit')),
     supplement_weekend:     Number(formData.get('supplement_weekend')),
+    /* Longue distance (2026-11-23) : 0 = regle coupee. */
+    seuil_longue_distance_km: Math.max(0, Number(formData.get('seuil_longue_distance_km')) || 0),
     /* Ni `coef_berline` ni `supplement_ferie` : leurs champs ont ete retires
        du formulaire le 2026-11-03 parce qu'aucune page ne les lisait. Les
        colonnes restent en base — on ne les ecrit plus, et plus rien ne promet
